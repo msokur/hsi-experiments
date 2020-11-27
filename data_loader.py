@@ -8,15 +8,12 @@ from tqdm import tqdm
 import pickle
 from sklearn import preprocessing
 
+
+
 def get_masks(mask):
     gesund_indexes = np.where((mask[:, :, 0] == 0) & (mask[:, :, 1] == 0) & (mask[:, :, 2] == 255)) #blue
     not_certain_indexes = np.where((mask[:, :, 0] == 255) & (mask[:, :, 1] == 0) & (mask[:, :, 2] == 0)) #red
     ill_indexes = np.where((mask[:, :, 0] == 255) & (mask[:, :, 1] == 255) & (mask[:, :, 2] == 0)) #yellow
-
-    #for indexes in [gesund_indexes, not_certain_indexes, ill_indexes]:
-    #    indexes = list(indexes)
-    #    indexes[0] = mask.shape[0] - indexes[0] - 1
-    #    indexes = tuple(indexes)
 
     return gesund_indexes, ill_indexes, not_certain_indexes
 
@@ -59,13 +56,13 @@ def get_data(scaler_path, only_train_dataset = True, not_certain_flag = False):
 
                 gesund_indexes, ill_indexes, not_certain_indexes = get_masks(mask)
 
-                gesund_patch = spectrum_data[gesund_indexes[1], gesund_indexes[0]]
+                gesund_patch = spectrum_data[gesund_indexes[0], gesund_indexes[1]]
                 gesund_patch = np.insert(gesund_patch, gesund_patch.shape[1], np.zeros(gesund_patch.shape[0]), axis=1)
-                ill_patch = spectrum_data[ill_indexes[1], ill_indexes[0]]
+                ill_patch = spectrum_data[ill_indexes[0], ill_indexes[1]]
                 ill_patch = np.insert(ill_patch, ill_patch.shape[1], np.ones(ill_patch.shape[0]), axis=1)
 
                 if not_certain_flag:
-                    not_certain_patch = spectrum_data[not_certain_indexes[1], not_certain_indexes[0]]
+                    not_certain_patch = spectrum_data[not_certain_indexes[0], not_certain_indexes[1]]
                     fill_array = np.zeros(not_certain_patch.shape[0])
                     fill_array.fill(2)
                     not_certain_patch = np.insert(not_certain_patch, not_certain_patch.shape[1], fill_array, axis=1)
@@ -74,13 +71,27 @@ def get_data(scaler_path, only_train_dataset = True, not_certain_flag = False):
                 
                 gesund_data.append(gesund_patch)
                 ill_data.append(ill_patch)
-               
 
-    gesund_data = list(np.concatenate(np.array(gesund_data), axis=0))                  #label 0
-    ill_data =  list(np.concatenate(np.array(ill_data), axis=0))     #label 1
+    gesund_data_ = gesund_data.copy()
+    ill_data_ = ill_data.copy()
 
-    if not_certain_flag:                      
-        not_certain_data = list(np.concatenate(np.array(not_certain_data), axis=0))
+
+
+    gesund_all = np.concatenate(np.array(gesund_data), axis=0)
+    ill_all = np.concatenate(np.array(ill_data), axis=0)
+
+    
+
+    print(np.array(gesund_data_).shape)      
+
+    gesund_data = list(gesund_all)                  #label 0
+    ill_data =  list(ill_all)     #label 1
+
+    if not_certain_flag:
+        not_certain_data_ = not_certain_data.copy()
+        not_certain_all = np.concatenate(np.array(not_certain_data), axis=0)
+        
+        not_certain_data = list(not_certain_all)
         print(gesund_data.shape, ill_data.shape, not_certain_data.shape)
     else:
         print(np.array(gesund_data).shape, np.array(ill_data).shape)

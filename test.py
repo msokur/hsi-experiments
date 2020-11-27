@@ -27,17 +27,12 @@ def test_one_image(path_dat, path_image=None, save=False, show=True, test_all_sp
     
     #scaler = restore_scaler(FOLDER_NAME)
 
-    if not test_all_spectra:
-        spectrum = scaler.transform(spectrum_data[indexes[:, 1], gt_image.shape[0] - indexes[:, 0] - 1])
-    else:
-        spectrum = scaler.transform(spectrum_data.reshape(spectrum_data.shape[0] * spectrum_data.shape[1], spectrum_data.shape[2]))
-        indexes_0 = []
-        indexes_1 = []
-        for i in range(gt_image.shape[1]):
-            indexes_0.append([i] * gt_image.shape[0])
-            indexes_1.append(np.arange(gt_image.shape[0]))
-        indexes = np.array([np.array(indexes_1).flatten(), np.array(indexes_0).flatten()]).T
-        print(indexes.shape)
+    if  test_all_spectra:
+        indexes = np.where(gt_image[:, :, 0] < 2055)
+        indexes = np.array(indexes).T
+
+    spectrum = scaler.transform(spectrum_data[indexes[:, 0], indexes[:, 1]])
+
 
 
     predictions = model.predict(np.expand_dims(spectrum, axis=-1))
@@ -76,5 +71,5 @@ def test_ALL_images(save=True, show=False, test_all_spectra = False):
 
 
 if __name__ == "__main__":
-    test_one_image(r'data/2019_10_30_14_30_27_SpecCube.dat', path_image=r'data\2019_10_30_14_30_27_SpecCube.dat_Mask JW Kolo.png', save=False, show=True, test_all_spectra=True)
+    test_one_image(r'data\2019_10_30_14_30_27_SpecCube.dat', path_image=r'data\2019_10_30_14_30_27_SpecCube.dat_Mask JW Kolo.png', save=True, show=True, test_all_spectra=False)
     #test_ALL_images( test_all_spectra = False)

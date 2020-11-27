@@ -54,7 +54,7 @@ class Cube_Read(object):
 
 
 
-        return data[..., self.Firstnm:self.Lastnm+1], pixelYSize
+        return np.rot90(data[..., self.Firstnm:self.Lastnm+1]), pixelYSize
     
     def cube_matrix_learn(self):
         spectrum_data = self.read_cube()
