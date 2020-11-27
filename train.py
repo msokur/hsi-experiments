@@ -69,15 +69,16 @@ checkpoints_callback = tf.keras.callbacks.ModelCheckpoint(
 
 '''-------TRAINING---------'''
 
-model.fit(np.expand_dims(train[:, :-1], axis=-1),
-    train[:, -1],
+model.fit(np.expand_dims(train[:, :-2], axis=-1),
+    train[:, -2],
     batch_size=config.BATCH_SIZE,
     epochs=config.EPOCHS,
     verbose=1,
     initial_epoch = initial_epoch,
     callbacks = [tensorboard_callback, checkpoints_callback],
-    validation_data=(np.expand_dims(test[:, :-1], axis=-1), test[:, -1]),
-    class_weight=class_weight)
+    validation_data=(np.expand_dims(test[:, :-2], axis=-1), test[:, -2]),
+    class_weight=class_weight, 
+    sample_weight = train[:, -1])
 
     
 

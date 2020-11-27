@@ -39,6 +39,15 @@ def save_scaler(all_data, scaler_path):
 def restore_scaler(scaler_path):
     return pickle.load(open(os.path.join(scaler_path, config.SCALER_FILE_NAME), 'rb'))
 
+def fill_with_weight(arr, total):
+    arr = np.array(arr)
+    if arr.shape[0] > 0:
+        fill_array = np.zeros(arr.shape[0])
+        fill_array.fill(total / arr.shape[0])
+        #print(total/arr.shape[0])
+        arr = np.insert(arr, arr.shape[1], fill_array, axis=1)
+
+    return arr
 
 def get_data(scaler_path, only_train_dataset = True, not_certain_flag = False):
     gesund_data = []
@@ -59,7 +68,7 @@ def get_data(scaler_path, only_train_dataset = True, not_certain_flag = False):
                 gesund_patch = spectrum_data[gesund_indexes[0], gesund_indexes[1]]
                 gesund_patch = np.insert(gesund_patch, gesund_patch.shape[1], np.zeros(gesund_patch.shape[0]), axis=1)
                 ill_patch = spectrum_data[ill_indexes[0], ill_indexes[1]]
-                ill_patch = np.insert(ill_patch, ill_patch.shape[1], np.ones(ill_patch.shape[0]), axis=1)
+                
 
                 if not_certain_flag:
                     not_certain_patch = spectrum_data[not_certain_indexes[0], not_certain_indexes[1]]
@@ -70,24 +79,21 @@ def get_data(scaler_path, only_train_dataset = True, not_certain_flag = False):
                     not_certain_data.append(not_certain_patch)
                 
                 gesund_data.append(gesund_patch)
-                ill_data.append(ill_patch)
+                if ill_patch.shape[0] > 0:
+                    ill_patch = np.insert(ill_patch, ill_patch.shape[1], np.ones(ill_patch.shape[0]), axis=1)
+                    ill_data.append(ill_patch)
 
-    gesund_data_ = gesund_data.copy()
-    ill_data_ = ill_data.copy()
+    gesund_all = np.concatenate(np.array(gesund_data), axis=0).shape[0]
+    ill_all = np.concatenate(np.array(ill_data), axis=0).shape[0]
 
+    gesund_data = [fill_with_weight(i, gesund_all) for i in gesund_data]
+    print('----------')
+    ill_data = [fill_with_weight(i, ill_all) for i in ill_data]
 
+    gesund_data = list(np.concatenate(np.array(gesund_data), axis=0))                  #label 0
+    ill_data =  list(np.concatenate(np.array(ill_data), axis=0))     #label 1
 
-    gesund_all = np.concatenate(np.array(gesund_data), axis=0)
-    ill_all = np.concatenate(np.array(ill_data), axis=0)
-
-    
-
-    print(np.array(gesund_data_).shape)      
-
-    gesund_data = list(gesund_all)                  #label 0
-    ill_data =  list(ill_all)     #label 1
-
-    if not_certain_flag:
+    if not_certain_flag: #TODO needs rewirting weights
         not_certain_data_ = not_certain_data.copy()
         not_certain_all = np.concatenate(np.array(not_certain_data), axis=0)
         
@@ -128,9 +134,9 @@ def get_data(scaler_path, only_train_dataset = True, not_certain_flag = False):
 
     print('train, test length', train.shape, test.shape)
 
-    scaler = save_scaler(train[:, :-1], scaler_path)
-    train[:, :-1] = scaler.transform(train[:, :-1])
-    test[:, :-1] = scaler.transform(test[:, :-1])
+    scaler = save_scaler(train[:, :-2], scaler_path)
+    train[:, :-2] = scaler.transform(train[:, :-2])
+    test[:, :-2] = scaler.transform(test[:, :-2])
 
     neg = len(gesund_data)
     pos = len(ill_data)
