@@ -23,7 +23,9 @@ def inception1d_block():
     #net = tf.keras.layers.Dense(500, activation='relu')(net)
     #net = tf.keras.layers.Dense(250, activation='relu')(net)
     net = tf.keras.layers.Dense(100, activation='relu')(net)
-    net =  tf.keras.layers.Dense(50, activation='relu')(net)
+    net = tf.keras.layers.Dropout(config.DROPOUT_VALUE)(net)
+    net = tf.keras.layers.Dense(50, activation='relu')(net)
+    net = tf.keras.layers.Dropout(config.DROPOUT_VALUE)(net)
     result = tf.keras.layers.Dense(1, activation='sigmoid')(net)
 
     model = tf.keras.Model(
