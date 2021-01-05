@@ -24,9 +24,10 @@ def get_data_for_showing(name, path, with_not_certain=False):
     gesund_indexes, ill_indexes, not_certain_indexes = get_masks(image[..., ::-1])
 
     if with_not_certain:
-        return image, spectrum_data, np.array(list(np.array(gesund_indexes).T) + list(np.array(ill_indexes).T) + list(np.array(not_certain_indexes).T))
+        #return image, spectrum_data, np.array(list(np.array(gesund_indexes).T) + list(np.array(ill_indexes).T) + list(np.array(not_certain_indexes).T))
+        return image, spectrum_data, np.array(list(np.array(gesund_indexes).T), list(np.array(ill_indexes).T), list(np.array(not_certain_indexes).T))
     else:
-        return image, spectrum_data, np.array(list(np.array(gesund_indexes).T) + list(np.array(ill_indexes).T))
+        return image, spectrum_data, list(np.array(gesund_indexes).T), list(np.array(ill_indexes).T), []
 
 def save_scaler(all_data, scaler_path):
     scaler = preprocessing.StandardScaler().fit(all_data)
@@ -49,39 +50,42 @@ def fill_with_weight(arr, total):
 
     return arr
 
-def get_data(scaler_path, only_train_dataset = True, not_certain_flag = False):
+def get_data(scaler_path, paths=None, only_train_dataset = True, not_certain_flag = False, except_indexes=[-1]):
     gesund_data = []
     ill_data = []
     not_certain_data = []
 
     for path_dir in config.DATA_PATHS:
-        for path in tqdm(glob.glob(os.path.join(path_dir, '*.dat'))): 
-            with open(path, newline='') as filex:
-                filename=filex.name
+        if paths is None:
+            paths = glob.glob(os.path.join(path_dir, '*.dat'))
+        for index, path in tqdm(enumerate(paths)):
+            if index not in except_indexes:
+                with open(path, newline='') as filex:
+                    filename=filex.name
 
-                spectrum_data, _ = Cube_Read(filename, wavearea=config.WAVE_AREA, Firstnm=config.FIRST_NM, Lastnm=config.LAST_NM).cube_matrix()
+                    spectrum_data, _ = Cube_Read(filename, wavearea=config.WAVE_AREA, Firstnm=config.FIRST_NM, Lastnm=config.LAST_NM).cube_matrix()
 
-                mask = cv2.imread(glob.glob(filename + '*.png')[0])[..., ::-1]
+                    mask = cv2.imread(glob.glob(filename + '*.png')[0])[..., ::-1]
 
-                gesund_indexes, ill_indexes, not_certain_indexes = get_masks(mask)
+                    gesund_indexes, ill_indexes, not_certain_indexes = get_masks(mask)
 
-                gesund_patch = spectrum_data[gesund_indexes[0], gesund_indexes[1]]
-                gesund_patch = np.insert(gesund_patch, gesund_patch.shape[1], np.zeros(gesund_patch.shape[0]), axis=1)
-                ill_patch = spectrum_data[ill_indexes[0], ill_indexes[1]]
-                
+                    gesund_patch = spectrum_data[gesund_indexes[0], gesund_indexes[1]]
+                    gesund_patch = np.insert(gesund_patch, gesund_patch.shape[1], np.zeros(gesund_patch.shape[0]), axis=1)
+                    ill_patch = spectrum_data[ill_indexes[0], ill_indexes[1]]
 
-                if not_certain_flag:
-                    not_certain_patch = spectrum_data[not_certain_indexes[0], not_certain_indexes[1]]
-                    fill_array = np.zeros(not_certain_patch.shape[0])
-                    fill_array.fill(2)
-                    not_certain_patch = np.insert(not_certain_patch, not_certain_patch.shape[1], fill_array, axis=1)
 
-                    not_certain_data.append(not_certain_patch)
-                
-                gesund_data.append(gesund_patch)
-                if ill_patch.shape[0] > 0:
-                    ill_patch = np.insert(ill_patch, ill_patch.shape[1], np.ones(ill_patch.shape[0]), axis=1)
-                    ill_data.append(ill_patch)
+                    if not_certain_flag:
+                        not_certain_patch = spectrum_data[not_certain_indexes[0], not_certain_indexes[1]]
+                        fill_array = np.zeros(not_certain_patch.shape[0])
+                        fill_array.fill(2)
+                        not_certain_patch = np.insert(not_certain_patch, not_certain_patch.shape[1], fill_array, axis=1)
+
+                        not_certain_data.append(not_certain_patch)
+
+                    gesund_data.append(gesund_patch)
+                    if ill_patch.shape[0] > 0:
+                        ill_patch = np.insert(ill_patch, ill_patch.shape[1], np.ones(ill_patch.shape[0]), axis=1)
+                        ill_data.append(ill_patch)
 
     gesund_all = np.concatenate(np.array(gesund_data), axis=0).shape[0]
     ill_all = np.concatenate(np.array(ill_data), axis=0).shape[0]
@@ -145,7 +149,7 @@ def get_data(scaler_path, only_train_dataset = True, not_certain_flag = False):
     weight_for_0 = (1 / neg)*(total)/2.0 
     weight_for_1 = (1 / pos)*(total)/2.0
 
-    class_weight = {0: weight_for_0, 1: 10 * weight_for_1}
+    class_weight = {0: weight_for_0, 1: weight_for_1}
 
     print('class_weights', class_weight)
 
