@@ -6,6 +6,7 @@ import config
 import numpy as np
 from tqdm import tqdm
 import os
+import math
 
 
 class CustomTensorboardCallback(keras.callbacks.TensorBoard):
@@ -14,7 +15,9 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
         
         super(CustomTensorboardCallback, self).__init__(**kwargs)
 
-        gt_image, spectrum_data, indexes = get_data_for_showing('2019_07_12_11_15_49_SpecCube.dat', config.DATA_PATHS[0])
+        gt_image, spectrum_data, gesund_indexes, ill_indexes, not_certain_indexes = get_data_for_showing('2019_07_12_11_15_49_SpecCube.dat', config.DATA_PATHS[0])
+        indexes = gesund_indexes + ill_indexes + not_certain_indexes
+        indexes = np.array(indexes)
 
         scaler = restore_scaler(self.log_dir)
         spectrum = scaler.transform(spectrum_data[indexes[:, 1], indexes[:, 0]])
@@ -36,7 +39,11 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
         
         print('Writing summary image ...')
         for counter, value in tqdm(enumerate(predictions)):
-            key = int(value)
+            key = 0
+            if type(value) == np.ndarray:
+                key = round(value[0])
+            else:
+                key = tf.round(value)
 
             if key == 0:
                 #image[indexes[gt_image.shape[0] - counter - 1, 0], indexes[counter, 1]] = [0, 0, 255]#[255, 0, 0]
@@ -45,7 +52,8 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
                 image[indexes[counter, 0], indexes[counter, 1]] = [255, 255, 0]
             else:
                 image[indexes[counter, 0], indexes[counter, 1]] = [255, 0, 0]
-        
+
+        image = np.array(list(image) + list(gt_image))
         cv2.imwrite('test.png', image[... , ::-1])                                 #TODO delete 
         return image
 
