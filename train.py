@@ -7,6 +7,7 @@ from model import *
 from callbacks import CustomTensorboardCallback
 import os
 from shutil import copyfile
+import telegram_send
 
 
 def train(paths=None, except_indexes=[-1]):
@@ -23,11 +24,15 @@ def train(paths=None, except_indexes=[-1]):
             print(e)
 
     mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
+    #mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.ReductionToOneDevice())
+    #mirrored_strategy = tf.distribute.experimental.CentralStorageStrategy()
+    #mirrored_strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
     '''-------LOGGING and HPARAMS---------'''
     log_dir = config.MODEL_NAME
     if not config.RESTORE_MODEL:
-        os.mkdir(log_dir)
+        if not os.path.exists(log_dir):
+            os.mkdir(log_dir)
 
         for file in ['config.py', 'train.py', 'data_loader.py', 'model.py']:
             copyfile(file, os.path.join(log_dir, file))
@@ -64,8 +69,8 @@ def train(paths=None, except_indexes=[-1]):
                   keras.metrics.Recall(name='sensitivity'),
                   keras.metrics.AUC(name='auc'),
               ]
-              model = inception1d_block()
-
+              #model = inception_model()
+              model = lstm_block()
 
           model.compile(
                 optimizer=keras.optimizers.Adam(lr=1e-3),
@@ -105,6 +110,8 @@ def train(paths=None, except_indexes=[-1]):
     return model
 
 if __name__ == '__main__':
+    #telegram_send.configure("tg.config", group=True)
+    #telegram_send.send(messages=['Hallo from mariias python'], conf='tg.config')
     train()
 
     
