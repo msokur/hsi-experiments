@@ -1,23 +1,52 @@
 import tensorflow as tf 
 import config
 
-def inception1d_block():
+def inception1d_block(input_, factor=16):
+
+
+    branch1 = tf.keras.layers.Conv1D(filters=factor*4, kernel_size=1, padding="same", activation='relu')(input_)
+
+    branch2 = tf.keras.layers.Conv1D(filters=factor*6, kernel_size=1, padding="same", activation='relu')(input_)
+    branch2 = tf.keras.layers.Conv1D(filters=factor*8, kernel_size=3, padding="same", activation='relu')(branch2)
+
+    branch3 = tf.keras.layers.Conv1D(filters=factor, kernel_size=1, padding="same", activation='relu')(input_)
+    branch3 = tf.keras.layers.Conv1D(filters=factor*2, kernel_size=5, padding="same", activation='relu')(branch3)
+
+    branch4 = tf.keras.layers.MaxPooling1D(pool_size=3, strides=1, padding="same")(input_)
+    branch4 = tf.keras.layers.Conv1D(filters=factor*2, kernel_size=1, activation='relu')(branch4)
+
+    net = tf.keras.layers.concatenate([branch1, branch2, branch3, branch4])
+
+    return net
+
+def lstm_block():
     input_ = tf.keras.layers.Input(
         shape=(config.LAST_NM - config.FIRST_NM, 1), name="title"
     )
 
-    branch1 = tf.keras.layers.Conv1D(filters=64, kernel_size=1, padding="same", activation='relu')(input_)
+    net = inception1d_block(input_, factor=8)
 
-    branch2 = tf.keras.layers.Conv1D(filters=96, kernel_size=1, padding="same", activation='relu')(input_)
-    branch2 = tf.keras.layers.Conv1D(filters=128, kernel_size=3, padding="same", activation='relu')(branch2)
+    net = tf.keras.layers.LSTM(100)(net)
 
-    branch3 = tf.keras.layers.Conv1D(filters=16, kernel_size=1, padding="same", activation='relu')(input_)
-    branch3 = tf.keras.layers.Conv1D(filters=32, kernel_size=5, padding="same", activation='relu')(branch3)
+    net = tf.keras.layers.Dropout(config.DROPOUT_VALUE)(net)
+    result = tf.keras.layers.Dense(1, activation='sigmoid')(net)
 
-    branch4 = tf.keras.layers.MaxPooling1D(pool_size=3, strides=1, padding="same")(input_)
-    branch4 = tf.keras.layers.Conv1D(filters=32, kernel_size=1, activation='relu')(branch4)
+    model = tf.keras.Model(
+        inputs=[input_],
+        outputs=[result]
+    )
 
-    net = tf.keras.layers.concatenate([branch1, branch2, branch3, branch4])
+    return model
+
+
+
+
+def inception_model():
+    input_ = tf.keras.layers.Input(
+        shape=(config.LAST_NM - config.FIRST_NM, 1), name="title"
+    )
+
+    net = inception1d_block(input_)
 
     net = tf.keras.layers.Flatten()(net)
     #net = tf.keras.layers.Dense(500, activation='relu')(net)
