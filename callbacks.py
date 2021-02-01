@@ -21,7 +21,7 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
 
         scaler = restore_scaler(self.log_dir)
         spectrum = scaler.transform(spectrum_data[indexes[:, 1], indexes[:, 0]])
-        self.gt_image = gt_image[..., ::-1]
+        self.gt_image = gt_image
         self.spectrum = spectrum
         self.indexes = indexes
 
@@ -38,23 +38,30 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
         
         
         print('Writing summary image ...')
+        is_tf = True
         for counter, value in tqdm(enumerate(predictions)):
             key = 0
             if type(value) == np.ndarray:
                 key = round(value[0])
+                is_tf = False
             else:
                 key = tf.round(value)
 
             if key == 0:
                 #image[indexes[gt_image.shape[0] - counter - 1, 0], indexes[counter, 1]] = [0, 0, 255]#[255, 0, 0]
-                image[indexes[counter, 0], indexes[counter, 1]] = [0, 0, 255]
-            elif key == 1:
-                image[indexes[counter, 0], indexes[counter, 1]] = [255, 255, 0]
-            else:
+                #image[indexes[counter, 0], indexes[counter, 1]] = [0, 0, 255]
                 image[indexes[counter, 0], indexes[counter, 1]] = [255, 0, 0]
+            elif key == 1:
+                #image[indexes[counter, 0], indexes[counter, 1]] = [255, 255, 0]
+                image[indexes[counter, 0], indexes[counter, 1]] = [0, 255, 255]
+            else:
+                #image[indexes[counter, 0], indexes[counter, 1]] = [255, 0, 0]
+                image[indexes[counter, 0], indexes[counter, 1]] = [0, 0, 255]
 
         image = np.array(list(image) + list(gt_image))
-        cv2.imwrite('test.png', image[... , ::-1])                                 #TODO delete 
+        cv2.imwrite('test.png', image[... , ::-1])     #TODO delete
+        if is_tf:
+            image = image[..., ::-1]
         return image
 
     def on_epoch_end(self, epoch, logs=None):
@@ -68,7 +75,7 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
                     spectrum = self.spectrum
 
                     predictions = self.model.predict(np.expand_dims(spectrum, axis=-1))
-                    image = tf.py_function(self.draw_predictions_on_images, [predictions], [tf.uint8])                    
+                    image = tf.py_function(self.draw_predictions_on_images, [predictions], [tf.uint8])
                     tf.summary.image('image', image, step=epoch)
             
             tf.summary.scalar('epoch_specificity', data=logs['tn'] / (logs['tn'] + logs['fp']), step=epoch)
