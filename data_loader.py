@@ -30,7 +30,12 @@ def get_data_for_showing(name, path, with_not_certain=False):
         return image, spectrum_data, list(np.array(gesund_indexes).T), list(np.array(ill_indexes).T), []
 
 def save_scaler(all_data, scaler_path):
-    scaler = preprocessing.StandardScaler().fit(all_data)
+
+    scaler = None
+    if config.NORMALIZATION_TYPE == config.NORMALIZATION_TYPES['svn']:
+        scaler = preprocessing.StandardScaler().fit(all_data)
+    elif config.NORMALIZATION_TYPE == config.NORMALIZATION_TYPES['l2_norm']:
+        scaler = preprocessing.Normalizer().fit(all_data)
 
     #TODO realize scaler name that contains run_name
     pickle.dump(scaler, open(os.path.join(scaler_path, config.SCALER_FILE_NAME), 'wb'))
@@ -86,6 +91,8 @@ def get_data(scaler_path, paths=None, only_train_dataset = True, not_certain_fla
                     if ill_patch.shape[0] > 0:
                         ill_patch = np.insert(ill_patch, ill_patch.shape[1], np.ones(ill_patch.shape[0]), axis=1)
                         ill_data.append(ill_patch)
+            else:
+                print('We are skipping index: ', index)
 
     gesund_all = np.concatenate(np.array(gesund_data), axis=0).shape[0]
     ill_all = np.concatenate(np.array(ill_data), axis=0).shape[0]
