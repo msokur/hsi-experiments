@@ -1,4 +1,4 @@
-import tensorflow as tf 
+import tensorflow as tf
 import cv2
 import numpy as np
 import os
@@ -12,11 +12,23 @@ import csv
 
 class Tester():
 
-    def __init__(self, LOGS_PATH, MODEL_NAME, CHECKPOINT, TEST_PATHS, SAVING_PATH):
+    '''
+    there are two variants
+    1. give LOGS_PATH and MODEL_PATH separatly
+    2. give MODEL_FOLDER
+    '''
+    def __init__(self, CHECKPOINT, TEST_PATHS, SAVING_PATH, LOGS_PATH='', MODEL_NAME='', MODEL_FOLDER=''):
 
-        self.MODEL_NAME = MODEL_NAME
-        MODEL_FOLDER = os.path.join(LOGS_PATH, MODEL_NAME)
-        CHECKPOINTS_FOLDER_NAME = os.path.join(LOGS_PATH, MODEL_NAME, 'checkpoints')
+        if MODEL_NAME != '':
+            self.MODEL_NAME = MODEL_NAME
+        else:
+            self.MODEL_NAME = MODEL_FOLDER.split('\\')[-1] #here can be problem
+
+        if MODEL_FOLDER == '':
+            MODEL_FOLDER = os.path.join(LOGS_PATH, self.MODEL_NAME)
+
+        #CHECKPOINTS_FOLDER_NAME = os.path.join(LOGS_PATH, self.MODEL_NAME, 'checkpoints')
+        CHECKPOINTS_FOLDER_NAME = os.path.join(MODEL_FOLDER, 'checkpoints')
         MODEL_PATH = os.path.join(CHECKPOINTS_FOLDER_NAME, CHECKPOINT)
         self.CHECKPOINT = CHECKPOINT
 
@@ -28,8 +40,13 @@ class Tester():
 
         self.scaler = restore_scaler(MODEL_FOLDER)
 
-    def count_metrics(self, gt, predictions, name, folder_name = ''):
-        if folder_name == '':
+        self.all_predictions = []
+        self.all_predictions_raw = []
+        self.all_gt = []
+
+    @staticmethod
+    def count_metrics(gt, predictions, name, folder_name='', save_stats=True):
+        if save_stats and folder_name == '':
             folder_name = self.SAVING_PATH
 
         conf_matrix = confusion_matrix(gt, predictions)
@@ -44,11 +61,12 @@ class Tester():
 
         print('name', name, ', sensitivity: ', sensitivity, ', specificity: ', specificity)
 
-        with open(os.path.join(folder_name, 'stats.csv'),'a', newline='') as csvfile:
-            fieldnames = ['name','sensitivity', 'specificity']
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        if save_stats:
+            with open(os.path.join(folder_name, 'stats.csv'),'a', newline='') as csvfile:
+                fieldnames = ['name','sensitivity', 'specificity']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
-            writer.writerow({'name':name, 'sensitivity':str(sensitivity), 'specificity':str(specificity)})
+                writer.writerow({'name':name, 'sensitivity':str(sensitivity), 'specificity':str(specificity)})
 
         return sensitivity, specificity
 
@@ -72,16 +90,15 @@ class Tester():
         name = path_dat.split('\\')[-1].split('_S')[0]
 
         sensitivity = specificity = 0
-        if save_stats and not test_all_spectra:
+        if not test_all_spectra:
             gt = [0] * len(gesund_indexes) + [1] * len(ill_indexes)
-            sensitivity, specificity = self.count_metrics(gt, np.rint(predictions), name, folder_name)
+            sensitivity, specificity = self.count_metrics(gt, np.rint(predictions), name, folder_name, save_stats)
 
-            global all_predictions
-            global all_gt
-            all_predictions += list(np.rint(predictions))
-            all_gt += gt
+            self.all_predictions += list(np.rint(predictions))
+            self.all_predictions_raw += list(predictions)
+            self.all_gt += gt
 
-        self.tensorboard_callback.gt_image = gt_image[..., ::-1]
+        self.tensorboard_callback.gt_image = gt_image#[..., ::-1]
         self.tensorboard_callback.spectrum = spectrum
         self.tensorboard_callback.indexes = indexes
 
@@ -93,7 +110,7 @@ class Tester():
                 image = cv2.imread(path_image)
                 result_image = self.tensorboard_callback.draw_predictions_on_images(predictions, image=image)
 
-            result_image = result_image[..., ::-1]
+            #result_image = result_image[..., ::-1]
 
             if save:
                 cv2.imwrite(os.path.join(folder_name, name + '.png'), result_image)
@@ -105,13 +122,12 @@ class Tester():
         return sensitivity, specificity
 
     def test_ALL_images(self, save=True, show=False, test_all_spectra = False, save_stats = False):
-        global all_predictions
-        global all_gt
 
         for path_dir in self.TEST_PATHS:
 
-            all_predictions = []
-            all_gt = []
+            self.all_predictions = []
+            self.all_predictions_raw = []
+            self.all_gt = []
             name = self.MODEL_NAME + '_' + '_all_spectra_' + str(test_all_spectra) + '_' + self.CHECKPOINT + '_' + path_dir
             folder_name = os.path.join(self.SAVING_PATH, name)
             os.mkdir(folder_name)
@@ -123,17 +139,23 @@ class Tester():
                     self.test_one_image(filename, save=save, show=show, test_all_spectra=test_all_spectra, save_stats = save_stats, folder_name=folder_name)
 
             if save_stats:
-                self.count_metrics(all_gt, all_predictions, 'GESAMT', folder_name)
-                self.count_metrics(all_gt, all_predictions, 'GESAMT', folder_name)
+                self.count_metrics(self.all_gt, self.all_predictions, 'GESAMT', folder_name)
+                self.count_metrics(self.all_gt, self.all_predictions, 'GESAMT', folder_name)
 
 
 
 if __name__ == "__main__":
 
-    dat_name = r'test_test\2019_09_09_17_01_38_SpecCube.dat'
+    #dat_names = [r'data\2019_07_12_11_15_49_SpecCube.dat',r'data\2019_07_17_15_38_14_SpecCube.dat', r'data\2019_07_25_11_56_38_SpecCube.dat', r'data\2019_08_09_12_17_55_SpecCube.dat' ]
 
     #test_one_image(dat_name, path_image=dat_name + '_Mask JW Kolo.png', save=False, show=False, test_all_spectra=False, save_stats=True)
-    tester = Tester('logs', 'inception_sample_weight_fixed_spectrum_dropout', 'cp-0050', ['data'], 'test')
+
+    #(self, CHECKPOINT, TEST_PATHS, SAVING_PATH, LOGS_PATH='', MODEL_NAME='', MODEL_FOLDER=''):
+
+    tester = Tester('cp-0250', ['data'], 'test', MODEL_FOLDER='logs\lstm')
+
+    #for dat_name in dat_names:
+    #    tester.test_one_image(dat_name, path_image=dat_name + '_Mask JW Kolo.png', save=False, show=False, test_all_spectra=False, save_stats=True, folder_name='logs\inception_l2_norm\inception_l2_norm_0_1_2_3')
     tester.test_ALL_images(test_all_spectra=False, save=True, show=False, save_stats=True)
 
 
