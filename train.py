@@ -10,108 +10,143 @@ from shutil import copyfile
 import telegram_send
 
 
-def train(paths=None, except_indexes=[-1]):
-    gpus = tf.config.experimental.list_physical_devices('GPU')
-    if gpus:
-        try:
-            # Currently, memory growth needs to be the same across GPUs
-            for gpu in gpus:
-                tf.config.experimental.set_memory_growth(gpu, True)
-            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-        except RuntimeError as e:
-            # Memory growth must be set before GPUs have been initialized
-            print(e)
+def train(paths=None, except_indexes=[]):
+    history = None
+    try:
+        gpus = tf.config.experimental.list_physical_devices('GPU')
+        if gpus:
+            try:
+                # Currently, memory growth needs to be the same across GPUs
+                for gpu in gpus:
+                    tf.config.experimental.set_memory_growth(gpu, True)
+                logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+                print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+            except RuntimeError as e:
+                # Memory growth must be set before GPUs have been initialized
+                print(e)
 
-    mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
-    #mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.ReductionToOneDevice())
-    #mirrored_strategy = tf.distribute.experimental.CentralStorageStrategy()
-    #mirrored_strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
+        #mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
+        #mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.ReductionToOneDevice())
+        mirrored_strategy = tf.distribute.experimental.CentralStorageStrategy()
+        #mirrored_strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
-    '''-------LOGGING and HPARAMS---------'''
-    log_dir = config.MODEL_NAME
-    if not config.RESTORE_MODEL:
-        if not os.path.exists(log_dir):
-            os.mkdir(log_dir)
+        '''-------LOGGING and HPARAMS---------'''
+        log_dir = config.MODEL_NAME
+        if not config.RESTORE_MODEL:
+            if not os.path.exists(log_dir):
+                os.mkdir(log_dir)
 
-        for file in ['config.py', 'train.py', 'data_loader.py', 'model.py']:
-            copyfile(file, os.path.join(log_dir, file))
+            for file in ['config.py', 'train.py', 'data_loader.py', 'model.py']:
+                copyfile(file, os.path.join(log_dir, file))
 
-    with open(os.path.join(log_dir, 'comments.txt'),'a', newline='') as comments:
-        comments.write(config.COMMENTS)
+        with open(os.path.join(log_dir, 'comments.txt'),'a', newline='') as comments:
+            comments.write(config.COMMENTS)
 
-    '''-------DATASET---------'''
-    train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
+        '''-------DATASET---------'''
+        train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
 
-    print(train[0], test[0])
+        print(train[0], test[0])
 
-    '''-------MODEL---------'''
+        '''-------MODEL---------'''
 
-    initial_epoch = 0
-    if config.RESTORE_MODEL:
-          search_path = os.path.join(log_dir, 'checkpoints')
-          all_checkpoints = [os.path.join(search_path, d) for d in os.listdir(search_path) if os.path.isdir(os.path.join(search_path, d))]
-          sorted(all_checkpoints)
-          all_checkpoints = np.array(all_checkpoints)
+        initial_epoch = 0
+        if config.RESTORE_MODEL:
+              search_path = os.path.join(log_dir, 'checkpoints')
+              all_checkpoints = [os.path.join(search_path, d) for d in os.listdir(search_path) if os.path.isdir(os.path.join(search_path, d))]
+              sorted(all_checkpoints)
+              all_checkpoints = np.array(all_checkpoints)
 
-          initial_epoch = int(all_checkpoints[-1].split('-')[-1])
+              initial_epoch = int(all_checkpoints[-1].split('-')[-1])
 
-          with mirrored_strategy.scope():
-              model = tf.keras.models.load_model(all_checkpoints[-1])
-    else:
-          with mirrored_strategy.scope():
-              METRICS = [
-                  keras.metrics.TruePositives(name='tp'),
-                  keras.metrics.FalsePositives(name='fp'),
-                  keras.metrics.TrueNegatives(name='tn'),
-                  keras.metrics.FalseNegatives(name='fn'),
-                  keras.metrics.BinaryAccuracy(name='accuracy'),
-                  keras.metrics.Recall(name='sensitivity'),
-                  keras.metrics.AUC(name='auc'),
-              ]
-              #model = inception_model()
-              model = lstm_block()
+              with mirrored_strategy.scope():
+                  model = tf.keras.models.load_model(all_checkpoints[-1])
+        else:
+              with mirrored_strategy.scope():
+                  METRICS = [
+                      keras.metrics.TruePositives(name='tp'),
+                      keras.metrics.FalsePositives(name='fp'),
+                      keras.metrics.TrueNegatives(name='tn'),
+                      keras.metrics.FalseNegatives(name='fn'),
+                      keras.metrics.Recall(name='sensitivity')
+                  ]
+                  WEIGHTED_METRICS = [
+                      keras.metrics.BinaryAccuracy(name='accuracy'),
+                      keras.metrics.AUC(name='auc')
+                  ]
+                  #model = inception_model()
+                  model = lstm_block()
 
-          model.compile(
-                optimizer=keras.optimizers.Adam(lr=1e-3),
-                loss=keras.losses.BinaryCrossentropy(),
-                metrics=METRICS)
+              model.compile(
+                    optimizer=keras.optimizers.Adam(lr=1e-3),
+                    loss=keras.losses.BinaryCrossentropy(),
+                    metrics=METRICS,
+                    weighted_metrics=WEIGHTED_METRICS
+                    )
 
-    model.summary()
+        model.summary()
 
-    '''-------CALLBACKS---------'''
+        '''-------CALLBACKS---------'''
 
-    tensorboard_callback = CustomTensorboardCallback(
-          log_dir=log_dir,
-          histogram_freq=0,
-          write_graph=True,
-          write_images=True)
+        tensorboard_callback = CustomTensorboardCallback(
+              log_dir=log_dir,
+              histogram_freq=0,
+              write_graph=True,
+              write_images=True,
+              except_indexes=except_indexes)
 
-    checkpoint_path = os.path.join(log_dir, config.CHECKPOINT_PATH, 'cp-{epoch:04d}')
+        checkpoint_path = os.path.join(log_dir, config.CHECKPOINT_PATH, 'cp-{epoch:04d}')
 
-    checkpoints_callback = tf.keras.callbacks.ModelCheckpoint(
-          filepath=checkpoint_path,
-          verbose=1,
-          period = config.CHECKPOINT_WRITING_STEP)
+        checkpoints_callback = tf.keras.callbacks.ModelCheckpoint(
+              filepath=checkpoint_path,
+              verbose=1,
+              period=config.CHECKPOINT_WRITING_STEP)
 
-    '''-------TRAINING---------'''
+        early_stopping_callback = tf.keras.callbacks.EarlyStopping(
+            monitor='val_auc',
+            min_delta=0,
+            patience=25,
+            restore_best_weights=True)
 
-    model.fit(np.expand_dims(train[:, :-2], axis=-1),
-        train[:, -2],
-        batch_size=config.BATCH_SIZE,
-        epochs=config.EPOCHS,
-        verbose=1,
-        initial_epoch = initial_epoch,
-        callbacks = [tensorboard_callback, checkpoints_callback],
-        validation_data=(np.expand_dims(test[:, :-2], axis=-1), test[:, -2]),
-        class_weight=class_weight,
-        sample_weight = train[:, -1])
+
+        '''-------TRAINING---------'''
+
+        callbacks = [tensorboard_callback, checkpoints_callback]
+        if config.EARLY_STOPPING:
+            callbacks.append(early_stopping_callback)
+
+        history = model.fit(np.expand_dims(train[:, :-2], axis=-1),
+            train[:, -2],
+            batch_size=config.BATCH_SIZE,
+            epochs=config.EPOCHS,
+            verbose=1,
+            initial_epoch=initial_epoch,
+            callbacks=callbacks,
+            validation_data=(np.expand_dims(test[:, :-2], axis=-1), test[:, -2], test[:, -1]),
+            class_weight=class_weight,
+            sample_weight=train[:, -1])
+
+        np.save(os.path.join(log_dir, '.history'), history.history)
+    except Exception as e:
+        if config.TELEGRAM_SENDING:
+            last_epoch = -1
+            if history is not None:
+                last_epoch = len(history.history["loss"])
+
+            message = f'Mariia, ERROR!!!, training {log_dir} has finished after {last_epoch} epochs with error {e}'
+            telegram_send.send(messages=[message] ,conf='tg.config')
+
+    final_model_save_path = os.path.join(log_dir, 'checkpoints',  f'cp-{len(history.history["loss"]):04d}')
+    if not os.path.exists(final_model_save_path):
+        os.mkdir(final_model_save_path)
+    model.save(final_model_save_path)
+
+    if config.TELEGRAM_SENDING:
+        telegram_send.send(messages=[f'Mariia, training {log_dir} has finished after {len(history.history["loss"])} epochs'], conf='tg.config')
 
     return model
 
 if __name__ == '__main__':
-    #telegram_send.configure("tg.config", group=True)
-    #telegram_send.send(messages=['Hallo from mariias python'], conf='tg.config')
+
     train()
 
     
