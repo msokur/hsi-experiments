@@ -70,7 +70,8 @@ class Tester():
 
         return sensitivity, specificity
 
-    def test_one_image(self, path_dat, path_image=None, save=False, show=True, test_all_spectra = False, save_stats = False, folder_name = ''):
+    def test_one_image(self, path_dat, path_image=None, save=False, show=True, test_all_spectra = False, save_stats = False,
+                       folder_name = '', grayscale_result=False):
         if folder_name == '':
             folder_name = self.SAVING_PATH
 
@@ -105,10 +106,12 @@ class Tester():
         result_image = []
         if save or show:
             if path_image == None:
-                result_image = self.tensorboard_callback.draw_predictions_on_images(predictions, image=None)
+                result_image = self.tensorboard_callback.draw_predictions_on_images(predictions, image=None,
+                                                                                    grayscale_result=grayscale_result)
             else:
                 image = cv2.imread(path_image)
-                result_image = self.tensorboard_callback.draw_predictions_on_images(predictions, image=image)
+                result_image = self.tensorboard_callback.draw_predictions_on_images(predictions, image=image,
+                                                                                    grayscale_result=grayscale_result)
 
             #result_image = result_image[..., ::-1]
 
@@ -121,22 +124,35 @@ class Tester():
 
         return sensitivity, specificity
 
-    def test_ALL_images(self, save=True, show=False, test_all_spectra = False, save_stats = False):
+    def test_ALL_images(self, save=True, show=False, test_all_spectra = False, save_stats = False, grayscale_result=False, include_indexes=None, exclude_indexes=None):
 
         for path_dir in self.TEST_PATHS:
 
             self.all_predictions = []
             self.all_predictions_raw = []
             self.all_gt = []
-            name = self.MODEL_NAME + '_' + '_all_spectra_' + str(test_all_spectra) + '_' + self.CHECKPOINT + '_' + path_dir
+            p = path_dir
+            p = p.replace("\\", "-")
+
+            name = self.MODEL_NAME + '_' + '_all_spectra_' + str(test_all_spectra) + '_' + self.CHECKPOINT + '_' + p + '_gray_' + str(grayscale_result)
             folder_name = os.path.join(self.SAVING_PATH, name)
-            os.mkdir(folder_name)
+            if not os.path.exists(folder_name):
+                os.mkdir(folder_name)
 
-            for path in tqdm(glob.glob(os.path.join(path_dir, '*.dat'))):
-                with open(path, newline='') as filex:
-                    filename=filex.name
+            for i, path in tqdm(enumerate(glob.glob(os.path.join(path_dir, '*.dat')))):
 
-                    self.test_one_image(filename, save=save, show=show, test_all_spectra=test_all_spectra, save_stats = save_stats, folder_name=folder_name)
+                if i in include_indexes if include_indexes is not None else True:
+                    if not i in exclude_indexes if exclude_indexes is not None else True:
+                        with open(path, newline='') as filex:
+                            filename=filex.name
+
+                            self.test_one_image(filename,
+                                                save=save,
+                                                show=show,
+                                                test_all_spectra=test_all_spectra,
+                                                save_stats = save_stats,
+                                                folder_name=folder_name,
+                                                grayscale_result=grayscale_result)
 
             if save_stats:
                 self.count_metrics(self.all_gt, self.all_predictions, 'GESAMT', folder_name)
@@ -152,10 +168,19 @@ if __name__ == "__main__":
 
     #(self, CHECKPOINT, TEST_PATHS, SAVING_PATH, LOGS_PATH='', MODEL_NAME='', MODEL_FOLDER=''):
 
-    tester = Tester('cp-0250', ['data'], 'test', MODEL_FOLDER='logs\lstm')
+    '''rg = np.linspace(100, 200, 5).astype(int)
+    checkpoints = [f'cp-{i:04d}' for i in rg]
+    print(checkpoints)
+    #f'cp-{config.EPOCHS:04d}'
+    for checkpoint in checkpoints:
+        tester = Tester(checkpoint, [r'data'], 'test', MODEL_FOLDER='logs\lstm_inception_8_without_35')
+        tester.test_one_image('data/2019_08_28_14_00_34_SpecCube.dat', save=False, show=False, test_all_spectra=False,
+                              save_stats=True, folder_name='test/lstm_inception_8_without_35_test_checkpoints')'''
 
     #for dat_name in dat_names:
     #    tester.test_one_image(dat_name, path_image=dat_name + '_Mask JW Kolo.png', save=False, show=False, test_all_spectra=False, save_stats=True, folder_name='logs\inception_l2_norm\inception_l2_norm_0_1_2_3')
-    tester.test_ALL_images(test_all_spectra=False, save=True, show=False, save_stats=True)
+    #tester.test_ALL_images(test_all_spectra=False, save=False, show=False, save_stats=True, grayscale_result=False, include_indexes=[32,33,34])
+
+
 
 

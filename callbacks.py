@@ -7,11 +7,12 @@ import numpy as np
 from tqdm import tqdm
 import os
 import math
+import glob
 
 
 class CustomTensorboardCallback(keras.callbacks.TensorBoard):
 
-    def __init__(self, **kwargs):
+    def __init__(self, except_indexes=[], **kwargs):
         
         super(CustomTensorboardCallback, self).__init__(**kwargs)
 
@@ -25,12 +26,42 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
         self.spectrum = spectrum
         self.indexes = indexes
 
-    def draw_predictions_on_images(self, predictions, image=None):
-        gt_image = self.gt_image
+        self.are_excepted = False
+        if len(except_indexes) > 0:
+            self.are_excepted = True
+            self.except_indexes = except_indexes
+            self.get_spectrum_of_excluded_patients()
+
+
+    def get_spectrum_of_excluded_patients(self):
+        paths = glob.glob(os.path.join(config.DATA_PATHS[0]), '*.dat')
+
+        masks = []
+        for i, path in enumerate(paths):
+            if not i in exclude_indexes if len(exclude_indexes) != 0 else True:
+                with open(path, newline='')  as filex:
+                    filename=filex.name
+
+                    #rediction = model.predict(learn_data)
+
+                    #spectrum_data, pixely = Cube_Read(paths[index],wavearea=100, Firstnm=0,Lastnm=100).cube_matrix()
+                    spectrum_data, pixely = Cube_Read(filename,wavearea=100, Firstnm=0,Lastnm=100).cube_matrix()
+                    spectrum_data1 = spectrum_data.copy()
+                    spectrum_datas.append(spectrum_data)
+
+                    mask = cv2.imread(path+'_Mask JW Kolo.png')[..., ::-1]
+                    masks.append(mask)
+
+
+
+    def draw_predictions_on_images(self, predictions, image=None, grayscale_result=False):
+        gt_image = self.gt_image.copy()
+        if grayscale_result:
+            gt_image = cv2.cvtColor(gt_image, cv2.COLOR_BGR2GRAY).astype(float)
         indexes = self.indexes
 
         if image is None:
-            image = self.gt_image.copy()
+            image = gt_image.copy()
         else:
             shapes = gt_image.shape
             border = int((image.shape[1] - shapes[1]) / 2)
@@ -39,24 +70,38 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
         
         print('Writing summary image ...')
         is_tf = True
-        for counter, value in tqdm(enumerate(predictions)):
-            key = 0
-            if type(value) == np.ndarray:
-                key = round(value[0])
-                is_tf = False
-            else:
-                key = tf.round(value)
+        for counter, value in enumerate(predictions):
+            if not grayscale_result:
+                key = 0
+                if type(value) == np.ndarray:
+                    key = round(value[0])
+                    is_tf = False
+                else:
+                    key = tf.round(value)
 
-            if key == 0:
-                #image[indexes[gt_image.shape[0] - counter - 1, 0], indexes[counter, 1]] = [0, 0, 255]#[255, 0, 0]
-                #image[indexes[counter, 0], indexes[counter, 1]] = [0, 0, 255]
-                image[indexes[counter, 0], indexes[counter, 1]] = [255, 0, 0]
-            elif key == 1:
-                #image[indexes[counter, 0], indexes[counter, 1]] = [255, 255, 0]
-                image[indexes[counter, 0], indexes[counter, 1]] = [0, 255, 255]
+                if key == 0:
+                    image[indexes[counter, 0], indexes[counter, 1]] = [255, 0, 0]
+                    #image.itemset((indexes[counter, 0], indexes[counter, 1]), [255, 0, 0])
+                elif key == 1:
+                    image[indexes[counter, 0], indexes[counter, 1]] = [0, 255, 255]
+                    #image.itemset((indexes[counter, 0], indexes[counter, 1]), [0, 255, 255])
+                else:
+                    image[indexes[counter, 0], indexes[counter, 1]] = [0, 0, 255]
+                    #image.itemset((indexes[counter, 0], indexes[counter, 1]), [0, 0, 255])
             else:
-                #image[indexes[counter, 0], indexes[counter, 1]] = [255, 0, 0]
-                image[indexes[counter, 0], indexes[counter, 1]] = [0, 0, 255]
+                key = 0
+                if type(value) == np.ndarray:
+                    key = value[0]
+                    is_tf = False
+                else:
+                    key = value
+
+                image = image / 255.
+                print(image.shape)
+                print(key)
+                print(max(image), min(image))
+
+                image[indexes[counter, 0], indexes[counter, 1]] = key
 
         image = np.array(list(image) + list(gt_image))
         cv2.imwrite('test.png', image[... , ::-1])     #TODO delete

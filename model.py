@@ -24,12 +24,13 @@ def lstm_block():
         shape=(config.LAST_NM - config.FIRST_NM, 1), name="title"
     )
 
-    net = inception1d_block(input_, factor=8)
+    net = inception1d_block(input_, factor=config.INCEPTION_FACTOR)
 
-    net = tf.keras.layers.LSTM(100)(net)
+    net = tf.keras.layers.LSTM(1)(net)
 
-    net = tf.keras.layers.Dropout(config.DROPOUT_VALUE)(net)
-    result = tf.keras.layers.Dense(1, activation='sigmoid')(net)
+    #net = tf.keras.layers.Dropout(config.DROPOUT_VALUE)(net)
+    #result = tf.keras.layers.Dense(1, activation='sigmoid')(net)
+    result = tf.keras.layers.Activation('sigmoid')(net)
 
     model = tf.keras.Model(
         inputs=[input_],
