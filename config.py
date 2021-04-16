@@ -2,7 +2,7 @@ import datetime
 import os
 
 #change modelname here!
-def get_model_name(MODEL_NAME_PATHS, model_name='lstm_inception_1_output'):
+def get_model_name(MODEL_NAME_PATHS, model_name='inception_l2_norm_all_data'):
     return os.path.join(*MODEL_NAME_PATHS, model_name)
 
 NORMALIZATION_TYPES = {
@@ -10,29 +10,31 @@ NORMALIZATION_TYPES = {
     'l2_norm': 1
 }
 EARLY_STOPPING = False
-INCEPTION_FACTOR = 8
+INCEPTION_FACTOR = 16
 TELEGRAM_SENDING = True
 
-DATA_PATHS = [r'data']
+DATA_PATHS = [r'data', r'data/data_additional']
 BATCH_SIZE = 10000
 SPLIT_FACTOR = 0.9 #for data sets: train\test data percentage
 WAVE_AREA = 100
 FIRST_NM = 8
 LAST_NM = 100
-EPOCHS = 200
-CROSS_VALIDATION_SPLIT = int(44 / 4)
+EPOCHS = 250
+CROSS_VALIDATION_SPLIT = int(56 / 4)
 SCALER_FILE_NAME = '.scaler'
 NORMALIZATION_TYPE = NORMALIZATION_TYPES['l2_norm']
 
 CHECKPOINT_PATH = 'checkpoints'
 MODEL_PATH = 'model'
-CHECKPOINT_WRITING_STEP = 25
+CHECKPOINT_WRITING_STEP = 50
 WRITE_IMAGES = True
 
 DROPOUT_VALUE = 0.1
+LEARNING_RATE = 1e-3
 
 RESTORE_MODEL = False
 ADD_TIME = False
+
 MODEL_NAME_PATHS = ['logs']
 MODEL_NAME = get_model_name(MODEL_NAME_PATHS)
 

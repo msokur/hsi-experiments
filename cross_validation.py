@@ -299,7 +299,9 @@ def cross_validation(root_folder_name):
     else:
         config.MODEL_NAME = os.path.join(config.MODEL_NAME, config.MODEL_NAME.split('/')[-1])'''
 
-    paths = glob.glob(os.path.join(config.DATA_PATHS[0], '*.dat'))
+    paths = []
+    for data_path in config.DATA_PATHS:
+        paths += glob.glob(os.path.join(data_path, '*.dat'))
 
     csv_filename = os.path.join(root_folder, root_folder_name + '_stats'+ datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S") +'.csv')
 
@@ -371,7 +373,7 @@ def compare_checkpoints():
 
 if __name__ =='__main__':
 
-    compare_checkpoints()
+    #compare_checkpoints()
     #save_metrics_for_threshold('test/inception_l2_norm/cp-0250', 0.45)
 
     #count_metrics_on_diff_thresholds('test/lstm_inception_8/cp-0075')
@@ -388,7 +390,7 @@ if __name__ =='__main__':
     print('Complete sensitivity, specificity:', sensitivity, specificity)'''
 
     #run...save_path='test/inception_cv_images/not_all_spectra'
-    #cross_validation('lstm_inception_8')
+    cross_validation('inception_l2_norm_all_data')
 
     #paths = glob.glob('logs/test_inception*')
     #test_experiment('dropout_experiment', paths)

@@ -30,11 +30,11 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
         if len(except_indexes) > 0:
             self.are_excepted = True
             self.except_indexes = except_indexes
-            self.get_spectrum_of_excluded_patients()
+            #self.get_spectrum_of_excluded_patients()
 
 
     def get_spectrum_of_excluded_patients(self):
-        paths = glob.glob(os.path.join(config.DATA_PATHS[0]), '*.dat')
+        paths = glob.glob(os.path.join(config.DATA_PATHS[0], '*.dat'))
 
         masks = []
         for i, path in enumerate(paths):

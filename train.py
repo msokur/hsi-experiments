@@ -73,11 +73,11 @@ def train(paths=None, except_indexes=[]):
                       keras.metrics.BinaryAccuracy(name='accuracy'),
                       keras.metrics.AUC(name='auc')
                   ]
-                  #model = inception_model()
-                  model = lstm_block()
+                  model = inception_model()
+                  #model = lstm_block()
 
               model.compile(
-                    optimizer=keras.optimizers.Adam(lr=1e-3),
+                    optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE),
                     loss=keras.losses.BinaryCrossentropy(),
                     metrics=METRICS,
                     weighted_metrics=WEIGHTED_METRICS
@@ -114,19 +114,23 @@ def train(paths=None, except_indexes=[]):
         if config.EARLY_STOPPING:
             callbacks.append(early_stopping_callback)
 
-        history = model.fit(np.expand_dims(train[:, :-2], axis=-1),
+        #history = model.fit(np.expand_dims(train[:, :-2], axis=-1),
+        history = model.fit(train[:, :-2],
             train[:, -2],
             batch_size=config.BATCH_SIZE,
             epochs=config.EPOCHS,
             verbose=1,
             initial_epoch=initial_epoch,
             callbacks=callbacks,
-            validation_data=(np.expand_dims(test[:, :-2], axis=-1), test[:, -2], test[:, -1]),
+            #validation_data=(np.expand_dims(test[:, :-2], axis=-1), test[:, -2], test[:, -1]),
+            validation_data=(test[:, :-2], test[:, -2], test[:, -1]),
             class_weight=class_weight,
             sample_weight=train[:, -1])
 
         np.save(os.path.join(log_dir, '.history'), history.history)
     except Exception as e:
+        print(e)
+
         if config.TELEGRAM_SENDING:
             last_epoch = -1
             if history is not None:
