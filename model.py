@@ -21,10 +21,15 @@ def inception1d_block(input_, factor=16):
 
 def lstm_block():
     input_ = tf.keras.layers.Input(
-        shape=(config.LAST_NM - config.FIRST_NM, 1), name="title"
+        shape=(config.LAST_NM - config.FIRST_NM), name="title"
     )
 
-    net = inception1d_block(input_, factor=config.INCEPTION_FACTOR)
+    net = tf.expand_dims(input_, axis=-1)
+
+    net = inception1d_block(net, factor=config.INCEPTION_FACTOR)
+
+    net = tf.transpose(net, perm=[0, 2, 1])
+
 
     net = tf.keras.layers.LSTM(1)(net)
 
