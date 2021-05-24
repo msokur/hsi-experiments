@@ -1,0 +1,19 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=16
+#SBatch --gres=gres=gpu:v100:4
+#SBATCH --job-name=inceprion_1d
+#SBATCH --partition=clara-job
+#SBATCH --output=inceprion_1d_%j.log   # Standard output and error log
+#SBATCH --time=96:00:00
+
+module load Python
+module load TensorFlow/2.2.0-fosscuda-2019b-Python-3.7.4
+module load SciPy-bundle/2019.10-fosscuda-2019b-Python-3.7.4
+module load scikit-learn
+module load matplotlib
+module load OpenCV
+module load scikit-image
+pip install --user tqdm
+
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/train.py
