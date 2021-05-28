@@ -1,6 +1,14 @@
 import datetime
 import os
 
+MODE_TYPES = {
+    'SERVER':0,
+    'LOCAL':1,
+    'NO_GPU':2
+}
+
+MODE = MODE_TYPES['NO_GPU']
+
 #change modelname here!
 def get_model_name(MODEL_NAME_PATHS, model_name='inception_l2_norm_all_data'):
     return os.path.join(*MODEL_NAME_PATHS, model_name)
@@ -13,7 +21,18 @@ EARLY_STOPPING = False
 INCEPTION_FACTOR = 16
 TELEGRAM_SENDING = True
 
-DATA_PATHS = [r'data', r'data/data_additional']
+DATA_PATHS = []
+if MODE == 0:
+    DATA_PATHS = [r'/work/users/mi186veva/data', r'/work/users/mi186veva/data/data_additional']
+else:
+    DATA_PATHS = [r'data']#, r'data/data_additional']
+    
+DATA_LOADER_TYPES = {
+    '_dat':0,
+    '_npy':1
+}
+
+
 BATCH_SIZE = 10000
 SPLIT_FACTOR = 0.9 #for data sets: train\test data percentage
 WAVE_AREA = 100
@@ -35,7 +54,12 @@ LEARNING_RATE = 1e-3
 RESTORE_MODEL = False
 ADD_TIME = False
 
-MODEL_NAME_PATHS = ['logs']
+MODEL_NAME_PATHS = []
+if MODE == 0:
+    MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs']
+else:
+    MODEL_NAME_PATHS = ['logs'] 
+
 MODEL_NAME = get_model_name(MODEL_NAME_PATHS)
 
 COMMENTS = 'sample weight, dropout 0.2, fixed spectra, 46 files, weighted_metrics_weighted_val_data'

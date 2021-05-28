@@ -55,7 +55,10 @@ def fill_with_weight(arr, total):
 
     return arr
 
-def get_data(scaler_path, paths=None, only_train_dataset = True, not_certain_flag = False, except_indexes=[-1]):
+def get_data(scaler_path, paths=None, 
+             return_only_train_dataset = True, 
+             not_certain_flag = False, 
+             except_indexes=[-1]):
     if scaler_path is None:
         scaler_path = "."
     gesund_data = []
@@ -173,7 +176,7 @@ def get_data(scaler_path, paths=None, only_train_dataset = True, not_certain_fla
 
     print('class_weights', class_weight)
 
-    if only_train_dataset:
+    if return_only_train_dataset:
         print('return return')
         return train, test, class_weight
     
