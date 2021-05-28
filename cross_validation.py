@@ -33,8 +33,8 @@ def save_metrics_for_threshold(npy_folder, threshold):
                              'sensitivity':str(sensitivity_p),
                              'specificity':str(specificity_p)})
 
-        sensitivity = np.median(sensitivities)
-        specificity = np.median(specificities)
+        sensitivity = np.nanmedian(sensitivities)
+        specificity = np.nanmedian(specificities)
 
         writer.writerow({'time':"GESAMT",
                          'threshold':str(threshold),
@@ -49,7 +49,7 @@ def save_metrics_for_threshold(npy_folder, threshold):
 
 
 
-def count_metrics_on_diff_thresholds(npy_folder, all=False):
+def count_metrics_on_diff_thresholds(npy_folder, all=False, threshold_range_params=[0, 1, 21], threshold_range_plain=None):
     all_gt = np.load(os.path.join(npy_folder, 'all_gt.npy'))
     predictions_by_patient = np.load(os.path.join(npy_folder, 'predictions_by_patient.npy'), allow_pickle=True)
     all_predictions_raw = np.load(os.path.join(npy_folder, 'all_predictions_raw.npy'))
@@ -58,21 +58,60 @@ def count_metrics_on_diff_thresholds(npy_folder, all=False):
     sensitivities = []
     specificities = []
 
-    rng = np.linspace(0, 1, 21)
+    rng = np.linspace(threshold_range_params[0], threshold_range_params[1], threshold_range_params[2])
+    if threshold_range_plain is not None:
+        rng = threshold_range_plain.copy()
 
     for threshold in tqdm(rng):
         if all:
             sens = []
             spec = []
+            dices = []
+            thresholds = []
+            aucs = []
             for patient in range(predictions_by_patient.shape[0]):
-                predictions = np.where(predictions_by_patient[patient] > threshold, 1, 0)
+                fpr, tpr, thresholds_p = metrics.roc_curve(np.rint(gt_by_patient[patient]), np.array(predictions_by_patient[patient]))
+                roc_auc = metrics.auc(fpr, tpr)
+                predictions = np.where(np.array(predictions_by_patient[patient]) > threshold, 1, 0)
 
-                sensitivity_p, specificity_p= test.Tester.count_metrics(np.rint(gt_by_patient[patient]), predictions, str(threshold), save_stats=False)
+                threshold_p = thresholds_p[np.argmax(tpr - fpr)]
+
+                sensitivity_p, specificity_p, dice_p = test.Tester.count_metrics(np.rint(gt_by_patient[patient]), predictions, str(threshold), save_stats=False, return_dice=True)
                 sens.append(sensitivity_p)
                 spec.append(specificity_p)
+                dices.append(dice_p)
+                thresholds.append(threshold_p)
+                aucs.append(roc_auc)
 
-            sensitivity = np.median(sens)
-            specificity = np.median(spec)
+            print('SENS')
+            for i in sens:
+                print(i)
+            print(sens)
+            print('sens mean, median, std', np.nanmean(sens), np.nanmedian(sens), np.nanstd(sens))
+            print('SPEC')
+            for i in spec:
+                print(i)
+            print('spec mean, median, std', np.nanmean(spec), np.nanmedian(spec), np.nanstd(spec))
+            print('DICEs')
+
+            for i in dices:
+                print(i)
+            dices[dices == 0.] = np.nan
+            print('dices mean, median, std', np.nanmean(dices), np.nanmedian(dices), np.nanstd(dices))
+            print('thresholds')
+            thresholds = np.array(thresholds)
+            for i in thresholds:
+                print(i)
+            thresholds[thresholds > 1.] = np.nan
+            print('thresholds mean, median, std', np.nanmean(thresholds), np.nanmedian(thresholds), np.nanstd(thresholds))
+            print('aucs')
+            for i in aucs:
+                print(i)
+            print('aucs mean, median, std', np.nanmean(aucs), np.nanmedian(aucs), np.nanstd(aucs))
+
+
+            sensitivity = np.nanmedian(sens)
+            specificity = np.nanmedian(spec)
 
             sensitivities.append(sensitivity)
             specificities.append(specificity)
@@ -80,20 +119,27 @@ def count_metrics_on_diff_thresholds(npy_folder, all=False):
             print('MEDIAN', sensitivity, specificity)
 
             with open(os.path.join(npy_folder, 'metrics_threshold_relation_median_by_patient.csv'), 'a', newline='') as csvfile:
-                fieldnames = ['time', 'threshold', 'sensitivity', 'specificity']
+                fieldnames = ['time', 'threshold', 'sensitivity', 'specificity', 'dice']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
                 writer.writerow({'time':datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
                                  'threshold':str(threshold),
                                  'sensitivity':str(sensitivity),
-                                 'specificity':str(specificity)})
+                                 'specificity':str(specificity),
+                                 'dice':str(np.nanmedian(dices))})
 
         else:
+            fpr, tpr, thresholds_p = metrics.roc_curve(np.rint(all_gt), all_predictions_raw)
+            threshold_p = thresholds_p[np.argmax(tpr - fpr)]
+            roc_auc = metrics.auc(fpr, tpr)
             predictions = np.where(all_predictions_raw > threshold, 1, 0)
 
-            sensitivity, specificity = test.Tester.count_metrics(np.rint(all_gt), predictions, str(threshold), save_stats=False)
+
+            sensitivity, specificity, dice = test.Tester.count_metrics(np.rint(all_gt), predictions, str(threshold), save_stats=False, return_dice=True)
             sensitivities.append(sensitivity)
             specificities.append(specificity)
+
+            print('ALL sens, spec, dice, auc, threshold', sensitivity, specificity, dice, roc_auc, threshold_p)
 
             with open(os.path.join(npy_folder, 'metrics_threshold_relation_all.csv'), 'a', newline='') as csvfile:
                 fieldnames = ['time', 'threshold', 'sensitivity', 'specificity']
@@ -205,7 +251,7 @@ def count_ROC(csv_path, save_path, checkpoint=None):
 
     #roc auc part
     fpr, tpr, threshold = metrics.roc_curve(all_gt, all_predictions_raw)
-    print('threshold', threshold)
+    print('threshold', threshold, threshold[np.argmax(tpr - fpr)])
     roc_auc = metrics.auc(fpr, tpr)
 
     plt.title('Receiver Operating Characteristic')
@@ -307,7 +353,7 @@ def cross_validation(root_folder_name):
 
     splits = np.array_split(range(len(paths)), config.CROSS_VALIDATION_SPLIT)
 
-    for indexes in splits:
+    for indexes in splits[5:]:
         old_model_name = config.MODEL_NAME
         if len(indexes) > 1:
             for i in indexes:
@@ -357,26 +403,30 @@ def cross_validation(root_folder_name):
         config.MODEL_NAME = old_model_name
 
 def compare_checkpoints():
-    rg = np.linspace(75, 200, 6).astype(int)
+    rg = np.linspace(200, 250, 2).astype(int)
     checkpoints = [f'cp-{i:04d}' for i in rg]
     print(checkpoints)
     #f'cp-{config.EPOCHS:04d}'
-    save_path_ = 'test/lstm_inception_8'
-    for checkpoint in checkpoints[-2:]:
+    save_path_ = 'test/inception_l2_norm_all_data'
+    for checkpoint in checkpoints:
+        print(checkpoint)
         save_path = os.path.join(save_path_, checkpoint)
 
         if not os.path.exists(save_path):
             os.mkdir(save_path)
-        count_ROC('logs/lstm_inception_8/lstm_inception_8_stats_12.02.2021-16_49_31.csv', save_path, checkpoint=checkpoint)
+        count_ROC('logs/inception_l2_norm_all_data/inception_l2_norm_all_data_stats_21.04.2021-15_56_21.csv', save_path, checkpoint=checkpoint)
 
-        count_metrics_on_diff_thresholds(save_path, all=True)
+        count_metrics_on_diff_thresholds(save_path, all=True, threshold_range_params=[0, 1, 21])
 
 if __name__ =='__main__':
 
     #compare_checkpoints()
+
+    #count_ROC('logs/inception_l2_norm/inception_l2_norm_stats_16.01.2021-08_56_39.csv', 'save_path', checkpoint='cp-0250')
+
     #save_metrics_for_threshold('test/inception_l2_norm/cp-0250', 0.45)
 
-    #count_metrics_on_diff_thresholds('test/lstm_inception_8/cp-0075')
+    count_metrics_on_diff_thresholds('test/inception_l2_norm_all_data/cp-0100', all=False, threshold_range_plain=[0.47])
 
     '''count_ROC('logs\\inception_cross_validation\\inception_cross_validation_stats_06.01.2021-11_03_50.csv', 'test/inception_cv_images')
 
@@ -390,7 +440,7 @@ if __name__ =='__main__':
     print('Complete sensitivity, specificity:', sensitivity, specificity)'''
 
     #run...save_path='test/inception_cv_images/not_all_spectra'
-    cross_validation('inception_l2_norm_all_data')
+    #cross_validation('inception_l2_norm_all_data')
 
     #paths = glob.glob('logs/test_inception*')
     #test_experiment('dropout_experiment', paths)
