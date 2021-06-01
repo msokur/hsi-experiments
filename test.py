@@ -5,7 +5,7 @@ import os
 from tqdm import tqdm
 from data_loader import *
 from callbacks import CustomTensorboardCallback
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, f1_score
 import csv
 
 
@@ -45,33 +45,41 @@ class Tester():
         self.all_gt = []
 
     @staticmethod
-    def count_metrics(gt, predictions, name, folder_name='', save_stats=True):
+    def count_metrics(gt, predictions, name, folder_name='', save_stats=True, return_dice=False):
         if save_stats and folder_name == '':
             folder_name = self.SAVING_PATH
 
-        conf_matrix = confusion_matrix(gt, predictions)
+        conf_matrix = confusion_matrix(gt, predictions, labels=[0,1])
 
         tn = conf_matrix[0, 0]
         tp = conf_matrix[1, 1]
         fn = conf_matrix[1, 0]
         fp = conf_matrix[0, 1]
 
-        sensitivity = tp / (tp + fn)
+        sensitivity = tp / (tp + fn) #recall
         specificity = tn / (tn + fp)
 
-        print('name', name, ', sensitivity: ', sensitivity, ', specificity: ', specificity)
+        F1 = f1_score(gt, predictions)#2 * precision * sensitivity / (precision + sensitivity) #DICE score
+
+        print('name', name, ', sensitivity: ', sensitivity, ', specificity: ', specificity, ', F1-score(DICE): ', F1)
 
         if save_stats:
             with open(os.path.join(folder_name, 'stats.csv'),'a', newline='') as csvfile:
-                fieldnames = ['name','sensitivity', 'specificity']
+                fieldnames = ['name','sensitivity', 'specificity', 'F1']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
-                writer.writerow({'name':name, 'sensitivity':str(sensitivity), 'specificity':str(specificity)})
+                writer.writerow({'name':name,
+                                 'sensitivity':str(sensitivity),
+                                 'specificity':str(specificity),
+                                 'F1': F1})
+
+        if return_dice:
+            return sensitivity, specificity, F1
 
         return sensitivity, specificity
 
-    def test_one_image(self, path_dat, path_image=None, save=False, show=True, test_all_spectra = False, save_stats = False,
-                       folder_name = '', grayscale_result=False):
+    def test_one_image(self, path_dat, path_image=None, save=False, show=True, test_all_spectra=False, save_stats=False,
+                       folder_name='', grayscale_result=False, return_dice=False):
         if folder_name == '':
             folder_name = self.SAVING_PATH
 
@@ -93,7 +101,7 @@ class Tester():
         sensitivity = specificity = 0
         if not test_all_spectra:
             gt = [0] * len(gesund_indexes) + [1] * len(ill_indexes)
-            sensitivity, specificity = self.count_metrics(gt, np.rint(predictions), name, folder_name, save_stats)
+            sensitivity, specificity = self.count_metrics(gt, np.rint(predictions), name, folder_name, save_stats, return_dice=return_dice)
 
             self.all_predictions += list(np.rint(predictions))
             self.all_predictions_raw += list(predictions)
@@ -124,7 +132,14 @@ class Tester():
 
         return sensitivity, specificity
 
-    def test_ALL_images(self, save=True, show=False, test_all_spectra = False, save_stats = False, grayscale_result=False, include_indexes=None, exclude_indexes=None):
+    def test_ALL_images(self, save=True,
+                        show=False,
+                        test_all_spectra=False,
+                        save_stats=False,
+                        grayscale_result=False,
+                        include_indexes=None,
+                        exclude_indexes=None,
+                        return_dice=False):
 
         for path_dir in self.TEST_PATHS:
 
@@ -155,8 +170,8 @@ class Tester():
                                                 grayscale_result=grayscale_result)
 
             if save_stats:
-                self.count_metrics(self.all_gt, self.all_predictions, 'GESAMT', folder_name)
-                self.count_metrics(self.all_gt, self.all_predictions, 'GESAMT', folder_name)
+                self.count_metrics(self.all_gt, self.all_predictions, 'GESAMT', folder_name, return_dice=return_dice)
+                self.count_metrics(self.all_gt, self.all_predictions, 'GESAMT', folder_name, return_dice=return_dice)
 
 
 
