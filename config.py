@@ -68,7 +68,7 @@ AUGMENTATION = {
     'augment': True,
     'percent': 0.9, #probability that value in sample will be augmented
     'range': [-0.02, 0.02],
-    'new_rows_per_sample': 10
+    'new_rows_per_sample': 2
 }
 
 if not RESTORE_MODEL and ADD_TIME:

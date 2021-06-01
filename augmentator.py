@@ -94,7 +94,7 @@ def augment_all(data, percent=config.AUGMENTATION['percent'],
     print('cpu count', os.cpu_count())
 
     start = time.time()
-    pool = Pool(int(os.cpu_count() / 2))
+    pool = Pool(int(os.cpu_count()))
     result = []
     #for row in tqdm(data):
     #r = augment_one(row, percent=percent, aug_range=aug_range, new_rows_per_sample=new_rows_per_sample)

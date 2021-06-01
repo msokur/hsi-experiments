@@ -55,21 +55,11 @@ def fill_with_weight(arr, total):
 
     return arr
 
-def get_data(scaler_path, paths=None, 
-             return_only_train_dataset = True, 
-             not_certain_flag = False, 
-             except_indexes=[-1]):
-    if scaler_path is None:
-        scaler_path = "."
+def read_data_from_dat(paths=None, not_certain_flag=False, except_indexes=[-1]):
+
     gesund_data = []
     ill_data = []
     not_certain_data = []
-
-    '''print(except_indexes)
-    except_indexes = list(except_indexes)
-    except_indexes.append(35)
-    print(except_indexes)'''
-
 
     if paths is None:
         for path_dir in config.DATA_PATHS:
@@ -109,7 +99,25 @@ def get_data(scaler_path, paths=None,
                     ill_data.append(ill_patch)
         else:
             print('We are skipping index: ', index)
+    
+    return gesund_data, ill_data, not_certain_data, paths
 
+
+def get_data(scaler_path, paths=None, 
+             return_only_train_dataset = True, 
+             not_certain_flag = False, 
+             except_indexes=[-1]):
+    if scaler_path is None:
+        scaler_path = "."
+   
+
+    '''print(except_indexes)
+    except_indexes = list(except_indexes)
+    except_indexes.append(35)
+    print(except_indexes)'''
+
+    gesund_data, ill_data, not_certain_data, _ = read_data_from_dat(paths=paths, not_certain_flag=not_certain_flag, except_indexes=except_indexes)
+    
     gesund_all = np.concatenate(np.array(gesund_data), axis=0).shape[0]
     ill_all = np.concatenate(np.array(ill_data), axis=0).shape[0]
 
@@ -183,7 +191,35 @@ def get_data(scaler_path, paths=None,
     #return all lists
     return [np.array(l) for l in [train, test, gesund_data, ill_data, not_certain_data]], class_weight
 
-def save_class_weights(path, obj):
+def save_npy_from_dat(npy_save_path, dat_paths=None, not_certain_flag=True, except_indexes=[-1]):
+    gesund_data, ill_data, not_certain_data, paths = read_data_from_dat(paths=None, not_certain_flag=not_certain_flag, except_indexes=[-1])
+
+    print(np.array(gesund_data, dtype=object).shape, len(paths))
+
+    for g, i, n, p, it in zip(gesund_data, ill_data, not_certain_data, paths, range(len(paths))):
+        print(os.path.join(npy_save_path, str(it)))
+        name = p.split('/')[-1]
+        np.savez(os.path.join(npy_save_path, name), gesund_data=g, ill_data=i, not_certain_data=n, path=p)
+
+
+def augment(source_path, destiation_path):
+    paths = glob.glob(os.path.join(source_path, "*.npz"))
+
+    for p in tqdm(paths[:1]):
+        data = np.load(p)
+        g, i, n, pth = data['gesund_data'], data['ill_data'], data['not_certain_data'], str(data['path'])
+        print(g.shape, i.shape, n.shape, str(pth))
+        name = pth.split('/')[-1]
+        result_g = augment_all(g) #TODO  добавить номера примеров внутрь, чтобы можно было потом отсортировать какой пример куда относится 
+        result_i = augment_all(i)
+        result_n = augment_all(n)
+        np.savez(os.path.join(destiation_path, name), 
+                    gesund_data=result_g, 
+                    ill_data=result_i, 
+                    not_certain_data=result_n, path=p)
+
+
+'''def save_class_weights(path, obj):
     with open(os.path.join(path, '.class_weights'), 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
@@ -273,23 +309,35 @@ def preprocess(save_folder):
 
     print('Augment test set start')
     #result_test = augment_all(test_generator(part=0))
-    #save_patches(result_test, save_folder, 'test', concat=True)
+    #save_patches(result_test, save_folder, 'test', concat=True)'''
 
 
 if __name__ == '__main__':
     #save_raw_data()
     #get_data_npy('data_preprocessed//augmented')
 
-    preprocess('data_preprocessed//augmented')
-    '''train, test, _ = get_data("./", only_train_dataset=True)
-    print(train.shape)
+    #preprocess('data_preprocessed//augmented')
+    #train, test, _ = get_data("./")
+    
+    #save_npy_from_dat("data_preprocessed/raw")
+    data = np.load('data_preprocessed/raw/2019_07_12_11_15_49_SpecCube.dat.npz')
+    print(data['gesund_data'].shape)
+    print(data['ill_data'].shape)
+    print(data['not_certain_data'].shape)
+    print(data['path'])
+
+    augment('data_preprocessed/raw', 'data_preprocessed/augmented')
+
+
+    
+    #print(train.shape, test.shape)
 
 
 
     #pool = Pool(os.cpu_count())
     #aug = Augmentator(pool)
 
-    result = augment_all(train[:1000])
+    '''result = augment_all(train[:1000])
 
     print(np.array(result).shape)
 
