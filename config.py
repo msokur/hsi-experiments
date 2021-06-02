@@ -7,7 +7,7 @@ MODE_TYPES = {
     'NO_GPU':2
 }
 
-MODE = MODE_TYPES['NO_GPU']
+MODE = MODE_TYPES['SERVER']
 
 #change modelname here!
 def get_model_name(MODEL_NAME_PATHS, model_name='inception_l2_norm_all_data'):
@@ -68,7 +68,7 @@ AUGMENTATION = {
     'augment': True,
     'percent': 0.9, #probability that value in sample will be augmented
     'range': [-0.02, 0.02],
-    'new_rows_per_sample': 2
+    'new_rows_per_sample': 5
 }
 
 if not RESTORE_MODEL and ADD_TIME:

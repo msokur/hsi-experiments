@@ -56,17 +56,18 @@ def fill_with_weight(arr, total):
     return arr
 
 def read_data_from_dat(paths=None, not_certain_flag=False, except_indexes=[-1]):
-
+    print('Reading data from .dat files started')
     gesund_data = []
     ill_data = []
     not_certain_data = []
 
     if paths is None:
+        paths = []
         for path_dir in config.DATA_PATHS:
-            paths = glob.glob(os.path.join(path_dir, '*.dat'))
+            paths += glob.glob(os.path.join(path_dir, '*.dat'))
     for index, path in tqdm(enumerate(paths)):
         if index not in except_indexes:
-            print(index)
+            #print(index)
             with open(path, newline='') as filex:
                 filename=filex.name
 
@@ -77,7 +78,7 @@ def read_data_from_dat(paths=None, not_certain_flag=False, except_indexes=[-1]):
                 gesund_indexes, ill_indexes, not_certain_indexes = get_masks(mask)
 
                 gesund_patch = spectrum_data[gesund_indexes[0], gesund_indexes[1]]
-                print(gesund_patch.shape)
+                #print(gesund_patch.shape)
                 ill_patch = spectrum_data[ill_indexes[0], ill_indexes[1]]
                 print(ill_patch.shape)
 
@@ -90,15 +91,16 @@ def read_data_from_dat(paths=None, not_certain_flag=False, except_indexes=[-1]):
 
                     not_certain_data.append(not_certain_patch)
 
-                if gesund_patch.shape[0] > 0:
-                    gesund_patch = np.insert(gesund_patch, gesund_patch.shape[1], np.zeros(gesund_patch.shape[0]), axis=1)
-                    gesund_data.append(gesund_patch)
+                #if gesund_patch.shape[0] > 0:
+                gesund_patch = np.insert(gesund_patch, gesund_patch.shape[1], np.zeros(gesund_patch.shape[0]), axis=1)
+                gesund_data.append(gesund_patch)
 
-                if ill_patch.shape[0] > 0:
-                    ill_patch = np.insert(ill_patch, ill_patch.shape[1], np.ones(ill_patch.shape[0]), axis=1)
-                    ill_data.append(ill_patch)
+                #if ill_patch.shape[0] > 0:
+                ill_patch = np.insert(ill_patch, ill_patch.shape[1], np.ones(ill_patch.shape[0]), axis=1)
+                ill_data.append(ill_patch)
         else:
             print('We are skipping index: ', index)
+    print('Reading data from .dat files ended')
     
     return gesund_data, ill_data, not_certain_data, paths
 
@@ -192,31 +194,40 @@ def get_data(scaler_path, paths=None,
     return [np.array(l) for l in [train, test, gesund_data, ill_data, not_certain_data]], class_weight
 
 def save_npy_from_dat(npy_save_path, dat_paths=None, not_certain_flag=True, except_indexes=[-1]):
-    gesund_data, ill_data, not_certain_data, paths = read_data_from_dat(paths=None, not_certain_flag=not_certain_flag, except_indexes=[-1])
-
-    print(np.array(gesund_data, dtype=object).shape, len(paths))
-
-    for g, i, n, p, it in zip(gesund_data, ill_data, not_certain_data, paths, range(len(paths))):
-        print(os.path.join(npy_save_path, str(it)))
+    gesund_data, ill_data, not_certain_data, paths = read_data_from_dat(paths=None, not_certain_flag=not_certain_flag, except_indexes=except_indexes)
+    
+    print('The saving of .npz archives is started')
+    print(np.array(ill_data, dtype=object).shape, len(paths))
+    
+    for it in tqdm(range(len(paths))):
+    #for g, i, n, p, it in zip(gesund_data, ill_data, not_certain_data, paths, range(len(paths))):
+        g, i, n, p = gesund_data[it], ill_data[it], not_certain_data[it], paths[it]
         name = p.split('/')[-1]
         np.savez(os.path.join(npy_save_path, name), gesund_data=g, ill_data=i, not_certain_data=n, path=p)
+    
+    print('The saving of .npz archives is ended')
 
+def augment(source_paths, destination_paths):
+    print('Augmentation started')
+    for counter, source_path in enumerate(source_paths):
+        paths = glob.glob(os.path.join(source_path, "*.npz"))
 
-def augment(source_path, destiation_path):
-    paths = glob.glob(os.path.join(source_path, "*.npz"))
-
-    for p in tqdm(paths[:1]):
-        data = np.load(p)
-        g, i, n, pth = data['gesund_data'], data['ill_data'], data['not_certain_data'], str(data['path'])
-        print(g.shape, i.shape, n.shape, str(pth))
-        name = pth.split('/')[-1]
-        result_g = augment_all(g) #TODO  добавить номера примеров внутрь, чтобы можно было потом отсортировать какой пример куда относится 
-        result_i = augment_all(i)
-        result_n = augment_all(n)
-        np.savez(os.path.join(destiation_path, name), 
-                    gesund_data=result_g, 
-                    ill_data=result_i, 
-                    not_certain_data=result_n, path=p)
+        for p in tqdm(paths):
+            data = np.load(p)
+            g, i, n, pth = data['gesund_data'], data['ill_data'], data['not_certain_data'], str(data['path'])
+            print(g.shape, i.shape, n.shape, str(pth))
+            name = pth.split('/')[-1]
+            result_g = augment_all(g)  
+            result_i = augment_all(i)
+            result_n = augment_all(n)
+            destination_path = destination_paths[counter]
+            if not os.path.exists(destination_path):
+                os.mkdir(destination_path)
+            np.savez(os.path.join(destination_path, name), 
+                        gesund_data=result_g, 
+                        ill_data=result_i, 
+                        not_certain_data=result_n, path=p)
+    print('Augmentation ended')
 
 
 '''def save_class_weights(path, obj):
@@ -319,14 +330,14 @@ if __name__ == '__main__':
     #preprocess('data_preprocessed//augmented')
     #train, test, _ = get_data("./")
     
-    #save_npy_from_dat("data_preprocessed/raw")
-    data = np.load('data_preprocessed/raw/2019_07_12_11_15_49_SpecCube.dat.npz')
-    print(data['gesund_data'].shape)
-    print(data['ill_data'].shape)
-    print(data['not_certain_data'].shape)
-    print(data['path'])
+    #save_npy_from_dat("/work/users/mi186veva/data_preprocessed/raw")
+    #data = np.load('/work/users/mi186veva/data_preprocessed/raw/2019_07_12_11_15_49_SpecCube.dat.npz')
+    #print(data['gesund_data'].shape)
+    #print(data['ill_data'].shape)
+    #print(data['not_certain_data'].shape)
+    #print(data['path'])
 
-    augment('data_preprocessed/raw', 'data_preprocessed/augmented')
+    augment(["/work/users/mi186veva/data_preprocessed/raw"], ['/work/users/mi186veva/data_preprocessed/augmented'])
 
 
     
