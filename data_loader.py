@@ -104,35 +104,45 @@ def read_data_from_dat(paths=None, not_certain_flag=False, except_indexes=[-1]):
     
     return gesund_data, ill_data, not_certain_data, paths
 
+def read_data_from_npy(paths=None, not_certain_flag=False, except_indexes=[-1]):
+    print('Reading data from .npy files started')
+    gesund_data = []
+    ill_data = []
+    not_certain_data = []
+    paths_res = []
 
-def get_data(scaler_path, paths=None, 
-             return_only_train_dataset = True, 
-             not_certain_flag = False, 
-             except_indexes=[-1]):
-    if scaler_path is None:
-        scaler_path = "."
-   
+    if paths is None:
+        paths = []
+        for path_dir in config.NPY_PATHS:
+            paths += glob.glob(os.path.join(path_dir, '*.npz'))
 
-    '''print(except_indexes)
-    except_indexes = list(except_indexes)
-    except_indexes.append(35)
-    print(except_indexes)'''
-
-    gesund_data, ill_data, not_certain_data, _ = read_data_from_dat(paths=paths, not_certain_flag=not_certain_flag, except_indexes=except_indexes)
+    for index, path in tqdm(enumerate(paths)):
+        if index not in except_indexes:
+            data = np.load(path)
+            g, i, n, pth = data['gesund_data'], data['ill_data'], data['not_certain_data'], str(data['path'])
+            gesund_data.append(g)
+            ill_data.append(i)
+            not_certain_data.append(n)
+            paths_res.append(pth)
     
-    gesund_all = np.concatenate(np.array(gesund_data), axis=0).shape[0]
-    ill_all = np.concatenate(np.array(ill_data), axis=0).shape[0]
+    print('Reading data from .npy files ended')
+    
+    return gesund_data, ill_data, not_certain_data, paths_res
+
+def split_data(gesund_data, ill_data, not_certain_data, scaler_path, not_certain_flag=False):
+    gesund_all = np.concatenate(np.array(gesund_data, dtype=object), axis=0).shape[0]
+    ill_all = np.concatenate(np.array(ill_data, dtype=object), axis=0).shape[0]
 
     gesund_data = [fill_with_weight(i, gesund_all) for i in gesund_data]
     print('----------')
     ill_data = [fill_with_weight(i, ill_all) for i in ill_data]
 
-    gesund_data = list(np.concatenate(np.array(gesund_data), axis=0))                  #label 0
-    ill_data = list(np.concatenate(np.array(ill_data), axis=0))     #label 1
+    gesund_data = list(np.concatenate(np.array(gesund_data, dtype=object), axis=0))                  #label 0
+    ill_data = list(np.concatenate(np.array(ill_data, dtype=object), axis=0))     #label 1
 
     if not_certain_flag: #TODO needs rewirting weights
         not_certain_data_ = not_certain_data.copy()
-        not_certain_all = np.concatenate(np.array(not_certain_data), axis=0)
+        not_certain_all = np.concatenate(np.array(not_certain_data, dtype=object), axis=0)
         
         not_certain_data = list(not_certain_all)
         print(gesund_data.shape, ill_data.shape, not_certain_data.shape)
@@ -186,6 +196,23 @@ def get_data(scaler_path, paths=None,
 
     print('class_weights', class_weight)
 
+    return train, test, class_weight
+
+def get_data(scaler_path, paths=None, 
+             return_only_train_dataset = True, 
+             not_certain_flag = False, 
+             except_indexes=[-1]):
+    if scaler_path is None:
+        scaler_path = "."
+    
+    gesund_data, ill_data, not_certain_data = [], [], []
+    if config.DATA_LOADER_MODE == 0:
+        gesund_data, ill_data, not_certain_data, _ = read_data_from_dat(paths=paths, not_certain_flag=not_certain_flag, except_indexes=except_indexes)
+    else:
+        gesund_data, ill_data, not_certain_data, _ = read_data_from_npy(paths=paths, not_certain_flag=not_certain_flag, except_indexes=except_indexes)
+
+    train, test, class_weight = split_data(gesund_data, ill_data, not_certain_data, scaler_path, not_certain_flag=not_certain_flag)
+
     if return_only_train_dataset:
         print('return return')
         return train, test, class_weight
@@ -200,7 +227,6 @@ def save_npy_from_dat(npy_save_path, dat_paths=None, not_certain_flag=True, exce
     print(np.array(ill_data, dtype=object).shape, len(paths))
     
     for it in tqdm(range(len(paths))):
-    #for g, i, n, p, it in zip(gesund_data, ill_data, not_certain_data, paths, range(len(paths))):
         g, i, n, p = gesund_data[it], ill_data[it], not_certain_data[it], paths[it]
         name = p.split('/')[-1]
         np.savez(os.path.join(npy_save_path, name), gesund_data=g, ill_data=i, not_certain_data=n, path=p)
@@ -230,105 +256,13 @@ def augment(source_paths, destination_paths):
     print('Augmentation ended')
 
 
-'''def save_class_weights(path, obj):
-    with open(os.path.join(path, '.class_weights'), 'wb') as f:
-        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
-
-def load_class_weights(path):
-    with open(os.path.join(path, '.class_weights'), 'rb') as f:
-        return pickle.load(f)
-
-def get_data_npy(folder, train_part=-1, test_part=-1, all=True):
-    train_paths = glob.glob(os.path.join(folder, 'train', '*.npy'))
-    test_paths = glob.glob(os.path.join(folder, 'test', '*.npy'))
-    class_weights = load_class_weights(folder)
-
-    train = []
-    for train_path in train_paths[train_part:train_part+1]:
-        train.append(np.load(train_path))
-    if all:
-        for train_path in train_paths:
-            train.append(np.load(train_path))
-
-    test = []
-    for test_path in test_paths[test_part:test_part+1]:
-        test.append(np.load(test_path))
-    if all:
-        for test_path in test_paths:
-            test.append(np.load(test_path))
-
-
-    if len(train) > 0:
-        print(np.array(train).shape)
-        train = np.concatenate(np.array(train), axis=0)
-
-    if len(test) > 0:
-        test = np.concatenate(np.array(test), axis=0)
-
-    print(np.array(train).shape, np.array(test).shape, class_weights)
-
-    return train, test, class_weights
-
-def save_patches(arr, folder, folder_2, concat=False):
-    if concat:
-
-        arr = np.concatenate(np.array(arr), axis=0)
-    existing_paths = glob.glob(os.path.join(folder, folder_2, "*.npy"))
-    parts = config.AUGMENTATION['new_rows_per_sample']
-    patches = np.array_split(arr, parts)
-
-    for i, patch in enumerate(patches):
-        print(patch.shape)
-        np.save(os.path.join(folder, folder_2, 'part' + str(len(existing_paths) + i)), patch)
-
-def save_raw_data():
-    train, test, class_weights = get_data(None)
-    #print(train.shape, test.shape)
-    save_class_weights('data_preprocessed/augmented', class_weights)
-    save_class_weights('data_preprocessed/raw', class_weights)
-
-    save_patches(train, 'data_preprocessed//raw', 'train')
-
-    #np.save('data_prepsocessed/raw/train/part0', train[:int(train.shape[0] / 2)])
-    #np.save('data_prepsocessed/raw/train/part1', train[int(train.shape[0] / 2):])
-    np.save('data_preprocessed/raw/test/test', test)
-
-
-
-def train_generator(folder='data_preprocessed//raw', part=-1):
-    train, _, _ = get_data_npy(folder, train_part=part, all=False)
-    for t in train:
-        yield t
-
-def test_generator(folder='data_preprocessed//raw', part=-1):
-    _, test, _ = get_data_npy(folder, test_part=part, all=False)
-    for t in test:
-        yield t
-
-
-def preprocess(save_folder):
-    #train, test, class_weights = get_data_npy('data_preprocessed//raw')
-
-    print('Augment train set start')
-
-    paths = glob.glob('data_preprocessed//raw//train//*.npy')
-    for i in tqdm(range(1)):
-        result_train = augment_all(train_generator(part=i))
-        save_patches(result_train, save_folder, 'train', concat=True)
-
-    del result_train
-
-    print('Augment test set start')
-    #result_test = augment_all(test_generator(part=0))
-    #save_patches(result_test, save_folder, 'test', concat=True)'''
-
 
 if __name__ == '__main__':
     #save_raw_data()
     #get_data_npy('data_preprocessed//augmented')
 
     #preprocess('data_preprocessed//augmented')
-    #train, test, _ = get_data("./")
+    train, test, _ = get_data("./")
     
     #save_npy_from_dat("/work/users/mi186veva/data_preprocessed/raw")
     #data = np.load('/work/users/mi186veva/data_preprocessed/raw/2019_07_12_11_15_49_SpecCube.dat.npz')
@@ -337,7 +271,7 @@ if __name__ == '__main__':
     #print(data['not_certain_data'].shape)
     #print(data['path'])
 
-    augment(["/work/users/mi186veva/data_preprocessed/raw"], ['/work/users/mi186veva/data_preprocessed/augmented'])
+    #augment(["/work/users/mi186veva/data_preprocessed/raw"], ['/work/users/mi186veva/data_preprocessed/augmented'])
 
 
     

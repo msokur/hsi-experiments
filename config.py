@@ -7,7 +7,7 @@ MODE_TYPES = {
     'NO_GPU':2
 }
 
-MODE = MODE_TYPES['SERVER']
+MODE = MODE_TYPES['NO_GPU']
 
 #change modelname here!
 def get_model_name(MODEL_NAME_PATHS, model_name='inception_l2_norm_all_data'):
@@ -22,15 +22,19 @@ INCEPTION_FACTOR = 16
 TELEGRAM_SENDING = True
 
 DATA_PATHS = []
+NPY_PATHS = []
 if MODE == 0:
     DATA_PATHS = [r'/work/users/mi186veva/data', r'/work/users/mi186veva/data/data_additional']
+    NPY_PATHS = [r'/work/users/mi186veva/data_preprocessed/raw']
 else:
     DATA_PATHS = [r'data']#, r'data/data_additional']
+    NPY_PATHS = [r'data_preprocessed/raw']
     
 DATA_LOADER_TYPES = {
     '_dat':0,
     '_npy':1
 }
+DATA_LOADER_MODE = DATA_LOADER_TYPES['_npy']
 
 
 BATCH_SIZE = 10000
