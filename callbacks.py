@@ -125,8 +125,12 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
             
             tf.summary.scalar('epoch_specificity', data=logs['tn'] / (logs['tn'] + logs['fp']), step=epoch)
         
-        with self._writers['val'].as_default():
-            tf.summary.scalar('epoch_specificity', data=logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), step=epoch)
+        if 'val' in self._writers:
+            with self._writers['val'].as_default():
+                tf.summary.scalar('epoch_specificity', data=logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), step=epoch)
+        if 'validation' in self._writers:
+            with self._writers['validation'].as_default():
+                tf.summary.scalar('epoch_specificity', data=logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), step=epoch)
 
         '''print(self.__dict__)
         for key, value in logs.items():
