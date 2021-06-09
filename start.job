@@ -1,10 +1,11 @@
 #!/bin/bash
-#SBATCH --nodes=2
-#SBATCH --ntasks-per-node=16
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
 #SBATCH --job-name=hsi_experiments
 #SBATCH --partition=clara-job
-#SBATCH --time=02:00:00
-#SBATCH --mem=32G
+#SBATCH --time=06:00:00
+#SBATCH --mem=128G
+#SBATCH --gres=gpu:v100:2
 
 #module load Python
 #module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4
@@ -23,4 +24,4 @@ module load OpenCV/4.2.0-fosscuda-2019b-Python-3.7.4
 module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
 
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/data_loader.py
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/train.py

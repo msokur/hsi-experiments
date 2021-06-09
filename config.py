@@ -7,10 +7,10 @@ MODE_TYPES = {
     'NO_GPU':2
 }
 
-MODE = MODE_TYPES['NO_GPU']
+MODE = MODE_TYPES['SERVER']
 
 #change modelname here!
-def get_model_name(MODEL_NAME_PATHS, model_name='inception_l2_norm_all_data'):
+def get_model_name(MODEL_NAME_PATHS, model_name='inception_l2_norm_aug'):
     return os.path.join(*MODEL_NAME_PATHS, model_name)
 
 NORMALIZATION_TYPES = {
@@ -25,10 +25,10 @@ DATA_PATHS = []
 NPY_PATHS = []
 if MODE == 0:
     DATA_PATHS = [r'/work/users/mi186veva/data', r'/work/users/mi186veva/data/data_additional']
-    NPY_PATHS = [r'/work/users/mi186veva/data_preprocessed/raw']
+    NPY_PATHS = [r'/work/users/mi186veva/data_preprocessed/augmented']
 else:
     DATA_PATHS = [r'data']#, r'data/data_additional']
-    NPY_PATHS = [r'data_preprocessed/raw']
+    NPY_PATHS = [r'data_preprocessed/augmented']
     
 DATA_LOADER_TYPES = {
     '_dat':0,
@@ -56,7 +56,7 @@ DROPOUT_VALUE = 0.1
 LEARNING_RATE = 1e-3
 
 RESTORE_MODEL = False
-ADD_TIME = False
+ADD_TIME = True
 
 MODEL_NAME_PATHS = []
 if MODE == 0:
