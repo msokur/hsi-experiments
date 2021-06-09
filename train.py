@@ -9,6 +9,10 @@ import os
 from shutil import copyfile
 import telegram_send
 
+def send_tg_message(message):
+    if config.MODE == 0:
+            message = 'SERVER ' + message
+    telegram_send.send(messages=[message], conf='tg.config')
 
 def train(paths=None, except_indexes=[]):
     history = None
@@ -41,6 +45,9 @@ def train(paths=None, except_indexes=[]):
 
             for file in ['config.py', 'train.py', 'data_loader.py', 'model.py']:
                 copyfile(file, os.path.join(log_dir, file))
+            job_filepath = 'start.job'
+            if config.MODE == 0 and os.path.exists(job_filepath):
+                copyfile(file, os.path.join(log_dir, job_filepath))
 
         with open(os.path.join(log_dir, 'comments.txt'),'a', newline='') as comments:
             comments.write(config.COMMENTS)
@@ -158,21 +165,16 @@ def train(paths=None, except_indexes=[]):
             last_epoch = -1
             if history is not None:
                 last_epoch = len(history.history["loss"])
+            
+            send_tg_message(f'Mariia, ERROR!!!, training {log_dir} has finished after {last_epoch} epochs with error {e}')
 
-            message = 'Mariia, ERROR!!!, training {log_dir} has finished after {last_epoch} epochs with error {e}'
-            if config.MODE == 0:
-                message = 'SERVER ' + message
-            telegram_send.send(messages=[message] ,conf='tg.config')
-
-    final_model_save_path = os.path.join(log_dir, 'checkpoints',  'cp-{len(history.history["loss"]):04d}')
+    final_model_save_path = os.path.join(log_dir, 'checkpoints',  f'cp-{len(history.history["loss"]):04d}')
     if not os.path.exists(final_model_save_path):
         os.mkdir(final_model_save_path)
     model.save(final_model_save_path)
 
     if config.TELEGRAM_SENDING:
-        if config.MODE == 0:
-                message = 'SERVER ' + message
-        telegram_send.send(messages=['Mariia, training {log_dir} has finished after {len(history.history["loss"])} epochs'], conf='tg.config')
+        send_tg_message(f'Mariia, training {log_dir} has finished after {len(history.history["loss"])} epochs')
 
     return model
 
