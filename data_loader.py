@@ -116,13 +116,26 @@ def read_data_from_npy(paths=None, not_certain_flag=False, except_indexes=[-1]):
         for path_dir in config.NPY_PATHS:
             paths += glob.glob(os.path.join(path_dir, '*.npz'))
 
-    for index, path in tqdm(enumerate(paths)):
+    for index, path in tqdm(enumerate(paths[:5])):
         if index not in except_indexes:
             data = np.load(path)
             g, i, n, pth = data['gesund_data'], data['ill_data'], data['not_certain_data'], str(data['path'])
-            gesund_data.append(g)
-            ill_data.append(i)
-            not_certain_data.append(n)
+            
+            if g.shape[0] != 0:
+                if len(g.shape) == 3:
+                    g = np.concatenate(g, axis=0)
+                #print('g.shape', g.shape)
+                gesund_data.append(g)
+            if i.shape[0] != 0:
+                if len(i.shape) == 3:
+                    i = np.concatenate(i, axis=0)
+                #print('i.shape', i.shape, len(i.shape))
+                ill_data.append(i)
+            if n.shape[0] != 0:
+                if len(n.shape) == 3:
+                    n = np.concatenate(n, axis=0)
+                #print('n.shape', n.shape)
+                not_certain_data.append(n)
             paths_res.append(pth)
     
     print('Reading data from .npy files ended')
