@@ -4,8 +4,7 @@
 #SBATCH --job-name=hsi_experiments
 #SBATCH --partition=clara-job
 #SBATCH --time=06:00:00
-#SBATCH --mem=128G
-#SBATCH --gres=gpu:v100:2
+#SBATCH --mem=64G
 
 #module load Python
 #module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4
@@ -24,4 +23,4 @@ module load OpenCV/4.2.0-fosscuda-2019b-Python-3.7.4
 module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
 
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/train.py
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/generator.py

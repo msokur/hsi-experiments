@@ -25,7 +25,7 @@ DATA_PATHS = []
 NPY_PATHS = []
 if MODE == 0:
     DATA_PATHS = [r'/work/users/mi186veva/data', r'/work/users/mi186veva/data/data_additional']
-    NPY_PATHS = [r'/work/users/mi186veva/data_preprocessed/augmented']
+    NPY_PATHS = [r'/work/users/mi186veva/data_preprocessed/raw']
 else:
     DATA_PATHS = [r'data']#, r'data/data_additional']
     NPY_PATHS = [r'data_preprocessed/augmented']
@@ -72,7 +72,7 @@ AUGMENTATION = {
     'augment': True,
     'percent': 0.9, #probability that value in sample will be augmented
     'range': [-0.02, 0.02],
-    'new_rows_per_sample': 5
+    'new_rows_per_sample': 10
 }
 
 if not RESTORE_MODEL and ADD_TIME:
