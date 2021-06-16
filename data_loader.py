@@ -116,27 +116,29 @@ def read_data_from_npy(paths=None, not_certain_flag=False, except_indexes=[-1]):
         for path_dir in config.NPY_PATHS:
             paths += glob.glob(os.path.join(path_dir, '*.npz'))
 
-    for index, path in tqdm(enumerate(paths[:5])):
+    for index, path in tqdm(enumerate(paths)):
         if index not in except_indexes:
             data = np.load(path)
-            g, i, n, pth = data['gesund_data'], data['ill_data'], data['not_certain_data'], str(data['path'])
+            X, _y = data['X'], data['y']
+                        
+            y = []
+            if len(X.shape) == 3:
+                y = [ [_y_] * X.shape[1] for _y_ in _y]
+                X = np.concatenate(X, axis=0)
+                y = np.concatenate(y, axis=0)
+            else:
+                y = _y
+                
+            y = np.array(y)
             
-            if g.shape[0] != 0:
-                if len(g.shape) == 3:
-                    g = np.concatenate(g, axis=0)
-                #print('g.shape', g.shape)
-                gesund_data.append(g)
-            if i.shape[0] != 0:
-                if len(i.shape) == 3:
-                    i = np.concatenate(i, axis=0)
-                #print('i.shape', i.shape, len(i.shape))
-                ill_data.append(i)
-            if n.shape[0] != 0:
-                if len(n.shape) == 3:
-                    n = np.concatenate(n, axis=0)
-                #print('n.shape', n.shape)
-                not_certain_data.append(n)
-            paths_res.append(pth)
+            g = X[np.where(y == 0)]
+            gesund_data.append(g)
+            i = X[np.where(y == 1)]
+            ill_data.append(i)
+            n = X[np.where(y == 2)]
+            not_certain_data.append(n)
+            
+            paths_res.append(path)
     
     print('Reading data from .npy files ended')
     
@@ -233,16 +235,28 @@ def get_data(scaler_path, paths=None,
     #return all lists
     return [np.array(l) for l in [train, test, gesund_data, ill_data, not_certain_data]], class_weight
 
+def append(lst, X, y, label):
+    if len(lst) != 0:
+        X += lst
+        y += [label] * len(lst)
+        
+            
 def save_npy_from_dat(npy_save_path, dat_paths=None, not_certain_flag=True, except_indexes=[-1]):
     gesund_data, ill_data, not_certain_data, paths = read_data_from_dat(paths=None, not_certain_flag=not_certain_flag, except_indexes=except_indexes)
     
     print('The saving of .npz archives is started')
-    print(np.array(ill_data, dtype=object).shape, len(paths))
     
     for it in tqdm(range(len(paths))):
-        g, i, n, p = gesund_data[it], ill_data[it], not_certain_data[it], paths[it]
-        name = p.split('/')[-1]
-        np.savez(os.path.join(npy_save_path, name), gesund_data=g, ill_data=i, not_certain_data=n, path=p)
+        g, i, n, p = list(gesund_data[it]), list(ill_data[it]), list(not_certain_data[it]), paths[it]
+        
+        X, y = [], []
+        append(g, X, y, 0)
+        append(i, X, y, 1)
+        if not_certain_flag:
+            append(n, X, y, 2)
+        
+        name = p.split('/')[-1].split('SpecCube')[0]
+        np.savez(os.path.join(npy_save_path, name), X=X, y=y)
     
     print('The saving of .npz archives is ended')
 
@@ -253,19 +267,13 @@ def augment(source_paths, destination_paths):
 
         for p in tqdm(paths):
             data = np.load(p)
-            g, i, n, pth = data['gesund_data'], data['ill_data'], data['not_certain_data'], str(data['path'])
-            print(g.shape, i.shape, n.shape, str(pth))
-            name = pth.split('/')[-1]
-            result_g = augment_all(g)  
-            result_i = augment_all(i)
-            result_n = augment_all(n)
+            X, y = data['X'], data['y']
+            name = p.split('/')[-1].split('dat')[0]
+            result_X = augment_all(X)  
             destination_path = destination_paths[counter]
             if not os.path.exists(destination_path):
                 os.mkdir(destination_path)
-            np.savez(os.path.join(destination_path, name), 
-                        gesund_data=result_g, 
-                        ill_data=result_i, 
-                        not_certain_data=result_n, path=p)
+            np.savez(os.path.join(destination_path, name), X=result_X, y=y)
     print('Augmentation ended')
 
 
@@ -275,7 +283,7 @@ if __name__ == '__main__':
     #get_data_npy('data_preprocessed//augmented')
 
     #preprocess('data_preprocessed//augmented')
-    train, test, _ = get_data("./")
+    #train, test, _ = get_data("./")
     
     #save_npy_from_dat("/work/users/mi186veva/data_preprocessed/raw")
     #data = np.load('/work/users/mi186veva/data_preprocessed/raw/2019_07_12_11_15_49_SpecCube.dat.npz')
@@ -286,7 +294,8 @@ if __name__ == '__main__':
 
     #augment(["/work/users/mi186veva/data_preprocessed/raw"], ['/work/users/mi186veva/data_preprocessed/augmented'])
 
-
+    g, i, n, p = read_data_from_npy()
+    print(g.shape, i.shape, n.shape)
     
     #print(train.shape, test.shape)
 
