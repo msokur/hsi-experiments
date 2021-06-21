@@ -2,7 +2,7 @@ import tensorflow as tf
 import config
 
 def inception1d_block(input_, factor=16):
-
+    input_ = tf.expand_dims(input_, axis=-1)
 
     branch1 = tf.keras.layers.Conv1D(filters=factor*4, kernel_size=1, padding="same", activation='relu')(input_)
 
@@ -49,14 +49,14 @@ def lstm_block():
 
 def inception_model():
     input_ = tf.keras.layers.Input(
-        shape=(config.LAST_NM - config.FIRST_NM, 1), name="title"
+        shape=(config.LAST_NM - config.FIRST_NM), name="title"
     )
 
     net = inception1d_block(input_)
 
     net = tf.keras.layers.Flatten()(net)
-    #net = tf.keras.layers.Dense(500, activation='relu')(net)
-    #net = tf.keras.layers.Dense(250, activation='relu')(net)
+    net = tf.keras.layers.Dense(500, activation='relu')(net)
+    net = tf.keras.layers.Dense(250, activation='relu')(net)
     net = tf.keras.layers.Dense(100, activation='relu')(net)
     net = tf.keras.layers.Dropout(config.DROPOUT_VALUE)(net)
     net = tf.keras.layers.Dense(50, activation='relu')(net)

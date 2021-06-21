@@ -20,8 +20,9 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
         indexes = gesund_indexes + ill_indexes + not_certain_indexes
         indexes = np.array(indexes)
 
-        scaler = restore_scaler(self.log_dir)
-        spectrum = scaler.transform(spectrum_data[indexes[:, 1], indexes[:, 0]])
+        #scaler = restore_scaler(self.log_dir)
+        #spectrum = scaler.transform(spectrum_data[indexes[:, 1], indexes[:, 0]])
+        spectrum = spectrum_data[indexes[:, 1], indexes[:, 0]]
         self.gt_image = gt_image
         self.spectrum = spectrum
         self.indexes = indexes

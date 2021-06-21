@@ -21,21 +21,30 @@ EARLY_STOPPING = False
 INCEPTION_FACTOR = 16
 TELEGRAM_SENDING = True
 
-DATA_PATHS = []
-NPY_PATHS = []
+DATA_PATHS = [r'data', r'data/data_additional'] #for data loader without generator
+NPY_PATHS = [r'data_preprocessed/augmented'] #for data loader without generator
+RAW_NPY_PATH = r'data_preprocessed/raw' #for generators
+AUGMENTED_PATH = r'data_preprocessed/augmented' #for generators
+SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled' #for generators
+BATCHED_PATH = r'data_preprocessed/augmented/batch_sized' #for generators
+
 if MODE == 0:
-    DATA_PATHS = [r'/work/users/mi186veva/data', r'/work/users/mi186veva/data/data_additional']
-    NPY_PATHS = [r'/work/users/mi186veva/data_preprocessed/raw']
-else:
-    DATA_PATHS = [r'data']#, r'data/data_additional']
-    NPY_PATHS = [r'data_preprocessed/augmented']
+    add_path = r'/work/users/mi186veva/'
+    DATA_PATHS = [os.path.join(add_path, i) for i in DATA_PATHS]
+    NPY_PATHS = [os.path.join(add_path, i) for i in NPY_PATHS]
+    
+    RAW_NPY_PATH = os.path.join(add_path, RAW_NPY_PATH)
+    AUGMENTED_PATH = os.path.join(add_path, AUGMENTED_PATH)
+    SHUFFLED_PATH = os.path.join(add_path, SHUFFLED_PATH)
+    BATCHED_PATH = os.path.join(add_path, BATCHED_PATH)
+    
     
 DATA_LOADER_TYPES = {
     '_dat':0,
     '_npy':1
 }
 DATA_LOADER_MODE = DATA_LOADER_TYPES['_npy']
-
+NOT_CERTAIN_FLAG = False
 
 BATCH_SIZE = 10000
 SPLIT_FACTOR = 0.9 #for data sets: train\test data percentage
@@ -74,6 +83,10 @@ AUGMENTATION = {
     'range': [-0.02, 0.02],
     'new_rows_per_sample': 10
 }
+
+if AUGMENTATION['augment']:
+    BATCH_SIZE = int(BATCH_SIZE / AUGMENTATION['new_rows_per_sample'])
+    print(BATCH_SIZE)
 
 if not RESTORE_MODEL and ADD_TIME:
     current_time = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")

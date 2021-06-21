@@ -4,20 +4,21 @@ import random
 import glob
 from tqdm import tqdm
 import math
+import config
+import data_loader
+from sklearn import preprocessing
 '''
 Preprocessor contains opportunity of
 1. Two step shuffling for big datasets
 Link: https://blog.janestreet.com/how-to-shuffle-a-big-dataset/
-2. Saving of big dataset into numpy archives of a certain size 
+2. Saving of big dataset into numpy archives of a certain(batch_size) size 
 '''
 
 
 
 class Preprocessor():
-    def __init__(self, load_name_for_x='X', load_name_for_y='y'):
-        self.dict_names = ['X', 'y', 'PatientName', 'PatientIndex']
-        self.load_name_for_x = load_name_for_x
-        self.load_name_for_y = load_name_for_y
+    def __init__(self, load_name_for_x='X', load_name_for_y='y'):  #Marianne, I think you need to change load_name_for_x
+        self.dict_names = [load_name_for_x, load_name_for_y, 'PatientName', 'PatientIndex'] 
     
     #------------------divide all samples into piles_number files------------------
     def __create_piles(self):
@@ -34,7 +35,7 @@ class Preprocessor():
         for i, p in tqdm(enumerate(self.shuffle_paths)):
             name = p.split("/")[-1].split(".")[0]
             data = np.load(p)
-            X, y = data[self.load_name_for_x], data[self.load_name_for_y]
+            X, y = data[self.dict_names[0]], data[self.dict_names[1]]
 
             for _X, _y in zip(X, y):
                 pile = random.randint(0, self.piles_number - 1)
@@ -106,7 +107,7 @@ class Preprocessor():
         
         
                 
-    def split_data_into_npz_of_batch_size(self, paths, batch_size, archives_of_batch_size_saving_path, except_names=[]):
+    def split_data_into_npz_of_batch_size(self, paths, batch_size, archives_of_batch_size_saving_path, scaler_saving_path, except_names=[], not_certain=config.NOT_CERTAIN_FLAG):
         print('--------Splitting into npz of batch size started--------')
         self.batch_size = batch_size
         self.archives_of_batch_size_saving_path = archives_of_batch_size_saving_path
@@ -114,11 +115,11 @@ class Preprocessor():
         if not os.path.exists(archives_of_batch_size_saving_path):
                 os.mkdir(archives_of_batch_size_saving_path)
                 
-        #------------removing of previously generated archives (for the previous CV step) ----------------
+        #------------removing of previously generated archives (of the previous CV step) ----------------
         files = glob.glob(os.path.join(archives_of_batch_size_saving_path, '*.npz'))
         for f in files:
             os.remove(f)
-        
+                    
         self.rest_X, self.rest_y, self.rest_names, self.rest_indexes = [], [], [], []
         for p in paths:
             #------------ except_indexes filtering ---------------
@@ -132,7 +133,11 @@ class Preprocessor():
                 indexes = np.flatnonzero(np.core.defchararray.find(p_names, except_name) == -1)
                 X, y, p_names, p_indexes = X[indexes], y[indexes], p_names[indexes], p_indexes[indexes]
             
-            self.__split_arrays(X, y, p_names, p_indexes)
+            if not not_certain:
+                indexes = np.flatnonzero(y != 2)
+                X, y, p_names, p_indexes = X[indexes], y[indexes], p_names[indexes], p_indexes[indexes]
+            
+            self.__split_arrays(X, y, p_names, p_indexes)  
         
         #------------------save rest of rest archives----------------
         rest_X, rest_y, rest_names, rest_indexes = np.array(self.rest_X), np.array(self.rest_y), np.array(self.rest_names), np.array(self.rest_indexes)
@@ -144,7 +149,7 @@ class Preprocessor():
         rest_indexes = np.concatenate(rest_indexes, axis=0)
         
         if rest_X.shape[0] >= batch_size:
-            self.__split_arrays(rest_X, rest_y, rest_names, rest_indexes)
+            self.__split_arrays(rest_X, rest_y, rest_names, rest_indexes) 
         
         print('--------Splitting into npz of batch size finished--------')
         

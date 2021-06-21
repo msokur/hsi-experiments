@@ -8,6 +8,7 @@ from callbacks import CustomTensorboardCallback
 import os
 from shutil import copyfile
 import telegram_send
+from generator import DataGenerator
 
 def send_tg_message(message):
     if config.MODE == 0:
@@ -53,9 +54,12 @@ def train(paths=None, except_indexes=[]):
             comments.write(config.COMMENTS)
 
         '''-------DATASET---------'''
-        train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
-
-        print(train[0], test[0])
+        #train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
+        train_generator = DataGenerator('train', config.AUGMENTED_PATH, config.SHUFFLED_PATH, config.BATCHED_PATH, log_dir)
+        valid_generator = DataGenerator('valid', config.AUGMENTED_PATH, config.SHUFFLED_PATH, config.BATCHED_PATH, log_dir)
+        class_weights = train_generator.get_class_weights()
+        
+        #print(train[0], test[0])
 
         '''-------MODEL---------'''
 
@@ -145,21 +149,31 @@ def train(paths=None, except_indexes=[]):
             callbacks.append(early_stopping_callback)
 
         #history = model.fit(np.expand_dims(train[:, :-2], axis=-1),
-        history = model.fit(train[:, :-2],
+        '''history = model.fit(train[:, :-2],
             train[:, -2],
             batch_size=config.BATCH_SIZE,
             epochs=config.EPOCHS,
-            verbose=0,
+            verbose=1,
             initial_epoch=initial_epoch,
             callbacks=callbacks,
             #validation_data=(np.expand_dims(test[:, :-2], axis=-1), test[:, -2], test[:, -1]),
             validation_data=(test[:, :-2], test[:, -2], test[:, -1]),
             class_weight=class_weight,
-            sample_weight=train[:, -1])
+            sample_weight=train[:, -1])'''
+        history = model.fit(x=train_generator,
+                    validation_data=valid_generator,
+                    epochs=config.EPOCHS,
+                    verbose=1,
+                    initial_epoch=initial_epoch,
+                    batch_size=config.BATCH_SIZE,
+                    callbacks=callbacks,
+                    use_multiprocessing=True,
+                    class_weight=class_weights)
 
         np.save(os.path.join(log_dir, '.history'), history.history)
     except Exception as e:
         print(e)
+        raise e #TODO REMOVE!!
 
         if config.TELEGRAM_SENDING:
             last_epoch = -1
