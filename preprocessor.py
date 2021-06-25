@@ -24,30 +24,54 @@ class Preprocessor():
     def __create_piles(self):
         print('----Piles creating started----')
         
+        #create clear piles
         piles = []
         for i in range(self.piles_number):
             piles.append({})
             for d_name in self.dict_names:
                 piles[i][d_name] = []
+            np.savez(os.path.join(self.shuffle_saving_path, 'pile'+str(i)), **{n: np.array(a) for n, a in piles[i].items()})
+            piles[i] = []
          
         
         print('--Splitting into piles started--')
+        
         for i, p in tqdm(enumerate(self.shuffle_paths)):
+            #clear piles for new randon numbers
+            for pn in range(self.piles_number):
+                piles[pn] = []
+            
             name = p.split("/")[-1].split(".")[0]
             data = np.load(p)
-            X, y = data[self.dict_names[0]], data[self.dict_names[1]]
-
-            for _X, _y in zip(X, y):
+            
+            #fill random distribution to files
+            for it in range(data['X'].shape[0]):
                 pile = random.randint(0, self.piles_number - 1)
+                piles[pile].append(it)            
+            
+            for i_pile, pile in enumerate(piles):
+                data_pile = np.load(os.path.join(self.shuffle_saving_path, 'pile' + str(i_pile) + '.npz'), allow_pickle=True)
+                _names = [name] * len(pile)
+                _indexes = [i] * len(pile)
                 
-                values = [_X, _y, name, i]
+                values = {}
+                for num, __value  in enumerate(data_pile.items()): #_name, _val
+                    __val = list(__value[1])
+                    
+                    if num == 0 or num == 1:
+                        __val.append(data[__value[0]][pile])
+                    if num == 2:
+                        __val.append(_names)
+                    if num == 3:
+                        __val.append(_indexes)
+                    
+                    values[__value[0]] = __val
                 
-                for it, d_name in enumerate(self.dict_names):
-                    piles[pile][d_name].append(values[it])
+                
+                np.savez(os.path.join(self.shuffle_saving_path, 'pile'+str(i_pile)), **{n: np.array(a) for n, a in values.items()})
+                    
         
         print('--Splitting into piles finished--')
-        for i, pile in enumerate(piles):
-            np.savez(os.path.join(self.shuffle_saving_path, 'pile'+str(i)), **{n: a for n, a in pile.items()})
         
         print('----Piles creating finished----')
             
@@ -56,7 +80,11 @@ class Preprocessor():
         piles_paths = glob.glob(os.path.join(self.shuffle_saving_path, 'pile*.npz'))
         
         for i, pp in enumerate(piles_paths):
-            data = np.load(pp)
+            _data = np.load(pp, allow_pickle=True)
+            data = {n: a for n, a in _data.items()}
+            
+            for name, val in data.items():
+                data[name] = np.concatenate(val, axis=0)
             
             indexes = np.arange(data[self.dict_names[0]].shape[0])
             random.shuffle(indexes)
@@ -159,7 +187,7 @@ if __name__ == '__main__':
     paths = glob.glob('/work/users/mi186veva/data_preprocessed/augmented/*.npz')
     print(len(paths))
     #preprocessor.shuffle(['/work/users/mi186veva/data_preprocessed/augmented/2019_07_12_11_15_49_.npz', '/work/users/mi186veva/data_preprocessed/augmented/2020_03_27_16_56_41_.npz'], 20, '/work/users/mi186veva/data_preprocessed/augmented/shuffled')
-    #preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/augmented/shuffled')
-    preprocessor.split_data_into_npz_of_batch_size(['/work/users/mi186veva/data_preprocessed/augmented/shuffled/shuffled9.npz', '/work/users/mi186veva/data_preprocessed/augmented/shuffled/shuffled8.npz'], 64, '/work/users/mi186veva/data_preprocessed/augmented/batch_sized', except_names=['2020_03_27_16_56_41', '2020_05_15_12_43_58'])
+    preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/augmented/shuffled')
+    #preprocessor.split_data_into_npz_of_batch_size(['/work/users/mi186veva/data_preprocessed/augmented/shuffled/shuffled9.npz', '/work/users/mi186veva/data_preprocessed/augmented/shuffled/shuffled8.npz'], 64, '/work/users/mi186veva/data_preprocessed/augmented/batch_sized', except_names=['2020_03_27_16_56_41', '2020_05_15_12_43_58'])
         
         
