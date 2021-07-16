@@ -21,3 +21,5 @@ data_preprocessed
 PatientenListeCancerStudie.xlsx
 temp
 *.out
+*.log
+outputs_checker/*.out
