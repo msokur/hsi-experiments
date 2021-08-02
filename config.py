@@ -10,7 +10,7 @@ MODE_TYPES = {
 MODE = MODE_TYPES['SERVER']
 
 #change modelname here!
-def get_model_name(MODEL_NAME_PATHS, model_name='inception_l2_norm_aug'):
+def get_model_name(MODEL_NAME_PATHS, model_name='combi_smooth_clip_batchnorm'):
     return os.path.join(*MODEL_NAME_PATHS, model_name)
 
 NORMALIZATION_TYPES = {
@@ -25,8 +25,15 @@ DATA_PATHS = [r'data', r'data/data_additional'] #for data loader without generat
 NPY_PATHS = [r'data_preprocessed/augmented'] #for data loader without generator
 RAW_NPY_PATH = r'data_preprocessed/raw' #for generators
 AUGMENTED_PATH = r'data_preprocessed/augmented' #for generators
-SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled' #for generators
-BATCHED_PATH = r'data_preprocessed/augmented/batch_sized' #for generators
+#SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled' #for generators
+#SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled'
+#BATCHED_PATH = r'data_preprocessed/augmented/batch_sized' #for generators
+
+SHUFFLED_PATH = r'data_preprocessed/combi/shuffled'
+BATCHED_PATH = r'data_preprocessed/combi/batch_sized'
+
+#SHUFFLED_PATH = r'data_preprocessed/augmented_l2_norm/shuffled'
+#BATCHED_PATH = r'data_preprocessed/augmented_l2_norm/batch_sized'
 
 if MODE == 0:
     add_path = r'/work/users/mi186veva/'
@@ -43,7 +50,7 @@ DATA_LOADER_TYPES = {
     '_dat':0,
     '_npy':1
 }
-DATA_LOADER_MODE = DATA_LOADER_TYPES['_npy']
+DATA_LOADER_MODE = DATA_LOADER_TYPES['_dat']
 NOT_CERTAIN_FLAG = False
 
 BATCH_SIZE = 10000
@@ -51,21 +58,21 @@ SPLIT_FACTOR = 0.9 #for data sets: train\test data percentage
 WAVE_AREA = 100
 FIRST_NM = 8
 LAST_NM = 100
-EPOCHS = 250
+EPOCHS = 80
 CROSS_VALIDATION_SPLIT = int(56 / 4)
 SCALER_FILE_NAME = '.scaler'
 NORMALIZATION_TYPE = NORMALIZATION_TYPES['l2_norm']
 
 CHECKPOINT_PATH = 'checkpoints'
 MODEL_PATH = 'model'
-CHECKPOINT_WRITING_STEP = 50
-WRITE_IMAGES = True
+CHECKPOINT_WRITING_STEP = 20
+WRITE_IMAGES = False
 
 DROPOUT_VALUE = 0.1
 LEARNING_RATE = 1e-3
 
 RESTORE_MODEL = False
-ADD_TIME = True
+ADD_TIME = False
 
 MODEL_NAME_PATHS = []
 if MODE == 0:
@@ -78,7 +85,7 @@ MODEL_NAME = get_model_name(MODEL_NAME_PATHS)
 COMMENTS = 'sample weight, dropout 0.2, fixed spectra, 46 files, weighted_metrics_weighted_val_data'
 
 AUGMENTATION = {
-    'augment': True,
+    'augment': False,
     'percent': 0.9, #probability that value in sample will be augmented
     'range': [-0.02, 0.02],
     'new_rows_per_sample': 10
