@@ -55,7 +55,7 @@ def fill_with_weight(arr, total):
 
     return arr
 
-def read_data_from_dat(paths=None, not_certain_flag=False, except_indexes=[-1]):
+def read_data_from_dat(paths=None, not_certain_flag=False, except_indexes=[-1], include_empty=False):
     print('Reading data from .dat files started')
     gesund_data = []
     ill_data = []
@@ -80,7 +80,7 @@ def read_data_from_dat(paths=None, not_certain_flag=False, except_indexes=[-1]):
                 gesund_patch = spectrum_data[gesund_indexes[0], gesund_indexes[1]]
                 #print(gesund_patch.shape)
                 ill_patch = spectrum_data[ill_indexes[0], ill_indexes[1]]
-                print(ill_patch.shape)
+                #print(ill_patch.shape)
 
 
                 if not_certain_flag:
@@ -91,13 +91,13 @@ def read_data_from_dat(paths=None, not_certain_flag=False, except_indexes=[-1]):
 
                     not_certain_data.append(not_certain_patch)
 
-                #if gesund_patch.shape[0] > 0:
-                gesund_patch = np.insert(gesund_patch, gesund_patch.shape[1], np.zeros(gesund_patch.shape[0]), axis=1)
-                gesund_data.append(gesund_patch)
+                if gesund_patch.shape[0] > 0 or include_empty:
+                    gesund_patch = np.insert(gesund_patch, gesund_patch.shape[1], np.zeros(gesund_patch.shape[0]), axis=1)
+                    gesund_data.append(gesund_patch)
 
-                #if ill_patch.shape[0] > 0:
-                ill_patch = np.insert(ill_patch, ill_patch.shape[1], np.ones(ill_patch.shape[0]), axis=1)
-                ill_data.append(ill_patch)
+                if ill_patch.shape[0] > 0 or include_empty:
+                    ill_patch = np.insert(ill_patch, ill_patch.shape[1], np.ones(ill_patch.shape[0]), axis=1)
+                    ill_data.append(ill_patch)
         else:
             print('We are skipping index: ', index)
     print('Reading data from .dat files ended')
@@ -259,8 +259,48 @@ def save_npy_from_dat(npy_save_path, dat_paths=None, not_certain_flag=True, exce
         np.savez(os.path.join(npy_save_path, name), X=X, y=y)
     
     print('The saving of .npz archives is ended')
+    
+def save_raw_healthy_and_augmented_ill_in_npy(npy_save_path, augmented_path, dat_paths=None, not_certain_flag=True, except_indexes=[-1]):
+    gesund_data, ill_data, not_certain_data, paths = read_data_from_dat(paths=None, not_certain_flag=not_certain_flag, except_indexes=except_indexes, include_empty=True)
+    print(len(gesund_data), len(ill_data), len(not_certain_data), len(paths))
+    
+    print('The saving of raw healthy and augmented ill is started')
+    aug_paths = np.array(glob.glob(os.path.join(augmented_path, "*.npz")))
+    
+    for it, p in tqdm(enumerate(paths)):
+        name = p.split('/')[-1].split('SpecCube')[0]
+        print(name)
+        
+        print(aug_paths[np.flatnonzero(np.core.defchararray.find(aug_paths, name) != -1)])
+        aug_path = aug_paths[np.flatnonzero(np.core.defchararray.find(aug_paths, name) != -1)]
+        print(aug_path)
+        if len(aug_path) > 1:
+            print(f"Warning! Path {p} has more then one augmented pair!")
+        
+        if len(aug_path) > 0:
+            aug_data = np.load(aug_path[0])
+            aug_X, aug_y = aug_data['X'], aug_data['y']
+            i = aug_X[np.nonzero(aug_y == 1)]
+            if i.shape[0] != 0:
+                i = np.concatenate(i, axis=0)
+            
+            i = list(i)
+            g = list(gesund_data[it])
 
-def augment(source_paths, destination_paths):
+            X, y = [], []
+            append(g, X, y, 0)
+            append(i, X, y, 1)
+
+            #TODO for now there is no not_certain_data
+
+            np.savez(os.path.join(npy_save_path, name), X=X, y=y)
+        else:
+            print(f"Warning! Path {p} hasn't augmented pair!")
+
+    print('The saving of raw healthy and augmented ill is ended')
+        
+
+def augment(source_paths, destination_paths, normalize_first=False):
     print('Augmentation started')
     for counter, source_path in enumerate(source_paths):
         paths = glob.glob(os.path.join(source_path, "*.npz"))
@@ -268,6 +308,8 @@ def augment(source_paths, destination_paths):
         for p in tqdm(paths):
             data = np.load(p)
             X, y = data['X'], data['y']
+            if normalize_first:
+                X[:, :-1] = preprocessing.Normalizer().transform(X[:, :-1])
             name = p.split('/')[-1].split('dat')[0]
             result_X = augment_all(X)  
             destination_path = destination_paths[counter]
@@ -279,6 +321,7 @@ def augment(source_paths, destination_paths):
 
 
 if __name__ == '__main__':
+    #save_raw_healthy_and_augmented_ill_in_npy("/work/users/mi186veva/data_preprocessed/combi", "/work/users/mi186veva/data_preprocessed/augmented")
     #save_raw_data()
     #get_data_npy('data_preprocessed//augmented')
 
@@ -292,10 +335,10 @@ if __name__ == '__main__':
     #print(data['not_certain_data'].shape)
     #print(data['path'])
 
-    #augment(["/work/users/mi186veva/data_preprocessed/raw"], ['/work/users/mi186veva/data_preprocessed/augmented'])
+    augment(["/work/users/mi186veva/data_preprocessed/raw"], ['/work/users/mi186veva/data_preprocessed/augmented_l2_norm'], normalize_first=True)
 
-    g, i, n, p = read_data_from_npy()
-    print(g.shape, i.shape, n.shape)
+    #g, i, n, p = read_data_from_npy()
+    #Aprint(g.shape, i.shape, n.shape)
     
     #print(train.shape, test.shape)
 
