@@ -20,7 +20,7 @@ def train(paths=None, except_indexes=[]):
     log_dir = config.MODEL_NAME
     try:
         mirrored_strategy = None
-        if config.MODE == 1:
+        if config.MODE == 1 or config.MODE == 0:
             gpus = tf.config.experimental.list_physical_devices('GPU')
             if gpus:
                 try:
@@ -35,8 +35,9 @@ def train(paths=None, except_indexes=[]):
 
             #mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
             #mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.ReductionToOneDevice())
-            mirrored_strategy = tf.distribute.experimental.CentralStorageStrategy()
-            #mirrored_strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
+            #mirrored_strategy = tf.distribute.experimental.CentralStorageStrategy()
+            mirrored_strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
+            #mirrored_strategy = tf.distribute.MirroredStrategy()
 
         '''-------LOGGING and HPARAMS---------'''
         
@@ -44,20 +45,22 @@ def train(paths=None, except_indexes=[]):
             if not os.path.exists(log_dir):
                 os.mkdir(log_dir)
 
-            for file in ['config.py', 'train.py', 'data_loader.py', 'model.py']:
-                copyfile(file, os.path.join(log_dir, file))
-            job_filepath = 'start.job'
-            if config.MODE == 0 and os.path.exists(job_filepath):
-                copyfile(file, os.path.join(log_dir, job_filepath))
+            for file in ['config.py', 'train.py', 'data_loader.py', 'model.py', 'generator.py', 'preprocessor.py', 'start.job']:
+                if os.path.exists(file):
+                    copyfile(file, os.path.join(log_dir, file))
+            #job_filepath = 'start.job'
+            #if config.MODE == 0 and os.path.exists(job_filepath):
+            #    copyfile(file, os.path.join(log_dir, job_filepath))
 
         with open(os.path.join(log_dir, 'comments.txt'),'a', newline='') as comments:
             comments.write(config.COMMENTS)
 
         '''-------DATASET---------'''
         #train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
-        train_generator = DataGenerator('train', config.AUGMENTED_PATH, config.SHUFFLED_PATH, config.BATCHED_PATH, log_dir)
-        valid_generator = DataGenerator('valid', config.AUGMENTED_PATH, config.SHUFFLED_PATH, config.BATCHED_PATH, log_dir)
+        train_generator = DataGenerator('train', config.AUGMENTED_PATH, config.SHUFFLED_PATH, config.BATCHED_PATH, log_dir, split_flag=True, except_indexes=except_indexes)
+        valid_generator = DataGenerator('valid', config.AUGMENTED_PATH, config.SHUFFLED_PATH, config.BATCHED_PATH, log_dir, split_flag=False, except_indexes=except_indexes)
         class_weights = train_generator.get_class_weights()
+        print(class_weights)
         
         #print(train[0], test[0])
 
@@ -75,13 +78,13 @@ def train(paths=None, except_indexes=[]):
 
             initial_epoch = int(all_checkpoints[-1].split('-')[-1])
             
-            if config.MODE == 1:
+            if config.MODE == 1 or config.MODE == 0:
                 with mirrored_strategy.scope():
                     model = keras.models.load_model(all_checkpoints[-1])
             else:
                 model = keras.models.load_model(all_checkpoints[-1]) 
         else:
-            if config.MODE == 1:
+            if config.MODE == 1 or config.MODE == 0:
                 with mirrored_strategy.scope():
                     METRICS = [
                         keras.metrics.TruePositives(name='tp'),
@@ -111,7 +114,7 @@ def train(paths=None, except_indexes=[]):
             #model = lstm_block()
 
             model.compile(
-                optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE),
+                optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE, clipnorm=1.),
                 loss=keras.losses.BinaryCrossentropy(),
                 metrics=METRICS,
                 weighted_metrics=WEIGHTED_METRICS
@@ -122,17 +125,17 @@ def train(paths=None, except_indexes=[]):
         '''-------CALLBACKS---------'''
 
         tensorboard_callback = CustomTensorboardCallback(
-                log_dir=log_dir,
-                histogram_freq=0,
-                write_graph=True,
-                write_images=True,
-                except_indexes=except_indexes)
+            log_dir=log_dir, 
+            write_graph=True, 
+            histogram_freq=1, 
+            profile_batch = '20,30',
+            except_indexes=except_indexes)
 
         checkpoint_path = os.path.join(log_dir, config.CHECKPOINT_PATH, 'cp-{epoch:04d}')
 
         checkpoints_callback = keras.callbacks.ModelCheckpoint(
                 filepath=checkpoint_path,
-                verbose=1,
+                verbose=2,
                 period=config.CHECKPOINT_WRITING_STEP)
 
         early_stopping_callback = keras.callbacks.EarlyStopping(
@@ -153,7 +156,7 @@ def train(paths=None, except_indexes=[]):
             train[:, -2],
             batch_size=config.BATCH_SIZE,
             epochs=config.EPOCHS,
-            verbose=1,
+            verbose=2,
             initial_epoch=initial_epoch,
             callbacks=callbacks,
             #validation_data=(np.expand_dims(test[:, :-2], axis=-1), test[:, -2], test[:, -1]),
@@ -163,12 +166,13 @@ def train(paths=None, except_indexes=[]):
         history = model.fit(x=train_generator,
                     validation_data=valid_generator,
                     epochs=config.EPOCHS,
-                    verbose=1,
+                    verbose=2,
                     initial_epoch=initial_epoch,
                     batch_size=config.BATCH_SIZE,
                     callbacks=callbacks,
                     use_multiprocessing=True,
-                    class_weight=class_weights)
+                    class_weight=class_weights,
+                    workers=int(os.cpu_count()))
 
         np.save(os.path.join(log_dir, '.history'), history.history)
     except Exception as e:
