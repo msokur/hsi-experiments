@@ -1,19 +1,33 @@
 import tensorflow as tf 
 import config
+from tensorflow.keras import activations
 
 def inception1d_block(input_, factor=16):
     input_ = tf.expand_dims(input_, axis=-1)
 
-    branch1 = tf.keras.layers.Conv1D(filters=factor*4, kernel_size=1, padding="same", activation='relu')(input_)
+    #branch1 = tf.keras.layers.Conv1D(filters=factor*4, kernel_size=1, padding="same", kernel_initializer='he_uniform')(input_)
+    branch1 = tf.keras.layers.Conv1D(filters=factor*4, kernel_size=1, padding="same")(input_)
+    branch1 = tf.keras.layers.BatchNormalization()(branch1)
+    branch1 = tf.keras.layers.Activation(activations.relu)(branch1)
 
-    branch2 = tf.keras.layers.Conv1D(filters=factor*6, kernel_size=1, padding="same", activation='relu')(input_)
-    branch2 = tf.keras.layers.Conv1D(filters=factor*8, kernel_size=3, padding="same", activation='relu')(branch2)
+    branch2 = tf.keras.layers.Conv1D(filters=factor*6, kernel_size=1, padding="same")(input_)
+    branch2 = tf.keras.layers.BatchNormalization()(branch2)
+    branch2 = tf.keras.layers.Activation(activations.relu)(branch2)
+    branch2 = tf.keras.layers.Conv1D(filters=factor*8, kernel_size=3, padding="same")(branch2)
+    branch2 = tf.keras.layers.BatchNormalization()(branch2)
+    branch2 = tf.keras.layers.Activation(activations.relu)(branch2)
 
-    branch3 = tf.keras.layers.Conv1D(filters=factor, kernel_size=1, padding="same", activation='relu')(input_)
-    branch3 = tf.keras.layers.Conv1D(filters=factor*2, kernel_size=5, padding="same", activation='relu')(branch3)
+    branch3 = tf.keras.layers.Conv1D(filters=factor, kernel_size=1, padding="same")(input_)
+    branch3 = tf.keras.layers.BatchNormalization()(branch3)
+    branch3 = tf.keras.layers.Activation(activations.relu)(branch3)
+    branch3 = tf.keras.layers.Conv1D(filters=factor*2, kernel_size=5, padding="same")(branch3)
+    branch3 = tf.keras.layers.BatchNormalization()(branch3)
+    branch3 = tf.keras.layers.Activation(activations.relu)(branch3)
 
     branch4 = tf.keras.layers.MaxPooling1D(pool_size=3, strides=1, padding="same")(input_)
-    branch4 = tf.keras.layers.Conv1D(filters=factor*2, kernel_size=1, activation='relu')(branch4)
+    branch4 = tf.keras.layers.Conv1D(filters=factor*2, kernel_size=1)(branch4)
+    branch4 = tf.keras.layers.BatchNormalization()(branch4)
+    branch4 = tf.keras.layers.Activation(activations.relu)(branch4)
 
     net = tf.keras.layers.concatenate([branch1, branch2, branch3, branch4])
 
