@@ -8,7 +8,7 @@ from tqdm import tqdm
 import os
 import math
 import glob
-
+import datetime
 
 class CustomTensorboardCallback(keras.callbacks.TensorBoard):
 
@@ -113,6 +113,8 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
     def on_epoch_end(self, epoch, logs=None):
 
         super(CustomTensorboardCallback, self).on_epoch_end(epoch, logs)
+        
+        print('{0}, epoch {1} is ended'.format(datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"), epoch))
 
         with self._writers['train'].as_default():
             if epoch % config.CHECKPOINT_WRITING_STEP == 0:

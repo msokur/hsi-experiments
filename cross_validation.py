@@ -353,29 +353,23 @@ def cross_validation(root_folder_name):
 
     splits = np.array_split(range(len(paths)), config.CROSS_VALIDATION_SPLIT)
 
-    for indexes in splits[5:]:
+    for indexes in splits:
         old_model_name = config.MODEL_NAME
         if len(indexes) > 1:
             for i in indexes:
                 config.MODEL_NAME += '_' + str(i)
         else:
             config.MODEL_NAME += '_' + str(i) + '_' + paths[i].split('\\')[-1].split('.')[0]
-
-        model = train(paths=paths, except_indexes=indexes)
+        
+        model = train(paths=paths, except_indexes=[p.split("/")[-1].split(".")[0] for p in np.array(paths)[indexes]])
+        #model = train(paths=paths, except_indexes=indexes) #for old CV when I used as indexes numbers except names 
         #for i, path in enumerate(paths):  # full cross_valid
         for i in indexes:
         #for i, path in zip(range(7, len(paths)), paths[7:]): #cross valid from several index
 
 
-            #model = train(paths=paths, except_indexes=[i])
-
-
-            #test.model = model
-
             #CHECKPOINT, TEST_PATHS, SAVING_PATH, LOGS_PATH='', MODEL_NAME='', MODEL_FOLDER=''):
             tester = test.Tester( f'cp-{config.EPOCHS:04d}', ['data'], '', LOGS_PATH=root_folder, MODEL_NAME=config.MODEL_NAME.split('\\')[-1])
-
-            #test_one_image(self, path_dat, path_image=None, save=False, show=True, test_all_spectra = False, save_stats = False, folder_name = '')
 
             sensitivity, specificity = tester.test_one_image(paths[i],
                                 path_image=paths[i] + '_Mask JW Kolo.png',
@@ -388,8 +382,6 @@ def cross_validation(root_folder_name):
             print('For path=', paths[i], ', (index: ', str(i), ') sensitivity= ', str(sensitivity), ' specificity= ', str(specificity), ' MODEL_NAME = ', config.MODEL_NAME)
 
             with open(csv_filename,'a', newline='') as csvfile: # for full cross_valid and for separate file
-
-            #with open(r'F:\\HSI_data\\logs\\inception_cross_validation\\inception_cross_validation_stats_06.01.2021-11_03_50.csv','a', newline='') as csvfile:
                 fieldnames = ['time', 'index', 'sensitivity', 'specificity', 'name', 'model_name']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
@@ -426,7 +418,7 @@ if __name__ =='__main__':
 
     #save_metrics_for_threshold('test/inception_l2_norm/cp-0250', 0.45)
 
-    count_metrics_on_diff_thresholds('test/inception_l2_norm_all_data/cp-0100', all=False, threshold_range_plain=[0.47])
+    #count_metrics_on_diff_thresholds('test/inception_l2_norm_all_data/cp-0100', all=False, threshold_range_plain=[0.47])
 
     '''count_ROC('logs\\inception_cross_validation\\inception_cross_validation_stats_06.01.2021-11_03_50.csv', 'test/inception_cv_images')
 
@@ -440,7 +432,7 @@ if __name__ =='__main__':
     print('Complete sensitivity, specificity:', sensitivity, specificity)'''
 
     #run...save_path='test/inception_cv_images/not_all_spectra'
-    #cross_validation('inception_l2_norm_all_data')
+    cross_validation('CV_combi_clip_batchnorm')
 
     #paths = glob.glob('logs/test_inception*')
     #test_experiment('dropout_experiment', paths)
