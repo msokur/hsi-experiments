@@ -7,7 +7,7 @@ from data_loader import *
 from callbacks import CustomTensorboardCallback
 from sklearn.metrics import confusion_matrix, f1_score
 import csv
-
+from sklearn import preprocessing
 
 
 class Tester():
@@ -38,7 +38,8 @@ class Tester():
         self.model = tf.keras.models.load_model(MODEL_PATH)
         self.tensorboard_callback = CustomTensorboardCallback(log_dir=MODEL_FOLDER) #for drawing function
 
-        self.scaler = restore_scaler(MODEL_FOLDER)
+        #self.scaler = restore_scaler(MODEL_FOLDER)
+        self.scaler = preprocessing.Normalizer() #TODO return normal scaler
 
         self.all_predictions = []
         self.all_predictions_raw = []
@@ -79,7 +80,7 @@ class Tester():
         return sensitivity, specificity
 
     def test_one_image(self, path_dat, path_image=None, save=False, show=True, test_all_spectra=False, save_stats=False,
-                       folder_name='', grayscale_result=False, return_dice=False):
+                       folder_name='', grayscale_result=False, return_dice=False, test_batch=False): #TODO remove test_batch
         if folder_name == '':
             folder_name = self.SAVING_PATH
 
@@ -94,18 +95,29 @@ class Tester():
             indexes = np.array(indexes).T
 
         spectrum = self.scaler.transform(spectrum_data[indexes[:, 0], indexes[:, 1]])
-        predictions = self.model.predict(np.expand_dims(spectrum, axis=-1))
+        if test_batch:
+            data = np.load('/work/users/mi186veva/data_preprocessed/combi/batch_sized/batch51.npz')
+            spectrum = data['X']   #test batch
+            spectrum = self.scaler.transform(spectrum) #test_batch 
+        #predictions = self.model.predict(np.expand_dims(spectrum, axis=-1))
+        predictions = self.model.predict(spectrum)
 
         name = path_dat.split('\\')[-1].split('_S')[0]
 
         sensitivity = specificity = 0
         if not test_all_spectra:
             gt = [0] * len(gesund_indexes) + [1] * len(ill_indexes)
+            if test_batch:
+                gt = data['y']  #test batch
             sensitivity, specificity = self.count_metrics(gt, np.rint(predictions), name, folder_name, save_stats, return_dice=return_dice)
 
             self.all_predictions += list(np.rint(predictions))
             self.all_predictions_raw += list(predictions)
-            self.all_gt += gt
+            #
+            if test_batch:
+                self.all_gt += list(gt)   #test batch
+            else:
+                self.all_gt += gt
 
         self.tensorboard_callback.gt_image = gt_image#[..., ::-1]
         self.tensorboard_callback.spectrum = spectrum
@@ -176,6 +188,18 @@ class Tester():
 
 
 if __name__ == "__main__":
+    
+    tester = Tester( f'cp-0060', config.DATA_PATHS, '', MODEL_FOLDER='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_combi_clip_batchnorm/combi_smooth_clip_batchnorm_0_1_2_3')
+
+    path = '/work/users/mi186veva/data/2020_01_29_18_12_15_SpecCube.dat'
+    sensitivity, specificity = tester.test_one_image(path,
+                        path_image=path + '_Mask JW Kolo.png',
+                        save=False,
+                        show=False,
+                        test_all_spectra=False,
+                        save_stats=False,
+                        folder_name=config.MODEL_NAME,
+                        test_batch=True)
 
     #dat_names = [r'data\2019_07_12_11_15_49_SpecCube.dat',r'data\2019_07_17_15_38_14_SpecCube.dat', r'data\2019_07_25_11_56_38_SpecCube.dat', r'data\2019_08_09_12_17_55_SpecCube.dat' ]
 
