@@ -7,6 +7,8 @@ import math
 import config
 import data_loader
 from sklearn import preprocessing
+import pickle
+from scipy.signal import savgol_filter
 '''
 Preprocessor contains opportunity of
 1. Two step shuffling for big datasets
@@ -24,73 +26,76 @@ class Preprocessor():
     def __create_piles(self):
         print('----Piles creating started----')
         
+        #remove previous piles if they exist
+        piles_paths = glob.glob(os.path.join(self.shuffle_saving_path, '*pile*'))
+        for p in piles_paths:
+            os.remove(p)
+        
         #create clear piles
         piles = []
         for i in range(self.piles_number):
-            piles.append({})
-            for d_name in self.dict_names:
-                piles[i][d_name] = []
-            np.savez(os.path.join(self.shuffle_saving_path, 'pile'+str(i)), **{n: np.array(a) for n, a in piles[i].items()})
-            piles[i] = []
-         
+            piles.append([])
+            open(os.path.join(self.shuffle_saving_path, str(i)+'.pile'), 'w').close() #creating of an empty file
         
         print('--Splitting into piles started--')
         
-        for i, p in tqdm(enumerate(self.shuffle_paths)):
+        for i, p in tqdm(enumerate(self.raw_paths)):
             #clear piles for new randon numbers
             for pn in range(self.piles_number):
                 piles[pn] = []
             
             name = p.split("/")[-1].split(".")[0]
-            data = np.load(p)
+            _data = np.load(p)
+            
+            data = {n: a for n, a in _data.items()}
+            X, y = data[self.dict_names[0]], data[self.dict_names[1]]
+            
+            if self.augmented:  
+                y = [ [_y_] * X.shape[1] for _y_ in y ]
+                data[self.dict_names[0]] = np.concatenate(X, axis=0)
+                data[self.dict_names[1]] = np.concatenate(y, axis=0)
             
             #fill random distribution to files
-            for it in range(data['X'].shape[0]):
+            for it in range(data[self.dict_names[0]].shape[0]):
                 pile = random.randint(0, self.piles_number - 1)
                 piles[pile].append(it)            
             
-            for i_pile, pile in enumerate(piles):
-                data_pile = np.load(os.path.join(self.shuffle_saving_path, 'pile' + str(i_pile) + '.npz'), allow_pickle=True)
+            for i_pile, pile in enumerate(piles):              
                 _names = [name] * len(pile)
                 _indexes = [i] * len(pile)
-                
-                values = {}
-                for num, __value  in enumerate(data_pile.items()): #_name, _val
-                    __val = list(__value[1])
+                                
+                values = [data[self.dict_names[0]][pile], data[self.dict_names[1]][pile], _names, _indexes]
+                _values = {k: v for k, v in zip(self.dict_names, values)}
+                pickle.dump(_values, open(os.path.join(self.shuffle_saving_path, str(i_pile)+'.pile'), 'ab'))
                     
-                    if num == 0 or num == 1:
-                        __val.append(data[__value[0]][pile])
-                    if num == 2:
-                        __val.append(_names)
-                    if num == 3:
-                        __val.append(_indexes)
-                    
-                    values[__value[0]] = __val
-                
-                
-                np.savez(os.path.join(self.shuffle_saving_path, 'pile'+str(i_pile)), **{n: np.array(a) for n, a in values.items()})
-                    
-        
         print('--Splitting into piles finished--')
         
         print('----Piles creating finished----')
             
     def __shuffle_piles(self):
         print('----Shuffling of piles started----')
-        piles_paths = glob.glob(os.path.join(self.shuffle_saving_path, 'pile*.npz'))
+        piles_paths = glob.glob(os.path.join(self.shuffle_saving_path, '*.pile'))
+        print(len(piles_paths))
         
-        for i, pp in enumerate(piles_paths):
-            _data = np.load(pp, allow_pickle=True)
-            data = {n: a for n, a in _data.items()}
+        for i, pp in tqdm(enumerate(piles_paths)):
+            data = []
+            with open(pp, 'rb') as fr:
+                try:
+                    while True:
+                        data.append(pickle.load(fr))
+                except EOFError:
+                    pass            
             
-            for name, val in data.items():
-                data[name] = np.concatenate(val, axis=0)
-            
-            indexes = np.arange(data[self.dict_names[0]].shape[0])
+            _data = {}
+            for key in data[0].keys():
+                _data[key] = [f[key] for f in data]
+                _data[key] = np.concatenate(_data[key], axis=0)
+
+            indexes = np.arange(_data[self.dict_names[0]].shape[0])
             random.shuffle(indexes)
             
             os.remove(pp)
-            np.savez(os.path.join(self.shuffle_saving_path, 'shuffled'+str(i)), **{n: a[indexes] for n, a in data.items()})
+            np.savez(os.path.join(self.shuffle_saving_path, 'shuffled'+str(i)), **{n: a[indexes] for n, a in _data.items()})
         
         print('----Shuffling of piles finished----')
     
@@ -113,21 +118,27 @@ class Preprocessor():
         ind = len(glob.glob(os.path.join(self.archives_of_batch_size_saving_path, "*")))
         for _X, _y, _n, _i in zip(X_arr, y_arr, names_arr, indexes_arr):
             arch = {}
+            
+            #ill_indexes = np.flatnonzero(_y == 1)   #TODO remove!
+            #_X[ill_indexes] = savgol_filter(_X[ill_indexes], 5, 2) #TODO remove!
+            _X = preprocessing.Normalizer().transform(_X[:, :-1]) #TODO be careful
+            
             values = [_X, _y, _n, _i]
             for i, n in enumerate(self.dict_names):
                 arch[n] = values[i]
-
+qqqq
             np.savez(os.path.join(self.archives_of_batch_size_saving_path, 'batch'+str(ind)), **{n: a for n, a in arch.items()})
             ind+=1
         
-    def shuffle(self, paths, piles_number, shuffle_saving_path):
+    def shuffle(self, paths, piles_number, shuffle_saving_path, augmented=False):
         print('--------Shuffling started--------')
-        self.shuffle_paths = paths
+        self.raw_paths = paths
         self.piles_number = piles_number
         self.shuffle_saving_path = shuffle_saving_path
+        self.augmented = augmented
         
         if not os.path.exists(self.shuffle_saving_path):
-                os.mkdir(self.shuffle_saving_path)
+             os.mkdir(self.shuffle_saving_path)
         
         self.__create_piles()
         self.__shuffle_piles()
@@ -142,6 +153,9 @@ class Preprocessor():
         
         if not os.path.exists(archives_of_batch_size_saving_path):
                 os.mkdir(archives_of_batch_size_saving_path)
+                
+        for except_name in except_names:
+                print(f'We except {except_name}')
                 
         #------------removing of previously generated archives (of the previous CV step) ----------------
         files = glob.glob(os.path.join(archives_of_batch_size_saving_path, '*.npz'))
@@ -159,6 +173,10 @@ class Preprocessor():
             indexes = np.arange(X.shape[0])
             for except_name in except_names:
                 indexes = np.flatnonzero(np.core.defchararray.find(p_names, except_name) == -1)
+                
+                if indexes.shape[0] == 0:
+                    print(f'WARNING! For except_name {except_name} no except_samples were found')
+                
                 X, y, p_names, p_indexes = X[indexes], y[indexes], p_names[indexes], p_indexes[indexes]
             
             if not not_certain:
@@ -184,10 +202,11 @@ class Preprocessor():
 
 if __name__ == '__main__':
     preprocessor = Preprocessor()
-    paths = glob.glob('/work/users/mi186veva/data_preprocessed/augmented/*.npz')
+    paths = glob.glob('/work/users/mi186veva/data_preprocessed/augmented_l2_norm/*.npz')
     print(len(paths))
-    #preprocessor.shuffle(['/work/users/mi186veva/data_preprocessed/augmented/2019_07_12_11_15_49_.npz', '/work/users/mi186veva/data_preprocessed/augmented/2020_03_27_16_56_41_.npz'], 20, '/work/users/mi186veva/data_preprocessed/augmented/shuffled')
-    preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/augmented/shuffled')
+    #preprocessor.shuffle(['/work/users/mi186veva/data_preprocessed/augmented/2019_07_12_11_15_49_.npz', '/work/users/mi186veva/data_preprocessed/augmented/2020_03_27_16_56_41_.npz'], 100, '/work/users/mi186veva/data_preprocessed/augmented_l2_norm/shuffled')
+    preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/augmented_l2_norm/shuffled', augmented=True)
+    #preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/augmented/shuffled', augmented=True)
     #preprocessor.split_data_into_npz_of_batch_size(['/work/users/mi186veva/data_preprocessed/augmented/shuffled/shuffled9.npz', '/work/users/mi186veva/data_preprocessed/augmented/shuffled/shuffled8.npz'], 64, '/work/users/mi186veva/data_preprocessed/augmented/batch_sized', except_names=['2020_03_27_16_56_41', '2020_05_15_12_43_58'])
         
         
