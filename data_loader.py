@@ -260,12 +260,15 @@ def save_npy_from_dat(npy_save_path, dat_paths=None, not_certain_flag=True, exce
     
     print('The saving of .npz archives is ended')
     
-def save_raw_healthy_and_augmented_ill_in_npy(npy_save_path, augmented_path, dat_paths=None, not_certain_flag=True, except_indexes=[-1]):
+def save_raw_healthy_and_augmented_ill_in_npy(npy_save_path, augmented_path, dat_paths=None, not_certain_flag=True, except_indexes=[-1], with_raw_ill=False):
     gesund_data, ill_data, not_certain_data, paths = read_data_from_dat(paths=None, not_certain_flag=not_certain_flag, except_indexes=except_indexes, include_empty=True)
     print(len(gesund_data), len(ill_data), len(not_certain_data), len(paths))
     
     print('The saving of raw healthy and augmented ill is started')
     aug_paths = np.array(glob.glob(os.path.join(augmented_path, "*.npz")))
+    
+    if not os.path.exists(npy_save_path):
+        os.mkdir(npy_save_path)
     
     for it, p in tqdm(enumerate(paths)):
         name = p.split('/')[-1].split('SpecCube')[0]
@@ -282,7 +285,10 @@ def save_raw_healthy_and_augmented_ill_in_npy(npy_save_path, augmented_path, dat
             aug_X, aug_y = aug_data['X'], aug_data['y']
             i = aug_X[np.nonzero(aug_y == 1)]
             if i.shape[0] != 0:
-                i = np.concatenate(i, axis=0)
+                if with_raw_ill:
+                    i = np.concatenate(i[:, :-1, :], axis=0)
+                else:
+                    i = np.concatenate(i, axis=0)
             
             i = list(i)
             g = list(gesund_data[it])
@@ -290,6 +296,11 @@ def save_raw_healthy_and_augmented_ill_in_npy(npy_save_path, augmented_path, dat
             X, y = [], []
             append(g, X, y, 0)
             append(i, X, y, 1)
+            
+            if with_raw_ill:
+                i_raw = list(ill_data[it])
+                append(i_raw, X, y, 1)
+                
 
             #TODO for now there is no not_certain_data
 
@@ -321,7 +332,7 @@ def augment(source_paths, destination_paths, normalize_first=False):
 
 
 if __name__ == '__main__':
-    #save_raw_healthy_and_augmented_ill_in_npy("/work/users/mi186veva/data_preprocessed/combi", "/work/users/mi186veva/data_preprocessed/augmented")
+    save_raw_healthy_and_augmented_ill_in_npy("/work/users/mi186veva/data_preprocessed/combi_with_raw_ill", "/work/users/mi186veva/data_preprocessed/augmented")
     #save_raw_data()
     #get_data_npy('data_preprocessed//augmented')
 
@@ -335,7 +346,7 @@ if __name__ == '__main__':
     #print(data['not_certain_data'].shape)
     #print(data['path'])
 
-    augment(["/work/users/mi186veva/data_preprocessed/raw"], ['/work/users/mi186veva/data_preprocessed/augmented_l2_norm'], normalize_first=True)
+    #augment(["/work/users/mi186veva/data_preprocessed/raw"], ['/work/users/mi186veva/data_preprocessed/augmented_l2_norm'], normalize_first=True)
 
     #g, i, n, p = read_data_from_npy()
     #Aprint(g.shape, i.shape, n.shape)
