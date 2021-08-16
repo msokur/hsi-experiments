@@ -228,7 +228,8 @@ def count_ROC(csv_path, save_path, checkpoint=None):
                                   show=False,
                                   test_all_spectra=False,
                                   save_stats=False,
-                                  folder_name='')
+                                  folder_name='', 
+                                  spectrum_shift=-1)
 
             print('Sensitivity on ', checkpoint, '- ', sensitivity, ';was - ', row[2], ' diff - ', sensitivity - float(row[2]))
 
@@ -353,7 +354,7 @@ def cross_validation(root_folder_name):
 
     splits = np.array_split(range(len(paths)), config.CROSS_VALIDATION_SPLIT)
 
-    for indexes in splits:
+    for indexes in splits[2:]:
         old_model_name = config.MODEL_NAME
         if len(indexes) > 1:
             for i in indexes:
@@ -361,7 +362,7 @@ def cross_validation(root_folder_name):
         else:
             config.MODEL_NAME += '_' + str(i) + '_' + paths[i].split('\\')[-1].split('.')[0]
         
-        model = train(paths=paths, except_indexes=[p.split("/")[-1].split(".")[0] for p in np.array(paths)[indexes]])
+        model = train(paths=paths, except_indexes=[p.split("/")[-1].split(".")[0].split('SpecCube')[0] for p in np.array(paths)[indexes]])
         #model = train(paths=paths, except_indexes=indexes) #for old CV when I used as indexes numbers except names 
         #for i, path in enumerate(paths):  # full cross_valid
         for i in indexes:
@@ -377,7 +378,8 @@ def cross_validation(root_folder_name):
                                 show=False,
                                 test_all_spectra=False,
                                 save_stats=False,
-                                folder_name=config.MODEL_NAME)
+                                folder_name=config.MODEL_NAME,
+                                spectrum_shift=-1)   #be carefull!
 
             print('For path=', paths[i], ', (index: ', str(i), ') sensitivity= ', str(sensitivity), ' specificity= ', str(specificity), ' MODEL_NAME = ', config.MODEL_NAME)
 
@@ -395,24 +397,28 @@ def cross_validation(root_folder_name):
         config.MODEL_NAME = old_model_name
 
 def compare_checkpoints():
-    rg = np.linspace(200, 250, 2).astype(int)
+    rg = np.linspace(40, 520, 13).astype(int)
     checkpoints = [f'cp-{i:04d}' for i in rg]
     print(checkpoints)
     #f'cp-{config.EPOCHS:04d}'
-    save_path_ = 'test/inception_l2_norm_all_data'
+    save_path_ = 'test/CV_aug_more_checkpoits'
     for checkpoint in checkpoints:
         print(checkpoint)
+        
+        if not os.path.exists(save_path_):
+            os.mkdir(save_path_)
+        
         save_path = os.path.join(save_path_, checkpoint)
 
         if not os.path.exists(save_path):
             os.mkdir(save_path)
-        count_ROC('logs/inception_l2_norm_all_data/inception_l2_norm_all_data_stats_21.04.2021-15_56_21.csv', save_path, checkpoint=checkpoint)
+        count_ROC('logs/CV_aug/CV_aug_stats_13.08.2021-13_32_11.csv', save_path, checkpoint=checkpoint)
 
         count_metrics_on_diff_thresholds(save_path, all=True, threshold_range_params=[0, 1, 21])
 
 if __name__ =='__main__':
 
-    #compare_checkpoints()
+    compare_checkpoints()
 
     #count_ROC('logs/inception_l2_norm/inception_l2_norm_stats_16.01.2021-08_56_39.csv', 'save_path', checkpoint='cp-0250')
 
@@ -432,7 +438,7 @@ if __name__ =='__main__':
     print('Complete sensitivity, specificity:', sensitivity, specificity)'''
 
     #run...save_path='test/inception_cv_images/not_all_spectra'
-    cross_validation('CV_combi_clip_batchnorm')
+    #cross_validation('CV_aug')
 
     #paths = glob.glob('logs/test_inception*')
     #test_experiment('dropout_experiment', paths)

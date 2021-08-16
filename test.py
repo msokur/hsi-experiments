@@ -8,7 +8,7 @@ from callbacks import CustomTensorboardCallback
 from sklearn.metrics import confusion_matrix, f1_score
 import csv
 from sklearn import preprocessing
-
+import inspect
 
 class Tester():
 
@@ -44,9 +44,19 @@ class Tester():
         self.all_predictions = []
         self.all_predictions_raw = []
         self.all_gt = []
+        
+        print('--------------------PARAMS----------------------')
+        print(', \n'.join("%s: %s" % item for item in vars(self).items()))
+        print('------------------------------------------------')
 
     @staticmethod
     def count_metrics(gt, predictions, name, folder_name='', save_stats=True, return_dice=False):
+        print('--------------------method count_metrics params----------------------')
+        signature = inspect.signature(Tester.count_metrics)
+        for param in signature.parameters.values():
+            print(param)
+        print('------------------------------------------------')
+        
         if save_stats and folder_name == '':
             folder_name = self.SAVING_PATH
 
@@ -80,7 +90,14 @@ class Tester():
         return sensitivity, specificity
 
     def test_one_image(self, path_dat, path_image=None, save=False, show=True, test_all_spectra=False, save_stats=False,
-                       folder_name='', grayscale_result=False, return_dice=False, test_batch=False): #TODO remove test_batch
+                       folder_name='', grayscale_result=False, return_dice=False, test_batch=False, spectrum_shift=0): #TODO remove test_batch
+        
+        print('--------------------method test_one_image params----------------------')
+        signature = inspect.signature(self.test_one_image)
+        for param in signature.parameters.values():
+            print(param)
+        print('------------------------------------------------')
+        
         if folder_name == '':
             folder_name = self.SAVING_PATH
 
@@ -97,10 +114,15 @@ class Tester():
         spectrum = self.scaler.transform(spectrum_data[indexes[:, 0], indexes[:, 1]])
         if test_batch:
             data = np.load('/work/users/mi186veva/data_preprocessed/combi/batch_sized/batch51.npz')
-            spectrum = data['X']   #test batch
+            spectrum = data['X']  #test batch
             spectrum = self.scaler.transform(spectrum) #test_batch 
+            print('test_batch shape', spectrum.shape)
+        if spectrum_shift != 0:
+            spectrum = spectrum[:, :spectrum_shift]
         #predictions = self.model.predict(np.expand_dims(spectrum, axis=-1))
         predictions = self.model.predict(spectrum)
+        
+        print(predictions[:50])
 
         name = path_dat.split('\\')[-1].split('_S')[0]
 
@@ -160,11 +182,13 @@ class Tester():
             self.all_gt = []
             p = path_dir
             p = p.replace("\\", "-")
-
-            name = self.MODEL_NAME + '_' + '_all_spectra_' + str(test_all_spectra) + '_' + self.CHECKPOINT + '_' + p + '_gray_' + str(grayscale_result)
-            folder_name = os.path.join(self.SAVING_PATH, name)
-            if not os.path.exists(folder_name):
-                os.mkdir(folder_name)
+            
+            folder_name=""
+            if save_stats or save:
+                name = self.MODEL_NAME + '_' + '_all_spectra_' + str(test_all_spectra) + '_' + self.CHECKPOINT + '_' + p + '_gray_' + str(grayscale_result)
+                folder_name = os.path.join(self.SAVING_PATH, name)
+                if not os.path.exists(folder_name):
+                    os.mkdir(folder_name)
 
             for i, path in tqdm(enumerate(glob.glob(os.path.join(path_dir, '*.dat')))):
 
@@ -189,17 +213,22 @@ class Tester():
 
 if __name__ == "__main__":
     
-    tester = Tester( f'cp-0060', config.DATA_PATHS, '', MODEL_FOLDER='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_combi_clip_batchnorm/combi_smooth_clip_batchnorm_0_1_2_3')
+    tester = Tester( f'cp-0040', config.DATA_PATHS, '', MODEL_FOLDER='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_aug/CV_aug_0_1_2_3')
 
-    path = '/work/users/mi186veva/data/2020_01_29_18_12_15_SpecCube.dat'
-    sensitivity, specificity = tester.test_one_image(path,
-                        path_image=path + '_Mask JW Kolo.png',
-                        save=False,
-                        show=False,
-                        test_all_spectra=False,
-                        save_stats=False,
-                        folder_name=config.MODEL_NAME,
-                        test_batch=True)
+    #tester.test_ALL_images(save=False, show=False, test_all_spectra=False, save_stats=False)
+    
+    
+    path = '/work/users/mi186veva/data/2019_09_04_12_43_40_SpecCube.dat'
+    for path in [ '/work/users/mi186veva/data/2019_09_04_12_43_40_SpecCube.dat', '/work/users/mi186veva/data/2020_05_28_15_20_27_SpecCube.dat', '/work/users/mi186veva/data/2019_07_12_11_15_49_SpecCube.dat', '/work/users/mi186veva/data/2020_05_15_12_43_58_SpecCube.dat']:
+        sensitivity, specificity = tester.test_one_image(path,
+                            path_image=path + '_Mask JW Kolo.png',
+                            save=False,
+                            show=False,
+                            test_all_spectra=False,
+                            save_stats=False,
+                            folder_name=config.MODEL_NAME,
+                            test_batch=False,
+                            spectrum_shift=-1)
 
     #dat_names = [r'data\2019_07_12_11_15_49_SpecCube.dat',r'data\2019_07_17_15_38_14_SpecCube.dat', r'data\2019_07_25_11_56_38_SpecCube.dat', r'data\2019_08_09_12_17_55_SpecCube.dat' ]
 
