@@ -5,6 +5,24 @@ from tensorflow.keras import activations
 def inception1d_block(input_, factor=16):
     input_ = tf.expand_dims(input_, axis=-1)
 
+    branch1 = tf.keras.layers.Conv1D(filters=factor*4, kernel_size=1, padding="same", activation='relu')(input_)
+
+    branch2 = tf.keras.layers.Conv1D(filters=factor*6, kernel_size=1, padding="same", activation='relu')(input_)
+    branch2 = tf.keras.layers.Conv1D(filters=factor*8, kernel_size=3, padding="same", activation='relu')(branch2)
+
+    branch3 = tf.keras.layers.Conv1D(filters=factor, kernel_size=1, padding="same", activation='relu')(input_)
+    branch3 = tf.keras.layers.Conv1D(filters=factor*2, kernel_size=5, padding="same", activation='relu')(branch3)
+
+    branch4 = tf.keras.layers.MaxPooling1D(pool_size=3, strides=1, padding="same")(input_)
+    branch4 = tf.keras.layers.Conv1D(filters=factor*2, kernel_size=1, activation='relu')(branch4)
+
+    net = tf.keras.layers.concatenate([branch1, branch2, branch3, branch4])
+
+    return net
+
+def inception1d_block_with_batchnorm(input_, factor=16):
+    input_ = tf.expand_dims(input_, axis=-1)
+
     #branch1 = tf.keras.layers.Conv1D(filters=factor*4, kernel_size=1, padding="same", kernel_initializer='he_uniform')(input_)
     branch1 = tf.keras.layers.Conv1D(filters=factor*4, kernel_size=1, padding="same")(input_)
     branch1 = tf.keras.layers.BatchNormalization()(branch1)
@@ -63,10 +81,13 @@ def lstm_block():
 
 def inception_model():
     input_ = tf.keras.layers.Input(
-        shape=(config.LAST_NM - config.FIRST_NM), name="title"
+        shape=(config.LAST_NM - config.FIRST_NM - 1), name="title"
     )
-
-    net = inception1d_block(input_)
+    
+    if config.WITH_BATCH_NORM:
+        net = inception1d_block_with_batchnorm(input_)
+    else:
+        net = inception1d_block(input_)
 
     net = tf.keras.layers.Flatten()(net)
     net = tf.keras.layers.Dense(500, activation='relu')(net)

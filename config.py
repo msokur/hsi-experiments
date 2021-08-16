@@ -10,7 +10,7 @@ MODE_TYPES = {
 MODE = MODE_TYPES['SERVER']
 
 #change modelname here!
-def get_model_name(MODEL_NAME_PATHS, model_name='combi_smooth_clip_batchnorm'):
+def get_model_name(MODEL_NAME_PATHS, model_name='CV_aug'):
     return os.path.join(*MODEL_NAME_PATHS, model_name)
 
 NORMALIZATION_TYPES = {
@@ -26,11 +26,14 @@ NPY_PATHS = [r'data_preprocessed/augmented'] #for data loader without generator
 RAW_NPY_PATH = r'data_preprocessed/raw' #for generators
 AUGMENTED_PATH = r'data_preprocessed/augmented' #for generators
 #SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled' #for generators
-#SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled'
-#BATCHED_PATH = r'data_preprocessed/augmented/batch_sized' #for generators
+SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled'
+BATCHED_PATH = r'data_preprocessed/augmented/batch_sized' #for generators
 
-SHUFFLED_PATH = r'data_preprocessed/combi/shuffled'
-BATCHED_PATH = r'data_preprocessed/combi/batch_sized'
+#SHUFFLED_PATH = r'data_preprocessed/combi/shuffled'
+#BATCHED_PATH = r'data_preprocessed/combi/batch_sized'
+
+#SHUFFLED_PATH = r'data_preprocessed/combi_with_raw_ill/shuffled'
+#BATCHED_PATH = r'data_preprocessed/combi_with_raw_ill/batch_sized'
 
 #SHUFFLED_PATH = r'data_preprocessed/augmented_l2_norm/shuffled'
 #BATCHED_PATH = r'data_preprocessed/augmented_l2_norm/batch_sized'
@@ -58,18 +61,21 @@ SPLIT_FACTOR = 0.9 #for data sets: train\test data percentage
 WAVE_AREA = 100
 FIRST_NM = 8
 LAST_NM = 100
-EPOCHS = 80
+
+EPOCHS = 200
+CHECKPOINT_WRITING_STEP = 40
+
 CROSS_VALIDATION_SPLIT = int(56 / 4)
 SCALER_FILE_NAME = '.scaler'
 NORMALIZATION_TYPE = NORMALIZATION_TYPES['l2_norm']
+WITH_BATCH_NORM = False
 
 CHECKPOINT_PATH = 'checkpoints'
 MODEL_PATH = 'model'
-CHECKPOINT_WRITING_STEP = 20
-WRITE_IMAGES = False
 
+WRITE_IMAGES = False
 DROPOUT_VALUE = 0.1
-LEARNING_RATE = 1e-3
+LEARNING_RATE = 1e-4
 
 RESTORE_MODEL = False
 ADD_TIME = False
