@@ -118,18 +118,34 @@ class Preprocessor():
         ind = len(glob.glob(os.path.join(self.archives_of_batch_size_saving_path, "*")))
         for _X, _y, _n, _i in zip(X_arr, y_arr, names_arr, indexes_arr):
             arch = {}
-            
-            #ill_indexes = np.flatnonzero(_y == 1)   #TODO remove!
-            #_X[ill_indexes] = savgol_filter(_X[ill_indexes], 5, 2) #TODO remove!
-            _X = preprocessing.Normalizer().transform(_X[:, :-1]) #TODO be careful
+                      
+            _X = self.preprocess(_X, _y) 
             
             values = [_X, _y, _n, _i]
             for i, n in enumerate(self.dict_names):
                 arch[n] = values[i]
-qqqq
+
             np.savez(os.path.join(self.archives_of_batch_size_saving_path, 'batch'+str(ind)), **{n: a for n, a in arch.items()})
             ind+=1
+    
+    '''Add here some specific preprocessing if needed'''
+    def preprocess(self, X, y):
+        #ill_indexes = np.flatnonzero(_y == 1)   #TODO remove!
+        #_X[ill_indexes, :-1] = savgol_filter(_X[ill_indexes, :-1], 5, 2) #TODO remove!
         
+        #X[X < 0] = 0.
+        #X = preprocessing.Normalizer().transform(X[:, :-1]) #TODO be careful
+        
+        #ill_indexes = np.flatnonzero(y == 1) 
+        
+        X = X[:, :-1]
+        #X[X<0] = 0.
+        #X[ill_indexes] = savgol_filter(X[ill_indexes], 7, 2)
+        X[X<0] = 0.
+        X = preprocessing.Normalizer().transform(X)
+    
+        return X
+    
     def shuffle(self, paths, piles_number, shuffle_saving_path, augmented=False):
         print('--------Shuffling started--------')
         self.raw_paths = paths
@@ -202,11 +218,13 @@ qqqq
 
 if __name__ == '__main__':
     preprocessor = Preprocessor()
-    paths = glob.glob('/work/users/mi186veva/data_preprocessed/augmented_l2_norm/*.npz')
+    paths = glob.glob('/work/users/mi186veva/data_preprocessed/combi_with_raw_ill/*.npz')
     print(len(paths))
     #preprocessor.shuffle(['/work/users/mi186veva/data_preprocessed/augmented/2019_07_12_11_15_49_.npz', '/work/users/mi186veva/data_preprocessed/augmented/2020_03_27_16_56_41_.npz'], 100, '/work/users/mi186veva/data_preprocessed/augmented_l2_norm/shuffled')
-    preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/augmented_l2_norm/shuffled', augmented=True)
+    #preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/combi_with_raw_ill/shuffled', augmented=False)
     #preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/augmented/shuffled', augmented=True)
-    #preprocessor.split_data_into_npz_of_batch_size(['/work/users/mi186veva/data_preprocessed/augmented/shuffled/shuffled9.npz', '/work/users/mi186veva/data_preprocessed/augmented/shuffled/shuffled8.npz'], 64, '/work/users/mi186veva/data_preprocessed/augmented/batch_sized', except_names=['2020_03_27_16_56_41', '2020_05_15_12_43_58'])
+    
+    paths = glob.glob('/work/users/mi186veva/data_preprocessed/combi_with_raw_ill/shuffled/*.npz')
+    preprocessor.split_data_into_npz_of_batch_size(paths, config.BATCH_SIZE, '/work/users/mi186veva/data_preprocessed/combi_with_raw_ill/batch_sized', "")
         
         
