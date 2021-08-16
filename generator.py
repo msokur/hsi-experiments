@@ -32,13 +32,18 @@ class DataGenerator(keras.utils.Sequence):
         self.split_flag = split_flag
         
         self.raw_npz_paths = glob.glob(os.path.join(raw_npz_path, '*.npz'))
-        self.shuffled_npz_paths = glob.glob(os.path.join(shuffled_npz_path, 'shuffl*.npz'))
+        self.shuffled_npz_paths = glob.glob(os.path.join(shuffled_npz_path, 'shuffl*.npz'))  
         
         self.batch_size = batch_size
         self.except_indexes = except_indexes
         self.index = 0
         
         self.preprocessor = Preprocessor()
+        
+        print('--------------------PARAMS----------------------')
+        print(', \n'.join("%s: %s" % item for item in vars(self).items()))
+        print('------------------------------------------------')
+        
         self.split()
 
 
@@ -63,7 +68,7 @@ class DataGenerator(keras.utils.Sequence):
        
         #X = savgol_filter(X, 5, 2)
         
-        #X = X[:, :-1]
+        X = X[:, :-1]
         self.index += 1
         
         return X, y
@@ -94,7 +99,7 @@ class DataGenerator(keras.utils.Sequence):
         else:
             print('!!!!!   Dataset not splitted   !!!!!')
             
-        splitted_paths = glob.glob(os.path.join(self.splitted_npz_path, '*.npz'))
+        splitted_paths = glob.glob(os.path.join(self.splitted_npz_path, '*.npz')) #TODO, for test, remove!!!
         split_factor = int(self.split_factor * len(splitted_paths))
         
         if self.mode == 'all':

@@ -1,12 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=suffle_aug_l2
+#SBATCH --job-name=compare_CV_aug_checkpoits
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
 #SBATCH --mem=64G
-##SBATCH --gres=gpu:v100:4
-#SBATCH --output=shuffle_aug_l2_%j.log
+##SBATCH --gres=gpu:v100:1
+#SBATCH --gres=gpu:rtx2080ti:2
+#SBATCH --output=compare_CV_aug_checkpoits_%j.log
 
 #module load Python
 #module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4
@@ -26,4 +27,4 @@ module load OpenCV/4.2.0-fosscuda-2019b-Python-3.7.4
 module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
 
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/preprocessor.py
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validation.py

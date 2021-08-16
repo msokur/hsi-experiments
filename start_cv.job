@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=test
+#SBATCH --job-name=CV_aug_2317521_continuation
 #SBATCH --partition=clara-job
-#SBATCH --time=40:00:00
-#SBATCH --mem=64G
-#SBATCH --gres=gpu:rtx2080ti:1
-##SBATCH --gres=gpu:v100:1
-#SBATCH --output=test_%j.log
+#SBATCH --time=10-00:00:00
+#SBATCH --mem=120G
+##SBATCH --gres=gpu:v100:2
+#SBATCH --gres=gpu:rtx2080ti:2
+#SBATCH --output=CV_aug_2317521_continuation_%j.log
 
 #module load Python
 #module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4
@@ -27,4 +27,4 @@ module load OpenCV/4.2.0-fosscuda-2019b-Python-3.7.4
 module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
 
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test.py
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validation.py

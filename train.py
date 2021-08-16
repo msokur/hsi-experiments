@@ -35,8 +35,8 @@ def train(paths=None, except_indexes=[]):
 
             #mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
             #mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.ReductionToOneDevice())
-            #mirrored_strategy = tf.distribute.experimental.CentralStorageStrategy()
-            mirrored_strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
+            #mirrored_strategy = tf.distribute.CentralStorageStrategy()
+            mirrored_strategy = tf.distribute.MultiWorkerMirroredStrategy()
             #mirrored_strategy = tf.distribute.MirroredStrategy()
 
         '''-------LOGGING and HPARAMS---------'''
@@ -71,6 +71,7 @@ def train(paths=None, except_indexes=[]):
         METRICS = []
         WEIGTED_METRICS = []
         if config.RESTORE_MODEL:
+            print('!!!!!!!!!!!!We restore model!!!!!!!!!!!!')
             search_path = os.path.join(log_dir, 'checkpoints')
             all_checkpoints = [os.path.join(search_path, d) for d in os.listdir(search_path) if os.path.isdir(os.path.join(search_path, d))]
             sorted(all_checkpoints)
@@ -114,7 +115,8 @@ def train(paths=None, except_indexes=[]):
             #model = lstm_block()
 
             model.compile(
-                optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE, clipnorm=1.),
+                #optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE, clipnorm=1.),
+                optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE),
                 loss=keras.losses.BinaryCrossentropy(),
                 metrics=METRICS,
                 weighted_metrics=WEIGHTED_METRICS
@@ -198,6 +200,7 @@ def train(paths=None, except_indexes=[]):
 
 if __name__ == '__main__':
     train()
+    #train(except_indexes=['2019_09_04_12_43_40_', '2020_05_28_15_20_27_', '2019_07_12_11_15_49_', '2020_05_15_12_43_58_'])
 
     
 
