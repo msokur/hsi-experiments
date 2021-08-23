@@ -136,11 +136,11 @@ class Preprocessor():
         #X[X < 0] = 0.
         #X = preprocessing.Normalizer().transform(X[:, :-1]) #TODO be careful
         
-        #ill_indexes = np.flatnonzero(y == 1) 
+        ill_indexes = np.flatnonzero(y == 1) 
         
         X = X[:, :-1]
-        #X[X<0] = 0.
-        #X[ill_indexes] = savgol_filter(X[ill_indexes], 7, 2)
+        X[X<0] = 0.
+        X[ill_indexes] = savgol_filter(X[ill_indexes], 7, 2)
         X[X<0] = 0.
         X = preprocessing.Normalizer().transform(X)
     

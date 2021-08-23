@@ -354,7 +354,7 @@ def cross_validation(root_folder_name):
 
     splits = np.array_split(range(len(paths)), config.CROSS_VALIDATION_SPLIT)
 
-    for indexes in splits[2:]:
+    for indexes in splits:
         old_model_name = config.MODEL_NAME
         if len(indexes) > 1:
             for i in indexes:
@@ -418,7 +418,7 @@ def compare_checkpoints():
 
 if __name__ =='__main__':
 
-    compare_checkpoints()
+    #compare_checkpoints()
 
     #count_ROC('logs/inception_l2_norm/inception_l2_norm_stats_16.01.2021-08_56_39.csv', 'save_path', checkpoint='cp-0250')
 
@@ -438,7 +438,7 @@ if __name__ =='__main__':
     print('Complete sensitivity, specificity:', sensitivity, specificity)'''
 
     #run...save_path='test/inception_cv_images/not_all_spectra'
-    #cross_validation('CV_aug')
+    cross_validation('CV_combi_with_raw_all_fixed_preprocessing')
 
     #paths = glob.glob('logs/test_inception*')
     #test_experiment('dropout_experiment', paths)

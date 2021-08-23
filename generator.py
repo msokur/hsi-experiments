@@ -69,6 +69,7 @@ class DataGenerator(keras.utils.Sequence):
         #X = savgol_filter(X, 5, 2)
         
         X = X[:, :-1]
+        #print(X.shape)
         self.index += 1
         
         return X, y

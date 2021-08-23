@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=CV_aug_2317521_continuation
+#SBATCH --job-name=CV_combi_with_raw_ill_fixed_preprocessing
 #SBATCH --partition=clara-job
 #SBATCH --time=10-00:00:00
 #SBATCH --mem=120G
 ##SBATCH --gres=gpu:v100:2
 #SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=CV_aug_2317521_continuation_%j.log
+#SBATCH --output=CV_combi_with_raw_ill_fixed_preprocessing_%j.log
 
 #module load Python
 #module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4
