@@ -3,12 +3,13 @@ import cv2
 import numpy as np
 import os
 from tqdm import tqdm
-from data_loader import *
-from callbacks import CustomTensorboardCallback
+import data_loader #import *
+import callbacks
 from sklearn.metrics import confusion_matrix, f1_score
 import csv
 from sklearn import preprocessing
 import inspect
+import config
 
 class Tester():
 
@@ -17,7 +18,7 @@ class Tester():
     1. give LOGS_PATH and MODEL_PATH separatly
     2. give MODEL_FOLDER
     '''
-    def __init__(self, CHECKPOINT, TEST_PATHS, SAVING_PATH, LOGS_PATH='', MODEL_NAME='', MODEL_FOLDER=''):
+    def __init__(self, CHECKPOINT, TEST_PATHS, SAVING_PATH, LOGS_PATH='', MODEL_NAME='', MODEL_FOLDER='', custom_objects=config.CUSTOM_OBJECTS):
 
         if MODEL_NAME != '':
             self.MODEL_NAME = MODEL_NAME
@@ -35,8 +36,8 @@ class Tester():
         self.TEST_PATHS = TEST_PATHS
         self.SAVING_PATH = SAVING_PATH
 
-        self.model = tf.keras.models.load_model(MODEL_PATH)
-        self.tensorboard_callback = CustomTensorboardCallback(log_dir=MODEL_FOLDER) #for drawing function
+        self.model = tf.keras.models.load_model(MODEL_PATH, custom_objects=custom_objects) #{'f1_m':train.f1_m}
+        self.tensorboard_callback = callbacks.CustomTensorboardCallback(log_dir=MODEL_FOLDER) #for drawing function
 
         #self.scaler = restore_scaler(MODEL_FOLDER)
         self.scaler = preprocessing.Normalizer() #TODO return normal scaler
@@ -101,7 +102,7 @@ class Tester():
         if folder_name == '':
             folder_name = self.SAVING_PATH
 
-        gt_image, spectrum_data, gesund_indexes, ill_indexes, not_certain_indexes = get_data_for_showing(path_dat, "")
+        gt_image, spectrum_data, gesund_indexes, ill_indexes, not_certain_indexes = data_loader.get_data_for_showing(path_dat, "")
         indexes = gesund_indexes + ill_indexes + not_certain_indexes
         indexes = np.array(indexes)
 
@@ -213,13 +214,13 @@ class Tester():
 
 if __name__ == "__main__":
     
-    tester = Tester( f'cp-0040', config.DATA_PATHS, '', MODEL_FOLDER='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_aug/CV_aug_0_1_2_3')
+    tester = Tester( f'cp-0040', config.DATA_PATHS, '', MODEL_FOLDER='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_200_combi_with_raw_all_fixed_preprocessing/combi_with_raw_all_0_1_2_3')
 
     #tester.test_ALL_images(save=False, show=False, test_all_spectra=False, save_stats=False)
     
     
     path = '/work/users/mi186veva/data/2019_09_04_12_43_40_SpecCube.dat'
-    for path in [ '/work/users/mi186veva/data/2019_09_04_12_43_40_SpecCube.dat', '/work/users/mi186veva/data/2020_05_28_15_20_27_SpecCube.dat', '/work/users/mi186veva/data/2019_07_12_11_15_49_SpecCube.dat', '/work/users/mi186veva/data/2020_05_15_12_43_58_SpecCube.dat']:
+    for path in [ '/work/users/mi186veva/data/2019_09_04_12_43_40_SpecCube.dat']:#, '/work/users/mi186veva/data/2020_05_28_15_20_27_SpecCube.dat', '/work/users/mi186veva/data/2019_07_12_11_15_49_SpecCube.dat', '/work/users/mi186veva/data/2020_05_15_12_43_58_SpecCube.dat']:
         sensitivity, specificity = tester.test_one_image(path,
                             path_image=path + '_Mask JW Kolo.png',
                             save=False,

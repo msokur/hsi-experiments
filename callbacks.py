@@ -1,7 +1,7 @@
 from tensorflow import keras
 import tensorflow as tf
 import cv2
-from data_loader import get_data_for_showing, restore_scaler
+import data_loader #import get_data_for_showing, restore_scaler
 import config
 import numpy as np
 from tqdm import tqdm
@@ -9,21 +9,27 @@ import os
 import math
 import glob
 import datetime
+import test
+from sklearn import preprocessing
 
 class CustomTensorboardCallback(keras.callbacks.TensorBoard):
 
     def __init__(self, except_indexes=[], **kwargs):
+        print(except_indexes)
         
         super(CustomTensorboardCallback, self).__init__(**kwargs)
-
-        gt_image, spectrum_data, gesund_indexes, ill_indexes, not_certain_indexes = get_data_for_showing('2019_07_12_11_15_49_SpecCube.dat', config.DATA_PATHS[0])
-        indexes = gesund_indexes + ill_indexes + not_certain_indexes
+        
+        self.test_name = '2019_09_04_12_43_40_SpecCube.dat'
+        gt_image, spectrum_data, gesund_indexes, ill_indexes, not_certain_indexes = data_loader.get_data_for_showing(self.test_name, config.DATA_PATHS[0])
+        indexes = gesund_indexes + ill_indexes 
         indexes = np.array(indexes)
 
-        #scaler = restore_scaler(self.log_dir)
-        #spectrum = scaler.transform(spectrum_data[indexes[:, 1], indexes[:, 0]])
-        spectrum = spectrum_data[indexes[:, 1], indexes[:, 0]]
+        #scaler = data_loader.restore_scaler(self.log_dir) #TODO return normal scaling
+        self.scaler =  preprocessing.Normalizer()
+        #spectrum = spectrum_data[indexes[:, 0], indexes[:, 1]]
+        spectrum = self.scaler.transform(spectrum_data[indexes[:, 0], indexes[:, 1]])
         self.gt_image = gt_image
+        self.gt = [0] * len(gesund_indexes) + [1] * len(ill_indexes)
         self.spectrum = spectrum
         self.indexes = indexes
 
@@ -31,28 +37,28 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
         if len(except_indexes) > 0:
             self.are_excepted = True
             self.except_indexes = except_indexes
-            #self.get_spectrum_of_excluded_patients()
-
+            self.get_spectrum_of_excluded_patients()
+            
 
     def get_spectrum_of_excluded_patients(self):
-        paths = glob.glob(os.path.join(config.DATA_PATHS[0], '*.dat'))
-
-        masks = []
-        for i, path in enumerate(paths):
-            if not i in exclude_indexes if len(exclude_indexes) != 0 else True:
-                with open(path, newline='')  as filex:
-                    filename=filex.name
-
-                    #rediction = model.predict(learn_data)
-
-                    #spectrum_data, pixely = Cube_Read(paths[index],wavearea=100, Firstnm=0,Lastnm=100).cube_matrix()
-                    spectrum_data, pixely = Cube_Read(filename,wavearea=100, Firstnm=0,Lastnm=100).cube_matrix()
-                    spectrum_data1 = spectrum_data.copy()
-                    spectrum_datas.append(spectrum_data)
-
-                    mask = cv2.imread(path+'_Mask JW Kolo.png')[..., ::-1]
-                    masks.append(mask)
-
+        self.excepted_spectrums = []
+        self.excepted_gt = []
+        
+        for except_name in self.except_indexes:
+            path = glob.glob(os.path.join(config.RAW_NPY_PATH, except_name + '*'))
+                        
+            if len(path) == 0:
+                print(f'WARNING! For except_name {except_name} no raw_paths were found')
+            else:
+                data = np.load(path[0])
+                not_not_certain_indexes = np.flatnonzero(data['y'] != 2)
+                self.excepted_spectrums.append(self.scaler.transform(data['X'][not_not_certain_indexes, :-1]))
+                self.excepted_gt.append(data['y'][not_not_certain_indexes])
+        
+        
+        self.excepted_spectrums = np.array(self.excepted_spectrums) 
+        self.excepted_gt = np.array(self.excepted_gt)
+                   
 
 
     def draw_predictions_on_images(self, predictions, image=None, grayscale_result=False):
@@ -109,6 +115,16 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
         if is_tf:
             image = image[..., ::-1]
         return image
+    
+    def __write_valid_scalar(self, scalar_name, scalar_value, epoch):
+        if 'val' in self._writers:
+            with self._writers['val'].as_default():
+                tf.summary.scalar(scalar_name, data=scalar_value, step=epoch)
+                #tf.summary.scalar('epoch_specificity', data=logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), step=epoch)
+        if 'validation' in self._writers:
+            with self._writers['validation'].as_default():
+                tf.summary.scalar(scalar_name, data=scalar_value, step=epoch)
+                #tf.summary.scalar('epoch_specificity', data=logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), step=epoch)
 
     def on_epoch_end(self, epoch, logs=None):
 
@@ -122,19 +138,25 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
                     gt_image = self.gt_image
                     spectrum = self.spectrum
 
-                    predictions = self.model.predict(np.expand_dims(spectrum, axis=-1))
+                    predictions = self.model.predict(np.expand_dims(spectrum, axis=-1))   # TODO don't forget to remove expand_dims (or better learn how to get the shape of an input layer)
                     image = tf.py_function(self.draw_predictions_on_images, [predictions], [tf.uint8])
                     tf.summary.image('image', image, step=epoch)
             
             tf.summary.scalar('epoch_specificity', data=logs['tn'] / (logs['tn'] + logs['fp']), step=epoch)
         
-        if 'val' in self._writers:
-            with self._writers['val'].as_default():
-                tf.summary.scalar('epoch_specificity', data=logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), step=epoch)
-        if 'validation' in self._writers:
-            with self._writers['validation'].as_default():
-                tf.summary.scalar('epoch_specificity', data=logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), step=epoch)
-
+        self.__write_valid_scalar('epoch_specificity', logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), epoch)
+        
+        if self.are_excepted:
+            for name, exc, gt in zip(self.except_indexes, self.excepted_spectrums, self.excepted_gt):
+                predictions = self.model.predict(exc[:, :-1])
+                sensitivity, specificity, f1 = test.Tester.count_metrics(np.rint(gt), np.rint(predictions), "", "", False, return_dice=True)
+                
+                self.__write_valid_scalar('test_'+name+'_sensitivity', sensitivity, epoch)
+                self.__write_valid_scalar('test_'+name+'_specificity', specificity, epoch)
+                self.__write_valid_scalar('test_'+name+'_f1', f1, epoch)
+        
+                print(f'-------Epoch validation: {name} sensitivity:{sensitivity} specificity:{specificity} -----------')
+            
         '''print(self.__dict__)
         for key, value in logs.items():
             print (key, value)'''

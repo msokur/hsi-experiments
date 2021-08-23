@@ -1,19 +1,22 @@
 #import tensorflow
 from tensorflow import keras
 import config
-from data_loader import get_data_for_showing
-from data_loader import *
+import data_loader #import get_data_for_showing
+#from data_loader import *
 from model import *
-from callbacks import CustomTensorboardCallback
+import callbacks 
 import os
 from shutil import copyfile
 import telegram_send
 from generator import DataGenerator
+import tf_metrics
 
 def send_tg_message(message):
     if config.MODE == 0:
             message = 'SERVER ' + message
     telegram_send.send(messages=[message], conf='tg.config')
+    
+
 
 def train(paths=None, except_indexes=[]):
     history = None
@@ -45,7 +48,7 @@ def train(paths=None, except_indexes=[]):
             if not os.path.exists(log_dir):
                 os.mkdir(log_dir)
 
-            for file in ['config.py', 'train.py', 'data_loader.py', 'model.py', 'generator.py', 'preprocessor.py', 'start.job']:
+            for file in ['config.py', 'train.py', 'data_loader.py', 'model.py', 'generator.py', 'preprocessor.py', 'start.job', 'callbacks.py']:
                 if os.path.exists(file):
                     copyfile(file, os.path.join(log_dir, file))
             #job_filepath = 'start.job'
@@ -96,7 +99,9 @@ def train(paths=None, except_indexes=[]):
                     ]
                     WEIGHTED_METRICS = [
                         keras.metrics.BinaryAccuracy(name='accuracy'),
-                        keras.metrics.AUC(name='auc')
+                        keras.metrics.AUC(name='auc'),
+                        tf_metrics.f1_m
+                        #specificity_m
                     ]
                     model = inception_model()
             else:
@@ -109,7 +114,9 @@ def train(paths=None, except_indexes=[]):
                 ]
                 WEIGHTED_METRICS = [
                     keras.metrics.BinaryAccuracy(name='accuracy'),
-                    keras.metrics.AUC(name='auc')
+                    keras.metrics.AUC(name='auc'),
+                    tf_metrics.f1_m
+                    #specificity_m
                 ]
                 model = inception_model()
             #model = lstm_block()
@@ -126,7 +133,7 @@ def train(paths=None, except_indexes=[]):
 
         '''-------CALLBACKS---------'''
 
-        tensorboard_callback = CustomTensorboardCallback(
+        tensorboard_callback = callbacks.CustomTensorboardCallback(
             log_dir=log_dir, 
             write_graph=True, 
             histogram_freq=1, 
@@ -199,8 +206,8 @@ def train(paths=None, except_indexes=[]):
     return model
 
 if __name__ == '__main__':
-    train()
-    #train(except_indexes=['2019_09_04_12_43_40_', '2020_05_28_15_20_27_', '2019_07_12_11_15_49_', '2020_05_15_12_43_58_'])
+    #train()
+    train(except_indexes=['2019_09_04_12_43_40_', '2020_05_28_15_20_27_', '2019_07_12_11_15_49_', '2020_05_15_12_43_58_'])
 
     
 

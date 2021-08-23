@@ -1,5 +1,6 @@
 import datetime
 import os
+import tf_metrics
 
 MODE_TYPES = {
     'SERVER':0,
@@ -10,7 +11,7 @@ MODE_TYPES = {
 MODE = MODE_TYPES['SERVER']
 
 #change modelname here!
-def get_model_name(MODEL_NAME_PATHS, model_name='CV_aug'):
+def get_model_name(MODEL_NAME_PATHS, model_name='combi_with_raw_all'):
     return os.path.join(*MODEL_NAME_PATHS, model_name)
 
 NORMALIZATION_TYPES = {
@@ -26,14 +27,14 @@ NPY_PATHS = [r'data_preprocessed/augmented'] #for data loader without generator
 RAW_NPY_PATH = r'data_preprocessed/raw' #for generators
 AUGMENTED_PATH = r'data_preprocessed/augmented' #for generators
 #SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled' #for generators
-SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled'
-BATCHED_PATH = r'data_preprocessed/augmented/batch_sized' #for generators
+#SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled'
+#BATCHED_PATH = r'data_preprocessed/augmented/batch_sized' #for generators
 
 #SHUFFLED_PATH = r'data_preprocessed/combi/shuffled'
 #BATCHED_PATH = r'data_preprocessed/combi/batch_sized'
 
-#SHUFFLED_PATH = r'data_preprocessed/combi_with_raw_ill/shuffled'
-#BATCHED_PATH = r'data_preprocessed/combi_with_raw_ill/batch_sized'
+SHUFFLED_PATH = r'data_preprocessed/combi_with_raw_ill/shuffled'
+BATCHED_PATH = r'data_preprocessed/combi_with_raw_ill/batch_sized2'
 
 #SHUFFLED_PATH = r'data_preprocessed/augmented_l2_norm/shuffled'
 #BATCHED_PATH = r'data_preprocessed/augmented_l2_norm/batch_sized'
@@ -62,13 +63,14 @@ WAVE_AREA = 100
 FIRST_NM = 8
 LAST_NM = 100
 
-EPOCHS = 200
-CHECKPOINT_WRITING_STEP = 40
+EPOCHS = 80
+CHECKPOINT_WRITING_STEP = 20
 
 CROSS_VALIDATION_SPLIT = int(56 / 4)
 SCALER_FILE_NAME = '.scaler'
 NORMALIZATION_TYPE = NORMALIZATION_TYPES['l2_norm']
 WITH_BATCH_NORM = False
+CUSTOM_OBJECTS = {'f1_m':tf_metrics.f1_m}
 
 CHECKPOINT_PATH = 'checkpoints'
 MODEL_PATH = 'model'
@@ -78,10 +80,11 @@ DROPOUT_VALUE = 0.1
 LEARNING_RATE = 1e-4
 
 RESTORE_MODEL = False
-ADD_TIME = False
+ADD_TIME = True
 
 MODEL_NAME_PATHS = []
 if MODE == 0:
+    #MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs', 'debug_combi']
     MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs']
 else:
     MODEL_NAME_PATHS = ['logs'] 
@@ -104,3 +107,10 @@ if AUGMENTATION['augment']:
 if not RESTORE_MODEL and ADD_TIME:
     current_time = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
     MODEL_NAME += current_time
+
+pth = ''
+for path_part in MODEL_NAME_PATHS:
+    pth = os.path.join(pth, path_part)
+    if not os.path.exists(pth):
+        os.mkdir(pth)
+    
