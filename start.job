@@ -1,13 +1,16 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=test_metrics_debug_combi
+#SBATCH --job-name=test_callbacks
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
 #SBATCH --mem=120G
 ##SBATCH --gres=gpu:v100:2
-#SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=_test_metrics_debug_combi_%j.log
+##SBATCH --gres=gpu:rtx2080ti:2
+#SBATCH --output=_test_callbacks_%j.log
+
+module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
+
 
 #module load Python
 #module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4

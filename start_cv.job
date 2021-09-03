@@ -1,14 +1,16 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=32
-#SBATCH --job-name=CV_combi_with_raw_ill_fixed_preprocessing
+#SBATCH --ntasks-per-node=16
+#SBATCH --job-name=CV_8inc_combi_WRA_model_50max_30epochs_1pat
 #SBATCH --partition=clara-job
-#SBATCH --time=10-00:00:00
+#SBATCH --time=40:00:00
 #SBATCH --mem=120G
 ##SBATCH --gres=gpu:v100:2
 #SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=CV_combi_with_raw_ill_fixed_preprocessing_%j.log
+#SBATCH --output=_CV_combi_WRA_model_50max_8_inc_30epochs_1pat_%j.log
 
+
+module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
 #module load Python
 #module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4
 #module load matplotlib/3.1.1-fosscuda-2019b-Python-3.7.4

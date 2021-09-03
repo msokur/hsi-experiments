@@ -1,14 +1,20 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=32
-#SBATCH --job-name=play
+#SBATCH --ntasks-per-node=16
+##SBATCH --job-name=compare_8inc_1pat_checkpoints_CV_combi_WRA_model_50max_30epochs
+##SBATCH --job-name=compare_16inc_1pat_checkpoints_CV_combi_WRA_model_50max_20epochs
+#SBATCH --job-name=compare_CV_aug
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
-#SBATCH --mem=64G
-##SBATCH --gres=gpu:v100:1
-##SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=_play_%j.log
+#SBATCH --mem=120G
+##SBATCH --gres=gpu:v100:2
+#SBATCH --gres=gpu:rtx2080ti:2
+##SBATCH --output=_compare_checkpoints_CV_combi_WRA_model_50max_8inc_30epochs_%j.log
+##SBATCH --output=_compare_checkpoints_CV_combi_WRA_model_50max_20epochs_%j.log
+#SBATCH --output=_compare_checkpoints_CV_aug_%j.log
 
+
+module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
 #module load Python
 #module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4
 #module load matplotlib/3.1.1-fosscuda-2019b-Python-3.7.4
@@ -27,4 +33,4 @@ module load OpenCV/4.2.0-fosscuda-2019b-Python-3.7.4
 module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
 
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/untitled.py
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validation.py
