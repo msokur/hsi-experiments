@@ -11,7 +11,9 @@ MODE_TYPES = {
 MODE = MODE_TYPES['SERVER']
 
 #change modelname here!
-def get_model_name(MODEL_NAME_PATHS, model_name='combi_with_raw_all'):
+#def get_model_name(MODEL_NAME_PATHS, model_name='combi_with_raw_all'):
+#def get_model_name(MODEL_NAME_PATHS, model_name='combi_min_max_WRA_model_50max_4inc'):
+def get_model_name(MODEL_NAME_PATHS, model_name='test_callbacks'):
     return os.path.join(*MODEL_NAME_PATHS, model_name)
 
 NORMALIZATION_TYPES = {
@@ -19,7 +21,7 @@ NORMALIZATION_TYPES = {
     'l2_norm': 1
 }
 EARLY_STOPPING = False
-INCEPTION_FACTOR = 16
+INCEPTION_FACTOR = 4
 TELEGRAM_SENDING = True
 
 DATA_PATHS = [r'data', r'data/data_additional'] #for data loader without generator
@@ -34,12 +36,13 @@ AUGMENTED_PATH = r'data_preprocessed/augmented' #for generators
 #BATCHED_PATH = r'data_preprocessed/combi/batch_sized'
 
 SHUFFLED_PATH = r'data_preprocessed/combi_with_raw_ill/shuffled'
-BATCHED_PATH = r'data_preprocessed/combi_with_raw_ill/batch_sized2'
+BATCHED_PATH = r'data_preprocessed/combi_with_raw_ill/batch_sized4'
 
 #SHUFFLED_PATH = r'data_preprocessed/augmented_l2_norm/shuffled'
 #BATCHED_PATH = r'data_preprocessed/augmented_l2_norm/batch_sized'
 
-if MODE == 0:
+MODEL_NAME_PATHS = []
+if MODE == 0 or MODE == 2:
     add_path = r'/work/users/mi186veva/'
     DATA_PATHS = [os.path.join(add_path, i) for i in DATA_PATHS]
     NPY_PATHS = [os.path.join(add_path, i) for i in NPY_PATHS]
@@ -48,7 +51,11 @@ if MODE == 0:
     AUGMENTED_PATH = os.path.join(add_path, AUGMENTED_PATH)
     SHUFFLED_PATH = os.path.join(add_path, SHUFFLED_PATH)
     BATCHED_PATH = os.path.join(add_path, BATCHED_PATH)
-    
+
+    #MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs', 'debug_combi']
+    MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs']
+else:
+    MODEL_NAME_PATHS = ['logs'] 
     
 DATA_LOADER_TYPES = {
     '_dat':0,
@@ -63,10 +70,11 @@ WAVE_AREA = 100
 FIRST_NM = 8
 LAST_NM = 100
 
-EPOCHS = 80
+EPOCHS = 5
 CHECKPOINT_WRITING_STEP = 20
+GRADIENTS_WRITING_STEP = 1 #every GRADIENTS_WRITING_STEP batches we write gradients, so not epochs - gradients
 
-CROSS_VALIDATION_SPLIT = int(56 / 4)
+CROSS_VALIDATION_SPLIT = int(56 / 1)
 SCALER_FILE_NAME = '.scaler'
 NORMALIZATION_TYPE = NORMALIZATION_TYPES['l2_norm']
 WITH_BATCH_NORM = False
@@ -82,12 +90,7 @@ LEARNING_RATE = 1e-4
 RESTORE_MODEL = False
 ADD_TIME = True
 
-MODEL_NAME_PATHS = []
-if MODE == 0:
-    #MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs', 'debug_combi']
-    MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs']
-else:
-    MODEL_NAME_PATHS = ['logs'] 
+
 
 MODEL_NAME = get_model_name(MODEL_NAME_PATHS)
 

@@ -1,7 +1,6 @@
-from tensorflow import keras
 import tensorflow as tf
 import cv2
-import data_loader #import get_data_for_showing, restore_scaler
+import data_loader
 import config
 import numpy as np
 from tqdm import tqdm
@@ -12,10 +11,10 @@ import datetime
 import test
 from sklearn import preprocessing
 
-class CustomTensorboardCallback(keras.callbacks.TensorBoard):
 
-    def __init__(self, except_indexes=[], **kwargs):
-        print(except_indexes)
+class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
+
+    def __init__(self, except_indexes=[], train_generator=None, strategy=None, **kwargs):
         
         super(CustomTensorboardCallback, self).__init__(**kwargs)
         
@@ -32,15 +31,17 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
         self.gt = [0] * len(gesund_indexes) + [1] * len(ill_indexes)
         self.spectrum = spectrum
         self.indexes = indexes
+        self.train_generator = train_generator
+        self.strategy = strategy
 
         self.are_excepted = False
         if len(except_indexes) > 0:
             self.are_excepted = True
             self.except_indexes = except_indexes
-            self.get_spectrum_of_excluded_patients()
+            self.__get_spectrum_of_excluded_patients()
             
 
-    def get_spectrum_of_excluded_patients(self):
+    def __get_spectrum_of_excluded_patients(self):
         self.excepted_spectrums = []
         self.excepted_gt = []
         
@@ -120,12 +121,48 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
         if 'val' in self._writers:
             with self._writers['val'].as_default():
                 tf.summary.scalar(scalar_name, data=scalar_value, step=epoch)
-                #tf.summary.scalar('epoch_specificity', data=logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), step=epoch)
         if 'validation' in self._writers:
             with self._writers['validation'].as_default():
                 tf.summary.scalar(scalar_name, data=scalar_value, step=epoch)
-                #tf.summary.scalar('epoch_specificity', data=logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), step=epoch)
+    
+    def __count_grads(self, batch, weights):
+        with tf.GradientTape() as g:
+            data = np.load(self.train_generator.splitted_npz_paths[batch])
+            X, y = data['X'], data['y']
 
+            x = tf.convert_to_tensor(X[:, :-1], dtype=tf.float32)
+            
+            loss = self.model(x)  # calculate loss
+            gradients = g.gradient(loss, weights)  # back-propagation
+
+        return gradients
+    
+    @tf.function(experimental_relax_shapes=True)
+    def distributed_train_step(self, batch, weights):
+        per_replica_losses = self.strategy.run(self.__count_grads, args=(batch, weights))
+        return per_replica_losses
+        #return self.strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses, axis=None)
+    
+    
+    def on_train_batch_end(self, batch, logs):
+        if self.train_generator is None:
+            return
+        
+        if batch % config.GRADIENTS_WRITING_STEP == 0:
+            gradients = None
+            weights = self.model.trainable_weights
+            if (config.MODE == 1 or config.MODE == 0) and self.strategy is not None:
+                with self.strategy.scope():
+                    gradients = self.distributed_train_step(batch, weights)
+            else:       
+                gradients = self.__count_grads(batch, weights)
+
+            # In eager mode, grads does not have name, so we get names from model.trainable_weights
+            for weights, grads in zip(weights, gradients):
+                with self._writers['train'].as_default():
+                    tf.summary.histogram(weights.name.replace(':', '_') + '_grads', data=grads, step=self._epoch)
+        
+        
     def on_epoch_end(self, epoch, logs=None):
 
         super(CustomTensorboardCallback, self).on_epoch_end(epoch, logs)
@@ -143,10 +180,11 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
                     tf.summary.image('image', image, step=epoch)
             
             tf.summary.scalar('epoch_specificity', data=logs['tn'] / (logs['tn'] + logs['fp']), step=epoch)
+            tf.summary.scalar('epoch_lr', data=self.model.optimizer.lr, step=epoch)
         
         self.__write_valid_scalar('epoch_specificity', logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), epoch)
         
-        if self.are_excepted:
+        '''if self.are_excepted:
             for name, exc, gt in zip(self.except_indexes, self.excepted_spectrums, self.excepted_gt):
                 predictions = self.model.predict(exc[:, :-1])
                 sensitivity, specificity, f1 = test.Tester.count_metrics(np.rint(gt), np.rint(predictions), "", "", False, return_dice=True)
@@ -155,8 +193,13 @@ class CustomTensorboardCallback(keras.callbacks.TensorBoard):
                 self.__write_valid_scalar('test_'+name+'_specificity', specificity, epoch)
                 self.__write_valid_scalar('test_'+name+'_f1', f1, epoch)
         
-                print(f'-------Epoch validation: {name} sensitivity:{sensitivity} specificity:{specificity} -----------')
-            
-        '''print(self.__dict__)
-        for key, value in logs.items():
+                print(f'-------Epoch validation: {name} sensitivity:{sensitivity} specificity:{specificity} -----------')'''
+        
+        '''print('-------------LOGS----------------')
+        for key, value in self.__dict__.items():   #callback items
+            if key != 'gt':
+                print (key, value)
+        
+        for key, value in logs.items():     #logs items
             print (key, value)'''
+        
