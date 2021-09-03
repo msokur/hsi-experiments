@@ -85,15 +85,16 @@ def inception_model():
     )
     
     if config.WITH_BATCH_NORM:
-        net = inception1d_block_with_batchnorm(input_)
+        net = inception1d_block_with_batchnorm(input_, factor=config.INCEPTION_FACTOR)
     else:
-        net = inception1d_block(input_)
+        net = inception1d_block(input_, factor=config.INCEPTION_FACTOR)
 
     net = tf.keras.layers.Flatten()(net)
-    net = tf.keras.layers.Dense(500, activation='relu')(net)
-    net = tf.keras.layers.Dense(250, activation='relu')(net)
-    net = tf.keras.layers.Dense(100, activation='relu')(net)
-    net = tf.keras.layers.Dropout(config.DROPOUT_VALUE)(net)
+    #net = tf.keras.layers.Dense(500, activation='relu')(net)
+    #net = tf.keras.layers.Dense(250, activation='relu')(net)
+    #net = tf.keras.layers.Dropout(config.DROPOUT_VALUE)(net)
+    #net = tf.keras.layers.Dense(100, activation='relu')(net)
+    #net = tf.keras.layers.Dropout(config.DROPOUT_VALUE)(net)
     net = tf.keras.layers.Dense(50, activation='relu')(net)
     net = tf.keras.layers.Dropout(config.DROPOUT_VALUE)(net)
     result = tf.keras.layers.Dense(1, activation='sigmoid')(net)
@@ -104,7 +105,6 @@ def inception_model():
     )
 
     return model
-
 
 
 
