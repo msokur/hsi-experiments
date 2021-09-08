@@ -143,6 +143,7 @@ class Preprocessor():
         X[ill_indexes] = savgol_filter(X[ill_indexes], 7, 2)
         X[X<0] = 0.
         X = preprocessing.Normalizer().transform(X)
+        #X = preprocessing.MinMaxScaler(feature_range=(-1, 1)).fit_transform(X)
     
         return X
     

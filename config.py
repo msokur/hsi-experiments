@@ -13,7 +13,7 @@ MODE = MODE_TYPES['SERVER']
 #change modelname here!
 #def get_model_name(MODEL_NAME_PATHS, model_name='combi_with_raw_all'):
 #def get_model_name(MODEL_NAME_PATHS, model_name='combi_min_max_WRA_model_50max_4inc'):
-def get_model_name(MODEL_NAME_PATHS, model_name='test_callbacks'):
+def get_model_name(MODEL_NAME_PATHS, model_name='test_minmax_combi_WRA_8inc'):
     return os.path.join(*MODEL_NAME_PATHS, model_name)
 
 NORMALIZATION_TYPES = {
@@ -36,7 +36,7 @@ AUGMENTED_PATH = r'data_preprocessed/augmented' #for generators
 #BATCHED_PATH = r'data_preprocessed/combi/batch_sized'
 
 SHUFFLED_PATH = r'data_preprocessed/combi_with_raw_ill/shuffled'
-BATCHED_PATH = r'data_preprocessed/combi_with_raw_ill/batch_sized4'
+BATCHED_PATH = r'data_preprocessed/combi_with_raw_ill/batch_sized'
 
 #SHUFFLED_PATH = r'data_preprocessed/augmented_l2_norm/shuffled'
 #BATCHED_PATH = r'data_preprocessed/augmented_l2_norm/batch_sized'
@@ -71,8 +71,8 @@ FIRST_NM = 8
 LAST_NM = 100
 
 EPOCHS = 5
-CHECKPOINT_WRITING_STEP = 20
-GRADIENTS_WRITING_STEP = 1 #every GRADIENTS_WRITING_STEP batches we write gradients, so not epochs - gradients
+CHECKPOINT_WRITING_STEP = 40
+GRADIENTS_WRITING_STEP = 50000000000 #every GRADIENTS_WRITING_STEP batches we write gradients, so not epochs - gradients
 
 CROSS_VALIDATION_SPLIT = int(56 / 1)
 SCALER_FILE_NAME = '.scaler'

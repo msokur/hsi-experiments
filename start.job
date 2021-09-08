@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --nodes=1
+#SBATCH --nodes=2
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=test_callbacks
+#SBATCH --job-name=test_minmax_combi_WRA_8inc
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
 #SBATCH --mem=120G
 ##SBATCH --gres=gpu:v100:2
-##SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=_test_callbacks_%j.log
+#SBATCH --gres=gpu:rtx2080ti:3
+#SBATCH --output=_test_minmax_combi_WRA_8inc_%j.log
 
 module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
 
