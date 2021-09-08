@@ -45,11 +45,12 @@ class DataGenerator(keras.utils.Sequence):
         print('------------------------------------------------')
         
         self.split()
+        self.len = self.__len__()
+        print('self.len', self.len)
 
 
     def __len__(self):
-        '''Denotes the number of batches per epoch'''
-        
+        '''Denotes the number of batches per epoch'''        
         return len(self.splitted_npz_paths)
 
     def __getitem__(self, index, flag=False):
@@ -57,37 +58,14 @@ class DataGenerator(keras.utils.Sequence):
         data = np.load(self.splitted_npz_paths[index])
         X, y = data['X'], data['y']
         
-        '''if len(X.shape) == 3:  #TODO Marianne, I think you will need to rewrite it (just take X as it is without tis block)
-            y = [ [_y_] * X.shape[1] for _y_ in y]
-            X = np.concatenate(X, axis=0)
-            y = np.concatenate(y, axis=0)'''
-        
-        #Marianne, about normalizers - I will implement SNV later, for now make your data normalized before shuffle etc.
-        #X = preprocessing.Normalizer().transform(X[:, :-1])    #TODO, Marianne, du brauchst nicht [:, :-1] in X machen
-        
-       
-        #X = savgol_filter(X, 5, 2)
-        
         X = X[:, :-1]
-        #print(X.shape)
         self.index += 1
         
         return X, y
     
-    ''' #Self-test public method - the copy of private __getitem__
-    def getitem(self, index):
-        data = np.load(self.splitted_npz_paths[index])
-        X, y = data['X'], data['y']
-        
-        if len(X.shape) == 3:  #TODO Marianne, I think you will need to rewrite it (just take X as it is without tis block)
-            y = [ [_y_] * X.shape[1] for _y_ in y]
-            X = np.concatenate(X, axis=0)
-            y = np.concatenate(y, axis=0)
-        
-        X = X[:, :-1]    #TODO, Marianne, du brauchst nicht [:, :-1] in X machen
-        self.index += 1
-        
-        return X, y'''
+    ''' #Self-test public method - the copy of private __getitem__'''
+    def getitem(self, index, flag=False):
+        return self.__getitem__(index, flag=flag)
     
     def split(self, except_indexes=None):
         if except_indexes is None:

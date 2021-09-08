@@ -11,7 +11,14 @@ import datetime
 import test
 from sklearn import preprocessing
 
-
+#@tf.function(experimental_relax_shapes=True)
+def distributed_train_step(strategy, func, batch, weights):
+    per_replica_losses = strategy.run(func, args=(batch, weights))
+    #return per_replica_losses
+    #print(strategy.experimental_local_results(per_replica_losses))
+    #print(strategy.experimental_local_results(per_replica_losses[0]).device)
+    return strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses[0], axis=0)
+        
 class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
 
     def __init__(self, except_indexes=[], train_generator=None, strategy=None, **kwargs):
@@ -137,11 +144,7 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
 
         return gradients
     
-    @tf.function(experimental_relax_shapes=True)
-    def distributed_train_step(self, batch, weights):
-        per_replica_losses = self.strategy.run(self.__count_grads, args=(batch, weights))
-        return per_replica_losses
-        #return self.strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses, axis=None)
+    
     
     
     def on_train_batch_end(self, batch, logs):
@@ -153,7 +156,7 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
             weights = self.model.trainable_weights
             if (config.MODE == 1 or config.MODE == 0) and self.strategy is not None:
                 with self.strategy.scope():
-                    gradients = self.distributed_train_step(batch, weights)
+                    gradients = distributed_train_step(self.strategy, self.__count_grads, batch, weights)
             else:       
                 gradients = self.__count_grads(batch, weights)
 
@@ -184,7 +187,7 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
         
         self.__write_valid_scalar('epoch_specificity', logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), epoch)
         
-        '''if self.are_excepted:
+        if self.are_excepted:
             for name, exc, gt in zip(self.except_indexes, self.excepted_spectrums, self.excepted_gt):
                 predictions = self.model.predict(exc[:, :-1])
                 sensitivity, specificity, f1 = test.Tester.count_metrics(np.rint(gt), np.rint(predictions), "", "", False, return_dice=True)
@@ -193,7 +196,7 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
                 self.__write_valid_scalar('test_'+name+'_specificity', specificity, epoch)
                 self.__write_valid_scalar('test_'+name+'_f1', f1, epoch)
         
-                print(f'-------Epoch validation: {name} sensitivity:{sensitivity} specificity:{specificity} -----------')'''
+                print(f'-------Epoch validation: {name} sensitivity:{sensitivity} specificity:{specificity} -----------')
         
         '''print('-------------LOGS----------------')
         for key, value in self.__dict__.items():   #callback items

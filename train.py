@@ -37,10 +37,35 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
 
 
     #train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
-    train_generator = DataGenerator('train', config.AUGMENTED_PATH, config.SHUFFLED_PATH, config.BATCHED_PATH, log_dir, split_flag=False, except_indexes=except_indexes)
+    train_generator = DataGenerator('train', config.AUGMENTED_PATH, config.SHUFFLED_PATH, config.BATCHED_PATH, log_dir, split_flag=True, except_indexes=except_indexes)
     valid_generator = DataGenerator('valid', config.AUGMENTED_PATH, config.SHUFFLED_PATH, config.BATCHED_PATH, log_dir, split_flag=False, except_indexes=except_indexes)
     class_weights = train_generator.get_class_weights()
     print(class_weights)
+    
+    def gen_train_generator():
+        for i in range(train_generator.len):
+            yield train_generator.getitem(i)
+    
+    train_dataset = tf.data.Dataset.from_generator(gen_train_generator, output_signature=(
+         
+        tf.TensorSpec(shape=(None, 91), dtype=tf.float32),
+        tf.TensorSpec(shape=(None,), dtype=tf.float32)))
+    
+    def gen_valid_generator():
+        for i in range(valid_generator.len):
+            yield valid_generator.getitem(i)
+    
+    valid_dataset = tf.data.Dataset.from_generator(gen_valid_generator, output_signature=(
+         
+        tf.TensorSpec(shape=(None, 91), dtype=tf.float32),
+        tf.TensorSpec(shape=(None, ), dtype=tf.float32)))
+    
+    
+    options = tf.data.Options()
+    options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
+    train_dataset = train_dataset.with_options(options)
+    valid_dataset = valid_dataset.with_options(options)
+       
     
     #print(train[0], test[0])
 
@@ -136,8 +161,11 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
         validation_data=(test[:, :-2], test[:, -2], test[:, -1]),
         class_weight=class_weight,
         sample_weight=train[:, -1])'''
-    history = model.fit(x=train_generator,
-                validation_data=valid_generator,
+    history = model.fit(
+                #x=train_generator,
+                #validation_data=valid_generator,
+                x=train_dataset,
+                validation_data=valid_dataset,
                 epochs=config.EPOCHS,
                 verbose=2,
                 initial_epoch=initial_epoch,
