@@ -55,11 +55,14 @@ def fill_with_weight(arr, total):
 
     return arr
 
-def read_data_from_dat(paths=None, not_certain_flag=False, except_indexes=[-1], include_empty=False):
+def read_data_from_dat(paths=None, not_certain_flag=False, except_indexes=[-1], include_empty=False, with_indexes=False):
     print('Reading data from .dat files started')
     gesund_data = []
     ill_data = []
     not_certain_data = []
+    _gesund_indexes = []
+    _ill_indexes = []
+    _not_certain_indexes = []
 
     if paths is None:
         paths = []
@@ -76,6 +79,11 @@ def read_data_from_dat(paths=None, not_certain_flag=False, except_indexes=[-1], 
                 mask = cv2.imread(glob.glob(filename + '*.png')[0])[..., ::-1]
 
                 gesund_indexes, ill_indexes, not_certain_indexes = get_masks(mask)
+                
+                _gesund_indexes.append(gesund_indexes)
+                _ill_indexes.append(ill_indexes)
+                _not_certain_indexes.append(not_certain_indexes)
+                
 
                 gesund_patch = spectrum_data[gesund_indexes[0], gesund_indexes[1]]
                 #print(gesund_patch.shape)
@@ -101,6 +109,9 @@ def read_data_from_dat(paths=None, not_certain_flag=False, except_indexes=[-1], 
         else:
             print('We are skipping index: ', index)
     print('Reading data from .dat files ended')
+    
+    if with_indexes:
+        return gesund_data, ill_data, not_certain_data, paths, _gesund_indexes, _ill_indexes, _not_certain_indexes
     
     return gesund_data, ill_data, not_certain_data, paths
 
@@ -241,23 +252,49 @@ def append(lst, X, y, label):
         y += [label] * len(lst)
         
             
-def save_npy_from_dat(npy_save_path, dat_paths=None, not_certain_flag=True, except_indexes=[-1]):
-    gesund_data, ill_data, not_certain_data, paths = read_data_from_dat(paths=None, not_certain_flag=not_certain_flag, except_indexes=except_indexes)
+def save_npz_from_dat(npz_save_path, dat_paths=None, not_certain_flag=True, except_indexes=[-1], with_indexes=False):
+    gesund_data, ill_data, not_certain_data, paths, gesund_indexes, ill_indexes, not_certain_indexes = [], [], [], [], [], [], []
+    
+    if with_indexes:
+        gesund_data, ill_data, not_certain_data, paths, gesund_indexes, ill_indexes, not_certain_indexes = read_data_from_dat(paths=None, not_certain_flag=not_certain_flag, except_indexes=except_indexes, with_indexes=with_indexes, include_empty=True)
+    else:
+        gesund_data, ill_data, not_certain_data, paths = read_data_from_dat(paths=None, not_certain_flag=not_certain_flag, except_indexes=except_indexes, with_indexes=with_indexes, include_empty=True)
     
     print('The saving of .npz archives is started')
     
+    print(np.array(gesund_data).shape, np.array(ill_data).shape, np.array(not_certain_data).shape, np.array(paths).shape, np.array(gesund_indexes).shape, np.array(ill_indexes).shape, np.array(not_certain_indexes).shape)
+    
     for it in tqdm(range(len(paths))):
         g, i, n, p = list(gesund_data[it]), list(ill_data[it]), list(not_certain_data[it]), paths[it]
+        print(p)
+        i_g, i_i, i_n = [], [], []
+        if with_indexes:
+            
+            i_g, i_i, i_n = np.array(gesund_indexes[it]), np.array(ill_indexes[it]), np.array(not_certain_indexes[it])
+            print(np.array(i_g).shape, np.array(i_i).shape, np.array(i_n).shape)
+            
         
-        X, y = [], []
-        append(g, X, y, 0)
+        X, y, indexes = [], [], []
+        append(g, X, y, 0)            
         append(i, X, y, 1)
+        
+        if with_indexes:
+            indexes +=  i_g.T.tolist()
+            print(np.array(indexes).shape)
+            indexes += i_i.T.tolist()
+            print(np.array(indexes).shape)
+        
         if not_certain_flag:
             append(n, X, y, 2)
+            indexes += i_n.T.tolist()
+            print(np.array(indexes).shape)
+        
         
         name = p.split('/')[-1].split('SpecCube')[0]
-        np.savez(os.path.join(npy_save_path, name), X=X, y=y)
-    
+        if with_indexes:
+            np.savez(os.path.join(npz_save_path, name), X=X, y=y, indexes=np.array(indexes).T)
+        else:
+            np.savez(os.path.join(npz_save_path, name), X=X, y=y)
     print('The saving of .npz archives is ended')
     
 def save_raw_healthy_and_augmented_ill_in_npy(npy_save_path, augmented_path, dat_paths=None, not_certain_flag=True, except_indexes=[-1], with_raw_ill=False):
@@ -332,14 +369,14 @@ def augment(source_paths, destination_paths, normalize_first=False):
 
 
 if __name__ == '__main__':
-    save_raw_healthy_and_augmented_ill_in_npy("/work/users/mi186veva/data_preprocessed/combi_with_raw_ill", "/work/users/mi186veva/data_preprocessed/augmented")
+    #save_raw_healthy_and_augmented_ill_in_npy("/work/users/mi186veva/data_preprocessed/combi_with_raw_ill", "/work/users/mi186veva/data_preprocessed/augmented")
     #save_raw_data()
     #get_data_npy('data_preprocessed//augmented')
 
     #preprocess('data_preprocessed//augmented')
     #train, test, _ = get_data("./")
     
-    #save_npy_from_dat("/work/users/mi186veva/data_preprocessed/raw")
+    save_npz_from_dat("/work/users/mi186veva/data_preprocessed/raw", with_indexes=True)
     #data = np.load('/work/users/mi186veva/data_preprocessed/raw/2019_07_12_11_15_49_SpecCube.dat.npz')
     #print(data['gesund_data'].shape)
     #print(data['ill_data'].shape)
