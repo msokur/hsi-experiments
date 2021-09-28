@@ -10,7 +10,7 @@ import datetime
 import sklearn.metrics as metrics
 import matplotlib.pyplot as plt
 
-def save_metrics_for_threshold(npy_folder, threshold):
+def save_metrics_for_threshold(npy_folder, threshold, names, senss, specs, dices, aucs, thress):
     predictions_by_patient = np.load(os.path.join(npy_folder, 'predictions_by_patient.npy'), allow_pickle=True)
     gt_by_patient = np.load(os.path.join(npy_folder, 'gt_by_patient.npy'), allow_pickle=True)
 
@@ -459,13 +459,13 @@ def compare_checkpoints():
 if __name__ =='__main__':
     
     try:
-        compare_checkpoints()
+        #compare_checkpoints()
 
         #count_ROC('logs/inception_l2_norm/inception_l2_norm_stats_16.01.2021-08_56_39.csv', 'save_path', checkpoint='cp-0250')
 
         #save_metrics_for_threshold('test/inception_l2_norm/cp-0250', 0.45)
 
-        #count_metrics_on_diff_thresholds('test/inception_l2_norm_all_data/cp-0100', all=False, threshold_range_plain=[0.47])
+        count_metrics_on_diff_thresholds('test/CV_combi_WRA_50max_8inc_30epochs_1pat/cp-0014', all=True, threshold_range_plain=np.linspace(0.364, 0.366, 10а ))
 
         '''count_ROC('logs\\inception_cross_validation\\inception_cross_validation_stats_06.01.2021-11_03_50.csv', 'test/inception_cv_images')
 
