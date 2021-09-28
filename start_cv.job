@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=16
-#SBATCH --job-name=CV_8inc_combi_WRA_model_50max_30epochs_1pat
+#SBATCH --job-name=play
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
 #SBATCH --mem=120G
 ##SBATCH --gres=gpu:v100:2
-#SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=_CV_combi_WRA_model_50max_8_inc_30epochs_1pat_%j.log
+##SBATCH --gres=gpu:rtx2080ti:2
+#SBATCH --output=_play_%j.log
 
 
 module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
