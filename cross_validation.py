@@ -10,19 +10,47 @@ import datetime
 import sklearn.metrics as metrics
 import matplotlib.pyplot as plt
 
-def save_metrics_for_threshold(npy_folder, threshold, names, senss, specs, dices, aucs, thress):
+def save_metrics_for_threshold(npy_folder, threshold, senss, specs, dices, aucs, thress, names_csv_file='logs/CV_combi_WRA_50max_8inc_30epochs_1pat/CV_combi_WRA_50max_8inc_30epochs_1pat_stats_25.08.2021-12_16_30.csv'):
     predictions_by_patient = np.load(os.path.join(npy_folder, 'predictions_by_patient.npy'), allow_pickle=True)
     gt_by_patient = np.load(os.path.join(npy_folder, 'gt_by_patient.npy'), allow_pickle=True)
 
-    sensitivities = []
-    specificities = []
-    dices = []
+    #sensitivities = []
+    #specificities = []
+    #dices = []
 
-    with open(os.path.join(npy_folder, 'metrics_by_threshold_'+str(threshold)+'.csv'), 'a', newline='') as csvfile:
-        fieldnames = ['time', 'threshold', 'sensitivity', 'specificity', 'dice']
+    with open(os.path.join(npy_folder, 'metrics_by_threshold_'+str(threshold)+'.csv'), 'w', newline='') as csvfile:
+        fieldnames = ['time', 'threshold', 'name', 'sensitivity', 'specificity', 'dice', 'auc', 'best_threshold']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        
+        writer.writerow({'time':"Time",
+                         'name': "Name",
+                         'threshold':'Threshold',
+                         'sensitivity':'Sensitivity',
+                         'specificity':'Specificity',
+                         'dice':'Dice',
+                         'auc':'AUC', 
+                         'best_threshold':'Best threshold'})
+        
+        #loading of names
+        data = []
+        with open(names_csv_file, newline='') as csvfile:
+            report_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
+            for row in tqdm(report_reader):
+                data.append(row)
+        names = np.array(data)[:, 4]
+        
+        for name, sn, sp, d, a, t in zip(names, senss, specs, dices, aucs, thress):
+            writer.writerow({'time':datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+                             'threshold':str(threshold),
+                             'name': name,
+                             'sensitivity':str(sn),
+                             'specificity':str(sp),
+                             'dice':str(d),
+                             'auc':str(a),
+                             'best_threshold':str(t)})
+        
 
-        for patient in range(predictions_by_patient.shape[0]):
+        '''for patient in range(predictions_by_patient.shape[0]):
             predictions = np.where(np.array(predictions_by_patient[patient]) > threshold, 1, 0)
 
             sensitivity_p, specificity_p, dice_p = test.Tester.count_metrics(np.rint(gt_by_patient[patient]), predictions, str(threshold), save_stats=False, return_dice=True)
@@ -34,33 +62,46 @@ def save_metrics_for_threshold(npy_folder, threshold, names, senss, specs, dices
                              'threshold':str(threshold),
                              'sensitivity':str(sensitivity_p),
                              'specificity':str(specificity_p),
-                            'dice':str(dice_p)})
+                            'dice':str(dice_p)})'''
 
-        sensitivity_median = np.nanmedian(sensitivities)
-        specificity_median = np.nanmedian(specificities)
+        sensitivity_median = np.nanmedian(senss)
+        specificity_median = np.nanmedian(specs)
         dice_median = np.nanmedian(dices)
+        auc_median = np.nanmedian(aucs)
+        thr_median = np.nanmedian(thress)
         
-        sensitivity_mean = np.nanmean(sensitivities)
-        specificity_mean = np.nanmean(specificities)
+        sensitivity_mean = np.nanmean(senss)
+        specificity_mean = np.nanmean(specs)
         dice_mean = np.nanmean(dices)
+        auc_mean = np.nanmean(aucs)
+        thr_mean = np.nanmean(thress)
+        
+        writer.writerow({'time':"GESAMT MEAN",
+                         'threshold':str(threshold),
+                         'name': '-',
+                         'sensitivity':str(sensitivity_mean),
+                         'specificity':str(specificity_mean),
+                         'dice':str(dice_mean),
+                         'auc':str(auc_mean),
+                         'best_threshold':str(thr_mean)})
 
         writer.writerow({'time':"GESAMT MEDIAN",
                          'threshold':str(threshold),
+                         'name': '-',
                          'sensitivity':str(sensitivity_median),
                          'specificity':str(specificity_median),
-                        'dice':str(dice_median)})
-         
-        writer.writerow({'time':"GESAMT MEAN",
-                         'threshold':str(threshold),
-                         'sensitivity':str(sensitivity_mean),
-                         'specificity':str(specificity_mean),
-                        'dice':str(dice_mean)})
+                         'dice':str(dice_median),
+                         'auc':str(auc_median),
+                         'best_threshold':str(thr_median)})
         
         writer.writerow({'time':"STD",
                          'threshold':str(threshold),
-                         'sensitivity':str(np.nanstd(sensitivities)),
-                         'specificity':str(np.nanstd(specificities)),
-                        'dice':str(np.nanstd(dices))})
+                         'name': '-',
+                         'sensitivity':str(np.nanstd(senss)),
+                         'specificity':str(np.nanstd(specs)),
+                         'dice':str(np.nanstd(dices)),
+                         'auc':np.nanstd(aucs),
+                         'best_threshold':str(np.nanstd(thress))})
 
 
 
@@ -140,7 +181,9 @@ def count_metrics_on_diff_thresholds(npy_folder, all=False, threshold_range_para
 
             print('MEDIAN', sensitivity_median, specificity_median)
             
-            save_metrics_for_threshold(npy_folder, threshold)
+            thresholds = np.array(thresholds)
+            thresholds[thresholds > 1.] = np.nan
+            save_metrics_for_threshold(npy_folder, threshold, sens, spec, dices, aucs, thresholds)
 
             with open(os.path.join(npy_folder, 'metrics_threshold_relation_by_patient.csv'), 'a', newline='') as csvfile:
                 fieldnames = ['time', 'threshold', 'sensitivity_median', 'specificity_median','sensitivity_mean', 'specificity_mean', 'dice_median', 'dice_mean']
@@ -465,7 +508,8 @@ if __name__ =='__main__':
 
         #save_metrics_for_threshold('test/inception_l2_norm/cp-0250', 0.45)
 
-        count_metrics_on_diff_thresholds('test/CV_combi_WRA_50max_8inc_30epochs_1pat/cp-0014', all=True, threshold_range_plain=np.linspace(0.364, 0.366, 10а ))
+        #count_metrics_on_diff_thresholds('test/CV_combi_WRA_50max_8inc_30epochs_1pat/cp-0014', all=True, threshold_range_plain=np.linspace(0.364, 0.366, 10 ))
+        #count_metrics_on_diff_thresholds('test/CV_combi_WRA_50max_8inc_30epochs_1pat/cp-0014', all=True, threshold_range_plain=[0.5, 0.36])
 
         '''count_ROC('logs\\inception_cross_validation\\inception_cross_validation_stats_06.01.2021-11_03_50.csv', 'test/inception_cv_images')
 
@@ -479,7 +523,7 @@ if __name__ =='__main__':
         print('Complete sensitivity, specificity:', sensitivity, specificity)'''
 
         #run...save_path='test/inception_cv_images/not_all_spectra'
-        #cross_validation('CV_combi_WRA_50max_8inc_30epochs_1pat')
+        cross_validation('CV_rms_only_test_activation')
 
         #paths = glob.glob('logs/test_inception*')
         #test_experiment('dropout_experiment', paths)
