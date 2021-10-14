@@ -123,8 +123,6 @@ class Tester():
         #predictions = self.model.predict(np.expand_dims(spectrum, axis=-1))
         predictions = self.model.predict(spectrum)
         
-        print(predictions[:50])
-
         name = path_dat.split('\\')[-1].split('_S')[0]
 
         sensitivity = specificity = 0
