@@ -21,7 +21,7 @@ def distributed_train_step(strategy, func, batch, weights):
         
 class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
 
-    def __init__(self, except_indexes=[], train_generator=None, strategy=None, **kwargs):
+    def __init__(self, except_indexes=[], train_generator=None, strategy=None, process=None, **kwargs):
         
         super(CustomTensorboardCallback, self).__init__(**kwargs)
         
@@ -40,6 +40,7 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
         self.indexes = indexes
         self.train_generator = train_generator
         self.strategy = strategy
+        self.process = process
 
         self.are_excepted = False
         if len(except_indexes) > 0:
@@ -169,6 +170,9 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
     def on_epoch_end(self, epoch, logs=None):
 
         super(CustomTensorboardCallback, self).on_epoch_end(epoch, logs)
+        
+        if self.process is not None:
+            print("Memory : ", self.process.memory_info().rss)
         
         print('{0}, epoch {1} is ended'.format(datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"), epoch))
 

@@ -11,6 +11,7 @@ import telegram_send
 from generator import DataGenerator
 import tf_metrics
 import numpy as np
+import psutil
 
 def send_tg_message(message):
     if config.MODE == 0:
@@ -35,7 +36,8 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
 
     '''-------DATASET---------'''
 
-
+    process = psutil.Process(os.getpid())
+    
     #train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
     train_generator = DataGenerator('train', config.AUGMENTED_PATH, config.SHUFFLED_PATH, config.BATCHED_PATH, log_dir, split_flag=True, except_indexes=except_indexes)
     valid_generator = DataGenerator('valid', config.AUGMENTED_PATH, config.SHUFFLED_PATH, config.BATCHED_PATH, log_dir, split_flag=False, except_indexes=except_indexes)
@@ -108,6 +110,7 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
         model.compile(
             #optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE, clipnorm=1.),
             optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE),
+            #optimizer=keras.optimizers.RMSprop(lr=config.LEARNING_RATE),
             loss=keras.losses.BinaryCrossentropy(),
             metrics=METRICS,
             weighted_metrics=WEIGHTED_METRICS
@@ -125,7 +128,8 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
         #profile_batch = '20,30',
         except_indexes=except_indexes,
         train_generator=train_generator,
-        strategy=mirrored_strategy)
+        strategy=mirrored_strategy,
+        process=process)
 
     #gradient_callback = callbacks.GradientCallback()
 
@@ -177,7 +181,7 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
 
     np.save(os.path.join(log_dir, '.history'), history.history)
     
-    return history
+    return model, history
         
      
 
@@ -185,6 +189,7 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
 def train(paths=None, except_indexes=[]):
     history = None
     log_dir = config.MODEL_NAME
+    model = None
     try:
         mirrored_strategy = None
         if config.MODE == 1 or config.MODE == 0:
@@ -207,9 +212,9 @@ def train(paths=None, except_indexes=[]):
             #mirrored_strategy = tf.distribute.MirroredStrategy()
 
             with mirrored_strategy.scope():
-                train_(log_dir, mirrored_strategy, paths=paths, except_indexes=except_indexes)
+                model, history = train_(log_dir, mirrored_strategy, paths=paths, except_indexes=except_indexes)
         else:
-            train_(log_dir, mirrored_strategy, paths=paths, except_indexes=except_indexes)
+            model, history = train_(log_dir, mirrored_strategy, paths=paths, except_indexes=except_indexes)
             
     except Exception as e:
         if config.TELEGRAM_SENDING:
@@ -226,7 +231,10 @@ def train(paths=None, except_indexes=[]):
     model.save(final_model_save_path)
 
     if config.TELEGRAM_SENDING:
-        send_tg_message(f'Mariia, training {log_dir} has finished after {len(history.history["loss"])} epochs')
+        if history is not None:
+            send_tg_message(f'Mariia, training {log_dir} has finished after {len(history.history["loss"])} epochs')
+        else:
+            send_tg_message(f'Mariia, training {log_dir} has finished')
 
     return model
 
