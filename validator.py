@@ -60,7 +60,7 @@ class Validator():
         best_checkpoint = checkpoints[best_idx]
         best_threshold = thresholds[best_idx]
 
-        print(f'Best index: {best_inx}, best checkpoint: {best_checkpoint}, best_threshold: {best_threshold}')
+        print(f'Best index: {best_idx}, best checkpoint: {best_checkpoint}, best_threshold: {best_threshold}')
         print('Means:', means)
         print('------------------------------------------------------')
         
@@ -69,4 +69,4 @@ class Validator():
     
 if __name__ == '__main__':
     validator = Validator()
-    validator.find_best_checkpoint('test/CV_combi_WRA_50max_8inc_30epochs_1pat/')
+    validator.find_best_checkpoint('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test/CV_lstm_10/')
