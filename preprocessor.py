@@ -9,6 +9,8 @@ import data_loader
 from sklearn import preprocessing
 import pickle
 from scipy.signal import savgol_filter
+from background_detection import detect_background
+
 '''
 Preprocessor contains opportunity of
 1. Two step shuffling for big datasets
@@ -50,10 +52,16 @@ class Preprocessor():
             data = {n: a for n, a in _data.items()}
             X, y = data[self.dict_names[0]], data[self.dict_names[1]]
             
+            bg_mask = np.ones(X.shape[0]).astype(np.bool)
+            if config.WITH_BACKGROUND_EXTRACTION:
+                bg_mask = self.background_extraction(X)
+            
             if self.augmented:  
                 y = [ [_y_] * X.shape[1] for _y_ in y ]
                 data[self.dict_names[0]] = np.concatenate(X, axis=0)
                 data[self.dict_names[1]] = np.concatenate(y, axis=0)
+            
+            data = {n: a[bg_mask] for n, a in data.items()}
             
             #fill random distribution to files
             for it in range(data[self.dict_names[0]].shape[0]):
@@ -127,6 +135,14 @@ class Preprocessor():
 
             np.savez(os.path.join(self.archives_of_batch_size_saving_path, 'batch'+str(ind)), **{n: a for n, a in arch.items()})
             ind+=1
+            
+    def background_extraction(self, X):
+        
+        bg_mask = detect_background(X)
+        bg_mask = bg_mask == 1
+        
+        return bg_mask
+        
     
     '''Add here some specific preprocessing if needed'''
     def preprocess(self, X, y):
@@ -222,10 +238,10 @@ if __name__ == '__main__':
     paths = glob.glob('/work/users/mi186veva/data_preprocessed/combi_with_raw_ill/*.npz')
     print(len(paths))
     #preprocessor.shuffle(['/work/users/mi186veva/data_preprocessed/augmented/2019_07_12_11_15_49_.npz', '/work/users/mi186veva/data_preprocessed/augmented/2020_03_27_16_56_41_.npz'], 100, '/work/users/mi186veva/data_preprocessed/augmented_l2_norm/shuffled')
-    #preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/combi_with_raw_ill/shuffled', augmented=False)
+    preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/combi_with_raw_ill/shuffled', augmented=False)
     #preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/augmented/shuffled', augmented=True)
     
-    paths = glob.glob('/work/users/mi186veva/data_preprocessed/combi_with_raw_ill/shuffled/*.npz')
-    preprocessor.split_data_into_npz_of_batch_size(paths, config.BATCH_SIZE, '/work/users/mi186veva/data_preprocessed/combi_with_raw_ill/batch_sized', "")
+    #paths = glob.glob('/work/users/mi186veva/data_preprocessed/combi_with_raw_ill/shuffled/*.npz')
+    #preprocessor.split_data_into_npz_of_batch_size(paths, config.BATCH_SIZE, '/work/users/mi186veva/data_preprocessed/combi_with_raw_ill/batch_sized', "")
         
         

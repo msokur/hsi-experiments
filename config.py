@@ -13,7 +13,7 @@ MODE = MODE_TYPES['SERVER']
 #change modelname here!
 #def get_model_name(MODEL_NAME_PATHS, model_name='combi_with_raw_all'):
 #def get_model_name(MODEL_NAME_PATHS, model_name='combi_min_max_WRA_model_50max_4inc'):
-def get_model_name(MODEL_NAME_PATHS, model_name='test_minmax_combi_WRA_8inc'):
+def get_model_name(MODEL_NAME_PATHS, model_name='combi_bg'):
     return os.path.join(*MODEL_NAME_PATHS, model_name)
 
 NORMALIZATION_TYPES = {
@@ -21,7 +21,7 @@ NORMALIZATION_TYPES = {
     'l2_norm': 1
 }
 EARLY_STOPPING = False
-INCEPTION_FACTOR = 4
+INCEPTION_FACTOR = 8
 TELEGRAM_SENDING = True
 
 DATA_PATHS = [r'data', r'data/data_additional'] #for data loader without generator
@@ -70,14 +70,16 @@ WAVE_AREA = 100
 FIRST_NM = 8
 LAST_NM = 100
 
-EPOCHS = 5
-CHECKPOINT_WRITING_STEP = 40
+EPOCHS = 20
+CHECKPOINT_WRITING_STEP = 2
 GRADIENTS_WRITING_STEP = 50000000000 #every GRADIENTS_WRITING_STEP batches we write gradients, so not epochs - gradients
 
 CROSS_VALIDATION_SPLIT = int(56 / 1)
 SCALER_FILE_NAME = '.scaler'
 NORMALIZATION_TYPE = NORMALIZATION_TYPES['l2_norm']
 WITH_BATCH_NORM = False
+WITH_BACKGROUND_EXTRACTION = True
+READING_TEST_DATA_FROM_DAT = False #other oprion is from .npz
 CUSTOM_OBJECTS = {'f1_m':tf_metrics.f1_m}
 
 CHECKPOINT_PATH = 'checkpoints'
