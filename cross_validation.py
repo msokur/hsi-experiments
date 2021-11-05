@@ -133,7 +133,8 @@ class CrossValidator():
                 for patient in range(predictions_by_patient.shape[0]):
                     fpr, tpr, thresholds_p = metrics.roc_curve(np.rint(gt_by_patient[patient]), np.array(predictions_by_patient[patient]))
                     roc_auc = metrics.auc(fpr, tpr)
-                    predictions = np.where(np.array(predictions_by_patient[patient]) > threshold, 1, 0)
+                    #predictions = np.where(np.array(predictions_by_patient[patient]) > threshold, 1, 0)
+                    predictions = np.array(np.array(predictions_by_patient[patient]) > threshold).astype(np.uint8)
 
                     threshold_p = thresholds_p[np.argmax(tpr - fpr)]
 
@@ -299,15 +300,19 @@ class CrossValidator():
                     tester.all_gt = tester1.all_gt
                 else:'''
                 tester = test.Tester( checkpoint, ['data'], '', MODEL_FOLDER=row[5])
+                
+                name = row[4].split("/")[-1].split(".")[0].split('SpecCube')[0]
 
-                sensitivity, specificity = tester.test_one_image(row[4],
+                #sensitivity, specificity = tester.test_one_image(row[4],
+                sensitivity, specificity = tester.test_one_image(os.path.join('/work/users/mi186veva/data_preprocessed/raw', name + ".npz"),
                                       path_image=row[4] + '_Mask JW Kolo.png',
                                       save=False,
                                       show=False,
                                       test_all_spectra=False,
                                       save_stats=False,
                                       folder_name='', 
-                                      spectrum_shift=-1)
+                                      test_batch=True,
+                                      spectrum_shift=-2)
 
                 print('Sensitivity on ', checkpoint, '- ', sensitivity, ';was - ', row[2], ' diff - ', sensitivity - float(row[2]))
 
@@ -375,12 +380,17 @@ class CrossValidator():
                 else:
                     tester = test.Tester( f'cp-{config.EPOCHS:04d}', ['data'], save_path, MODEL_FOLDER=row[5])
 
-                tester.test_one_image(row[4],
+                name = row[4].split("/")[-1].split(".")[0].split('SpecCube')[0]
+
+                #sensitivity, specificity = tester.test_one_image(row[4],
+                sensitivity, specificity = tester.test_one_image(os.path.join('/work/users/mi186veva/data_preprocessed/raw', name + ".npz"),
                                       path_image=row[4] + '_Mask JW Kolo.png',
                                       save=True,
                                       show=False,
                                       test_all_spectra=test_all_spectra,
                                       save_stats=False,
+                                      spectrum_shift=-2,
+                                      test_batch=True,
                                       folder_name='')
 
                 #test_one_image(self, path_dat, path_image=None, save=False, show=True, test_all_spectra = False, save_stats = False, folder_name = '')
@@ -445,19 +455,21 @@ class CrossValidator():
             #for i, path in enumerate(paths):  # full cross_valid
             for i in indexes:
             #for i, path in zip(range(7, len(paths)), paths[7:]): #cross valid from several index
-
+                name = paths[i].split("/")[-1].split(".")[0].split('SpecCube')[0]
 
                 #CHECKPOINT, TEST_PATHS, SAVING_PATH, LOGS_PATH='', MODEL_NAME='', MODEL_FOLDER=''):
                 tester = test.Tester( f'cp-{config.EPOCHS:04d}', ['data'], '', LOGS_PATH=root_folder, MODEL_NAME=config.MODEL_NAME.split('\\')[-1])
 
-                sensitivity, specificity = tester.test_one_image(paths[i],
+                #sensitivity, specificity = tester.test_one_image(paths[i],
+                sensitivity, specificity = tester.test_one_image(os.path.join('/work/users/mi186veva/data_preprocessed/raw', name + ".npz"),
                                     path_image=paths[i] + '_Mask JW Kolo.png',
                                     save=False,
                                     show=False,
                                     test_all_spectra=False,
                                     save_stats=False,
                                     folder_name=config.MODEL_NAME,
-                                    spectrum_shift=-1)   #be carefull!
+                                    test_batch=True,  #be carefull!
+                                    spectrum_shift=-2)   #be carefull!
 
                 print('For path=', paths[i], ', (index: ', str(i), ') sensitivity= ', str(sensitivity), ' specificity= ', str(specificity), ' MODEL_NAME = ', config.MODEL_NAME)
 
@@ -501,7 +513,7 @@ class CrossValidator():
             #count_ROC('logs/CV_aug/CV_aug_stats_16.08.2021-11_58_29.csv', save_path, checkpoint=checkpoint)
             self.count_ROC(results_file, save_path, checkpoint=checkpoint)
 
-            self.count_metrics_on_diff_thresholds(save_path, all=True, threshold_range_params=[0.05, 0.95, 19])
+            self.count_metrics_on_diff_thresholds(save_path, all=True, threshold_range_params=[0.2, 0.7, 11])
 
 if __name__ =='__main__':
     
@@ -511,8 +523,9 @@ if __name__ =='__main__':
 
         #count_ROC('logs/CV_rms/inception_l2_norm_stats_16.01.2021-08_56_39.csv', 'save_path', checkpoint='cp-0250')
         
-        cross_validator.compare_checkpoints([2, 80, 40], os.path.join(preffix, 'test/CV_lstm_10'), os.path.join(preffix, 'logs/CV_lstm_play_10/CV_lstm_play_10_stats_13.10.2021-13_39_17.csv'))
+        #cross_validator.compare_checkpoints([2, 20, 10], os.path.join(preffix, 'test/CV_best_4pat'), os.path.join(preffix, 'logs/CV_best_4pat/CV_best_4pat_stats_22.10.2021-16_26_46.csv'))
 
+        cross_validator.compare_checkpoints([4, 20, 9], os.path.join(preffix, 'test/CV_bg_1pat'), os.path.join(preffix, 'logs/CV_combi_with_raw_ill_background_1pat/CV_combi_with_raw_ill_background_1pat_stats_22.10.2021-07_49_03.csv'))
         #save_metrics_for_threshold('test/inception_l2_norm/cp-0250', 0.45)
 
         #count_metrics_on_diff_thresholds('test/CV_combi_WRA_50max_8inc_30epochs_1pat/cp-0014', all=True, threshold_range_plain=np.linspace(0.364, 0.366, 10 ))
@@ -530,7 +543,7 @@ if __name__ =='__main__':
         print('Complete sensitivity, specificity:', sensitivity, specificity)'''
 
         #run...save_path='test/inception_cv_images/not_all_spectra'
-        #cross_validation('CV_rms')
+        #cross_validator.cross_validation('CV_combi_with_raw_ill_background_1pat')
 
         #paths = glob.glob('logs/test_inception*')
         #test_experiment('dropout_experiment', paths)

@@ -101,35 +101,56 @@ class Tester():
         
         if folder_name == '':
             folder_name = self.SAVING_PATH
+       
+        #scaler = restore_scaler(FOLDER_NAME)        
 
-        gt_image, spectrum_data, gesund_indexes, ill_indexes, not_certain_indexes = data_loader.get_data_for_showing(path_dat, "")
-        indexes = gesund_indexes + ill_indexes + not_certain_indexes
-        indexes = np.array(indexes)
-
-        #scaler = restore_scaler(FOLDER_NAME)
-
-        if  test_all_spectra:
-            indexes = np.where(gt_image[:, :, 0] < 2055)
-            indexes = np.array(indexes).T
-
-        spectrum = self.scaler.transform(spectrum_data[indexes[:, 0], indexes[:, 1]])
+        
         if test_batch:
-            data = np.load('/work/users/mi186veva/data_preprocessed/combi/batch_sized/batch51.npz')
+            data = np.load(path_dat)
             spectrum = data['X']  #test batch
-            spectrum = self.scaler.transform(spectrum) #test_batch 
+            gt_image = cv2.imread(path_image)
             print('test_batch shape', spectrum.shape)
+        else:
+            gt_image, spectrum_data, gesund_indexes, ill_indexes, not_certain_indexes = data_loader.get_data_for_showing(path_dat, "")
+            indexes = gesund_indexes + ill_indexes + not_certain_indexes
+            indexes = np.array(indexes)
+            
+            if test_all_spectra:
+                indexes = np.where(gt_image[:, :, 0] < 2055)
+                indexes = np.array(indexes).T
+            
+            spectrum = spectrum_data[indexes[:, 0], indexes[:, 1]]
+            
+            
         if spectrum_shift != 0:
             spectrum = spectrum[:, :spectrum_shift]
+        spectrum = self.scaler.transform(spectrum) #test_batch 
+            
+        if test_batch:
+            gt = data['y']  #test batch
+            indx_ = ((gt == 0) | (gt == 1))
+            if config.WITH_BACKGROUND_EXTRACTION:
+                gt = gt[indx_ & data['bg_mask']]
+                spectrum = spectrum[indx_ & data['bg_mask']]
+            else:
+                gt = gt[indx_]
+                spectrum = spectrum[indx_]
+
+        else:
+            gt = [0] * len(gesund_indexes) + [1] * len(ill_indexes)
+            
+            
         #predictions = self.model.predict(np.expand_dims(spectrum, axis=-1))
         predictions = self.model.predict(spectrum)
+        print('dsd', gt.shape, predictions.shape)
+
         
         name = path_dat.split('\\')[-1].split('_S')[0]
 
         sensitivity = specificity = 0
         if not test_all_spectra:
-            gt = [0] * len(gesund_indexes) + [1] * len(ill_indexes)
-            if test_batch:
-                gt = data['y']  #test batch
+            
+            
             sensitivity, specificity = self.count_metrics(gt, np.rint(predictions), name, folder_name, save_stats, return_dice=return_dice)
 
             self.all_predictions += list(np.rint(predictions))
@@ -140,9 +161,9 @@ class Tester():
             else:
                 self.all_gt += gt
 
-        self.tensorboard_callback.gt_image = gt_image#[..., ::-1]
-        self.tensorboard_callback.spectrum = spectrum
-        self.tensorboard_callback.indexes = indexes
+        #self.tensorboard_callback.gt_image = gt_image#[..., ::-1]   ОБЯЗАТЕЛЬНО ЭТО ВЕРНУТЬ!!!!!
+        #self.tensorboard_callback.spectrum = spectrum
+        #self.tensorboard_callback.indexes = indexes
 
         result_image = []
         if save or show:
