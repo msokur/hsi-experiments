@@ -69,4 +69,4 @@ class Validator():
     
 if __name__ == '__main__':
     validator = Validator()
-    validator.find_best_checkpoint('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test/CV_lstm_10/')
+    validator.find_best_checkpoint('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test/CV_best_4pat/')

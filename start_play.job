@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=play
+#SBATCH --job-name=4pat_validate_CV_
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
 #SBATCH --mem=64G
 ##SBATCH --gres=gpu:v100:1
 ##SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=_play_%j.log
+#SBATCH --output=_validate_CV_4pat_%j.log
 
 #module load Python
 #module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4

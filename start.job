@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=gen_new_raw_with_indexes
+#SBATCH --job-name=shuffle_background
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
 #SBATCH --mem=120G
 ##SBATCH --gres=gpu:v100:2
-##SBATCH --gres=gpu:rtx2080ti:1
-#SBATCH --output=_gen_new_raw_with_indexes_%j.log
+#SBATCH --gres=gpu:rtx2080ti:1
+#SBATCH --output=_shuffle_background_%j.log
 
 module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
 
@@ -30,4 +30,4 @@ module load OpenCV/4.2.0-fosscuda-2019b-Python-3.7.4
 module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
 
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/data_loader.py
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/preprocessor.py

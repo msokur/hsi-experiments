@@ -148,7 +148,7 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
     
     
     
-    def on_train_batch_end(self, batch, logs):
+    '''def on_train_batch_end(self, batch, logs):
         if self.train_generator is None:
             return
         
@@ -164,7 +164,7 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
             # In eager mode, grads does not have name, so we get names from model.trainable_weights
             for weights, grads in zip(weights, gradients):
                 with self._writers['train'].as_default():
-                    tf.summary.histogram(weights.name.replace(':', '_') + '_grads', data=grads, step=self._epoch)
+                    tf.summary.histogram(weights.name.replace(':', '_') + '_grads', data=grads, step=self._epoch)'''
         
         
     def on_epoch_end(self, epoch, logs=None):

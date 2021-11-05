@@ -1,9 +1,11 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=16
-##SBATCH --job-name=compare_8inc_1pat_checkpoints_CV_combi_WRA_model_50max_30epochs
-##SBATCH --job-name=compare_16inc_1pat_checkpoints_CV_combi_WRA_model_50max_20epochs
-#SBATCH --job-name=compare_CV_aug
+##SBATCH --job-name=compare_bg
+##SBATCH --job-name=compare_raw_CV_best
+##SBATCH --job-name=compare_raw_CV_best
+##SBATCH --job-name=compare_4pat_CV_best
+#SBATCH --job-name=compare_bg_1pat_CV_best
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
 #SBATCH --mem=120G
@@ -11,7 +13,10 @@
 #SBATCH --gres=gpu:rtx2080ti:2
 ##SBATCH --output=_compare_checkpoints_CV_combi_WRA_model_50max_8inc_30epochs_%j.log
 ##SBATCH --output=_compare_checkpoints_CV_combi_WRA_model_50max_20epochs_%j.log
-#SBATCH --output=_compare_checkpoints_CV_aug_%j.log
+##SBATCH --output=_compare_CV_best_raw_%j.log
+##SBATCH --output=_compare_CV_best_4pat_%j.log
+#SBATCH --output=_compare_CV_bg_1pat_%j.log
+
 
 
 module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
