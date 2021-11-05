@@ -225,6 +225,10 @@ def train(paths=None, except_indexes=[]):
             send_tg_message(f'Mariia, ERROR!!!, training {log_dir} has finished after {last_epoch} epochs with error {e}')
         raise e #TODO REMOVE!!
 
+    checkpoints_paths = os.path.join(log_dir, 'checkpoints')
+    if not os.path.exists(checkpoints_paths):
+        os.mkdir(checkpoints_paths)
+        
     final_model_save_path = os.path.join(log_dir, 'checkpoints',  f'cp-{len(history.history["loss"]):04d}')
     if not os.path.exists(final_model_save_path):
         os.mkdir(final_model_save_path)
