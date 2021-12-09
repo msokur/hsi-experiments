@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=16
-#SBATCH --job-name=CV_3d_paper
+#SBATCH --job-name=inc_CV_eval_compare
 #SBATCH --partition=clara-job
 #SBATCH --time=10-00:00:00
 #SBATCH --mem=120G
 ##SBATCH --gres=gpu:v100:2
 #SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=_CV_3d_paper_%j.log
+#SBATCH --output=_CV_eval_compare_inception_40epochs_%j.log
 
 
 module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"

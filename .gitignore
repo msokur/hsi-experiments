@@ -24,3 +24,5 @@ temp
 *.log
 outputs_checker/*.out
 explore
+jupyter/*.mat
+jupyter/weights.npz

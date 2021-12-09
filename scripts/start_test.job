@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=test_3d
+#SBATCH --job-name=test_3d_inc
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
 #SBATCH --mem=64G
-##SBATCH --gres=gpu:rtx2080ti:1
+#SBATCH --gres=gpu:rtx2080ti:1
 ##SBATCH --gres=gpu:v100:1
-#SBATCH --output=test_3d_%j.log
+#SBATCH --output=test_3d_inc_%j.log
 
 #module load Python
 #module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4
