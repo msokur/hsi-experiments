@@ -6,18 +6,6 @@ import numpy as np
 from tqdm import tqdm
 
 class Validator():
-
-    def __init__(self):
-        return 
-
-    def count_ROC_values(self):
-        return 0
-
-    def draw_ROC(self):
-        return 0
-    
-    def generate_report(self):
-        return 0
     
     def find_best_checkpoint(self, root_path, 
                              checkpoints_regex='cp-*', 
@@ -42,20 +30,45 @@ class Validator():
                 for row in reader:
                     data.append(row)
                 data = np.array(data)
+                
+                #get data
                 thr = data[:, threshold_raw].astype(np.float32)
-                sens = data[:, i_sens].astype(np.float32)
-                spec = data[:, i_spec].astype(np.float32)
-                idx = np.argwhere(np.diff(np.sign(sens - spec))).flatten()
+                sens = data[:, i_sens].astype(np.float32)                
+                spec = data[:, i_spec].astype(np.float32)                
+                                
+                #sort data for case if threshold are not sorted
+                sorted_arrays = list(zip(list(thr), list(sens), list(spec)))
+                sorted_arrays = sorted(sorted_arrays) #by default it sorts by the first column
+                sorted_arrays = np.array(sorted_arrays)
+                thr = sorted_arrays[:, 0]
+                sens = sorted_arrays[:, 1]
+                spec = sorted_arrays[:, 2]
+                                
+                #print data
+                print('Sensitivities', sens)
+                print('Specificities', spec)
+                
+                #print intermediate computations
+                print(np.sign(sens - spec))
+                diff = np.diff(np.sign(sens - spec))
+                print(diff)
+                print(np.argmin(diff))
+                
+                if len(diff[diff == -2]) == 0:
+                    print(f'~~~~~~~~~~~~~~~~You need to add new thresholds starts from {checkpoint}~~~~~~~~~~~~~~')
+                    
+                #get and print results
+                idx = np.argmin(diff).flatten() + 1
                 if prints:
-                    print(idx, thr[idx])
-                    print(sens[idx], spec[idx])
-                    print(np.mean([sens[idx], spec[idx]]))
+                    print('Best index and threshold: ', idx, thr[idx])
+                    print('Best sensitivity and specificity: ', sens[idx], spec[idx])
+                    print('Mean value of best sensitivity and specificity: ', np.mean([sens[idx], spec[idx]]))
                 
                 thresholds.append(thr[idx])
                 means.append(np.mean([sens[idx], spec[idx]]))
         
         
-        print('------------------------------------------------------')
+        print('-----------------------')
         best_idx = np.nanargmax(means)
         best_checkpoint = checkpoints[best_idx]
         best_threshold = thresholds[best_idx]
@@ -69,4 +82,4 @@ class Validator():
     
 if __name__ == '__main__':
     validator = Validator()
-    validator.find_best_checkpoint('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test/CV_best_4pat/')
+    validator.find_best_checkpoint('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test/CV_3d_svn_every_third/')
