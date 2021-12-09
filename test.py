@@ -1,15 +1,20 @@
+import sys
+sys.path.insert(0, 'utils')
+sys.path.insert(1, 'data_utils')
+
+import config
 import tensorflow as tf
 import cv2
 import numpy as np
 import os
 from tqdm import tqdm
-import data_loader #import *
+import data_loader_old #import *
 import callbacks
 from sklearn.metrics import confusion_matrix, f1_score
 import csv
 from sklearn import preprocessing
 import inspect
-import config
+import glob
 
 class Tester():
 
@@ -60,6 +65,11 @@ class Tester():
         
         if save_stats and folder_name == '':
             folder_name = self.SAVING_PATH
+            
+        if len(predictions.shape) > 1:
+            predictions = np.reshape(predictions, predictions.shape[0])
+       
+        predictions = predictions.astype(np.int)
 
         conf_matrix = confusion_matrix(gt, predictions, labels=[0,1])
 
@@ -95,9 +105,12 @@ class Tester():
         
         print('--------------------method test_one_image params----------------------')
         signature = inspect.signature(self.test_one_image)
+        print('path_dat: ', path_dat)
         for param in signature.parameters.values():
             print(param)
         print('------------------------------------------------')
+        
+        print('test_batch', test_batch)
         
         if folder_name == '':
             folder_name = self.SAVING_PATH
@@ -123,8 +136,8 @@ class Tester():
             
             
         if spectrum_shift != 0:
-            spectrum = spectrum[:, :spectrum_shift]
-        spectrum = self.scaler.transform(spectrum) #test_batch 
+            spectrum = spectrum[..., :spectrum_shift]
+        #spectrum = self.scaler.transform(spectrum) #test_batch 
             
         if test_batch:
             gt = data['y']  #test batch
@@ -233,13 +246,15 @@ class Tester():
 
 if __name__ == "__main__":
     
-    tester = Tester( f'cp-0040', config.DATA_PATHS, '', MODEL_FOLDER='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_200_combi_with_raw_all_fixed_preprocessing/combi_with_raw_all_0_1_2_3')
+    tester = Tester( f'cp-0020', config.DATA_PATHS, '', MODEL_FOLDER='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_inception/3d_0_1_2_3')
 
     #tester.test_ALL_images(save=False, show=False, test_all_spectra=False, save_stats=False)
     
     
     path = '/work/users/mi186veva/data/2019_09_04_12_43_40_SpecCube.dat'
-    for path in [ '/work/users/mi186veva/data/2019_09_04_12_43_40_SpecCube.dat']:#, '/work/users/mi186veva/data/2020_05_28_15_20_27_SpecCube.dat', '/work/users/mi186veva/data/2019_07_12_11_15_49_SpecCube.dat', '/work/users/mi186veva/data/2020_05_15_12_43_58_SpecCube.dat']:
+    paths = glob.glob('/work/users/mi186veva/data_preprocessed/raw_3d/*.npz')
+    for path in ['2019_07_15_11_33_28_', '2019_09_04_12_43_40_', '2020_05_28_15_20_27_', '2019_07_12_11_15_49_']:#, '/work/users/mi186veva/data/2020_05_28_15_20_27_SpecCube.dat', '/work/users/mi186veva/data/2019_07_12_11_15_49_SpecCube.dat', '/work/users/mi186veva/data/2020_05_15_12_43_58_SpecCube.dat']:
+        path = '/work/users/mi186veva/data_preprocessed/raw_3d/' + path + '.npz'
         sensitivity, specificity = tester.test_one_image(path,
                             path_image=path + '_Mask JW Kolo.png',
                             save=False,
@@ -247,8 +262,9 @@ if __name__ == "__main__":
                             test_all_spectra=False,
                             save_stats=False,
                             folder_name=config.MODEL_NAME,
-                            test_batch=False,
-                            spectrum_shift=-1)
+                            test_batch=True,
+                            spectrum_shift=0)
+    print(sensitivity, specificity)
 
     #dat_names = [r'data\2019_07_12_11_15_49_SpecCube.dat',r'data\2019_07_17_15_38_14_SpecCube.dat', r'data\2019_07_25_11_56_38_SpecCube.dat', r'data\2019_08_09_12_17_55_SpecCube.dat' ]
 
