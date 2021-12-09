@@ -1,3 +1,14 @@
+import sys
+import os
+import inspect
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+sys.path.insert(1, os.path.join(currentdir, 'utils')) 
+sys.path.insert(2, os.path.join(currentdir, 'data_utils')) 
+sys.path.insert(2, os.path.join(currentdir, 'models')) 
+
+print('paths from config', sys.path)
+
 import datetime
 import os
 import tf_metrics
@@ -13,20 +24,22 @@ MODE = MODE_TYPES['SERVER']
 #change modelname here!
 #def get_model_name(MODEL_NAME_PATHS, model_name='combi_with_raw_all'):
 #def get_model_name(MODEL_NAME_PATHS, model_name='combi_min_max_WRA_model_50max_4inc'):
-def get_model_name(MODEL_NAME_PATHS, model_name='combi_bg'):
+def get_model_name(MODEL_NAME_PATHS, model_name='3d'):
     return os.path.join(*MODEL_NAME_PATHS, model_name)
 
 NORMALIZATION_TYPES = {
     'svn': 0,
-    'l2_norm': 1
+    'l2_norm': 1,
+    'svn_T': 2
 }
+NORMALIZATION_TYPE = NORMALIZATION_TYPES['l2_norm']
 EARLY_STOPPING = False
 INCEPTION_FACTOR = 8
 TELEGRAM_SENDING = True
 
 DATA_PATHS = [r'data', r'data/data_additional'] #for data loader without generator
 NPY_PATHS = [r'data_preprocessed/augmented'] #for data loader without generator
-RAW_NPY_PATH = r'data_preprocessed/raw' #for generators
+
 AUGMENTED_PATH = r'data_preprocessed/augmented' #for generators
 #SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled' #for generators
 #SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled'
@@ -35,8 +48,12 @@ AUGMENTED_PATH = r'data_preprocessed/augmented' #for generators
 #SHUFFLED_PATH = r'data_preprocessed/combi/shuffled'
 #BATCHED_PATH = r'data_preprocessed/combi/batch_sized'
 
-SHUFFLED_PATH = r'data_preprocessed/combi_with_raw_ill/shuffled'
-BATCHED_PATH = r'data_preprocessed/combi_with_raw_ill/batch_sized'
+#SHUFFLED_PATH = r'data_preprocessed/combi_with_raw_ill/shuffled'
+#BATCHED_PATH = r'data_preprocessed/combi_with_raw_ill/batch_sized'
+
+RAW_NPY_PATH = r'data_preprocessed/raw_3d' #for generators
+SHUFFLED_PATH = r'data_preprocessed/raw_3d/shuffled'
+BATCHED_PATH = r'data_preprocessed/raw_3d/batch_sized2'
 
 #SHUFFLED_PATH = r'data_preprocessed/augmented_l2_norm/shuffled'
 #BATCHED_PATH = r'data_preprocessed/augmented_l2_norm/batch_sized'
@@ -64,21 +81,21 @@ DATA_LOADER_TYPES = {
 DATA_LOADER_MODE = DATA_LOADER_TYPES['_dat']
 NOT_CERTAIN_FLAG = False
 
-BATCH_SIZE = 10000
+BATCH_SIZE = 100
 SPLIT_FACTOR = 0.9 #for data sets: train\test data percentage
 WAVE_AREA = 100
 FIRST_NM = 8
 LAST_NM = 100
 
-EPOCHS = 20
+EPOCHS = 40
 CHECKPOINT_WRITING_STEP = 2
 GRADIENTS_WRITING_STEP = 50000000000 #every GRADIENTS_WRITING_STEP batches we write gradients, so not epochs - gradients
 
-CROSS_VALIDATION_SPLIT = int(56 / 1)
+CROSS_VALIDATION_SPLIT = int(56 / 4)
 SCALER_FILE_NAME = '.scaler'
-NORMALIZATION_TYPE = NORMALIZATION_TYPES['l2_norm']
+NORMALIZATION_TYPE = NORMALIZATION_TYPES['svn_T']
 WITH_BATCH_NORM = False
-WITH_BACKGROUND_EXTRACTION = True
+WITH_BACKGROUND_EXTRACTION = False
 READING_TEST_DATA_FROM_DAT = False #other oprion is from .npz
 CUSTOM_OBJECTS = {'f1_m':tf_metrics.f1_m}
 
@@ -91,6 +108,8 @@ LEARNING_RATE = 1e-4
 
 RESTORE_MODEL = False
 ADD_TIME = True
+
+_3D_SIZE = [5, 5]
 
 
 

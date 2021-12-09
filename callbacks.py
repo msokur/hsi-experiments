@@ -26,18 +26,18 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
         super(CustomTensorboardCallback, self).__init__(**kwargs)
         
         self.test_name = '2019_09_04_12_43_40_SpecCube.dat'
-        gt_image, spectrum_data, gesund_indexes, ill_indexes, not_certain_indexes = data_loader.get_data_for_showing(self.test_name, config.DATA_PATHS[0])
-        indexes = gesund_indexes + ill_indexes 
-        indexes = np.array(indexes)
+        #gt_image, spectrum_data, gesund_indexes, ill_indexes, not_certain_indexes = data_loader.get_data_for_showing(self.test_name, config.DATA_PATHS[0])
+        #indexes = gesund_indexes + ill_indexes 
+        #indexes = np.array(indexes)
 
         #scaler = data_loader.restore_scaler(self.log_dir) #TODO return normal scaling
         self.scaler =  preprocessing.Normalizer()
         #spectrum = spectrum_data[indexes[:, 0], indexes[:, 1]]
-        spectrum = self.scaler.transform(spectrum_data[indexes[:, 0], indexes[:, 1]])
-        self.gt_image = gt_image
-        self.gt = [0] * len(gesund_indexes) + [1] * len(ill_indexes)
-        self.spectrum = spectrum
-        self.indexes = indexes
+        #spectrum = self.scaler.transform(spectrum_data[indexes[:, 0], indexes[:, 1]])
+        #self.gt_image = gt_image
+        #self.gt = [0] * len(gesund_indexes) + [1] * len(ill_indexes)
+        #self.spectrum = spectrum
+        #self.indexes = indexes
         self.train_generator = train_generator
         self.strategy = strategy
         self.process = process
@@ -61,7 +61,9 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
             else:
                 data = np.load(path[0])
                 not_not_certain_indexes = np.flatnonzero(data['y'] != 2)
-                self.excepted_spectrums.append(self.scaler.transform(data['X'][not_not_certain_indexes, :-1]))
+                X = data['X'][not_not_certain_indexes]
+                #X = self.scaler.transform(X[:, :-1])
+                self.excepted_spectrums.append(X)
                 self.excepted_gt.append(data['y'][not_not_certain_indexes])
         
         
@@ -186,21 +188,22 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
                     image = tf.py_function(self.draw_predictions_on_images, [predictions], [tf.uint8])
                     tf.summary.image('image', image, step=epoch)
             
-            tf.summary.scalar('epoch_specificity', data=logs['tn'] / (logs['tn'] + logs['fp']), step=epoch)
+            #tf.summary.scalar('epoch_specificity', data=logs['tn'] / (logs['tn'] + logs['fp']), step=epoch)
             tf.summary.scalar('epoch_lr', data=self.model.optimizer.lr, step=epoch)
         
-        self.__write_valid_scalar('epoch_specificity', logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), epoch)
+        #self.__write_valid_scalar('epoch_specificity', logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), epoch)
         
-        if self.are_excepted:
+        '''if self.are_excepted and epoch % config.CHECKPOINT_WRITING_STEP == 0:
             for name, exc, gt in zip(self.except_indexes, self.excepted_spectrums, self.excepted_gt):
-                predictions = self.model.predict(exc[:, :-1])
-                sensitivity, specificity, f1 = test.Tester.count_metrics(np.rint(gt), np.rint(predictions), "", "", False, return_dice=True)
+                #predictions = self.model.predict(exc[:, :-1])
+                predictions = self.model.predict(exc[::20])
+                sensitivity, specificity, f1 = test.Tester.count_metrics(np.rint(gt)[::20], np.rint(predictions), "", "", False, return_dice=True)
                 
                 self.__write_valid_scalar('test_'+name+'_sensitivity', sensitivity, epoch)
                 self.__write_valid_scalar('test_'+name+'_specificity', specificity, epoch)
                 self.__write_valid_scalar('test_'+name+'_f1', f1, epoch)
         
-                print(f'-------Epoch validation: {name} sensitivity:{sensitivity} specificity:{specificity} -----------')
+                print(f'-------Epoch validation: {name} sensitivity:{sensitivity} specificity:{specificity} -----------')'''
         
         '''print('-------------LOGS----------------')
         for key, value in self.__dict__.items():   #callback items
