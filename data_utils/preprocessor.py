@@ -37,9 +37,16 @@ Link: https://blog.janestreet.com/how-to-shuffle-a-big-dataset/
 
 
 class Preprocessor():
-    def __init__(self, load_name_for_x='X', load_name_for_y='y', piles_number=100):  #Marianne, I think you need to change load_name_for_x
-        self.dict_names = [load_name_for_x, load_name_for_y, 'PatientName', 'PatientIndex'] 
+    def __init__(self, load_name_for_x='X', 
+                 load_name_for_y='y', 
+                 piles_number=100, 
+                 weights_filename='.weights',
+                dict_names = ['PatientName', 'PatientIndex']): #, 'indexes_in_datacube', 'weights']  
+        self.dict_names = [load_name_for_x, load_name_for_y]
+        for name in dict_names:
+            seld.dict_names.append(name)
         self.piles_number = piles_number
+        self.weights_filename = weights_filename
     
     #------------------divide all samples into piles_number files------------------
     def __create_piles(self):
@@ -88,8 +95,17 @@ class Preprocessor():
             for i_pile, pile in enumerate(piles):              
                 _names = [name] * len(pile)
                 _indexes = [i] * len(pile)
-                                
-                values = [data[self.dict_names[0]][pile], data[self.dict_names[1]][pile], _names, _indexes]
+                                                
+                values = [data[self.dict_names[0]][pile], 
+                          data[self.dict_names[1]][pile], 
+                          _names, 
+                          _indexes] 
+                          #data[self.dict_names[4]][pile], 
+                          #data[self.dict_names[5]][pile]]
+                if len(self.dict_names > 4):
+                    for nm in self.dict_names[4:]:
+                        values.append(data[nm][pile])
+
                 _values = {k: v for k, v in zip(self.dict_names, values)}
                 pickle.dump(_values, open(os.path.join(self.shuffle_saving_path, str(i_pile)+'.pile'), 'ab'))
                     
@@ -141,16 +157,16 @@ class Preprocessor():
         #X[X < 0] = 0.
         #X = preprocessing.Normalizer().transform(X[:, :-1]) #TODO be careful
         
-        ill_indexes = np.flatnonzero(y == 1) 
+        #ill_indexes = np.flatnonzero(y == 1) 
         
         #X = X[:, :-1]
-        X[X<0] = 0.
+        #X[X<0] = 0.
         #X[ill_indexes] = savgol_filter(X[ill_indexes], 7, 2)
-        X[X<0] = 0.
+        #X[X<0] = 0.
         #X = preprocessing.Normalizer().transform(X)
         #X = preprocessing.MinMaxScaler(feature_range=(-1, 1)).fit_transform(X)
     
-        return X
+        return X, y
     
     def shuffle(self, paths, piles_number, shuffle_saving_path, augmented=False):
         print('--------Shuffling started--------')
@@ -199,25 +215,34 @@ class Preprocessor():
         if scaling_type == 0: #svn
             scaler = preprocessing.StandartScaler().fit(X)
         else: #l2_norm
-            scaler = preprocessing.Normalizer().fit(X)
+            scaler = preprocessing.Normalizer().fit(X)        
         
-        self.scaler_save(scaler, scaler_saving_path)
+        self.scaler_save(scaler, scaler_saving_path) 
         return scaler.transform(X)
     
     def scale_X(self, X, scaler_path):
         _3d = False
         shapes = []
         
-        if X.shape[0] != 0:
-            scaler = self.scaler_restore(scaler_path)
-            print(len(X.shape))
+        if X.shape[0] != 0:#####reshape X if 3d
             if len(X.shape) > 2:
                 _3d = True
                 shapes = X.shape
                 X = np.reshape(X, (np.prod(X.shape[:-1]), X.shape[-1]))
-
-            X = scaler.transform(X)
-
+                
+            #####restore scaler
+            if config.NORMALIZATION_TYPE == 2: #svn T
+                scaler = preprocessing.StandardScaler().fit(X.T)
+            else:
+                scaler = self.scaler_restore(scaler_path)
+            
+            ####transform X
+            if config.NORMALIZATION_TYPE == 2:
+                X = scaler.transform(X.T).T
+            else:
+                X = scaler.transform(X)
+            
+            ####reshape back if 3d
             if _3d:
                 X = np.reshape(X, shapes)
         
@@ -227,12 +252,11 @@ class Preprocessor():
     
     def scaledData_save(self, root_path, destination_path, scaler_path):
         paths = glob.glob(os.path.join(root_path, '*.npz'))
-        scaler = self.scaler_restore(scaler_path)
         
         if not os.path.exists(destination_path):
             os.mkdir(destination_path)
         
-        for path in paths:
+        for path in tqdm(paths):
             data = np.load(path)
             X = data['X']
             X = self.scale_X(X, scaler_path)
@@ -241,7 +265,7 @@ class Preprocessor():
             np.savez(os.path.join(destination_path, data_loader.DataLoader.name_get(path)), **data)
         
     
-    def __split_arrays(self, X, y, p_names, p_indexes):
+    def __split_arrays(self, X, y, p_names, p_indexes, p_ind_cube, p_weights):
              #---------------splitting into archives----------
             chunks = X.shape[0] // self.batch_size
             chunks_max = chunks * self.batch_size
@@ -249,32 +273,33 @@ class Preprocessor():
             y_arr = np.array_split(y[:chunks_max], chunks)
             names_arr = np.array_split(p_names[:chunks_max], chunks)
             indexes_arr = np.array_split(p_indexes[:chunks_max], chunks)
+            indexes_cube_arr = np.array_split(p_ind_cube[:chunks_max], chunks)
+            weights_arr = np.array_split(p_weights[:chunks_max], chunks)
 
             #---------------saving of the non equal last part for the future partition---------
             self.rest_X += list(X[chunks_max:])
             self.rest_y += list(y[chunks_max:])
             self.rest_names += list(p_names[chunks_max:])
             self.rest_indexes += list(p_indexes[chunks_max:])
+            self.rest_indexes_cube += list(p_ind_cube[chunks_max:])
+            self.rest_weights += list(p_weights[chunks_max:])
 
             #---------------saving of the non equal last part for the future partition---------
             ind = len(glob.glob(os.path.join(self.archives_of_batch_size_saving_path, "*")))
-            for _X, _y, _n, _i in zip(X_arr, y_arr, names_arr, indexes_arr):
+            for _X, _y, _n, _i, _ind_cube, _w in zip(X_arr, y_arr, names_arr, indexes_arr, indexes_cube_arr, weights_arr):
                 arch = {}
 
-                _X = self.preprocess(_X, _y) 
+                _X, _y = self.preprocess(_X, _y) 
 
-                values = [_X, _y, _n, _i]
+                values = [_X, _y, _n, _i, _ind_cube, _w]
                 for i, n in enumerate(self.dict_names):
                     arch[n] = values[i]
 
                 np.savez(os.path.join(self.archives_of_batch_size_saving_path, 'batch'+str(ind)), **arch)
-                ind += 1         
+                ind += 1            
                 
     def split_data_into_npz_of_batch_size(self, paths, batch_size, archives_of_batch_size_saving_path, scaler_saving_path, except_names=[], not_certain=config.NOT_CERTAIN_FLAG):
-        
-        
-        
-        
+    
         print('--------Splitting into npz of batch size started--------')
         self.batch_size = batch_size
         self.archives_of_batch_size_saving_path = archives_of_batch_size_saving_path
@@ -290,14 +315,20 @@ class Preprocessor():
         for f in files:
             os.remove(f)
                     
-        self.rest_X, self.rest_y, self.rest_names, self.rest_indexes = [], [], [], []
+        self.rest_X, self.rest_y, self.rest_names, self.rest_indexes, self.rest_indexes_cube, self.rest_weights = [], [], [], [], [], []
         for p in tqdm(paths):
             #------------ except_indexes filtering ---------------
             data = np.load(p)
-            X, y, p_names, p_indexes = data[self.dict_names[0]], \
+            X, y, p_names, p_indexes, p_ind_cube, p_weights = data[self.dict_names[0]], \
                                        data[self.dict_names[1]], \
                                        data[self.dict_names[2]], \
-                                       data[self.dict_names[3]]
+                                       data[self.dict_names[3]], \
+                                       np.zeros(data[self.dict_names[0]].shape[0]), \
+                                       np.zeros(data[self.dict_names[0]].shape[0]) #data[self.dict_names[5]] 
+            
+            if len(self.dict_names) > 4:
+                 p_ind_cube, p_weights = data[self.dict_names[4]], data[self.dict_names[5]],  
+            
             indexes = np.arange(X.shape[0])
             for except_name in except_names:
                 indexes = np.flatnonzero(np.core.defchararray.find(p_names, except_name) == -1)
@@ -305,19 +336,19 @@ class Preprocessor():
                 if indexes.shape[0] == 0:
                     print(f'WARNING! For except_name {except_name} no except_samples were found')
                 
-                X, y, p_names, p_indexes = X[indexes], y[indexes], p_names[indexes], p_indexes[indexes]
+                X, y, p_names, p_indexes, p_ind_cube, p_weights = X[indexes], y[indexes], p_names[indexes], p_indexes[indexes], p_ind_cube[indexes], p_weights[indexes]
             
             if not not_certain:
                 indexes = np.flatnonzero(y != 2)
-                X, y, p_names, p_indexes = X[indexes], y[indexes], p_names[indexes], p_indexes[indexes]
+                X, y, p_names, p_indexes, p_ind_cube, p_weights = X[indexes], y[indexes], p_names[indexes], p_indexes[indexes], p_ind_cube[indexes], p_weights[indexes]
             
             #p1 = Pool(4)
             #p1.map(__split_function, [X, y, p_names, p_indexes])
-            self.__split_arrays(X, y, p_names, p_indexes)  
+            self.__split_arrays(X, y, p_names, p_indexes, p_ind_cube, p_weights)  
         
         #------------------save rest of rest archives----------------
-        rest_X, rest_y, rest_names, rest_indexes = np.array(self.rest_X), np.array(self.rest_y), np.array(self.rest_names), np.array(self.rest_indexes)
-        self.rest_X, self.rest_y, self.rest_names, self.rest_indexes = [], [], [], []
+        rest_X, rest_y, rest_names, rest_indexes, rest_indexes_cube, rest_weights = np.array(self.rest_X), np.array(self.rest_y), np.array(self.rest_names), np.array(self.rest_indexes), np.array(self.rest_indexes_cube), np.array(self.rest_weights)
+        self.rest_X, self.rest_y, self.rest_names, self.rest_indexes, self.rest_indexes_cube, self.rest_weights = [], [], [], [], [], []
         
         #rest_X = np.concatenate(rest_X, axis=0)
         #rest_y = np.concatenate(rest_y, axis=0)
@@ -328,21 +359,80 @@ class Preprocessor():
         rest_y = np.array(rest_y)
         rest_names = np.array(rest_names)
         rest_indexes = np.array(rest_indexes)
+        rest_indexes_cube = np.array(rest_indexes_cube)
+        rest_weights = np.array(rest_weights)
         
         if rest_X.shape[0] >= batch_size:
             #p2 = Pool(4)
             #p2.map(__split_function, [rest_X, rest_y, rest_names, rest_indexes])
-            self.__split_arrays(rest_X, rest_y, rest_names, rest_indexes) 
+            self.__split_arrays(rest_X, rest_y, rest_names, rest_indexes, rest_indexes_cube, rest_weights) 
         
         print('--------Splitting into npz of batch size finished--------')
         
+    def weightedData_save(self, root_path, weights):
+        paths = glob.glob(os.path.join(root_path,'*.npz'))
+        for i, path in tqdm(enumerate(paths)):
+            data = np.load(path)
+            X, y = data['X'], data['y']
+            weights_ = np.zeros(y.shape)
+
+            for j in np.unique(y):
+                weights_[y == j] = weights[i, j]
+
+            data = {n: a for n, a in data.items()}
+            data['weights'] = weights_
+
+            np.savez(os.path.join(root_path, data_loader.DataLoader.name_get(path)), **data)
+    
+    def weights_get_and_save(self, root_path):
+        weights_path = os.path.join(root_path, self.weights_filename)
+        if os.path.isfile(weights_path):
+            weights = pickle.load(open(weights_path, 'rb'))
+            return weights['weights']
+        else:
+            paths = glob.glob(os.path.join(root_path, '*.npz'))
+
+            quantities = []
+
+            for path in tqdm(paths):
+                data = np.load(path)
+                X, y = data['X'], data['y']
+                quantities.append([X[y == 0].shape[0], X[y == 1].shape[0], X[y == 2].shape[0]])
+            
+            quantities = np.array(quantities)
+            
+            if config.NOT_CERTAIN_FLAG:
+                summ = np.sum(quantities)
+            else:
+                summ = np.sum(quantities[:, :2])
+
+            weights = summ / quantities
+            
+            data = {
+                'weights':weights,
+                'summ':summ,
+                'quantities':quantities
+            }
+            
+            with open(weights_path, 'wb') as f:
+                pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+
+            return weights
+    
     def pipeline(self, root_path, preprocessed_path, scaler_path=None, scaler_name='scaler'):
+        if not os.path.exists(preprocessed_path):
+             os.mkdir(preprocessed_path)
+            
         #---------Data reading part--------------
-        #dataLoader = data_loader.DataLoader(_3d=True, _3d_size=[5, 5])
-        #dataLoader.datfiles_read_and_save_to_npz(root_path, preprocessed_path)
+        dataLoader = data_loader.DataLoader(_3d=True, _3d_size=[5, 5])
+        dataLoader.datfiles_read_and_save_to_npz(root_path, preprocessed_path)
+        
+        #----------weights part------------------
+        weights = self.weights_get_and_save(preprocessed_path)
+        self.weightedData_save(preprocessed_path, weights)
         
         #----------scaler part ------------------
-        if scaler_path is None:
+        if scaler_path is None and config.NORMALIZATION_TYPE != 2:
             scaler_path = os.path.join(preprocessed_path, scaler_name + config.SCALER_FILE_NAME)
             self.fit_scale_from_path(preprocessed_path, scaler_path)
         self.scaledData_save(preprocessed_path, preprocessed_path, scaler_path)
@@ -357,17 +447,16 @@ class Preprocessor():
 
 if __name__ == '__main__':
     preprocessor = Preprocessor()
-    '''preprocessor.pipeline('/work/users/mi186veva/data', 
-                          '/work/users/mi186veva/data_preprocessed/raw_3d', 
-                         scaler_path='/work/users/mi186veva/data_preprocessed/raw/raw_all.scaler')'''
-    paths = glob.glob('/work/users/mi186veva/data_preprocessed/raw_3d/*.npz')
+    preprocessor.pipeline('/work/users/mi186veva/data', 
+                          '/work/users/mi186veva/data_preprocessed/raw_3d_weighted')
+    #paths = glob.glob('/work/users/mi186veva/data_preprocessed/raw_3d_/*.npz')
     #print(len(paths))
     #preprocessor.shuffle(['/work/users/mi186veva/data_preprocessed/augmented/2019_07_12_11_15_49_.npz', '/work/users/mi186veva/data_preprocessed/augmented/2020_03_27_16_56_41_.npz'], 100, '/work/users/mi186veva/data_preprocessed/augmented_l2_norm/shuffled')
     #preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/raw_3d/shuffled', augmented=False)
     #preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/augmented/shuffled', augmented=True)
     
     #paths = glob.glob('/work/users/mi186veva/data_preprocessed/combi_with_raw_ill/shuffled/*.npz')
-    preprocessor.split_data_into_npz_of_batch_size(paths, config.BATCH_SIZE, '/work/users/mi186veva/data_preprocessed/raw_3d/batch_sized1', "")
+    #preprocessor.split_data_into_npz_of_batch_size(paths, config.BATCH_SIZE, '/work/users/mi186veva/data_preprocessed/raw_3d/batch_sized1', "")
     
     
     #preprocessor.scale_from_path('/work/users/mi186veva/data_preprocessed/raw', '/work/users/mi186veva/data_preprocessed/raw/raw_all.scaler')

@@ -1,9 +1,16 @@
-#import tensorflow
+import sys
+sys.path.insert(0, 'utils')
+sys.path.insert(1, 'data_utils')
+sys.path.insert(2, 'models')
+
+
+import tensorflow as tf
 from tensorflow import keras
 import config
 import data_loader #import get_data_for_showing
 #from data_loader import *
-from model import *
+import model
+import model_3d
 import callbacks 
 import os
 from shutil import copyfile
@@ -13,10 +20,12 @@ import tf_metrics
 import numpy as np
 import psutil
 
-def send_tg_message(message):
+'''def send_tg_message(message):
     if config.MODE == 0:
             message = 'SERVER ' + message
-    telegram_send.send(messages=[message], conf='tg.config')
+    telegram_send.send(messages=[message], conf='tg.config')'''
+
+from utils import send_tg_message
 
 def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
     '''-------LOGGING and HPARAMS---------'''
@@ -44,23 +53,21 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
     class_weights = train_generator.get_class_weights()
     print(class_weights)
     
+    output_signature = (tf.TensorSpec(shape=(None, config._3D_SIZE[0], config._3D_SIZE[1], config.LAST_NM - config.FIRST_NM), dtype=tf.float32),
+                        tf.TensorSpec(shape=(None, ), dtype=tf.float32))#,
+                        #tf.TensorSpec(shape=(None, ), dtype=tf.float32))
+    
     def gen_train_generator():
         for i in range(train_generator.len):
             yield train_generator.getitem(i)
     
-    train_dataset = tf.data.Dataset.from_generator(gen_train_generator, output_signature=(
-         
-        tf.TensorSpec(shape=(None, 91), dtype=tf.float32),
-        tf.TensorSpec(shape=(None,), dtype=tf.float32)))
+    train_dataset = tf.data.Dataset.from_generator(gen_train_generator, output_signature=output_signature)
     
     def gen_valid_generator():
         for i in range(valid_generator.len):
             yield valid_generator.getitem(i)
     
-    valid_dataset = tf.data.Dataset.from_generator(gen_valid_generator, output_signature=(
-         
-        tf.TensorSpec(shape=(None, 91), dtype=tf.float32),
-        tf.TensorSpec(shape=(None, ), dtype=tf.float32)))
+    valid_dataset = tf.data.Dataset.from_generator(gen_valid_generator, output_signature=output_signature)
     
     
     options = tf.data.Options()
@@ -88,33 +95,37 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
 
         if config.MODE == 1 or config.MODE == 0:
             with mirrored_strategy.scope():
-                model = keras.models.load_model(all_checkpoints[-1])
+                model = keras.models.load_model(all_checkpoints[-1], custom_objects=config.CUSTOM_OBJECTS, compile=True)
         else:
-            model = keras.models.load_model(all_checkpoints[-1]) 
+            model = keras.models.load_model(all_checkpoints[-1], custom_objects=config.CUSTOM_OBJECTS) 
     else:
-        METRICS = [
-            keras.metrics.TruePositives(name='tp'),
-            keras.metrics.FalsePositives(name='fp'),
-            keras.metrics.TrueNegatives(name='tn'),
-            keras.metrics.FalseNegatives(name='fn'),
-            keras.metrics.Recall(name='sensitivity')
-        ]
-        WEIGHTED_METRICS = [
-            keras.metrics.BinaryAccuracy(name='accuracy'),
-            keras.metrics.AUC(name='auc'),
-            tf_metrics.f1_m
-            #specificity_m
-        ]
-        model = inception_model()
+        #model = model_3d.paper_model()
+        model = model_3d.inception3d_model()
+    METRICS = [
+        keras.metrics.TruePositives(name='tp'),
+        keras.metrics.FalsePositives(name='fp'),
+        keras.metrics.TrueNegatives(name='tn'),
+        keras.metrics.FalseNegatives(name='fn'),
+        keras.metrics.Recall(name='sensitivity')
+    ]
+    WEIGHTED_METRICS = [
+        keras.metrics.BinaryAccuracy(name='accuracy'),
+        #keras.metrics.AUC(name='auc'),
+        #tf_metrics.f1_m
+        #specificity_m
+    ]
+    #model = inception_model()
+    
 
-        model.compile(
-            #optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE, clipnorm=1.),
-            optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE),
-            #optimizer=keras.optimizers.RMSprop(lr=config.LEARNING_RATE),
-            loss=keras.losses.BinaryCrossentropy(),
-            metrics=METRICS,
-            weighted_metrics=WEIGHTED_METRICS
-        )
+    model.compile(
+        #optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE, clipnorm=1.),
+        optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE),
+        #optimizer=keras.optimizers.RMSprop(lr=config.LEARNING_RATE),
+        loss=keras.losses.BinaryCrossentropy(),
+        metrics=keras.metrics.BinaryAccuracy(name='accuracy'),
+        #metrics=METRICS,
+        #weighted_metrics=WEIGHTED_METRICS
+    )
 
 
     model.summary()
