@@ -13,10 +13,12 @@ import cv2
 from tqdm import tqdm
 import glob
 import time #TODO remove it
+import scipy.io
 
 from hypercube_data import Cube_Read
 import config
 import preprocessor
+from background_detection import detect_background
 
 class DataLoader():
     def __init__(self, dict_names=['X', 'y', 'indexes_in_datacube'], _3d=False, _3d_size=config._3D_SIZE):
@@ -70,6 +72,13 @@ class DataLoader():
         
         return healthy_indexes, ill_indexes, not_certain_indexes
     
+    def indexes_get_bool_from_mat_mask(self, mask):  
+        healthy_indexes = (mask == 2) | (mask == 3) 
+        ill_indexes = (mask == 1) 
+        not_certain_indexes = (mask == 0)
+        
+        return healthy_indexes, ill_indexes, not_certain_indexes
+    
     def indexes_get_np_from_mask(self, mask):  #++++++++++++++++++++++++++++
         indexes = self.indexes_get_bool_from_mask(mask)
         
@@ -103,8 +112,9 @@ class DataLoader():
         
         return X, y, indexes_in_datacube
     
-    def X_y_dict_save_to_npz(self, dat_path, destination_path, values):
-        name = dat_path.split('/')[-1].split('SpecCube')[0]
+    def X_y_dict_save_to_npz(self, dat_path, destination_path, values, name=None):
+        if name is None:
+            name = dat_path.split('/')[-1].split('SpecCube')[0]
         np.savez(os.path.join(destination_path, name), **{n: a for n, a in values.items()}) 
     
     def X_cube_create(self, X, idx):
@@ -119,10 +129,45 @@ class DataLoader():
         spectrum = self.spectrum_read_from_dat(dat_path)
         mask = self.mask_read(dat_path + '_Mask JW Kolo.png')
         
+        background_mask = self.background_get_mask(spectrum, mask.shape[:2])
+
+        
         if self._3d:
             spectrum = self.patches3d_get_from_spectrum(spectrum)
 
         indexes = self.indexes_get_bool_from_mask(mask)
+        indexes = [i * background_mask for i in indexes]
+        spectrums = [spectrum[indexes[0]], spectrum[indexes[1]], spectrum[indexes[2]]]
+        indexes_np = self.indexes_get_np_from_bool_indexes(*indexes)
+
+        values = self.X_y_concatenate_from_spectrum(spectrums, indexes_np)
+
+        values = {n: v for n, v in zip(self.dict_names, values)}
+        
+        return values
+    
+    def background_get_mask(self, spectrum, shapes):
+        background_mask = np.ones(shapes).astype(np.bool)
+        if config.WITH_BACKGROUND_EXTRACTION:
+            background_mask = detect_background(spectrum)
+            background_mask = np.reshape(shapes)
+            
+        return background_mask
+    
+    def matfile_read(self, mat_path):
+        
+        print(f'Reading {mat_path}')
+        data = scipy.io.loadmat(mat_path)
+        spectrum, mask = data['cube'], data['gtMap']
+        
+        #mask = self.mask_read(dat_path + '_Mask JW Kolo.png')
+        background_mask = self.background_get_mask(spectrum, mask.shape[:2])
+        
+        if self._3d:
+            spectrum = self.patches3d_get_from_spectrum(spectrum)
+
+        indexes = self.indexes_get_bool_from_mat_mask(mask)
+        indexes = [i * background_mask for i in indexes]
         spectrums = [spectrum[indexes[0]], spectrum[indexes[1]], spectrum[indexes[2]]]
         indexes_np = self.indexes_get_np_from_bool_indexes(*indexes)
 
@@ -152,6 +197,18 @@ class DataLoader():
         for dat_path in tqdm(dat_paths):
             values = self.datfile_read(dat_path)
             self.X_y_dict_save_to_npz(dat_path, destination_path, values)
+            
+        print('----Saving of .npz archives is over----')
+    
+    def matfiles_read_and_save_to_npz(self, root_path, destination_path):  
+        print('----Saving of .npz archives is started----')
+        
+        mat_paths = glob.glob(os.path.join(root_path, '*.mat'))
+        #dat_paths, values_all = self.datfiles_read(root_path, dict_names=dict_names)
+
+        for mat_path in tqdm(mat_paths):
+            values = self.matfile_read(mat_path)
+            self.X_y_dict_save_to_npz(mat_path, destination_path, values, name=mat_path.split('/')[-1].split('.')[0])
             
         print('----Saving of .npz archives is over----')
         
@@ -201,9 +258,9 @@ class DataLoader():
         assert train_X.shape[0] == train_X_3d.shape[0]'''
 
 if __name__ == '__main__':
-    dataLoader = DataLoader(_3d=True, _3d_size=[5, 5])
-    #dataLoader = DataLoader()
-    dataLoader.datfiles_read_and_save_to_npz('/work/users/mi186veva/data', '/work/users/mi186veva/data_preprocessed/raw_3d')
+    #dataLoader = DataLoader(_3d=True, _3d_size=[5, 5])
+    dataLoader = DataLoader()
+    dataLoader.datfiles_read_and_save_to_npz('/work/users/mi186veva/data', '/work/users/mi186veva/data_preprocessed/raw')
     
     #for key, value in values[0].items() :
     #    print (key)
