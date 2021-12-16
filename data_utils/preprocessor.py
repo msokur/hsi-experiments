@@ -41,10 +41,10 @@ class Preprocessor():
                  load_name_for_y='y', 
                  piles_number=100, 
                  weights_filename='.weights',
-                dict_names = ['PatientName', 'PatientIndex']): #, 'indexes_in_datacube', 'weights']  
+                dict_names = ['PatientName', 'PatientIndex', 'indexes_in_datacube', 'weights']):  
         self.dict_names = [load_name_for_x, load_name_for_y]
         for name in dict_names:
-            seld.dict_names.append(name)
+            self.dict_names.append(name)
         self.piles_number = piles_number
         self.weights_filename = weights_filename
     
@@ -102,7 +102,7 @@ class Preprocessor():
                           _indexes] 
                           #data[self.dict_names[4]][pile], 
                           #data[self.dict_names[5]][pile]]
-                if len(self.dict_names > 4):
+                if len(self.dict_names) > 4:
                     for nm in self.dict_names[4:]:
                         values.append(data[nm][pile])
 
@@ -331,7 +331,10 @@ class Preprocessor():
             
             indexes = np.arange(X.shape[0])
             for except_name in except_names:
-                indexes = np.flatnonzero(np.core.defchararray.find(p_names, except_name) == -1)
+                
+                #indexes = np.flatnonzero(np.core.defchararray.find(p_names_only, except_name) == -1)
+                indexes = np.flatnonzero(p_names != except_name)
+                
                 
                 if indexes.shape[0] == 0:
                     print(f'WARNING! For except_name {except_name} no except_samples were found')
@@ -340,6 +343,7 @@ class Preprocessor():
             
             if not not_certain:
                 indexes = np.flatnonzero(y != 2)
+              
                 X, y, p_names, p_indexes, p_ind_cube, p_weights = X[indexes], y[indexes], p_names[indexes], p_indexes[indexes], p_ind_cube[indexes], p_weights[indexes]
             
             #p1 = Pool(4)
@@ -424,18 +428,18 @@ class Preprocessor():
              os.mkdir(preprocessed_path)
             
         #---------Data reading part--------------
-        dataLoader = data_loader.DataLoader(_3d=True, _3d_size=[5, 5])
-        dataLoader.datfiles_read_and_save_to_npz(root_path, preprocessed_path)
+        #dataLoader = data_loader.DataLoader(_3d=True, _3d_size=[5, 5])
+        #dataLoader.datfiles_read_and_save_to_npz(root_path, preprocessed_path)
         
         #----------weights part------------------
-        weights = self.weights_get_and_save(preprocessed_path)
-        self.weightedData_save(preprocessed_path, weights)
+        #weights = self.weights_get_and_save(preprocessed_path)
+        #self.weightedData_save(preprocessed_path, weights)
         
         #----------scaler part ------------------
-        if scaler_path is None and config.NORMALIZATION_TYPE != 2:
+        '''if scaler_path is None and config.NORMALIZATION_TYPE != 2:
             scaler_path = os.path.join(preprocessed_path, scaler_name + config.SCALER_FILE_NAME)
             self.fit_scale_from_path(preprocessed_path, scaler_path)
-        self.scaledData_save(preprocessed_path, preprocessed_path, scaler_path)
+        self.scaledData_save(preprocessed_path, preprocessed_path, scaler_path)'''
         
         #----------shuffle part------------------
         paths = glob.glob(os.path.join(preprocessed_path, '*.npz'))
@@ -447,16 +451,16 @@ class Preprocessor():
 
 if __name__ == '__main__':
     preprocessor = Preprocessor()
-    preprocessor.pipeline('/work/users/mi186veva/data', 
-                          '/work/users/mi186veva/data_preprocessed/raw_3d_weighted')
-    #paths = glob.glob('/work/users/mi186veva/data_preprocessed/raw_3d_/*.npz')
+    #preprocessor.pipeline('/work/users/mi186veva/data_bea/ColonData', 
+    #                      '/work/users/mi186veva/data_bea/ColonData/raw_3d_weights')
+    paths = glob.glob('/work/users/mi186veva/data_bea/ColonData/raw_3d_weights/shuffled/*.npz')
     #print(len(paths))
     #preprocessor.shuffle(['/work/users/mi186veva/data_preprocessed/augmented/2019_07_12_11_15_49_.npz', '/work/users/mi186veva/data_preprocessed/augmented/2020_03_27_16_56_41_.npz'], 100, '/work/users/mi186veva/data_preprocessed/augmented_l2_norm/shuffled')
     #preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/raw_3d/shuffled', augmented=False)
     #preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/augmented/shuffled', augmented=True)
     
     #paths = glob.glob('/work/users/mi186veva/data_preprocessed/combi_with_raw_ill/shuffled/*.npz')
-    #preprocessor.split_data_into_npz_of_batch_size(paths, config.BATCH_SIZE, '/work/users/mi186veva/data_preprocessed/raw_3d/batch_sized1', "")
+    preprocessor.split_data_into_npz_of_batch_size(paths, config.BATCH_SIZE, '/work/users/mi186veva/data_bea/ColonData/raw_3d_weights/batch_sized', "", except_names=['CP1'])
     
     
     #preprocessor.scale_from_path('/work/users/mi186veva/data_preprocessed/raw', '/work/users/mi186veva/data_preprocessed/raw/raw_all.scaler')

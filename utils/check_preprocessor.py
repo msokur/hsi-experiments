@@ -1,8 +1,20 @@
+import sys
+import os
+import inspect
+
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir) 
+sys.path.insert(2, os.path.join(currentdir, 'data_utils')) 
+
+
+import config
+
 from hypercube_data import *
 import numpy as np
 import os
 import glob
-import config
 import data_loader
 import cv2
 from tqdm import tqdm
@@ -16,6 +28,8 @@ Existing checking steps
 5. -- check if splitted .npz have right resize in generators
 6. -- check if no not_certai are in batches (for now)
 '''
+
+
 class Checker():
     
     def check_dat_npz(self, dat_source_paths, npz_path):
@@ -110,7 +124,8 @@ class Checker():
             for shuff in shuffled_paths:
                 sh_data = np.load(shuff)
                 
-                indx = np.flatnonzero(np.core.defchararray.find(sh_data['PatientName'], name) != -1)
+                #indx = np.flatnonzero(np.core.defchararray.find(sh_data['PatientName'], name) != -1)
+                indx = np.flatnonzero(sh_data['PatientName'] == name)
                 sh_all += indx.shape[0]
                 sh_gesund += np.flatnonzero(sh_data['y'][indx] == 0).shape[0]
                 sh_ill += np.flatnonzero(sh_data['y'][indx] == 1).shape[0]
@@ -167,7 +182,8 @@ class Checker():
                 sum_b_ill += np.flatnonzero(b_y == 1).shape[0]
                 sum_b_not_certain += np.flatnonzero(b_y == 2).shape[0]
                 
-                indx = np.flatnonzero(np.core.defchararray.find(b_data['PatientName'], name) != -1)
+                #indx = np.flatnonzero(np.core.defchararray.find(b_data['PatientName'], name) != -1)
+                indx = np.flatnonzero(b_data['PatientName'] == name) 
                 b_all += indx.shape[0]
                 b_gesund += np.flatnonzero(b_y[indx] == 0).shape[0]
                 b_ill += np.flatnonzero(b_y[indx] == 1).shape[0]
@@ -196,7 +212,7 @@ if __name__ == '__main__':
     checker = Checker()
     
     #checker.check_dat_npz(config.DATA_PATHS, r'/work/users/mi186veva/data_preprocessed/combi')
-    checker.check_source_and_shuffled( r'/work/users/mi186veva/data_preprocessed/combi',  r'/work/users/mi186veva/data_preprocessed/combi/shuffled')
-    #checker.check_source_and_batched(config.AUGMENTED_PATH, r'/work/users/mi186veva/data_preprocessed/augmented/batch_sized')
+    #checker.check_source_and_shuffled( r'/work/users/mi186veva/data_bea/ColonData/raw_3d_weights',  r'/work/users/mi186veva/data_bea/ColonData/raw_3d_weights/shuffled')
+    checker.check_source_and_batched(r'/work/users/mi186veva/data_bea/ColonData/raw_3d_weights', r'/work/users/mi186veva/data_bea/ColonData/raw_3d_weights/batch_sized')
         
         

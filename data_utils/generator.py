@@ -61,9 +61,8 @@ class DataGenerator(keras.utils.Sequence):
         #X = X[:, :-1]
         self.index += 1
         
-        #if 'weights' in data.keys():
-        #    return X, y, data['weights']
-        
+        if config.WITH_SAMPLE_WEIGHTS and 'weights' in data.keys():
+            return X, y, data['weights']
         #print(X.shape, y.shape)
         
         return X, y.astype(np.float)
@@ -83,7 +82,7 @@ class DataGenerator(keras.utils.Sequence):
         else:
             print('!!!!!   Dataset not splitted   !!!!!')
             
-        splitted_paths = glob.glob(os.path.join(self.splitted_npz_path, '*.npz'))[::3]#TODO, for test, remove!!!
+        splitted_paths = glob.glob(os.path.join(self.splitted_npz_path, '*.npz')) #TODO, for test, remove!!!
         split_factor = int(self.split_factor * len(splitted_paths))
         
         if self.mode == 'all':

@@ -331,13 +331,20 @@ class CrossValidator():
 
         paths = []
         for data_path in config.DATA_PATHS:
-            paths += glob.glob(os.path.join(data_path, '*.dat'))
+            paths += glob.glob(os.path.join(data_path, '*' + config.DATA_LOADER_MODE))
+        
+        if config.DATA_LOADER_MODE == '.mat':
+            def take_only_number(elem):
+                return int(elem.split('CP')[-1].split('.')[0])
+            paths = sorted(paths, key=take_only_number)
+        else:
+            paths = sorted(paths)
 
         csv_filename = os.path.join(root_folder, root_folder_name + '_stats'+ datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S") +'.csv')
 
         splits = np.array_split(range(len(paths)), config.CROSS_VALIDATION_SPLIT)
 
-        for ind, indexes in enumerate(splits[-1:]):
+        for ind, indexes in enumerate(splits):                
             old_model_name = config.MODEL_NAME
             if len(indexes) > 1:
                 for i in indexes:
@@ -395,13 +402,13 @@ class CrossValidator():
             if not os.path.exists(save_path):
                 os.mkdir(save_path)
 
-            #self.count_ROC(results_file, save_path, checkpoint=checkpoint)
+            self.count_ROC(results_file, save_path, checkpoint=checkpoint)
              
-            self.count_metrics_on_diff_thresholds(save_path, all=True, threshold_range_params=[0.0001, 0.0009, 9])
-            #self.count_metrics_on_diff_thresholds(save_path, all=True, threshold_range_params=[0.05, 0.5, 10])
-            #self.count_metrics_on_diff_thresholds(save_path, all=True, threshold_range_params=[0.001, 0.04, 10])
-            #self.count_metrics_on_diff_thresholds(save_path, all=True, threshold_range_params=[0.15, 0.7, 12])
-            #self.count_metrics_on_diff_thresholds(save_path, all=True, threshold_range_params=[0.05, 0.5, 5])
+            #self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.0001, 0.0009, 9])
+            self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.05, 0.25, 8])
+            #self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.001, 0.04, 10])
+            #self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.15, 0.7, 12])
+            #self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.05, 0.5, 5])
 
 if __name__ =='__main__':
     
@@ -409,10 +416,12 @@ if __name__ =='__main__':
         cross_validator = CrossValidator()
         preffix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
         
-        name = 'CV_3d_inception'
+        name = 'CV_3d_bea_colon_sample_weights_1output'
         #name = 'CV_3d_sample_weights_every_third'
         
         csv_path = cross_validator.cross_validation(name)
+        #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_inception_svn_every_third/CV_3d_inception_svn_every_third_stats_10.12.2021-10_31_38.csv'
+        #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_inception/CV_3d_inception_stats_07.12.2021-00_01_56.csv'
         #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_bg_every_third/CV_3d_bg_every_third_stats_25.11.2021-00_10_04.csv'
         #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_svn_every_third/CV_3d_svn_every_third_stats_24.11.2021-15_58_11.csv'
         #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_every_third/CV_3d_every_third_stats_24.11.2021-15_25_23.csv'
@@ -420,7 +429,7 @@ if __name__ =='__main__':
         #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_sample_weights_every_third/CV_3d_sample_weights_every_third_stats_02.12.2021-22_32_48.csv'
         
         test_path = os.path.join(preffix, 'test', name)
-        cross_validator.compare_checkpoints([2, 40, 20], test_path, csv_path)
+        cross_validator.compare_checkpoints([2, 20, 10], test_path, csv_path)
         
         validator = Validator()
         validator.find_best_checkpoint(test_path)

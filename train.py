@@ -53,9 +53,9 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
     class_weights = train_generator.get_class_weights()
     print(class_weights)
     
-    output_signature = (tf.TensorSpec(shape=(None, config._3D_SIZE[0], config._3D_SIZE[1], config.LAST_NM - config.FIRST_NM), dtype=tf.float32),
-                        tf.TensorSpec(shape=(None, ), dtype=tf.float32))#,
-                        #tf.TensorSpec(shape=(None, ), dtype=tf.float32))
+    output_signature = (tf.TensorSpec(shape=(None, config._3D_SIZE[0], config._3D_SIZE[1], config.OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
+                        tf.TensorSpec(shape=(None, ), dtype=tf.float32),
+                        tf.TensorSpec(shape=(None, ), dtype=tf.float32))
     
     def gen_train_generator():
         for i in range(train_generator.len):
@@ -99,8 +99,8 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
         else:
             model = keras.models.load_model(all_checkpoints[-1], custom_objects=config.CUSTOM_OBJECTS) 
     else:
-        #model = model_3d.paper_model()
-        model = model_3d.inception3d_model()
+        model = model_3d.paper_model()
+        #model = model_3d.inception3d_model()
     METRICS = [
         keras.metrics.TruePositives(name='tp'),
         keras.metrics.FalsePositives(name='fp'),
@@ -135,7 +135,7 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
     tensorboard_callback = callbacks.CustomTensorboardCallback(
         log_dir=log_dir, 
         #write_graph=True, 
-        histogram_freq=1, 
+        #histogram_freq=1, 
         #profile_batch = '20,30',
         except_indexes=except_indexes,
         train_generator=train_generator,

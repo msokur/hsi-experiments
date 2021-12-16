@@ -4,7 +4,7 @@ from tensorflow.keras import activations
 
 def paper_model():
     input_ = tf.keras.layers.Input(
-        shape=(config._3D_SIZE[0], config._3D_SIZE[1], config.LAST_NM - config.FIRST_NM), name="title"
+        shape=(config._3D_SIZE[0], config._3D_SIZE[1], config.OUTPUT_SIGNATURE_X_FEATURES), name="title"
     )
     
     net = tf.expand_dims(input_, axis=-1)
@@ -57,7 +57,7 @@ def inception3d_block(input_, factor=16):
 
 def inception3d_model():
     input_ = tf.keras.layers.Input(
-        shape=(config._3D_SIZE[0], config._3D_SIZE[1], config.LAST_NM - config.FIRST_NM), name="title"
+        shape=(config._3D_SIZE[0], config._3D_SIZE[1], config.OUTPUT_SIGNATURE_X_FEATURES), name="title"
     )
     
     if config.WITH_BATCH_NORM:
