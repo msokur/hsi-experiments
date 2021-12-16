@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=weights_data
+#SBATCH --job-name=colon_preproc
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
 #SBATCH --mem=64G
 ##SBATCH --gres=gpu:v100:2
 #SBATCH --gres=gpu:rtx2080ti:1
-#SBATCH --output=_weights_data_preprocessing_%j.log
+#SBATCH --output=_colondata_weights_data_preprocessing_%j.log
 
 module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
 

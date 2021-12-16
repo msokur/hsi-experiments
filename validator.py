@@ -82,4 +82,4 @@ class Validator():
     
 if __name__ == '__main__':
     validator = Validator()
-    validator.find_best_checkpoint('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test/CV_3d_svn_every_third/')
+    validator.find_best_checkpoint('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test/CV_3d_inception/')

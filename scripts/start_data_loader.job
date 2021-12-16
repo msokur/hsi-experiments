@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=play_data_loader
+#SBATCH --job-name=check_preprocessor
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
 #SBATCH --mem=64G
 ##SBATCH --gres=gpu:v100:1
 ##SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=_data_loader_play_%j.log
+#SBATCH --output=_check_preprocessor_%j.log
 
 #module load Python
 #module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4
@@ -27,4 +27,4 @@ module load OpenCV/4.2.0-fosscuda-2019b-Python-3.7.4
 module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
 
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/data_utils/data_loader.py
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/utils/check_preprocessor.py
