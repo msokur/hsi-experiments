@@ -405,9 +405,9 @@ class CrossValidator():
             self.count_ROC(results_file, save_path, checkpoint=checkpoint)
              
             #self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.0001, 0.0009, 9])
-            self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.05, 0.25, 8])
-            #self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.001, 0.04, 10])
-            #self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.15, 0.7, 12])
+            #self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.05, 0.25, 8])
+            #self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.001, 0.04, 8])
+            self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.2, 0.5, 4])
             #self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.05, 0.5, 5])
 
 if __name__ =='__main__':
@@ -416,10 +416,12 @@ if __name__ =='__main__':
         cross_validator = CrossValidator()
         preffix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
         
-        name = 'CV_3d_bea_colon_sample_weights_1output'
+        name = 'CV_3d_inception_exclude1_all'
         #name = 'CV_3d_sample_weights_every_third'
         
         csv_path = cross_validator.cross_validation(name)
+        #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_bea_colon_inc_sample_weights_1output/CV_3d_bea_colon_inc_sample_weights_1output_stats_16.12.2021-22_00_11.csv'
+        #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_bea_colon_sample_weights_1output/CV_3d_bea_colon_sample_weights_1output_stats_16.12.2021-13_09_52.csv'
         #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_inception_svn_every_third/CV_3d_inception_svn_every_third_stats_10.12.2021-10_31_38.csv'
         #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_inception/CV_3d_inception_stats_07.12.2021-00_01_56.csv'
         #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_bg_every_third/CV_3d_bg_every_third_stats_25.11.2021-00_10_04.csv'

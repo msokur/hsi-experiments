@@ -50,15 +50,15 @@ AUGMENTED_PATH = r'data_preprocessed/augmented' #for generators
 #SHUFFLED_PATH = r'data_preprocessed/combi_with_raw_ill/shuffled'
 #BATCHED_PATH = r'data_preprocessed/combi_with_raw_ill/batch_sized'
 
-#DATA_PATHS = [r'data', r'data/data_additional'] #for data loader without generator
-#RAW_NPY_PATH = r'data_preprocessed/raw_3d_svn' #for generators
-#SHUFFLED_PATH = r'data_preprocessed/raw_3d_svn/shuffled'
-#BATCHED_PATH = r'data_preprocessed/raw_3d_svn/batch_sized'
+DATA_PATHS = [r'data_preprocessed/raw_3d_weighted'] #for data loader without generator
+RAW_NPY_PATH = r'data_preprocessed/raw_3d_weighted' #for generators
+SHUFFLED_PATH = r'data_preprocessed/raw_3d_weighted/shuffled'
+BATCHED_PATH = r'data_preprocessed/raw_3d_weighted/batch_sized'
 
-DATA_PATHS = [r'data_bea/ColonData/']
-RAW_NPY_PATH = r'data_bea/ColonData/raw_3d_weights' #for generators
-SHUFFLED_PATH = r'data_bea/ColonData/raw_3d_weights/shuffled'
-BATCHED_PATH = r'data_bea/ColonData/raw_3d_weights/batch_sized'
+#DATA_PATHS = [r'data_bea/ColonData/']   #for names in resulting .csv
+#RAW_NPY_PATH = r'data_bea/ColonData/raw_3d_all_right_order' #for testing
+#SHUFFLED_PATH = r'data_bea/ColonData/raw_3d_weights/shuffled'
+#BATCHED_PATH = r'data_bea/ColonData/raw_3d_weights/batch_sized'
 
 #SHUFFLED_PATH = r'data_preprocessed/augmented_l2_norm/shuffled'
 #BATCHED_PATH = r'data_preprocessed/augmented_l2_norm/batch_sized'
@@ -84,7 +84,7 @@ DATA_LOADER_TYPES = {
     '_npz':'.npz', 
     '_mat': '.mat'
 }
-DATA_LOADER_MODE = DATA_LOADER_TYPES['_mat']
+DATA_LOADER_MODE = DATA_LOADER_TYPES['_npz']
 NOT_CERTAIN_FLAG = False
 
 BATCH_SIZE = 100
@@ -92,15 +92,14 @@ SPLIT_FACTOR = 0.9 #for data sets: train\test data percentage
 WAVE_AREA = 100
 FIRST_NM = 8
 LAST_NM = 100
-OUTPUT_SIGNATURE_X_FEATURES = 81
+OUTPUT_SIGNATURE_X_FEATURES = LAST_NM - FIRST_NM
 
 EPOCHS = 20
 CHECKPOINT_WRITING_STEP = 2
 GRADIENTS_WRITING_STEP = 50000000000 #every GRADIENTS_WRITING_STEP batches we write gradients, so not epochs - gradients
 
-CROSS_VALIDATION_SPLIT = int(12 / 1)
+CROSS_VALIDATION_SPLIT = int(56 / 1)
 SCALER_FILE_NAME = '.scaler'
-NORMALIZATION_TYPE = NORMALIZATION_TYPES['svn_T']
 WITH_BATCH_NORM = False
 WITH_BACKGROUND_EXTRACTION = False
 READING_TEST_DATA_FROM_DAT = False #other oprion is from .npz
@@ -112,7 +111,7 @@ MODEL_PATH = 'model'
 WRITE_IMAGES = False
 DROPOUT_VALUE = 0.1
 LEARNING_RATE = 1e-4
-WITH_SAMPLE_WEIGHTS = True
+WITH_SAMPLE_WEIGHTS = False
 
 RESTORE_MODEL = False
 ADD_TIME = True

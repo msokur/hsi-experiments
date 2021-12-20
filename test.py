@@ -145,7 +145,7 @@ class Tester():
             if config.WITH_BACKGROUND_EXTRACTION:
                 gt = gt[indx_ & data['bg_mask']]
                 spectrum = spectrum[indx_ & data['bg_mask']]
-            else:
+            elif not config.NOT_CERTAIN_FLAG:
                 gt = gt[indx_]
                 spectrum = spectrum[indx_]
 
@@ -163,8 +163,8 @@ class Tester():
         sensitivity = specificity = 0
         if not test_all_spectra:
             
-            
-            sensitivity, specificity = self.count_metrics(gt, np.rint(predictions), name, folder_name, save_stats, return_dice=return_dice)
+            if not config.NOT_CERTAIN_FLAG:
+                sensitivity, specificity = self.count_metrics(gt, np.rint(predictions), name, folder_name, save_stats, return_dice=return_dice)
 
             self.all_predictions += list(np.rint(predictions))
             self.all_predictions_raw += list(predictions)

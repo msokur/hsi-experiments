@@ -176,7 +176,7 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
         if self.process is not None:
             print("Memory : ", self.process.memory_info().rss)
         
-        print('{0}, epoch {1} is ended'.format(datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"), epoch))
+        print('{0}, epoch {1} is ended'.format(datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"), epoch + 1))
 
         with self._writers['train'].as_default():
             if epoch % config.CHECKPOINT_WRITING_STEP == 0:

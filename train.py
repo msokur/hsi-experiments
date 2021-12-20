@@ -48,14 +48,14 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
     process = psutil.Process(os.getpid())
     
     #train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
-    train_generator = DataGenerator('train', config.AUGMENTED_PATH, config.SHUFFLED_PATH, config.BATCHED_PATH, log_dir, split_flag=True, except_indexes=except_indexes)
+    train_generator = DataGenerator('train', config.AUGMENTED_PATH, config.SHUFFLED_PATH, config.BATCHED_PATH, log_dir, split_flag=False, except_indexes=except_indexes)
     valid_generator = DataGenerator('valid', config.AUGMENTED_PATH, config.SHUFFLED_PATH, config.BATCHED_PATH, log_dir, split_flag=False, except_indexes=except_indexes)
     class_weights = train_generator.get_class_weights()
     print(class_weights)
     
     output_signature = (tf.TensorSpec(shape=(None, config._3D_SIZE[0], config._3D_SIZE[1], config.OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
-                        tf.TensorSpec(shape=(None, ), dtype=tf.float32),
-                        tf.TensorSpec(shape=(None, ), dtype=tf.float32))
+                        tf.TensorSpec(shape=(None, ), dtype=tf.float32))#,
+                        #tf.TensorSpec(shape=(None, ), dtype=tf.float32))
     
     def gen_train_generator():
         for i in range(train_generator.len):
@@ -99,8 +99,8 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
         else:
             model = keras.models.load_model(all_checkpoints[-1], custom_objects=config.CUSTOM_OBJECTS) 
     else:
-        model = model_3d.paper_model()
-        #model = model_3d.inception3d_model()
+        #model = model_3d.paper_model()
+        model = model_3d.inception3d_model()
     METRICS = [
         keras.metrics.TruePositives(name='tp'),
         keras.metrics.FalsePositives(name='fp'),
