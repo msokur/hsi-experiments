@@ -1,6 +1,9 @@
 import os
 import sys
 import inspect
+from typing import Union, Iterable
+
+from numpy import ndarray
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -38,11 +41,13 @@ Link: https://blog.janestreet.com/how-to-shuffle-a-big-dataset/
 
 class Preprocessor():
     def __init__(self, load_name_for_x='X', 
-                 load_name_for_y='y', 
+                 load_name_for_y='y',
+                 load_name_for_name='PatientName',
                  piles_number=100, 
                  weights_filename='.weights',
-                dict_names = ['PatientName', 'PatientIndex', 'indexes_in_datacube', 'weights']):  
-        self.dict_names = [load_name_for_x, load_name_for_y]
+                dict_names = ['PatientIndex', 'indexes_in_datacube', 'weights']):
+        self.load_name_for_name = load_name_for_name
+        self.dict_names = [load_name_for_x, load_name_for_y, load_name_for_name]
         for name in dict_names:
             self.dict_names.append(name)
         self.piles_number = piles_number
@@ -100,8 +105,6 @@ class Preprocessor():
                           data[self.dict_names[1]][pile], 
                           _names, 
                           _indexes] 
-                          #data[self.dict_names[4]][pile], 
-                          #data[self.dict_names[5]][pile]]
                 if len(self.dict_names) > 4:
                     for nm in self.dict_names[4:]:
                         values.append(data[nm][pile])
@@ -263,41 +266,49 @@ class Preprocessor():
             data = {n: a for n, a in data.items()}
             data['X'] = X.copy()
             np.savez(os.path.join(destination_path, data_loader.DataLoader.name_get(path)), **data)
-        
-    
-    def __split_arrays(self, X, y, p_names, p_indexes, p_ind_cube, p_weights):
-             #---------------splitting into archives----------
-            chunks = X.shape[0] // self.batch_size
-            chunks_max = chunks * self.batch_size
-            X_arr = np.array_split(X[:chunks_max], chunks)
-            y_arr = np.array_split(y[:chunks_max], chunks)
-            names_arr = np.array_split(p_names[:chunks_max], chunks)
-            indexes_arr = np.array_split(p_indexes[:chunks_max], chunks)
-            indexes_cube_arr = np.array_split(p_ind_cube[:chunks_max], chunks)
-            weights_arr = np.array_split(p_weights[:chunks_max], chunks)
 
-            #---------------saving of the non equal last part for the future partition---------
-            self.rest_X += list(X[chunks_max:])
-            self.rest_y += list(y[chunks_max:])
-            self.rest_names += list(p_names[chunks_max:])
-            self.rest_indexes += list(p_indexes[chunks_max:])
-            self.rest_indexes_cube += list(p_ind_cube[chunks_max:])
-            self.rest_weights += list(p_weights[chunks_max:])
 
-            #---------------saving of the non equal last part for the future partition---------
-            ind = len(glob.glob(os.path.join(self.archives_of_batch_size_saving_path, "*")))
-            for _X, _y, _n, _i, _ind_cube, _w in zip(X_arr, y_arr, names_arr, indexes_arr, indexes_cube_arr, weights_arr):
-                arch = {}
+    def __split_arrays(self, *args):
+        # ---------------splitting into archives----------
+        chunks = args[0].shape[0] // self.batch_size
+        chunks_max = chunks * self.batch_size
 
-                _X, _y = self.preprocess(_X, _y) 
+        arrs = [np.array_split(arg[:chunks_max], chunks) for arg in args]
 
-                values = [_X, _y, _n, _i, _ind_cube, _w]
-                for i, n in enumerate(self.dict_names):
-                    arch[n] = values[i]
+        # ---------------saving of the non equal last part for the future partition---------
+        for i in range(len(args)):
+            self.rest_arrs[i] += list(args[i][chunks_max:])
 
-                np.savez(os.path.join(self.archives_of_batch_size_saving_path, 'batch'+str(ind)), **arch)
-                ind += 1            
-                
+        # ---------------saving of the non equal last part for the future partition---------
+        ind = len(glob.glob(os.path.join(self.archives_of_batch_size_saving_path, "*")))
+        for row in range(chunks):
+            arch = {}
+            for i, n in enumerate(self.dict_names):
+                arch[n] = arrs[i][row]
+
+            if config.WITH_PREPROCESS_DURING_SPLITTING:
+                _X, _y = arrs[0][row], arrs[1][row]
+                _X, _y = self.preprocess(_X, _y)
+                arch[self.dict_names[0]] = _X.copy()
+                arch[self.dict_names[1]] = _y.copy()
+
+            np.savez(os.path.join(self.archives_of_batch_size_saving_path, 'batch' + str(ind)), **arch)
+            ind += 1
+
+    def __init_rest(self):
+        self.rest_arrs = []
+        for i in range(len(self.dict_names)):
+            self.rest_arrs.append([])
+
+    def __check_dict_names(self, dict_names, data_):
+        diff_dict_names = set(self.dict_names) - set(data_)
+        diff_dataset = set(data_) - set(self.dict_names)
+
+        if len(diff_dict_names):
+            print(f'WARNING! dict_names {diff_dict_names} are not in dataset')
+        if len(diff_dataset):
+            print(f'WARNING! dict_names {diff_dataset} are not in dict_names of Preprocessor')
+
     def split_data_into_npz_of_batch_size(self, paths, batch_size, archives_of_batch_size_saving_path, scaler_saving_path, except_names=[], not_certain=config.NOT_CERTAIN_FLAG):
     
         print('--------Splitting into npz of batch size started--------')
@@ -305,71 +316,47 @@ class Preprocessor():
         self.archives_of_batch_size_saving_path = archives_of_batch_size_saving_path
         
         if not os.path.exists(archives_of_batch_size_saving_path):
-                os.mkdir(archives_of_batch_size_saving_path)
+            os.mkdir(archives_of_batch_size_saving_path)
                 
         for except_name in except_names:
-                print(f'We except {except_name}')
+            print(f'We except {except_name}')
                 
         #------------removing of previously generated archives (of the previous CV step) ----------------
         files = glob.glob(os.path.join(archives_of_batch_size_saving_path, '*.npz'))
         for f in files:
             os.remove(f)
                     
-        self.rest_X, self.rest_y, self.rest_names, self.rest_indexes, self.rest_indexes_cube, self.rest_weights = [], [], [], [], [], []
+        self.__init_rest()
+
         for p in tqdm(paths):
             #------------ except_indexes filtering ---------------
-            data = np.load(p)
-            X, y, p_names, p_indexes, p_ind_cube, p_weights = data[self.dict_names[0]], \
-                                       data[self.dict_names[1]], \
-                                       data[self.dict_names[2]], \
-                                       data[self.dict_names[3]], \
-                                       np.zeros(data[self.dict_names[0]].shape[0]), \
-                                       np.zeros(data[self.dict_names[0]].shape[0]) #data[self.dict_names[5]] 
-            
-            if len(self.dict_names) > 4:
-                 p_ind_cube, p_weights = data[self.dict_names[4]], data[self.dict_names[5]],  
-            
-            indexes = np.arange(X.shape[0])
+            data_ = np.load(p)
+            self.__check_dict_names(self.dict_names, data_)
+            self.dict_names = list(set(self.dict_names).intersection(set(data_)))
+
+            data = {name: data_[name] for name in self.dict_names}
+            p_names = data[self.load_name_for_name]
+            y = data['y']
+
             for except_name in except_names:
-                
-                #indexes = np.flatnonzero(np.core.defchararray.find(p_names_only, except_name) == -1)
                 indexes = np.flatnonzero(p_names != except_name)
-                
-                
                 if indexes.shape[0] == 0:
                     print(f'WARNING! For except_name {except_name} no except_samples were found')
                 
-                X, y, p_names, p_indexes, p_ind_cube, p_weights = X[indexes], y[indexes], p_names[indexes], p_indexes[indexes], p_ind_cube[indexes], p_weights[indexes]
-            
+                data = {n: a[indexes] for n, a in data.items()}
+
             if not not_certain:
                 indexes = np.flatnonzero(y != 2)
-              
-                X, y, p_names, p_indexes, p_ind_cube, p_weights = X[indexes], y[indexes], p_names[indexes], p_indexes[indexes], p_ind_cube[indexes], p_weights[indexes]
-            
-            #p1 = Pool(4)
-            #p1.map(__split_function, [X, y, p_names, p_indexes])
-            self.__split_arrays(X, y, p_names, p_indexes, p_ind_cube, p_weights)  
+                data = {n: a[indexes] for n, a in data.items()}
+
+            self.__split_arrays(*[a for _, a in data.items()])
         
         #------------------save rest of rest archives----------------
-        rest_X, rest_y, rest_names, rest_indexes, rest_indexes_cube, rest_weights = np.array(self.rest_X), np.array(self.rest_y), np.array(self.rest_names), np.array(self.rest_indexes), np.array(self.rest_indexes_cube), np.array(self.rest_weights)
-        self.rest_X, self.rest_y, self.rest_names, self.rest_indexes, self.rest_indexes_cube, self.rest_weights = [], [], [], [], [], []
+        rest_arrs = [np.array(rest_arr) for rest_arr in self.rest_arrs]
+        self.__init_rest()
         
-        #rest_X = np.concatenate(rest_X, axis=0)
-        #rest_y = np.concatenate(rest_y, axis=0)
-        #rest_names = np.concatenate(rest_names, axis=0)
-        #rest_indexes = np.concatenate(rest_indexes, axis=0)
-        
-        rest_X = np.array(rest_X)
-        rest_y = np.array(rest_y)
-        rest_names = np.array(rest_names)
-        rest_indexes = np.array(rest_indexes)
-        rest_indexes_cube = np.array(rest_indexes_cube)
-        rest_weights = np.array(rest_weights)
-        
-        if rest_X.shape[0] >= batch_size:
-            #p2 = Pool(4)
-            #p2.map(__split_function, [rest_X, rest_y, rest_names, rest_indexes])
-            self.__split_arrays(rest_X, rest_y, rest_names, rest_indexes, rest_indexes_cube, rest_weights) 
+        if rest_arrs[0].shape[0] >= batch_size:
+            self.__split_arrays(*rest_arrs)
         
         print('--------Splitting into npz of batch size finished--------')
         

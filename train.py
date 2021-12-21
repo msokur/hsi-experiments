@@ -123,7 +123,7 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
 
     model.compile(
         # optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE, clipnorm=1.),
-        optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE),
+        optimizer=keras.optimizers.Adam(learning_rate=config.LEARNING_RATE),
         # optimizer=keras.optimizers.RMSprop(lr=config.LEARNING_RATE),
         loss=keras.losses.BinaryCrossentropy(),
         metrics=keras.metrics.BinaryAccuracy(name='accuracy'),

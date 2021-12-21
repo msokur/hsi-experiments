@@ -154,3 +154,5 @@ if platform.system() == 'Windows':
     SYSTEM_PATHS_DELIMITER = '\\'
 else:
     SYSTEM_PATHS_DELIMITER = '/'
+
+WITH_PREPROCESS_DURING_SPLITTING = False #used in __split_arrays in preprocessor.py to run method preprocess()...

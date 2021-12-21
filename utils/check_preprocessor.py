@@ -213,6 +213,6 @@ if __name__ == '__main__':
     
     #checker.check_dat_npz(config.DATA_PATHS, r'/work/users/mi186veva/data_preprocessed/combi')
     #checker.check_source_and_shuffled( r'/work/users/mi186veva/data_bea/ColonData/raw_3d_weights',  r'/work/users/mi186veva/data_bea/ColonData/raw_3d_weights/shuffled')
-    checker.check_source_and_batched(r'/work/users/mi186veva/data_bea/ColonData/raw_3d_weights', r'/work/users/mi186veva/data_bea/ColonData/raw_3d_weights/batch_sized')
+    checker.check_source_and_batched(r'../data_preprocessed/raw_3d_weighted/shuffled', r'../data_preprocessed/raw_3d_weighted/batch_sized')
         
         
