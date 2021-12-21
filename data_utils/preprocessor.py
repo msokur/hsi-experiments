@@ -235,13 +235,13 @@ class Preprocessor():
                 X = np.reshape(X, (np.prod(X.shape[:-1]), X.shape[-1]))
                 
             #####restore scaler
-            if config.NORMALIZATION_TYPE == 2: #svn T
+            if config.NORMALIZATION_TYPE == 'svn_T':
                 scaler = preprocessing.StandardScaler().fit(X.T)
             else:
                 scaler = self.scaler_restore(scaler_path)
             
             ####transform X
-            if config.NORMALIZATION_TYPE == 2:
+            if config.NORMALIZATION_TYPE == 'svn_T':
                 X = scaler.transform(X.T).T
             else:
                 X = scaler.transform(X)
@@ -315,7 +315,7 @@ class Preprocessor():
                                           archives_of_batch_size_saving_path,
                                           scaler_saving_path,
                                           except_names=[],
-                                          not_certain=config.NOT_CERTAIN_FLAG):
+                                          not_certain=config.WITH_NOT_CERTAIN):
     
         print('--------Splitting into npz of batch size started--------')
         self.batch_size = batch_size
@@ -398,7 +398,7 @@ class Preprocessor():
             
             quantities = np.array(quantities)
             
-            if config.NOT_CERTAIN_FLAG:
+            if config.WITH_NOT_CERTAIN:
                 summ = np.sum(quantities)
             else:
                 summ = np.sum(quantities[:, :2])

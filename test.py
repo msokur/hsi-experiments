@@ -144,7 +144,7 @@ class Tester():
             if config.WITH_BACKGROUND_EXTRACTION:
                 gt = gt[indx_ & data['bg_mask']]
                 spectrum = spectrum[indx_ & data['bg_mask']]
-            elif not config.NOT_CERTAIN_FLAG:
+            elif not config.WITH_NOT_CERTAIN:
                 gt = gt[indx_]
                 spectrum = spectrum[indx_]
 
@@ -162,7 +162,7 @@ class Tester():
         sensitivity = specificity = 0
         if not test_all_spectra:
             
-            if not config.NOT_CERTAIN_FLAG:
+            if not config.WITH_NOT_CERTAIN:
                 sensitivity, specificity = self.count_metrics(gt, np.rint(predictions), name, folder_name, save_stats, return_dice=return_dice)
 
             self.all_predictions += list(np.rint(predictions))
@@ -222,7 +222,7 @@ class Tester():
                 if not os.path.exists(folder_name):
                     os.mkdir(folder_name)
 
-            for i, path in tqdm(enumerate(glob.glob(os.path.join(path_dir, '*.dat')))):
+            for i, path in tqdm(enumerate(glob.glob(os.path.join(path_dir, '*'+config.FILE_EXTENSION)))):
 
                 if i in include_indexes if include_indexes is not None else True:
                     if not i in exclude_indexes if exclude_indexes is not None else True:
@@ -245,7 +245,7 @@ class Tester():
 
 if __name__ == "__main__":
     
-    tester = Tester( f'cp-0020', config.DATA_PATHS, '', MODEL_FOLDER='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_inception/3d_0_1_2_3')
+    tester = Tester( f'cp-0020', [config.RAW_NPZ_PATH], '', MODEL_FOLDER='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_inception/3d_0_1_2_3')
 
     #tester.test_ALL_images(save=False, show=False, test_all_spectra=False, save_stats=False)
     

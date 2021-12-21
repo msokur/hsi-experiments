@@ -13,8 +13,7 @@ class DataGenerator(keras.utils.Sequence):
     
     #modes: 'train', 'valid', 'all'
     def __init__(self, mode, 
-                 raw_npz_path, 
-                 shuffled_npz_path, 
+                 shuffled_npz_path,
                  splitted_npz_path, 
                  log_dir, 
                  except_indexes=[], 
@@ -22,7 +21,6 @@ class DataGenerator(keras.utils.Sequence):
                  split_factor=config.SPLIT_FACTOR, 
                  split_flag=True):
         '''Initialization'''
-        self.raw_npz_path = raw_npz_path
         self.shuffled_npz_path = shuffled_npz_path
         self.splitted_npz_path = splitted_npz_path
         self.mode = mode
@@ -30,8 +28,7 @@ class DataGenerator(keras.utils.Sequence):
         self.log_dir = log_dir
         self.split_flag = split_flag
         
-        self.raw_npz_paths = glob.glob(os.path.join(raw_npz_path, '*.npz'))
-        self.shuffled_npz_paths = glob.glob(os.path.join(shuffled_npz_path, 'shuffl*.npz'))  
+        self.shuffled_npz_paths = glob.glob(os.path.join(shuffled_npz_path, 'shuffl*.npz'))
         
         self.batch_size = batch_size
         self.except_indexes = except_indexes

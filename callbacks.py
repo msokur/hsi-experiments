@@ -54,7 +54,7 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
         self.excepted_gt = []
         
         for except_name in self.except_indexes:
-            path = glob.glob(os.path.join(config.RAW_NPY_PATH, except_name + '*'))
+            path = glob.glob(os.path.join(config.RAW_NPZ_PATH, except_name + '*'))
                         
             if len(path) == 0:
                 print(f'WARNING! For except_name {except_name} no raw_paths were found')
@@ -179,7 +179,7 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
         print('{0}, epoch {1} is ended'.format(datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"), epoch + 1))
 
         with self._writers['train'].as_default():
-            if epoch % config.CHECKPOINT_WRITING_STEP == 0:
+            if epoch % config.WRITE_CHECKPOINT_EVERY_Xth_STEP == 0:
                 if config.WRITE_IMAGES:
                     gt_image = self.gt_image
                     spectrum = self.spectrum

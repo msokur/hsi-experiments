@@ -26,7 +26,7 @@ def paper_model():
     net = tf.keras.layers.Flatten()(net)
 
     #net = tf.keras.layers.Dense(50, activation='relu')(net)
-    net = tf.keras.layers.Dropout(config.DROPOUT_VALUE)(net)
+    net = tf.keras.layers.Dropout(config.DROPOUT)(net)
     result = tf.keras.layers.Dense(1, activation='sigmoid')(net)
 
     model = tf.keras.Model(
@@ -72,7 +72,7 @@ def inception3d_model():
     #net = tf.keras.layers.Dense(100, activation='relu')(net)
     #net = tf.keras.layers.Dropout(config.DROPOUT_VALUE)(net)
     #net = tf.keras.layers.Dense(50, activation='relu')(net)
-    net = tf.keras.layers.Dropout(config.DROPOUT_VALUE)(net)
+    net = tf.keras.layers.Dropout(config.DROPOUT)(net)
     result = tf.keras.layers.Dense(1, activation='sigmoid')(net)
 
     model = tf.keras.Model(

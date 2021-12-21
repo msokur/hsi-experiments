@@ -41,14 +41,12 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
 
     # train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
     train_generator = DataGenerator('train',
-                                    config.AUGMENTED_PATH,
                                     config.SHUFFLED_PATH,
                                     config.BATCHED_PATH,
                                     log_dir,
                                     split_flag=True,
                                     except_indexes=except_indexes)
     valid_generator = DataGenerator('valid',
-                                    config.AUGMENTED_PATH,
                                     config.SHUFFLED_PATH,
                                     config.BATCHED_PATH,
                                     log_dir,
@@ -91,7 +89,7 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
 
         initial_epoch = int(all_checkpoints[-1].split('-')[-1])
 
-        if config.MODE == 1 or config.MODE == 0:
+        if config.MODE == 'LOCAL' or config.MODE == 'SERVER':
             with mirrored_strategy.scope():
                 model = keras.models.load_model(all_checkpoints[-1], custom_objects=config.CUSTOM_OBJECTS, compile=True)
         else:
@@ -145,7 +143,7 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
     checkpoints_callback = keras.callbacks.ModelCheckpoint(
         filepath=checkpoint_path,
         verbose=2,
-        period=config.CHECKPOINT_WRITING_STEP)
+        period=config.WRITE_CHECKPOINT_EVERY_Xth_STEP)
 
     early_stopping_callback = keras.callbacks.EarlyStopping(
         monitor='val_auc',
@@ -156,21 +154,9 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
     '''-------TRAINING---------'''
 
     callbacks_ = [tensorboard_callback, checkpoints_callback]
-    if config.EARLY_STOPPING:
+    if config.WITH_EARLY_STOPPING:
         callbacks_.append(early_stopping_callback)
 
-    # history = model.fit(np.expand_dims(train[:, :-2], axis=-1),
-    '''history = model.fit(train[:, :-2],
-        train[:, -2],
-        batch_size=config.BATCH_SIZE,
-        epochs=config.EPOCHS,
-        verbose=2,
-        initial_epoch=initial_epoch,
-        callbacks=callbacks_,
-        #validation_data=(np.expand_dims(test[:, :-2], axis=-1), test[:, -2], test[:, -1]),
-        validation_data=(test[:, :-2], test[:, -2], test[:, -1]),
-        class_weight=class_weight,
-        sample_weight=train[:, -1])'''
     history = model.fit(
         # x=train_generator,
         # validation_data=valid_generator,
@@ -185,7 +171,7 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
         class_weight=class_weights,
         workers=int(os.cpu_count()))
 
-    np.save(os.path.join(log_dir, '.history'), history.history)
+    np.save(os.path.join(log_dir, 'history.history'), history.history)
 
     return model, history
 
@@ -196,17 +182,15 @@ def train(paths=None, except_indexes=[]):
     model = None
     try:
         mirrored_strategy = None
-        if config.MODE == 1 or config.MODE == 0:
+        if config.MODE == 'LOCAL' or config.MODE == 'SERVER':
             gpus = tf.config.experimental.list_physical_devices('GPU')
             if gpus:
                 try:
-                    # Currently, memory growth needs to be the same across GPUs
                     for gpu in gpus:
                         tf.config.experimental.set_memory_growth(gpu, True)
                     logical_gpus = tf.config.experimental.list_logical_devices('GPU')
                     print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
                 except RuntimeError as e:
-                    # Memory growth must be set before GPUs have been initialized
                     print(e)
 
             # mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
@@ -221,13 +205,11 @@ def train(paths=None, except_indexes=[]):
             model, history = train_(log_dir, mirrored_strategy, paths=paths, except_indexes=except_indexes)
 
     except Exception as e:
-        if config.TELEGRAM_SENDING:
-            last_epoch = -1
-            if history is not None:
-                last_epoch = len(history.history["loss"])
+        last_epoch = -1
+        if history is not None:
+            last_epoch = len(history.history["loss"])
 
-            send_tg_message(
-                f'Mariia, ERROR!!!, training {log_dir} has finished after {last_epoch} epochs with error {e}')
+        send_tg_message(f'Mariia, ERROR!!!, training {log_dir} has finished after {last_epoch} epochs with error {e}')
         raise e  # TODO REMOVE!!
 
     checkpoints_paths = os.path.join(log_dir, 'checkpoints')
@@ -239,11 +221,10 @@ def train(paths=None, except_indexes=[]):
         os.mkdir(final_model_save_path)
     model.save(final_model_save_path)
 
-    if config.TELEGRAM_SENDING:
-        if history is not None:
-            send_tg_message(f'Mariia, training {log_dir} has finished after {len(history.history["loss"])} epochs')
-        else:
-            send_tg_message(f'Mariia, training {log_dir} has finished')
+    if history is not None:
+        send_tg_message(f'Mariia, training {log_dir} has finished after {len(history.history["loss"])} epochs')
+    else:
+        send_tg_message(f'Mariia, training {log_dir} has finished')
 
     return model
 

@@ -244,15 +244,15 @@ class CrossValidator():
                 name = row[4].split("/")[-1].split(".")[0].split('SpecCube')[0]
 
                 #sensitivity, specificity = tester.test_one_image(row[4],
-                sensitivity, specificity = tester.test_one_image(os.path.join(config.RAW_NPY_PATH, name + ".npz"),
-                                      path_image=row[4] + '_Mask JW Kolo.png',
-                                      save=False,
-                                      show=False,
-                                      test_all_spectra=False,
-                                      save_stats=False,
-                                      folder_name='', 
-                                      test_batch=True,
-                                      spectrum_shift=0)
+                sensitivity, specificity = tester.test_one_image(os.path.join(config.RAW_NPZ_PATH, name + ".npz"),
+                                                                 path_image=row[4] + '_Mask JW Kolo.png',
+                                                                 save=False,
+                                                                 show=False,
+                                                                 test_all_spectra=False,
+                                                                 save_stats=False,
+                                                                 folder_name='',
+                                                                 test_batch=True,
+                                                                 spectrum_shift=0)
                 
                 predictions_by_patient.append(tester.all_predictions_raw)
                 gt_by_patient.append(tester.all_gt)
@@ -310,15 +310,15 @@ class CrossValidator():
                 name = row[4].split("/")[-1].split(".")[0].split('SpecCube')[0]
 
                 #sensitivity, specificity = tester.test_one_image(row[4],
-                sensitivity, specificity = tester.test_one_image(os.path.join(config.RAW_NPY_PATH, name + ".npz"),
-                                      path_image=row[4] + '_Mask JW Kolo.png',
-                                      save=True,
-                                      show=False,
-                                      test_all_spectra=test_all_spectra,
-                                      save_stats=False,
-                                      spectrum_shift=0,
-                                      test_batch=True,
-                                      folder_name='')
+                sensitivity, specificity = tester.test_one_image(os.path.join(config.RAW_NPZ_PATH, name + ".npz"),
+                                                                 path_image=row[4] + '_Mask JW Kolo.png',
+                                                                 save=True,
+                                                                 show=False,
+                                                                 test_all_spectra=test_all_spectra,
+                                                                 save_stats=False,
+                                                                 spectrum_shift=0,
+                                                                 test_batch=True,
+                                                                 folder_name='')
 
 
     def cross_validation(self, root_folder_name):
@@ -329,11 +329,9 @@ class CrossValidator():
         if not os.path.exists(root_folder):
             os.mkdir(root_folder)
 
-        paths = []
-        for data_path in config.DATA_PATHS:
-            paths += glob.glob(os.path.join(data_path, '*' + config.DATA_LOADER_MODE))
+        paths = glob.glob(os.path.join(config.RAW_NPZ_PATH, '*' + config.FILE_EXTENSION))
         
-        if config.DATA_LOADER_MODE == '.mat':
+        if config.FILE_EXTENSION == '.mat':
             def take_only_number(elem):
                 return int(elem.split('CP')[-1].split('.')[0])
             paths = sorted(paths, key=take_only_number)
@@ -436,13 +434,11 @@ if __name__ =='__main__':
         validator = Validator()
         validator.find_best_checkpoint(test_path)
         
-        if config.TELEGRAM_SENDING:
-            send_tg_message('Mariia, operations in cross_validation.py are successfully completed!')
+        send_tg_message('Mariia, operations in cross_validation.py are successfully completed!')
                
     except Exception as e:
         print(e)
 
-        if config.TELEGRAM_SENDING:
-            send_tg_message(f'Mariia, ERROR!!!, In CV error {e}')
+        send_tg_message(f'Mariia, ERROR!!!, In CV error {e}')
         
         raise e
