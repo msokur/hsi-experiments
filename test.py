@@ -8,7 +8,6 @@ import cv2
 import numpy as np
 import os
 from tqdm import tqdm
-import data_loader_old #import *
 import callbacks
 from sklearn.metrics import confusion_matrix, f1_score
 import csv

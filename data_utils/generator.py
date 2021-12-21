@@ -4,7 +4,6 @@ import numpy as np
 from preprocessor import Preprocessor
 import config
 from tensorflow import keras
-from data_loader_old import save_scaler, restore_scaler
 from sklearn import preprocessing
 from scipy.signal import savgol_filter
 

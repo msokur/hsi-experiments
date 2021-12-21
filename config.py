@@ -19,7 +19,7 @@ MODE_TYPES = {
     'NO_GPU':2
 }
 
-MODE = MODE_TYPES['SERVER']
+MODE = MODE_TYPES['LOCAL']
 
 #change modelname here!
 #def get_model_name(MODEL_NAME_PATHS, model_name='combi_with_raw_all'):
@@ -122,8 +122,6 @@ _3D_SIZE = [5, 5]
 
 MODEL_NAME = get_model_name(MODEL_NAME_PATHS)
 
-COMMENTS = 'sample weight, dropout 0.2, fixed spectra, 46 files, weighted_metrics_weighted_val_data'
-
 AUGMENTATION = {
     'augment': False,
     'percent': 0.9, #probability that value in sample will be augmented
@@ -144,4 +142,15 @@ for path_part in MODEL_NAME_PATHS:
     pth = os.path.join(pth, path_part)
     if not os.path.exists(pth):
         os.mkdir(pth)
-    
+
+import glob
+FILES_TO_COPY = glob.glob('*.py')
+FILES_TO_COPY += glob.glob('data_utils/*.py')
+FILES_TO_COPY += glob.glob('models/*.py')
+FILES_TO_COPY += ['scrips/start_cv.job']
+
+import platform
+if platform.system() == 'Windows':
+    SYSTEM_PATHS_DELIMITER = '\\'
+else:
+    SYSTEM_PATHS_DELIMITER = '/'
