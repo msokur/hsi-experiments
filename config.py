@@ -12,6 +12,7 @@ print('paths from config', sys.path)
 import datetime
 import os
 import tf_metrics
+import tensorflow as tf
 
 MODE_TYPES = {
     'SERVER':0,
@@ -86,6 +87,8 @@ DATA_LOADER_TYPES = {
 }
 DATA_LOADER_MODE = DATA_LOADER_TYPES['_npz']
 NOT_CERTAIN_FLAG = False
+WITH_SAMPLE_WEIGHTS = False
+_3D_SIZE = [5, 5]
 
 BATCH_SIZE = 100
 SPLIT_FACTOR = 0.9 #for data sets: train\test data percentage
@@ -93,6 +96,17 @@ WAVE_AREA = 100
 FIRST_NM = 8
 LAST_NM = 100
 OUTPUT_SIGNATURE_X_FEATURES = LAST_NM - FIRST_NM
+
+if WITH_SAMPLE_WEIGHTS:
+    OUTPUT_SIGNATURE = (
+        tf.TensorSpec(shape=(None, _3D_SIZE[0], _3D_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
+        tf.TensorSpec(shape=(None,), dtype=tf.float32),
+        tf.TensorSpec(shape=(None, ), dtype=tf.float32))
+else:
+    OUTPUT_SIGNATURE = (
+        tf.TensorSpec(shape=(None, _3D_SIZE[0], _3D_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
+        tf.TensorSpec(shape=(None,), dtype=tf.float32))
+
 
 EPOCHS = 20
 CHECKPOINT_WRITING_STEP = 2
@@ -111,12 +125,13 @@ MODEL_PATH = 'model'
 WRITE_IMAGES = False
 DROPOUT_VALUE = 0.1
 LEARNING_RATE = 1e-4
-WITH_SAMPLE_WEIGHTS = False
+
+
 
 RESTORE_MODEL = False
 ADD_TIME = True
 
-_3D_SIZE = [5, 5]
+
 
 
 

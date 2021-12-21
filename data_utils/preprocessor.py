@@ -139,7 +139,8 @@ class Preprocessor():
             random.shuffle(indexes)
             
             os.remove(pp)
-            np.savez(os.path.join(self.shuffle_saving_path, 'shuffled'+str(i)), **{n: a[indexes] for n, a in _data.items()})
+            np.savez(os.path.join(self.shuffle_saving_path, 'shuffled'+str(i)),
+                     **{n: a[indexes] for n, a in _data.items()})
         
         print('----Shuffling of piles finished----')
     
@@ -309,7 +310,12 @@ class Preprocessor():
         if len(diff_dataset):
             print(f'WARNING! dict_names {diff_dataset} are not in dict_names of Preprocessor')
 
-    def split_data_into_npz_of_batch_size(self, paths, batch_size, archives_of_batch_size_saving_path, scaler_saving_path, except_names=[], not_certain=config.NOT_CERTAIN_FLAG):
+    def split_data_into_npz_of_batch_size(self, paths,
+                                          batch_size,
+                                          archives_of_batch_size_saving_path,
+                                          scaler_saving_path,
+                                          except_names=[],
+                                          not_certain=config.NOT_CERTAIN_FLAG):
     
         print('--------Splitting into npz of batch size started--------')
         self.batch_size = batch_size

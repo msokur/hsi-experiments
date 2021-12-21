@@ -57,25 +57,18 @@ def train_(log_dir, mirrored_strategy, paths=None, except_indexes=[]):
     class_weights = train_generator.get_class_weights()
     print(class_weights)
 
-    output_signature = (tf.TensorSpec(shape=(None,
-                                             config._3D_SIZE[0],
-                                             config._3D_SIZE[1],
-                                             config.OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
-                        tf.TensorSpec(shape=(None,), dtype=tf.float32))  # ,
-
-    # tf.TensorSpec(shape=(None, ), dtype=tf.float32))
 
     def gen_train_generator():
         for i in range(train_generator.len):
             yield train_generator.getitem(i)
 
-    train_dataset = tf.data.Dataset.from_generator(gen_train_generator, output_signature=output_signature)
+    train_dataset = tf.data.Dataset.from_generator(gen_train_generator, output_signature=config.OUTPUT_SIGNATURE)
 
     def gen_valid_generator():
         for i in range(valid_generator.len):
             yield valid_generator.getitem(i)
 
-    valid_dataset = tf.data.Dataset.from_generator(gen_valid_generator, output_signature=output_signature)
+    valid_dataset = tf.data.Dataset.from_generator(gen_valid_generator, output_signature=config.OUTPUT_SIGNATURE)
 
     options = tf.data.Options()
     options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA

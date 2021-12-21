@@ -56,10 +56,7 @@ class DataGenerator(keras.utils.Sequence):
         '''Generate one batch of data'''
         data = np.load(self.splitted_npz_paths[index])
         X, y = data['X'], data['y']
-        
-        #X = X[:, :-1]
-        self.index += 1
-        
+
         if config.WITH_SAMPLE_WEIGHTS and 'weights' in data.keys():
             return X, y, data['weights']
         #print(X.shape, y.shape)
