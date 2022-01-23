@@ -47,7 +47,7 @@ class Checker():
             dat_paths += glob.glob(os.path.join(path_dir, '*.dat'))
         
         for npz in npz_paths:           
-            name = npz.split("/")[-1].split(".")[0]
+            name = npz.split(config.SYSTEM_PATHS_DELIMITER)[-1].split(".")[0]
             dat = dat_paths[np.flatnonzero(np.core.defchararray.find(dat_paths, name) != -1)[0]]  
             print(f'We are checking {dat} and {npz}')
             
@@ -112,7 +112,7 @@ class Checker():
         shuffled_paths = glob.glob(os.path.join(shuffled_path, 'shuffle*.npz'))
                 
         for s in tqdm(source_paths):
-            name = s.split("/")[-1].split(".")[0]
+            name = s.split(config.SYSTEM_PATHS_DELIMITER)[-1].split(".")[0]
             print(f'We are checking {name}')
             
             s_data = np.load(s)
@@ -149,7 +149,7 @@ class Checker():
         sum_diff, sum_diff_gesund, sum_diff_ill, sum_diff_not_certain = 0, 0, 0, 0
         
         for s in tqdm(source_paths):
-            name = s.split("/")[-1].split(".")[0]
+            name = s.split(config.SYSTEM_PATHS_DELIMITER)[-1].split(".")[0]
             print(f'We are checking {name}')
             
             s_data = np.load(s)

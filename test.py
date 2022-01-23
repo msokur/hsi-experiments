@@ -27,7 +27,7 @@ class Tester():
         if MODEL_NAME != '':
             self.MODEL_NAME = MODEL_NAME
         else:
-            self.MODEL_NAME = MODEL_FOLDER.split('\\')[-1] #here can be problem
+            self.MODEL_NAME = MODEL_FOLDER.split(config.SYSTEM_PATHS_DELIMITER)[-1] #here can be problem
 
         if MODEL_FOLDER == '':
             MODEL_FOLDER = os.path.join(LOGS_PATH, self.MODEL_NAME)
@@ -157,7 +157,7 @@ class Tester():
         print('dsd', gt.shape, predictions.shape)
 
         
-        name = path_dat.split('\\')[-1].split('_S')[0]
+        name = path_dat.split(config.SYSTEM_PATHS_DELIMITER)[-1].split('_S')[0]
 
         sensitivity = specificity = 0
         if not test_all_spectra:

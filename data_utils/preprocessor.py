@@ -75,7 +75,7 @@ class Preprocessor():
             for pn in range(self.piles_number):
                 piles[pn] = []
             
-            name = p.split("/")[-1].split(".")[0]
+            name = p.split(config.SYSTEM_PATHS_DELIMITER)[-1].split(".")[0]
             _data = np.load(p)
             
             data = {n: a for n, a in _data.items()}
@@ -342,7 +342,6 @@ class Preprocessor():
 
             data = {name: data_[name] for name in self.dict_names}
             p_names = data[self.load_name_for_name]
-            y = data['y']
 
             for except_name in except_names:
                 indexes = np.flatnonzero(p_names != except_name)
@@ -352,7 +351,7 @@ class Preprocessor():
                 data = {n: a[indexes] for n, a in data.items()}
 
             if not not_certain:
-                indexes = np.flatnonzero(y != 2)
+                indexes = np.flatnonzero(data['y'] != 2)
                 data = {n: a[indexes] for n, a in data.items()}
 
             self.__split_arrays(*[a for _, a in data.items()])

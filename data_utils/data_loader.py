@@ -59,7 +59,7 @@ class DataLoader():
     
     @staticmethod
     def name_get(path):
-        return path.split('/')[-1].split('.')[0]
+        return path.split(config.SYSTEM_PATHS_DELIMITER)[-1].split('.')[0]
     
     def mask_read(self, mask_path):  #++++++++++++++++++++++++++++
         mask = cv2.imread(mask_path)[..., ::-1]
@@ -114,7 +114,7 @@ class DataLoader():
     
     def X_y_dict_save_to_npz(self, dat_path, destination_path, values, name=None):
         if name is None:
-            name = dat_path.split('/')[-1].split('SpecCube')[0]
+            name = dat_path.split(config.SYSTEM_PATHS_DELIMITER)[-1].split('SpecCube')[0]
         np.savez(os.path.join(destination_path, name), **{n: a for n, a in values.items()}) 
     
     def X_cube_create(self, X, idx):
@@ -208,7 +208,7 @@ class DataLoader():
 
         for mat_path in tqdm(mat_paths):
             values = self.matfile_read(mat_path)
-            self.X_y_dict_save_to_npz(mat_path, destination_path, values, name=mat_path.split('/')[-1].split('.')[0])
+            self.X_y_dict_save_to_npz(mat_path, destination_path, values, name=mat_path.split(config.SYSTEM_PATHS_DELIMITER)[-1].split('.')[0])
             
         print('----Saving of .npz archives is over----')
         
