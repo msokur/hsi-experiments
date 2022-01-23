@@ -325,7 +325,6 @@ class CrossValidator():
                                                                  test_batch=True,
                                                                  folder_name='')
 
-
     def cross_validation(self, root_folder_name):
         config.MODEL_NAME_PATHS.append(root_folder_name)
 
@@ -394,29 +393,62 @@ class CrossValidator():
             config.MODEL_NAME = old_model_name
         return csv_filename
 
+    def get_history(self, model_path):
+        history_paths = glob.glob(os.path.join(model_path), '*.npy')
+        if len(history_paths) == 0:
+            raise ValueError('Error! No history files were found!')
+        if len(history_paths) > 1:
+            raise ValueError(f'Error! Too many .npy files were found in {model_path}!')
+
+        history_path = history_paths[0]
+        return np.load(history_path).item()
+
+    def get_best_checkpoint_from_valid(self, results_file):
+        model_paths = []
+        best_checkpoints = []
+
+        with open(csv_path, newline='') as csvfile:
+            report_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
+            for row in tqdm(report_reader):
+                model_path = row[5]
+                model_paths.append(model_path)
+
+                history = self.get_history(model_path)
+
+                best_checkpoint = np.argmin(history[config.HISTORY_ARGMIN])
+                best_checkpoints.append(best_checkpoint)
+
+        return int(np.median(best_checkpoints)), best_checkpoints, model_paths
+
+    def save_ROC_thresholds_for_checkpoint(self, checkpoint, save_path_, results_file, thr_ranges=[]):
+        self.results_file = results_file
+        print('CHECKPOINT: ', checkpoint)
+
+        if not os.path.exists(save_path_):
+            os.mkdir(save_path_)
+
+        save_path = os.path.join(save_path_, checkpoint)
+
+        if not os.path.exists(save_path):
+            os.mkdir(save_path)
+
+        self.count_ROC(results_file, save_path, checkpoint=checkpoint)
+
+        for rng in thr_ranges:
+            self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=rng)
+
+        # self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.0001, 0.0009, 9])
+        # self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.05, 0.25, 8])
+        # self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.001, 0.04, 8])
+        # self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.05, 0.5, 5])
+
     def compare_checkpoints(self, rng, save_path_, results_file):
         rg = np.linspace(rng[0], rng[1],rng[2]).astype(int)
         checkpoints = [f'cp-{i:04d}' for i in rg]
-        print('Checkpoints', checkpoints)
-        self.results_file = results_file
+        print('Checkpoints: ', checkpoints)
+
         for checkpoint in tqdm(checkpoints):
-            print(checkpoint)
-
-            if not os.path.exists(save_path_):
-                os.mkdir(save_path_)
-
-            save_path = os.path.join(save_path_, checkpoint)
-
-            if not os.path.exists(save_path):
-                os.mkdir(save_path)
-
-            self.count_ROC(results_file, save_path, checkpoint=checkpoint)
-             
-            #self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.0001, 0.0009, 9])
-            #self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.05, 0.25, 8])
-            #self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.001, 0.04, 8])
-            self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.2, 0.5, 4])
-            #self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.05, 0.5, 5])
+            self.save_ROC_thresholds_for_checkpoint(checkpoint, save_path_, results_file)
 
 if __name__ =='__main__':
     

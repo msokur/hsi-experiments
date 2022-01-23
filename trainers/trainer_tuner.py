@@ -120,8 +120,8 @@ class TrainerTuner(Trainer):
             class_weight=class_weights,
             workers=int(os.cpu_count()))'''
 
-        np.save(os.path.join(self.log_dir, 'history.history'), history.history)
-
+        self.save_history(history)
+        
         return model, history
 
 

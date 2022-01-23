@@ -106,6 +106,9 @@ class Trainer():
 
         return callbacks_
 
+    def save_history(self, history):
+        np.save(os.path.join(self.log_dir, 'history'), history.history)
+
     def __train(self, mirrored_strategy=None):
         self.mirrored_strategy = mirrored_strategy
         self.logging_and_copying()
@@ -139,7 +142,7 @@ class Trainer():
             class_weight=class_weights,
             workers=int(os.cpu_count()))
 
-        np.save(os.path.join(self.log_dir, 'history.history'), history.history)
+        self.save_history(history)
 
         return model, history
 

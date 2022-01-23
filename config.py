@@ -92,6 +92,8 @@ OUTPUT_SIGNATURE_X_FEATURES = LAST_NM - FIRST_NM  # train
 SPLIT_FACTOR = 0.9  # train   #for data sets: train\test data percentage
 
 CROSS_VALIDATION_SPLIT = int(56 / 1)  # cv   #int(number_of_all_patients / how_many_exclude_per_cv)
+HISTORY_ARGMIN = "val_loss" # through which parameter of history(returned by model.fit() and then saved) choose the
+# best checkpoint in validation data
 
 ADD_TIME = True  # pipeline   #whether to add time to logs paths
 RESTORE_MODEL = False  # pipeline
