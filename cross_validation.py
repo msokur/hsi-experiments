@@ -2,6 +2,8 @@ import sys
 import os
 import inspect
 
+
+
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.insert(1, os.path.join(currentdir, 'utils')) 
 sys.path.insert(2, os.path.join(currentdir, 'data_utils')) 
@@ -10,7 +12,7 @@ sys.path.insert(2, os.path.join(currentdir, 'models'))
 print('paths from cv', sys.path)
 
 import config
-from train import train
+from train import get_trainer
 import numpy as np
 from tqdm import tqdm
 import glob
@@ -26,6 +28,9 @@ from validator import Validator
 
 
 class CrossValidator():
+
+    def get_name(self, name):
+        return name.split(config.SYSTEM_PATHS_DELIMITER)[-1].split(".")[0].split('SpecCube')[0]
 
     def save_metrics_for_threshold(self, npy_folder, threshold, senss, specs, dices, aucs, thress):
         predictions_by_patient = np.load(os.path.join(npy_folder, 'predictions_by_patient.npy'), allow_pickle=True)
@@ -241,7 +246,7 @@ class CrossValidator():
                 
                 tester = test.Tester(checkpoint, ['data'], '', MODEL_FOLDER=row[5])
                 
-                name = row[4].split("/")[-1].split(".")[0].split('SpecCube')[0]
+                name = self.get_name(row[4])
 
                 #sensitivity, specificity = tester.test_one_image(row[4],
                 sensitivity, specificity = tester.test_one_image(os.path.join(config.RAW_NPZ_PATH, name + ".npz"),
@@ -307,7 +312,7 @@ class CrossValidator():
                 else:
                     tester = test.Tester( f'cp-{config.EPOCHS:04d}', ['data'], save_path, MODEL_FOLDER=row[5])
 
-                name = row[4].split("/")[-1].split(".")[0].split('SpecCube')[0]
+                name = self.get_name(row[4])
 
                 #sensitivity, specificity = tester.test_one_image(row[4],
                 sensitivity, specificity = tester.test_one_image(os.path.join(config.RAW_NPZ_PATH, name + ".npz"),
@@ -330,7 +335,7 @@ class CrossValidator():
             os.mkdir(root_folder)
 
         paths = glob.glob(os.path.join(config.RAW_NPZ_PATH, '*' + config.FILE_EXTENSION))
-        
+
         if config.FILE_EXTENSION == '.mat':
             def take_only_number(elem):
                 return int(elem.split('CP')[-1].split('.')[0])
@@ -348,13 +353,18 @@ class CrossValidator():
                 for i in indexes:
                     config.MODEL_NAME += '_' + str(i)
             else:
-                config.MODEL_NAME += '_' + str(ind) + '_' + np.array(paths)[indexes][0].split("/")[-1].split(".")[0].split('SpecCube')[0]
+                config.MODEL_NAME += '_' + str(ind) + '_' + self.get_name(np.array(paths)[indexes][0])
 
-            model = train(paths=paths, except_indexes=[p.split("/")[-1].split(".")[0].split('SpecCube')[0] for p in np.array(paths)[indexes]])
+            trainer = get_trainer(except_indexes=[self.get_name(p) for p in np.array(paths)[indexes]])
+            model = trainer.train()
             for i in indexes:
-                name = paths[i].split("/")[-1].split(".")[0].split('SpecCube')[0]
+                name = self.get_name(paths[i])
 
-                tester = test.Tester( f'cp-{config.EPOCHS:04d}', ['data'], '', LOGS_PATH=root_folder, MODEL_NAME=config.MODEL_NAME.split('\\')[-1])
+                tester = test.Tester( f'cp-{config.EPOCHS:04d}',
+                                      ['data'],
+                                      '',
+                                      LOGS_PATH=root_folder,
+                                      MODEL_NAME=config.MODEL_NAME.split(config.SYSTEM_PATHS_DELIMITER)[-1])
 
                 #sensitivity, specificity = tester.test_one_image(paths[i],
                 sensitivity, specificity = 0, 0
