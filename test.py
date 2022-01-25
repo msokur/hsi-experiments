@@ -4,7 +4,7 @@ sys.path.insert(1, 'data_utils')
 
 import config
 import tensorflow as tf
-import cv2
+#import cv2
 import numpy as np
 import os
 from tqdm import tqdm

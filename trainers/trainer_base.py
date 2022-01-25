@@ -148,7 +148,7 @@ class Trainer():
 
     def train(self):
         try:
-            if config.MODE == 'LOCAL' or config.MODE == 'SERVER':
+            if config.MODE == 'LOCAL_GPU' or config.MODE == 'CLUSTER':
                 gpus = tf.config.experimental.list_physical_devices('GPU')
                 if gpus:
                     try:

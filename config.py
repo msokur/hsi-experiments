@@ -16,14 +16,6 @@ print('paths from config', sys.path)
 
 # ----------------------------------------------------------------------------------------------------------
 
-MODE_TYPES = {
-    'SERVER': 'SERVER',
-    'LOCAL': 'LOCAL',
-    'NO_GPU': 'NO_GPU',
-    'LOCAL_NO_GPU': 'LOCAL_NO_GPU'
-}
-MODE = MODE_TYPES['LOCAL_NO_GPU']
-
 FILE_EXTENSIONS = {
     '_dat': '.dat',
     '_npz': '.npz',
@@ -157,6 +149,23 @@ if platform.system() == 'Windows':
 else:
     SYSTEM_PATHS_DELIMITER = '/'
 
+# ----------------------------MODES
+import platform
+
+MODE_TYPES = {
+    'CLUSTER': 'CLUSTER',
+    'LOCAL_GPU': 'LOCAL_GPU',
+    'LOCAL_NO_GPU': 'LOCAL_NO_GPU'
+}
+
+uname = platform.uname()
+
+MODE = MODE_TYPES['CLUSTER']
+
+if "clara" in uname.node:
+    MODE = MODE_TYPES['CLUSTER']
+if "scads" in uname.node:
+    MODE = MODE_TYPES['LOCAL_NO_GPU']
 
 # ----------------------------PATHS
 
@@ -164,7 +173,7 @@ def get_model_name(MODEL_NAME_PATHS, model_name='3d'):
     return os.path.join(*MODEL_NAME_PATHS, model_name)
 
 
-if MODE == 'SERVER' or MODE == 'NO_GPU':
+if MODE == 'CLUSTER':
     prefix = r'/work/users/mi186veva/'
 
     RAW_NPZ_PATH = os.path.join(prefix, RAW_NPZ_PATH)
@@ -190,3 +199,5 @@ if not RESTORE_MODEL and ADD_TIME:
 # ----------------------------CUSTOM_OBJECTS
 
 CUSTOM_OBJECTS = {'f1_m': tf_metrics.f1_m}
+
+

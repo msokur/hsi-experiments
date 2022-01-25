@@ -9,7 +9,7 @@ sys.path.insert(1, os.path.join(parentdir, 'utils'))
 
 from sklearn.feature_extraction import image
 import numpy as np
-import cv2
+#import cv2
 from tqdm import tqdm
 import glob
 import time #TODO remove it

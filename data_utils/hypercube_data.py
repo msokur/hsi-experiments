@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from skimage import exposure
+
 from scipy.signal import savgol_filter
 from sklearn import preprocessing
 # Example:Plot image
@@ -103,6 +103,7 @@ class cube(object):
     #https://stackoverflow.com/questions/1627376/how-do-i-extract-a-ieee-be-binary-file-embedded-in-a-zipfile
     
     def cube_plot(self):
+        from skimage import exposure
         #the plot is done following the guidance from Tivita TM
         #Dokumentation RGB-Image1.4.vi
         initial_cube,y = Cube_Read(self.address,self.wavearea,self.Firstnm,self.Lastnm).cube_matrix()
