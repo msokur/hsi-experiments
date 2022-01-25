@@ -1,4 +1,4 @@
-import sys
+'''import sys
 import os
 import inspect
 
@@ -9,7 +9,7 @@ sys.path.insert(1, os.path.join(currentdir, 'utils'))
 sys.path.insert(2, os.path.join(currentdir, 'data_utils')) 
 sys.path.insert(2, os.path.join(currentdir, 'models')) 
 
-print('paths from cv', sys.path)
+print('paths from cv', sys.path)'''
 
 import config
 from train import get_trainer
@@ -23,7 +23,7 @@ import datetime
 import sklearn.metrics as metrics
 import matplotlib.pyplot as plt
 
-from utils import send_tg_message
+import utils
 from validator import Validator
 
 
@@ -394,14 +394,17 @@ class CrossValidator():
         return csv_filename
 
     def get_history(self, model_path):
-        history_paths = glob.glob(os.path.join(model_path), '*.npy')
+        history_paths = utils.multiple_file_types(model_path, '.*.npy', '*.npy')
         if len(history_paths) == 0:
             raise ValueError('Error! No history files were found!')
         if len(history_paths) > 1:
             raise ValueError(f'Error! Too many .npy files were found in {model_path}!')
 
         history_path = history_paths[0]
-        return np.load(history_path).item()
+        history = np.load(history_path, allow_pickle=True)
+        if len(history.shape) == 0:
+            history = history.item()
+        return history
 
     def get_best_checkpoint_from_valid(self, results_file):
         model_paths = []
@@ -417,10 +420,15 @@ class CrossValidator():
 
                 best_checkpoint = np.argmin(history[config.HISTORY_ARGMIN])
                 best_checkpoints.append(best_checkpoint)
-
-        return int(np.median(best_checkpoints)), best_checkpoints, model_paths
+         
+        best_checkpoint = utils.round_to_the_nearest_int(np.median(best_checkpoints))
+            
+        return best_checkpoint, best_checkpoints, model_paths
 
     def save_ROC_thresholds_for_checkpoint(self, checkpoint, save_path_, results_file, thr_ranges=[]):
+        if type(checkpoint) == int:
+            checkpoint = f'cp-{checkpoint:04d}'
+        
         self.results_file = results_file
         print('CHECKPOINT: ', checkpoint)
 
@@ -459,8 +467,8 @@ if __name__ =='__main__':
         name = 'CV_3d_inception_exclude1_all'
         #name = 'CV_3d_sample_weights_every_third'
         
-        csv_path = cross_validator.cross_validation(name)
-        #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_bea_colon_inc_sample_weights_1output/CV_3d_bea_colon_inc_sample_weights_1output_stats_16.12.2021-22_00_11.csv'
+        #csv_path = cross_validator.cross_validation(name)
+        csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_bea_colon_inc_sample_weights_1output/CV_3d_bea_colon_inc_sample_weights_1output_stats_16.12.2021-22_00_11.csv'
         #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_bea_colon_sample_weights_1output/CV_3d_bea_colon_sample_weights_1output_stats_16.12.2021-13_09_52.csv'
         #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_inception_svn_every_third/CV_3d_inception_svn_every_third_stats_10.12.2021-10_31_38.csv'
         #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_inception/CV_3d_inception_stats_07.12.2021-00_01_56.csv'
@@ -470,17 +478,25 @@ if __name__ =='__main__':
         #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d/CV_3d_stats_17.11.2021-21_16_05.csv'
         #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_sample_weights_every_third/CV_3d_sample_weights_every_third_stats_02.12.2021-22_32_48.csv'
         
+        best_checkpoint, best_checkpoints, model_paths = cross_validator.get_best_checkpoint_from_valid(csv_path)
+        print(best_checkpoint)
+        print(best_checkpoints)
+        print(model_paths)
+        
+        
+        
         test_path = os.path.join(preffix, 'test', name)
-        cross_validator.compare_checkpoints([2, 20, 10], test_path, csv_path)
+        #cross_validator.compare_checkpoints([2, 20, 10], test_path, csv_path)
+        cross_validator.save_ROC_thresholds_for_checkpoint(best_checkpoint, test_path, csv_path)
         
-        validator = Validator()
-        validator.find_best_checkpoint(test_path)
+        #validator = Validator()
+        #validator.find_best_checkpoint(test_path)
         
-        send_tg_message('Mariia, operations in cross_validation.py are successfully completed!')
+        #utils.send_tg_message('Mariia, operations in cross_validation.py are successfully completed!')
                
     except Exception as e:
         print(e)
 
-        send_tg_message(f'Mariia, ERROR!!!, In CV error {e}')
+        #utils.send_tg_message(f'Mariia, ERROR!!!, In CV error {e}')
         
         raise e
