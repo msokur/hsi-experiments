@@ -3,10 +3,12 @@ import os
 import tensorflow as tf
 import sys
 import inspect
+import numpy as np
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.insert(0, os.path.join(current_dir, 'utils'))
 sys.path.insert(1, os.path.join(current_dir, 'data_utils'))
+sys.path.insert(1, os.path.join(current_dir, os.path.join('data_utils', 'data_loaders')))
 sys.path.insert(2, os.path.join(current_dir, 'models'))
 sys.path.insert(3, os.path.join(current_dir, 'trainers'))
 
@@ -28,7 +30,16 @@ NORMALIZATION_TYPES = {
     'l2_norm': 'l2_norm',
     'svn_T': 'svn_T'
 }
-NORMALIZATION_TYPE = NORMALIZATION_TYPES['l2_norm']
+NORMALIZATION_TYPE = NORMALIZATION_TYPES['svn_T']
+
+DATABASES = {   # for data_loader
+    'data_loader_colon': 'colon',
+    'data_loader_mat': 'bea_first_colon'
+}
+DATABASE = DATABASES['data_loader_colon']
+
+if DATABASE in ['bea_first_colon']:
+    FILE_EXTENSION = FILE_EXTENSIONS['_mat']
 
 # ----------------------------------------------------------------------------------------------------------
 RAW_NPZ_PATH = os.path.join('data_preprocessed', 'raw_3d_weighted')
@@ -55,8 +66,7 @@ MODEL_PATH = 'model'
 # ----------------------------------------------------------------------------------------------------------
 
 WITH_AUGMENTATION = False
-WITH_NOT_CERTAIN = False
-WITH_SAMPLE_WEIGHTS = False
+WITH_SAMPLE_WEIGHTS = True
 WITH_BATCH_NORM = False
 WITH_BACKGROUND_EXTRACTION = False
 WITH_PREPROCESS_DURING_SPLITTING = False  # used in __split_arrays in preprocessor.py to run method preprocess()...
@@ -68,6 +78,7 @@ WRITE_GRADIENTS_EVERY_Xth_BATCH = 50000000000  # callbacks
 WRITE_IMAGES = False  # callbacks
 WITH_EARLY_STOPPING = False  # callbacks
 
+_3D = True  # data
 _3D_SIZE = [5, 5]  # data
 FIRST_NM = 8  # data
 LAST_NM = 100  # data
@@ -76,6 +87,14 @@ WAVE_AREA = 100  # data
 
 INCEPTION_FACTOR = 8  # model
 DROPOUT = 0.1  # model
+NUMBER_OF_CLASSES_TO_TRAIN = 2  # model
+LABELS_OF_CLASSES_TO_TRAIN = np.arange(NUMBER_OF_CLASSES_TO_TRAIN)  # data. It's possible that we have 4 classes in
+# data, but want to use only 2 during training. If so we need to specify it here,
+# for example, [1, 2] will mean that we will use only classes with labels 1 and 2.
+# By default, we create labels with np.arange() corresponding to  NUMBER_OF_CLASSES_TO_TRAIN
+# Reminder: you can set the labels itself overriding DataLoader.get_labels()
+
+assert len(LABELS_OF_CLASSES_TO_TRAIN) == NUMBER_OF_CLASSES_TO_TRAIN  # check yourself
 
 BATCH_SIZE = 100  # train
 EPOCHS = 20  # train
@@ -83,8 +102,8 @@ LEARNING_RATE = 1e-4  # train
 OUTPUT_SIGNATURE_X_FEATURES = LAST_NM - FIRST_NM  # train
 SPLIT_FACTOR = 0.9  # train   #for data sets: train\test data percentage
 
-CROSS_VALIDATION_SPLIT = int(56 / 1)  # cv   #int(number_of_all_patients / how_many_exclude_per_cv)
-HISTORY_ARGMIN = "val_loss" # through which parameter of history(returned by model.fit() and then saved) choose the
+CV_HOW_MANY_PATIENTS_EXCLUDE = 1  # cv
+HISTORY_ARGMIN = "val_loss"  # cv. through which parameter of history(returned by model.fit() and then saved) choose the
 # best checkpoint in validation data
 
 ADD_TIME = True  # pipeline   #whether to add time to logs paths
@@ -129,7 +148,6 @@ AUGMENTATION = {
 
 if WITH_AUGMENTATION:
     BATCH_SIZE = int(BATCH_SIZE / AUGMENTATION['new_rows_per_sample'])
-    print(BATCH_SIZE)
 
 # ----------------------------FILES_TO_COPY
 
@@ -169,6 +187,7 @@ if "scads" in uname.node:
 
 # ----------------------------PATHS
 
+
 def get_model_name(MODEL_NAME_PATHS, model_name='3d'):
     return os.path.join(*MODEL_NAME_PATHS, model_name)
 
@@ -200,4 +219,8 @@ if not RESTORE_MODEL and ADD_TIME:
 
 CUSTOM_OBJECTS = {'f1_m': tf_metrics.f1_m}
 
+# ----------------------------CROSS_VALIDATION SPLIT
 
+paths = glob.glob(os.path.join(RAW_NPZ_PATH, FILE_EXTENSION))
+CROSS_VALIDATION_SPLIT = int(len(paths) / CV_HOW_MANY_PATIENTS_EXCLUDE)
+# int(number_of_all_patients / how_many_exclude_per_cv)
