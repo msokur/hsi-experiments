@@ -1,13 +1,23 @@
 import config
-from data_loaders.data_loader_colon import DataLoaderColon
+from data_loaders.data_loader_easy import DataLoaderColon
 from data_loaders.data_loader_mat import DataLoaderMat
+from data_loaders.data_loader_mat_brain import DataLoaderMatBrain
+from data_loaders.data_loader_mat_colon import DataLoaderMatColon
 
 
 def get_data_loader(**kwargs):
     if config.DATABASE == 'colon':
+        print('DataLoaderColon')
         return DataLoaderColon(**kwargs)
-    if config.DATABASE == 'bea_first_colon':
+    if config.DATABASE == 'bea_eso':
+        print('DataLoaderMat')
         return DataLoaderMat(**kwargs)
+    if config.DATABASE == 'bea_brain':
+        print('DataLoaderMatBrain')
+        return DataLoaderMatBrain(**kwargs)
+    if config.DATABASE == 'bea_colon':
+        print('DataLoaderMatColon')
+        return DataLoaderMatColon(**kwargs)
 
     raise ValueError('Error! Database type specified wrong (either in config.py or in data_loader.py)')
 

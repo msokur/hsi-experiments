@@ -15,7 +15,7 @@ class DataLoader:
         self.dict_names = dict_names
         self._3d = _3d
         self._3d_size = _3d_size
-
+    
     @abc.abstractmethod
     def get_extension(self):
         pass
@@ -35,6 +35,14 @@ class DataLoader:
     @abc.abstractmethod
     def get_name(self, path):
         pass
+    
+    def get_paths_and_splits(self, root_path=config.RAW_NPZ_PATH):
+        paths = glob(os.path.join(root_path, '*.npz'))
+        paths = sorted(paths)
+
+        splits = np.array_split(range(len(paths)), config.CROSS_VALIDATION_SPLIT)
+        
+        return paths, splits
 
     def file_read(self, path):
         print(f'Reading {path}')

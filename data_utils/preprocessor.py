@@ -1,4 +1,4 @@
-'''import os
+import os
 import sys
 import inspect
 from typing import Union, Iterable
@@ -6,7 +6,9 @@ from typing import Union, Iterable
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
-sys.path.insert(1, os.path.join(parentdir, 'utils')) '''
+sys.path.insert(1, os.path.join(parentdir, 'utils')) 
+
+import config
 
 import os
 import numpy as np
@@ -19,7 +21,7 @@ from sklearn import preprocessing
 
 import data_loader
 from data_loaders.data_loader_base import DataLoader
-import config
+
 
 '''
 Preprocessor contains opportunity of
@@ -318,7 +320,8 @@ class Preprocessor():
                 indexes = np.flatnonzero(p_names != except_name)
                 if indexes.shape[0] == 0:
                     print(f'WARNING! For except_name {except_name} no except_samples were found')
-
+                
+                p_names = p_names[indexes]
                 data = {n: a[indexes] for n, a in data.items()}
 
             indexes = np.zeros(data['y'].shape).astype(bool)
@@ -445,11 +448,16 @@ if __name__ == '__main__':
     execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
     execution_flags['scale'] = False
     execution_flags['add_sample_weights'] = False
-    execution_flags['load_data_with_dataloader'] = False
+    execution_flags['shuffle'] = False
+    execution_flags['load_data_with_dataloader'] = True
+    
+    for db in ['Colon_MedianFilter']:#, 'Colon_SNV', 'EsophagusDatabase', 'Esophagus_MedFilter', 'Esophagus_SNV']:
+    #for db in ['DatabaseBrainMM', 'DatabaseBrainSNV', 'DatabaseBrainFMed']:
 
-    preprocessor = Preprocessor()
-    preprocessor.pipeline('../data_preprocessed/raw_3d_weighted',
-                          '../data_preprocessed/raw_3d_weighted/raw_3d_weighted', execution_flags=execution_flags)
+        preprocessor = Preprocessor()
+        pth = os.path.join('/work/users/mi186veva/data_bea_db', db)
+        preprocessor.pipeline(pth,
+                              os.path.join(pth, 'raw_3d_weighted'), execution_flags=execution_flags)
     #preprocessor.pipeline('../data_preprocessed/EsophagusDatabase',
     #                      '../data_preprocessed/EsophagusDatabase/raw_3d_weights', execution_flags=execution_flags)
     #paths = glob.glob('/work/users/mi186veva/data_bea/ColonData/raw_3d_weights/shuffled/*.npz')

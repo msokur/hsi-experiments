@@ -138,7 +138,7 @@ class Tester():
 
         if test_batch:
             gt = data['y']  # test batch
-            indx_ = np.zeros(gt.shape).astype(bool)
+            '''indx_ = np.zeros(gt.shape).astype(bool)
 
             for label in config.LABELS_OF_CLASSES_TO_TRAIN:
                 indx_ = indx_ | (gt == label)  # ((gt == 0) | (gt == 1))
@@ -147,7 +147,7 @@ class Tester():
                 spectrum = spectrum[indx_ & data['bg_mask']]
 
             gt = gt[indx_]
-            spectrum = spectrum[indx_]
+            spectrum = spectrum[indx_]'''
 
         else:
             gt = [0] * len(gesund_indexes) + [1] * len(ill_indexes)
@@ -163,9 +163,9 @@ class Tester():
 
         if not test_all_spectra:
 
-            if len(config.LABELS_OF_CLASSES_TO_TRAIN) == 2:
-                sensitivity, specificity = self.count_metrics(gt, np.rint(predictions), name, folder_name, save_stats,
-                                                              return_dice=return_dice)
+            #if len(config.LABELS_OF_CLASSES_TO_TRAIN) == 2:
+            #    sensitivity, specificity = self.count_metrics(gt, np.rint(predictions), name, folder_name, save_stats,
+            #                                                  return_dice=return_dice)
 
             self.all_predictions += list(np.rint(predictions))
             self.all_predictions_raw += list(predictions)

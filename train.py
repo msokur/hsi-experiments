@@ -1,18 +1,31 @@
 import config
 
-from trainers.trainer_tuner import TrainerTuner
 from trainers.trainer_easy import TrainerEasy
+from trainers.trainer_easy_several_outputs import TrainerEasySeveralOutputs
 
 
 def get_trainer(except_indexes=[]):
     if config.RESTORE_MODEL & config.WITH_TUNING:
         raise ValueError("Custom Error! Choose if restore(config.RESTORE_MODEL) or tune(config.WITH_TUNING) "
-                         "model! They could not be simultaneously True")
+                         "model! They could not be simultaneously True") 
 
     if config.WITH_TUNING:
+        from trainers.trainer_tuner import TrainerTuner
         return TrainerTuner(excepted_indexes=except_indexes)
-
+    
+    
+    
+    if config.DATABASE == 'bea_colon':
+        print('TrainerEasy')
+        return TrainerEasy(excepted_indexes=except_indexes)
+    
+    if 'bea' in config.DATABASE:
+        print('TrainerEasySeveralOutputs')
+        return TrainerEasySeveralOutputs(excepted_indexes=except_indexes)
+    
     return TrainerEasy(excepted_indexes=except_indexes)
+
+    
 
 
 if __name__ == '__main__':

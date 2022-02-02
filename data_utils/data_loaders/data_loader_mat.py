@@ -1,12 +1,35 @@
 import scipy.io
+import abc
+from glob import glob
+import os
+import numpy as np
 
 import config
 from data_loader_base import DataLoader
 
+#for Esophagus
 
 class DataLoaderMat(DataLoader):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+    
+    @abc.abstractmethod
+    def get_number(self, elem):
+        return elem.split("EP")[-1].split('.')[0]
+    
+    def sort(self, paths):
+        def take_only_number(elem):
+            return int(self.get_number(elem))
+        paths = sorted(paths, key=take_only_number)
+        return paths
+    
+    def get_paths_and_splits(self, root_path=config.RAW_NPZ_PATH):
+        paths = glob(os.path.join(root_path, '*.npz'))
+        paths = self.sort(paths)
+
+        splits = np.array_split(range(len(paths)), config.CROSS_VALIDATION_SPLIT)
+        
+        return paths, splits
 
     def get_extension(self):
         return config.FILE_EXTENSIONS['_mat']
@@ -18,9 +41,9 @@ class DataLoaderMat(DataLoader):
         return path.split(config.SYSTEM_PATHS_DELIMITER)[-1].split('.')[0]
 
     def indexes_get_bool_from_mask(self, mask):
-        healthy_indexes = (mask == 2) | (mask == 3)
-        ill_indexes = (mask == 1)
-        not_certain_indexes = (mask == 0)
+        ill_indexes = (mask == 1) 
+        healthy_indexes = (mask == 2)
+        not_certain_indexes = (mask == 3)
 
         return healthy_indexes, ill_indexes, not_certain_indexes
 

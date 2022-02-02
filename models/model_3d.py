@@ -27,7 +27,14 @@ def paper_model():
 
     #net = tf.keras.layers.Dense(50, activation='relu')(net)
     net = tf.keras.layers.Dropout(config.DROPOUT)(net)
-    result = tf.keras.layers.Dense(1, activation='sigmoid')(net)
+    
+    activation = 'sigmoid'
+    number = 1
+    if config.NUMBER_OF_CLASSES_TO_TRAIN > 2:
+        activation = None
+        number = config.NUMBER_OF_CLASSES_TO_TRAIN
+        
+    result = tf.keras.layers.Dense(number, activation=activation)(net)
 
     model = tf.keras.Model(
         inputs=[input_],

@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import utils
 from validator import Validator
 from data_utils.data_loaders.data_loader_base import DataLoader
+from data_utils.data_loader import get_data_loader
 
 
 class CrossValidator:
@@ -238,10 +239,7 @@ class CrossValidator:
                 name = DataLoader.get_name_easy(row[4], delimiter='/')
 
                 #sensitivity, specificity = tester.test_one_image(row[4],
-                print('RAW_NPZ_PATH', config.RAW_NPZ_PATH)
-                print(os.path.join(config.RAW_NPZ_PATH, name + ".npz"))
-                print(name)
-                sensitivity, specificity = tester.test_one_image(os.path.join(config.RAW_NPZ_PATH, name + ".npz"),
+                sensitivity, specificity = tester.test_one_image(os.path.join(config.TEST_NPZ_PATH, name + ".npz"),
                                                                  path_image=row[4] + '_Mask JW Kolo.png',
                                                                  save=False,
                                                                  show=False,
@@ -323,23 +321,17 @@ class CrossValidator:
         config.MODEL_NAME = config.get_model_name(config.MODEL_NAME_PATHS)
         if not os.path.exists(root_folder):
             os.mkdir(root_folder)
-
-        paths = glob.glob(os.path.join(config.RAW_NPZ_PATH, '*' + config.FILE_EXTENSION))
-
-        if config.FILE_EXTENSION == '.mat':
-            def take_only_number(elem):
-                return int(elem.split('CP')[-1].split('.')[0])
-            paths = sorted(paths, key=take_only_number)
-        else:
-            paths = sorted(paths)
-
+        
+        data_loader = get_data_loader()
+        paths, splits = data_loader.get_paths_and_splits()
+        
         date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
         csv_filename = os.path.join(root_folder, root_folder_name + '_stats' + date_ + '.csv')
 
-        splits = np.array_split(range(len(paths)), config.CROSS_VALIDATION_SPLIT)
-
         for ind, indexes in enumerate(splits):                
             old_model_name = config.MODEL_NAME
+            indexes = np.array(indexes[0])
+            
             if len(indexes) > 1:
                 for i in indexes:
                     config.MODEL_NAME += '_' + str(i)
@@ -464,20 +456,11 @@ if __name__ =='__main__':
         cross_validator = CrossValidator()
         prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
         
-        name = 'CV_3d_inception_exclude1_all'
+        name = config.bea_db
         #name = 'CV_3d_sample_weights_every_third'
         
         #csv_path = cross_validator.cross_validation(name)
-        #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_bea_colon_inc_sample_weights_1output/CV_3d_bea_colon_inc_sample_weights_1output_stats_16.12.2021-22_00_11.csv'
-        #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_bea_colon_sample_weights_1output/CV_3d_bea_colon_sample_weights_1output_stats_16.12.2021-13_09_52.csv'
-        #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_inception_svn_every_third/CV_3d_inception_svn_every_third_stats_10.12.2021-10_31_38.csv'
-        #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_inception/CV_3d_inception_stats_07.12.2021-00_01_56.csv'
-        #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_bg_every_third/CV_3d_bg_every_third_stats_25.11.2021-00_10_04.csv'
-        #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_svn_every_third/CV_3d_svn_every_third_stats_24.11.2021-15_58_11.csv'
-        #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_every_third/CV_3d_every_third_stats_24.11.2021-15_25_23.csv'
-        #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d/CV_3d_stats_17.11.2021-21_16_05.csv'
-        csv_path = 'logs/CV_3d/CV_3d_stats_17.11.2021-21_16_05.csv'
-        #csv_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_sample_weights_every_third/CV_3d_sample_weights_every_third_stats_02.12.2021-22_32_48.csv'
+        csv_path = glob.glob(os.path.join('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/', name, '*.csv'))[0]
         
         best_checkpoint, best_checkpoints, model_paths = cross_validator.get_best_checkpoint_from_valid(csv_path)
         print(best_checkpoint)
@@ -489,10 +472,11 @@ if __name__ =='__main__':
             test_path = os.path.join(prefix, test_path)
         #test_path = os.path.join(prefix, 'test', name)
         #cross_validator.compare_checkpoints([2, 20, 10], test_path, csv_path)
+        
         cross_validator.save_ROC_thresholds_for_checkpoint(best_checkpoint,
                                                            test_path,
                                                            csv_path,
-                                                           thr_ranges=[[0.1, 0.5, 5]],
+                                                           thr_ranges=[],
                                                            execution_flags=[True])
         
         #validator = Validator()

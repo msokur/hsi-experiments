@@ -23,7 +23,7 @@ FILE_EXTENSIONS = {
     '_npz': '.npz',
     '_mat': '.mat'
 }
-FILE_EXTENSION = FILE_EXTENSIONS['_npz']
+FILE_EXTENSION = FILE_EXTENSIONS['_mat']
 
 NORMALIZATION_TYPES = {
     'svn': 'svn',
@@ -33,18 +33,33 @@ NORMALIZATION_TYPES = {
 NORMALIZATION_TYPE = NORMALIZATION_TYPES['svn_T']
 
 DATABASES = {   # for data_loader
-    'data_loader_colon': 'colon',
-    'data_loader_mat': 'bea_first_colon'
+    'data_loader_easy': 'colon',
+    'data_loader_mat_eso': 'bea_eso',
+    'data_loader_mat_brain': 'bea_brain',
+    'data_loader_mat_colon': 'bea_colon'
 }
-DATABASE = DATABASES['data_loader_colon']
 
-if DATABASE in ['bea_first_colon']:
-    FILE_EXTENSION = FILE_EXTENSIONS['_mat']
 
 # ----------------------------------------------------------------------------------------------------------
-RAW_NPZ_PATH = os.path.join('data_preprocessed', 'raw_3d_weighted')
+bea_db = 'DatabaseBrainFMed' #TODO remove
+
+current_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments-bea-db'
+RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
+TEST_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw')
 SHUFFLED_PATH = os.path.join(RAW_NPZ_PATH, 'shuffled')
 BATCHED_PATH = os.path.join(RAW_NPZ_PATH, 'batch_sized')
+
+if 'Colon' in bea_db:
+    DATABASE = DATABASES['data_loader_mat_colon']
+elif 'Eso' in bea_db:
+    DATABASE = DATABASES['data_loader_mat_eso']
+elif 'Brain' in bea_db:
+    DATABASE = DATABASES['data_loader_mat_brain']
+else:
+    DATABASE = DATABASES['data_loader_easy']
+
+if 'bea' in DATABASE:
+    FILE_EXTENSION = FILE_EXTENSIONS['_mat']
 
 #SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled'
 #BATCHED_PATH = r'data_preprocessed/augmented/batch_sized'
@@ -87,7 +102,9 @@ WAVE_AREA = 100  # data
 
 INCEPTION_FACTOR = 8  # model
 DROPOUT = 0.1  # model
-NUMBER_OF_CLASSES_TO_TRAIN = 2  # model
+NUMBER_OF_CLASSES_TO_TRAIN = 3  # model
+if 'colon' in DATABASE:
+    NUMBER_OF_CLASSES_TO_TRAIN = 2
 LABELS_OF_CLASSES_TO_TRAIN = np.arange(NUMBER_OF_CLASSES_TO_TRAIN)  # data. It's possible that we have 4 classes in
 # data, but want to use only 2 during training. If so we need to specify it here,
 # for example, [1, 2] will mean that we will use only classes with labels 1 and 2.
@@ -97,16 +114,16 @@ LABELS_OF_CLASSES_TO_TRAIN = np.arange(NUMBER_OF_CLASSES_TO_TRAIN)  # data. It's
 assert len(LABELS_OF_CLASSES_TO_TRAIN) == NUMBER_OF_CLASSES_TO_TRAIN  # check yourself
 
 BATCH_SIZE = 100  # train
-EPOCHS = 20  # train
+EPOCHS = 40  # train
 LEARNING_RATE = 1e-4  # train
-OUTPUT_SIGNATURE_X_FEATURES = LAST_NM - FIRST_NM  # train
+
 SPLIT_FACTOR = 0.9  # train   #for data sets: train\test data percentage
 
 CV_HOW_MANY_PATIENTS_EXCLUDE = 1  # cv
 HISTORY_ARGMIN = "val_loss"  # cv. through which parameter of history(returned by model.fit() and then saved) choose the
 # best checkpoint in validation data
 
-ADD_TIME = True  # pipeline   #whether to add time to logs paths
+ADD_TIME = False  # pipeline   #whether to add time to logs paths
 RESTORE_MODEL = False  # pipeline
 TELEGRAM_SENDING = True  # utils
 # ---------------------------------------Tuning params-----------------------------------------------
@@ -127,17 +144,6 @@ TUNER_OVERWRITE = True
 
 # ---------------------------------------------------------------------------------------------------
 
-# ----------------------------OUTPUT_SIGNATURE
-if WITH_SAMPLE_WEIGHTS:
-    OUTPUT_SIGNATURE = (
-        tf.TensorSpec(shape=(None, _3D_SIZE[0], _3D_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
-        tf.TensorSpec(shape=(None,), dtype=tf.float32),
-        tf.TensorSpec(shape=(None,), dtype=tf.float32))
-else:
-    OUTPUT_SIGNATURE = (
-        tf.TensorSpec(shape=(None, _3D_SIZE[0], _3D_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
-        tf.TensorSpec(shape=(None,), dtype=tf.float32))
-
 # ----------------------------AUGMENTATION
 
 AUGMENTATION = {
@@ -153,10 +159,17 @@ if WITH_AUGMENTATION:
 
 import glob
 
-FILES_TO_COPY = glob.glob('*.py')
-FILES_TO_COPY += glob.glob('data_utils/*.py')
-FILES_TO_COPY += glob.glob('models/*.py')
-FILES_TO_COPY += ['scrips/start_cv.job']
+files_to_copy = ['*.py', 
+                 'data_utils/*.py', 
+                 'models/*.py',
+                 'data_utils/data_loaders/*.py',
+                 'scrips/start_cv.job']
+
+FILES_TO_COPY = []
+for f in files_to_copy:
+    FILES_TO_COPY += glob.glob(os.path.join(current_dir, f))
+
+print('FILES_TO_COPY', FILES_TO_COPY)
 
 # ----------------------------SYSTEM_PATHS_DELIMITER
 
@@ -198,6 +211,7 @@ if MODE == 'CLUSTER':
     RAW_NPZ_PATH = os.path.join(prefix, RAW_NPZ_PATH)
     SHUFFLED_PATH = os.path.join(prefix, SHUFFLED_PATH)
     BATCHED_PATH = os.path.join(prefix, BATCHED_PATH)
+    TEST_NPZ_PATH = os.path.join(prefix, TEST_NPZ_PATH)
 
     # MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs', 'debug_combi']
     MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs']
@@ -221,6 +235,24 @@ CUSTOM_OBJECTS = {'f1_m': tf_metrics.f1_m}
 
 # ----------------------------CROSS_VALIDATION SPLIT
 
-paths = glob.glob(os.path.join(RAW_NPZ_PATH, FILE_EXTENSION))
+paths = glob.glob(os.path.join(RAW_NPZ_PATH, '*npz'))
 CROSS_VALIDATION_SPLIT = int(len(paths) / CV_HOW_MANY_PATIENTS_EXCLUDE)
 # int(number_of_all_patients / how_many_exclude_per_cv)
+
+# ----------------------------OUTPUT FEATURES
+OUTPUT_SIGNATURE_X_FEATURES = LAST_NM - FIRST_NM  # train
+if DATABASE == 'bea_eso' or DATABASE == 'bea_colon':
+    OUTPUT_SIGNATURE_X_FEATURES = 81
+if DATABASE == 'bea_brain':
+    OUTPUT_SIGNATURE_X_FEATURES = 128
+    
+# ----------------------------OUTPUT_SIGNATURE
+if WITH_SAMPLE_WEIGHTS:
+    OUTPUT_SIGNATURE = (
+        tf.TensorSpec(shape=(None, _3D_SIZE[0], _3D_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
+        tf.TensorSpec(shape=(None,), dtype=tf.float32),
+        tf.TensorSpec(shape=(None,), dtype=tf.float32))
+else:
+    OUTPUT_SIGNATURE = (
+        tf.TensorSpec(shape=(None, _3D_SIZE[0], _3D_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
+        tf.TensorSpec(shape=(None,), dtype=tf.float32))

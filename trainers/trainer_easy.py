@@ -38,7 +38,7 @@ class TrainerEasy(Trainer):
 
         return model
 
-    def __get_restored_model(self):
+    def get_restored_model(self):
         print('!!!!!!!!!!!!We restore model!!!!!!!!!!!!')
         search_path = os.path.join(self.log_dir, 'checkpoints')
         all_checkpoints = [os.path.join(search_path, d) for d in os.listdir(search_path) if
@@ -60,18 +60,18 @@ class TrainerEasy(Trainer):
 
         return model, initial_epoch
 
-    def __get_easy_model(self):
-        model = model_3d.inception3d_model()
+    def get_easy_model(self):
+        model = model_3d.paper_model()
         model = self.compile_model(model)
         return model
 
     def get_model(self):
         initial_epoch = 0
         if config.RESTORE_MODEL:
-            model, initial_epoch = self.__get_restored_model()
+            model, initial_epoch = self.get_restored_model()
         else:
             # model = model_3d.paper_model()
-            model = self.__get_easy_model()
+            model = self.get_easy_model()
 
         return model, initial_epoch
 
