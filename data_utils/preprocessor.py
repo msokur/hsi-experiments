@@ -19,7 +19,7 @@ import pickle
 from scipy.signal import savgol_filter
 from sklearn import preprocessing
 
-import data_loader
+import provider
 from data_loaders.data_loader_base import DataLoader
 
 
@@ -38,6 +38,7 @@ class Preprocessor():
                  piles_number=100,
                  weights_filename='.weights',
                  dict_names=['PatientIndex', 'indexes_in_datacube', 'weights']):
+                 #dict_names=['PatientIndex', 'indexes_in_datacube']):
         self.load_name_for_name = load_name_for_name
         self.dict_names = [load_name_for_x, load_name_for_y, load_name_for_name]
         for name in dict_names:
@@ -420,7 +421,7 @@ class Preprocessor():
 
         # ---------Data reading part--------------
         if execution_flags['load_data_with_dataloader']:
-            dataLoader = data_loader.get_data_loader()
+            dataLoader = provider.get_data_loader()
             dataLoader.files_read_and_save_to_npz(root_path, preprocessed_path)
 
         # ----------weights part------------------
@@ -447,15 +448,17 @@ class Preprocessor():
 if __name__ == '__main__':
     execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
     execution_flags['scale'] = False
-    execution_flags['add_sample_weights'] = False
-    execution_flags['shuffle'] = False
+    execution_flags['add_sample_weights'] = True
+    execution_flags['shuffle'] = True
     execution_flags['load_data_with_dataloader'] = True
     
-    for db in ['Colon_MedianFilter']:#, 'Colon_SNV', 'EsophagusDatabase', 'Esophagus_MedFilter', 'Esophagus_SNV']:
-    #for db in ['DatabaseBrainMM', 'DatabaseBrainSNV', 'DatabaseBrainFMed']:
+    #for db in ['Colon_MedianFilter', 'Colon_SNV']:
+    #for db in ['EsophagusDatabase', 'Esophagus_MedFilter', 'Esophagus_SNV']:
+    for db in ['DatabaseBrainMM', 'DatabaseBrainSNV', 'DatabaseBrainFMed']:
 
         preprocessor = Preprocessor()
-        pth = os.path.join('/work/users/mi186veva/data_bea_db', db)
+        #pth = os.path.join('/work/users/mi186veva/data_bea_db', db)
+        pth = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', db, db)
         preprocessor.pipeline(pth,
                               os.path.join(pth, 'raw_3d_weighted'), execution_flags=execution_flags)
     #preprocessor.pipeline('../data_preprocessed/EsophagusDatabase',

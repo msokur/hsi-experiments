@@ -1,6 +1,6 @@
 import tensorflow as tf
 #import cv2
-import data_loader
+#import data_loader
 import config
 import numpy as np
 from tqdm import tqdm
