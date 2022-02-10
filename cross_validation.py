@@ -1,5 +1,5 @@
 import config
-from train import get_trainer
+from provider import get_trainer, get_data_loader
 import numpy as np
 from tqdm import tqdm
 import glob
@@ -13,33 +13,41 @@ import matplotlib.pyplot as plt
 import utils
 from validator import Validator
 from data_utils.data_loaders.data_loader_base import DataLoader
-from data_utils.data_loader import get_data_loader
 
 
 class CrossValidator:
-    def save_metrics_for_threshold(self, npy_folder, threshold, senss, specs, dices, aucs, thress):
+    def __init__(self):
+        self.test_path = config.TEST_NPZ_PATH
+
+    def save_metrics_for_threshold(self, npy_folder, threshold, senss, specs, dices, aucs, thress, mcc_s, acc_s):
         predictions_by_patient = np.load(os.path.join(npy_folder, 'predictions_by_patient.npy'), allow_pickle=True)
         gt_by_patient = np.load(os.path.join(npy_folder, 'gt_by_patient.npy'), allow_pickle=True)
 
         with open(os.path.join(npy_folder, 'metrics_by_threshold_'+str(threshold)+'.csv'), 'w', newline='') as csvfile:
             fieldnames = ['time', 
                           'threshold', 
-                          'name', 
+                          'name',
+                          'acc',
                           'sensitivity', 
                           'specificity', 
-                          'dice', 
+                          'dice_0',
+                          'dice_1',
                           'auc', 
-                          'best_threshold']
+                          'best_threshold',
+                          'mcc']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
             writer.writerow({'time': "Time",
                              'name': "Name",
                              'threshold': 'Threshold',
+                             'acc': 'accuracy',
                              'sensitivity': 'Sensitivity',
                              'specificity': 'Specificity',
-                             'dice': 'Dice',
+                             'dice_0': 'Dice 0',
+                             'dice_1': 'Dice 1',
                              'auc': 'AUC',
-                             'best_threshold': 'Best threshold'})
+                             'best_threshold': 'Best threshold',
+                             'mcc': 'MCC'})
 
             # loading of names
             data = []
@@ -49,15 +57,18 @@ class CrossValidator:
                     data.append(row)
             names = np.array(data)[:, 4]
 
-            for name, sn, sp, d, a, t in zip(names, senss, specs, dices, aucs, thress):
+            for name, sn, sp, d, a, t, m, ac in zip(names, senss, specs, dices, aucs, thress, mcc_s, acc_s):
                 writer.writerow({'time': datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
                                  'threshold': str(threshold),
                                  'name': name,
-                                 'sensitivity': str(sn),
-                                 'specificity': str(sp),
-                                 'dice': str(d),
-                                 'auc': str(a),
-                                 'best_threshold': str(t)})
+                                 'acc': str(ac).replace('.', ','),
+                                 'sensitivity': str(sn).replace('.', ','),
+                                 'specificity': str(sp).replace('.', ','),
+                                 'dice_0': str(d[0]).replace('.', ','),
+                                 'dice_1': str(d[1]).replace('.', ','),
+                                 'auc': str(a).replace('.', ','),
+                                 'best_threshold': str(t).replace('.', ','),
+                                 'mcc': str(m).replace('.', ',')})
 
             '''for patient in range(predictions_by_patient.shape[0]):
                 predictions = np.where(np.array(predictions_by_patient[patient]) > threshold, 1, 0)
@@ -79,42 +90,57 @@ class CrossValidator:
 
             sensitivity_median = np.nanmedian(senss)
             specificity_median = np.nanmedian(specs)
-            dice_median = np.nanmedian(dices)
+            dice_median = np.nanmedian(dices, axis=0)
             auc_median = np.nanmedian(aucs)
             thr_median = np.nanmedian(thress)
+            mcc_median = np.nanmedian(mcc_s)
+            acc_median = np.nanmedian(acc_s)
 
             sensitivity_mean = np.nanmean(senss)
             specificity_mean = np.nanmean(specs)
-            dice_mean = np.nanmean(dices)
+            dice_mean = np.nanmean(dices, axis=0)
             auc_mean = np.nanmean(aucs)
             thr_mean = np.nanmean(thress)
+            mcc_mean = np.nanmean(mcc_s)
+            acc_mean = np.nanmean(acc_s)
 
             writer.writerow({'time': "TOTAL MEAN",
                              'threshold': str(threshold),
                              'name': '-',
-                             'sensitivity': str(sensitivity_mean),
-                             'specificity': str(specificity_mean),
-                             'dice': str(dice_mean),
-                             'auc': str(auc_mean),
-                             'best_threshold': str(thr_mean)})
+                             'acc': str(acc_mean).replace('.', ','),
+                             'sensitivity': str(sensitivity_mean).replace('.', ','),
+                             'specificity': str(specificity_mean).replace('.', ','),
+                             'dice_0': str(dice_mean[0]).replace('.', ','),
+                             'dice_1': str(dice_mean[1]).replace('.', ','),
+                             'auc': str(auc_mean).replace('.', ','),
+                             'best_threshold': str(thr_mean).replace('.', ','),
+                             'mcc': str(mcc_mean).replace('.', ',')})
 
             writer.writerow({'time': "TOTAL MEDIAN",
                              'threshold': str(threshold),
                              'name': '-',
+                             'acc': str(acc_median),
                              'sensitivity': str(sensitivity_median),
                              'specificity': str(specificity_median),
-                             'dice': str(dice_median),
+                             'dice_0': str(dice_median[0]).replace('.', ','),
+                             'dice_1': str(dice_median[1]).replace('.', ','),
+                             #'dice': str(dice_median),
                              'auc': str(auc_median),
-                             'best_threshold': str(thr_median)})
+                             'best_threshold': str(thr_median),
+                             'mcc': str(mcc_median)})
 
             writer.writerow({'time': "STD",
                              'threshold': str(threshold),
                              'name': '-',
+                             'acc': str(np.nanstd(acc_s)),
                              'sensitivity': str(np.nanstd(senss)),
                              'specificity': str(np.nanstd(specs)),
-                             'dice': str(np.nanstd(dices)),
+                             #'dice': str(np.nanstd(dices)),
+                             'dice_0': str(np.nanstd(dices, axis=0)[0]).replace('.', ','),
+                             'dice_1': str(np.nanstd(dices, axis=0)[1]).replace('.', ','),
                              'auc': np.nanstd(aucs),
-                             'best_threshold': str(np.nanstd(thress))})
+                             'best_threshold': str(np.nanstd(thress)),
+                             'mcc': str(np.nanstd(mcc_s))})
 
     def count_metrics_on_diff_thresholds(self, npy_folder,
                                          threshold_range_params=[0, 1, 21],
@@ -137,6 +163,8 @@ class CrossValidator:
             dices = []
             thresholds = []
             aucs = []
+            mcc_s = []
+            acc_s = []
             for patient in range(predictions_by_patient.shape[0]):
                 fpr, tpr, thresholds_p = metrics.roc_curve(np.rint(gt_by_patient[patient]),
                                                            np.array(predictions_by_patient[patient]))
@@ -144,17 +172,23 @@ class CrossValidator:
                 predictions = np.array(np.array(predictions_by_patient[patient]) > threshold).astype(np.uint8)
 
                 threshold_p = thresholds_p[np.argmax(tpr - fpr)]
+                gt = np.rint(gt_by_patient[patient])
 
-                sensitivity_p, specificity_p, dice_p = test.Tester.count_metrics(np.rint(gt_by_patient[patient]),
+                sensitivity_p, specificity_p, dice_p = test.Tester.count_metrics(gt,
                                                                                  predictions,
                                                                                  str(threshold),
                                                                                  save_stats=False,
                                                                                  return_dice=True)
+                mcc_p = metrics.matthews_corrcoef(gt, predictions)
+                acc_p = metrics.accuracy_score(gt, predictions)
+
                 sens.append(sensitivity_p)
                 spec.append(specificity_p)
                 dices.append(dice_p)
                 thresholds.append(threshold_p)
                 aucs.append(roc_auc)
+                mcc_s.append(mcc_p)
+                acc_s.append(acc_p)
 
             sensitivity_median = np.nanmedian(sens)
             specificity_median = np.nanmedian(spec)
@@ -168,7 +202,7 @@ class CrossValidator:
 
             thresholds = np.array(thresholds)
             thresholds[thresholds > 1.] = np.nan
-            self.save_metrics_for_threshold(npy_folder, threshold, sens, spec, dices, aucs, thresholds)
+            self.save_metrics_for_threshold(npy_folder, threshold, sens, spec, dices, aucs, thresholds, mcc_s, acc_s)
 
             path_metrics = os.path.join(npy_folder, 'metrics_threshold_relation_by_patient.csv')
             with open(path_metrics, 'a', newline='') as csvfile:
@@ -233,13 +267,17 @@ class CrossValidator:
                 #!!!!!!!!!!!!!!!!!!!!!!!!REMOVE
                 checkpoint_number = int(checkpoint.split('-')[-1])
                 print(checkpoint_number)
+
+                model_path = row[5]
+                if 'LOCAL' in config.MODE:
+                    model_path = row[5].split('hsi-experiments')[-1][1:]
                 
-                tester = test.Tester(checkpoint, ['data'], '', MODEL_FOLDER=row[5])
+                tester = test.Tester(checkpoint, ['data'], '', MODEL_FOLDER=model_path)
                 
                 name = DataLoader.get_name_easy(row[4], delimiter='/')
 
                 #sensitivity, specificity = tester.test_one_image(row[4],
-                sensitivity, specificity = tester.test_one_image(os.path.join(config.TEST_NPZ_PATH, name + ".npz"),
+                sensitivity, specificity = tester.test_one_image(os.path.join(self.test_path, name + ".npz"),
                                                                  path_image=row[4] + '_Mask JW Kolo.png',
                                                                  save=False,
                                                                  show=False,
@@ -305,14 +343,9 @@ class CrossValidator:
                 name = DataLoader.get_name_easy(row[4])
                 #sensitivity, specificity = tester.test_one_image(row[4],
                 sensitivity, specificity = tester.test_one_image(os.path.join(config.RAW_NPZ_PATH, name + ".npz"),
-                                                                 path_image=row[4] + '_Mask JW Kolo.png',
-                                                                 save=True,
-                                                                 show=False,
-                                                                 test_all_spectra=test_all_spectra,
-                                                                 save_stats=False,
-                                                                 spectrum_shift=0,
-                                                                 test_batch=True,
-                                                                 folder_name='')
+                                                                 path_image=row[4] + '_Mask JW Kolo.png', save=True,
+                                                                 show=False, test_all_spectra=test_all_spectra,
+                                                                 saving_path='', spectrum_shift=0)
 
     def cross_validation(self, root_folder_name):
         config.MODEL_NAME_PATHS.append(root_folder_name)
@@ -394,10 +427,13 @@ class CrossValidator:
         model_paths = []
         best_checkpoints = []
 
-        with open(csv_path, newline='') as csvfile:
+        with open(results_file, newline='') as csvfile:
             report_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
             for row in tqdm(report_reader):
                 model_path = row[5]
+                if 'LOCAL' in config.MODE:
+                    model_path = row[5].split('hsi-experiments')[-1][1:]
+
                 model_paths.append(model_path)
 
                 history = self.get_history(model_path)
@@ -449,12 +485,57 @@ class CrossValidator:
         for checkpoint in tqdm(checkpoints):
             self.save_ROC_thresholds_for_checkpoint(checkpoint, save_path_, results_file)
 
+    def cross_validation_spain(self):
+        #prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
+        prefix = 'C:\\Users\\tkachenko\\Desktop\\HSI\\'
+
+        name = config.bea_db
+
+        #csv_path = cross_validator.cross_validation(name)
+
+        if name == 'ColonDatabase':
+            csv_path = 'C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\logs\\CV_3d_bea_colon_sample_weights_1output\\CV_3d_bea_colon_sample_weights_1output_stats_16.12.2021-13_09_52.csv'
+        else:
+            csv_path = glob.glob(os.path.join(prefix, 'hsi-experiments', 'logs', name + '*', '*.csv'))[0]
+        print(csv_path)
+
+        best_checkpoint, best_checkpoints, model_paths = cross_validator.get_best_checkpoint_from_valid(csv_path)
+        print(best_checkpoint)
+        print(best_checkpoints)
+        print(model_paths)
+
+        test_path = os.path.join('test', name)
+        test_path_whole = os.path.join('test', name+'_whole_image')
+        if config.MODE == 'CLUSTER':
+            test_path = os.path.join(prefix, test_path)
+            test_path_whole = os.path.join(prefix, test_path_whole)
+
+        #save predictions for whole image
+        self.test_path = config.TEST_NPZ_PATH
+        cross_validator.save_ROC_thresholds_for_checkpoint(best_checkpoint,
+                                                           test_path_whole,
+                                                           csv_path,
+                                                           thr_ranges=[],
+                                                           execution_flags=[False])
+
+        #save annotated predictions
+        self.test_path = config.RAW_NPZ_PATH
+        cross_validator.save_ROC_thresholds_for_checkpoint(best_checkpoint,
+                                                           test_path,
+                                                           csv_path,
+                                                           #thr_ranges=[],
+                                                           thr_ranges=[[0.001, 0.009, 10],
+                                                                       [0.01, 0.09, 10],
+                                                                       [0.1, 0.6, 10]],
+                                                           execution_flags=[False])
+
 
 if __name__ =='__main__':
     
     try:
         cross_validator = CrossValidator()
-        prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
+        cross_validator.cross_validation_spain()
+        '''prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
         
         name = config.bea_db
         #name = 'CV_3d_sample_weights_every_third'
@@ -477,7 +558,7 @@ if __name__ =='__main__':
                                                            test_path,
                                                            csv_path,
                                                            thr_ranges=[],
-                                                           execution_flags=[True])
+                                                           execution_flags=[True])'''
         
         #validator = Validator()
         #validator.find_best_checkpoint(test_path)

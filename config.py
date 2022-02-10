@@ -41,11 +41,12 @@ DATABASES = {   # for data_loader
 
 
 # ----------------------------------------------------------------------------------------------------------
-bea_db = 'DatabaseBrainFMed' #TODO remove
+bea_db = 'Colon_SNV' #TODO remove
 
-current_path = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments-bea-db'
-RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
-TEST_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw')
+#RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
+RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db, 'raw_3d_weighted')
+
+TEST_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db)
 SHUFFLED_PATH = os.path.join(RAW_NPZ_PATH, 'shuffled')
 BATCHED_PATH = os.path.join(RAW_NPZ_PATH, 'batch_sized')
 
@@ -105,6 +106,8 @@ DROPOUT = 0.1  # model
 NUMBER_OF_CLASSES_TO_TRAIN = 3  # model
 if 'colon' in DATABASE:
     NUMBER_OF_CLASSES_TO_TRAIN = 2
+if 'brain' in DATABASE:
+    NUMBER_OF_CLASSES_TO_TRAIN = 4
 LABELS_OF_CLASSES_TO_TRAIN = np.arange(NUMBER_OF_CLASSES_TO_TRAIN)  # data. It's possible that we have 4 classes in
 # data, but want to use only 2 during training. If so we need to specify it here,
 # for example, [1, 2] will mean that we will use only classes with labels 1 and 2.

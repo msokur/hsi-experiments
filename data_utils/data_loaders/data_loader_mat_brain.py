@@ -34,6 +34,9 @@ class DataLoaderMatBrain(DataLoaderMat):
 
         return spectrum, mask
 
+    def get_labels(self):
+        return [0, 1, 2, 3]
+
     def indexes_get_bool_from_mask(self, mask):
         
         '''> 0-- Unlabeled data
@@ -44,5 +47,6 @@ class DataLoaderMatBrain(DataLoaderMat):
         ill_indexes = (mask == 2) 
         healthy_indexes = (mask == 1)
         vessel_indexes = (mask == 3)
+        background_indexes = (mask == 4)
         
-        return healthy_indexes, ill_indexes, vessel_indexes
+        return healthy_indexes, ill_indexes, vessel_indexes, background_indexes

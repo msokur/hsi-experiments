@@ -78,7 +78,7 @@ class Tester():
         sensitivity = tp / (tp + fn)  # recall
         specificity = tn / (tn + fp)
 
-        F1 = f1_score(gt, predictions)  # 2 * precision * sensitivity / (precision + sensitivity) #DICE score
+        F1 = f1_score(gt, predictions, average=None)  # 2 * precision * sensitivity / (precision + sensitivity) #DICE score
 
         print('name', name, ', sensitivity: ', sensitivity, ', specificity: ', specificity, ', F1-score(DICE): ', F1)
 

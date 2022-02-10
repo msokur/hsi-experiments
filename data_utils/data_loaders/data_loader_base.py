@@ -150,12 +150,12 @@ class DataLoader:
     # for X does not affect anything, but overlaps one more case
 
     @staticmethod
-    def indexes_get_np_from_bool_indexes(healthy_indexes, ill_indexes, not_certain_indexes):
-        healthy_indexes = np.where(healthy_indexes)
-        ill_indexes = np.where(ill_indexes)
-        not_certain_indexes = np.where(not_certain_indexes)
+    def indexes_get_np_from_bool_indexes(*args):
+        indexes_np = []
+        for i in args:
+            indexes_np.append(np.where(i))
 
-        return healthy_indexes, ill_indexes, not_certain_indexes
+        return indexes_np
 
     @staticmethod
     def labeled_spectrum_get_from_npz(npz_path):
