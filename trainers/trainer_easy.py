@@ -4,9 +4,9 @@ import os
 
 import model_3d
 import config
-from trainer_base import Trainer
+import trainer_base
 
-class TrainerEasy(Trainer):
+class TrainerEasy(trainer_base.Trainer):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 

@@ -2,17 +2,14 @@ import os
 import glob
 import numpy as np
 from tensorflow import keras
-from sklearn import preprocessing
-from scipy.signal import savgol_filter
 
-from preprocessor import Preprocessor
 import config
 
 
 class DataGenerator(keras.utils.Sequence):
-    '''Generates data for Keras'''
-    
-    #modes: 'train', 'valid', 'all'
+    """Generates data for Keras"""
+
+    # modes: 'train', 'valid', 'all'
     def __init__(self, mode,
                  shuffled_npz_path,
                  batches_npz_path,
@@ -22,6 +19,9 @@ class DataGenerator(keras.utils.Sequence):
                  split_factor=config.SPLIT_FACTOR,
                  split_flag=True,
                  for_tuning=False):
+        self.class_weight = None
+        import preprocessor
+
         '''Initialization'''
         self.raw_npz_path = config.RAW_NPZ_PATH
         self.shuffled_npz_path = shuffled_npz_path
@@ -31,19 +31,19 @@ class DataGenerator(keras.utils.Sequence):
         self.log_dir = log_dir
         self.split_flag = split_flag
         self.for_tuning = for_tuning
-        
+
         self.shuffled_npz_paths = glob.glob(os.path.join(shuffled_npz_path, 'shuffl*.npz'))
-        
+
         self.batch_size = batch_size
         self.except_indexes = except_indexes
         self.index = 0
-        
-        self.preprocessor = Preprocessor()
-        
+
+        self.preprocessor = preprocessor.Preprocessor()
+
         print('--------------------PARAMS----------------------')
         print(', \n'.join("%s: %s" % item for item in vars(self).items()))
         print('------------------------------------------------')
-        
+
         self.split()
         self.len = self.__len__()
         print('self.len', self.len)
@@ -56,17 +56,18 @@ class DataGenerator(keras.utils.Sequence):
         """Generate one batch of data"""
         data = np.load(self.batches_npz_path[index])
         X, y = data['X'], data['y']
-        
+
         if config.WITH_SAMPLE_WEIGHTS and 'weights' in data.keys():
             return X, y, data['weights']
-        #print(X.shape, y.shape)
-        
+        # print(X.shape, y.shape)
+
         return X, y.astype(np.float)
-    
+
     ''' #Self-test public method - the copy of private __getitem__'''
-    def getitem(self, index, flag=False):
+
+    def getitem(self, index):
         return self.__getitem__(index)
-    
+
     def split(self, except_indexes=None):
         if except_indexes is None:
             except_indexes = self.except_indexes
@@ -75,7 +76,7 @@ class DataGenerator(keras.utils.Sequence):
 
         if self.for_tuning:
             self.shuffled_npz_paths = self.shuffled_npz_paths[:1]
-        
+
         if self.split_flag:
             self.preprocessor.split_data_into_npz_of_batch_size(self.shuffled_npz_paths,
                                                                 self.batch_size,
@@ -83,9 +84,9 @@ class DataGenerator(keras.utils.Sequence):
                                                                 self.log_dir,
                                                                 self.except_indexes)
         else:
-            print('!!!!!   Dataset not splitted   !!!!!')
-            
-        batches_paths = glob.glob(os.path.join(self.batches_npz_path, '*.npz'))  #TODO, for test, remove!!!
+            print('!!!!!   Dataset not split   !!!!!')
+
+        batches_paths = glob.glob(os.path.join(self.batches_npz_path, '*.npz'))  # TODO, for test, remove!!!
 
         if self.for_tuning:
             batches_paths = batches_paths[:10]
@@ -104,32 +105,31 @@ class DataGenerator(keras.utils.Sequence):
             labels = config.LABELS_OF_CLASSES_TO_TRAIN
         labels = np.array(labels)
         sums = np.zeros(labels.shape)
-        
+
         for p in self.batches_npz_path:
             data = np.load(p)
             y = data['y']
             for i, l in enumerate(labels):
                 sums[i] += np.flatnonzero(y == l).shape[0]
-        
+
         total = np.sum(sums)
 
-        #weight_for_0 = (1 / neg)*(total)/2.0 
-        #weight_for_1 = (1 / pos)*(total)/2.0
-        
+        # weight_for_0 = (1 / neg)*(total)/2.0
+        # weight_for_1 = (1 / pos)*(total)/2.0
+
         weights = {}
         for i, l in enumerate(labels):
-            weights[l] = (1 / sums[i])*(total)/2.0 
-        
-        
+            weights[l] = (1 / sums[i]) * total / 2.0
+
         self.class_weight = weights
-        
+
         return self.class_weight
-            
-    
+
     def on_epoch_end(self):
-        'Updates indexes after each epoch'
+        """Updates indexes after each epoch"""
         self.index = 0
-        
+
+
 if __name__ == '__main__':
     import os
     import sys
@@ -137,13 +137,14 @@ if __name__ == '__main__':
 
     currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     parentdir = os.path.dirname(currentdir)
-    sys.path.insert(0, parentdir) 
-    #sys.path.insert(1, os.path.join(parentdir, 'utils')) 
+    sys.path.insert(0, parentdir)
+    # sys.path.insert(1, os.path.join(parentdir, 'utils'))
     import config
 
-    dataGenerator = DataGenerator('train', '/work/users/mi186veva/data_preprocessed/augmented', 
-                                 '/work/users/mi186veva/data_preprocessed/augmented/shuffled',
-                                 '/work/users/mi186veva/data_preprocessed/augmented/batch_sized', '', split_flag=False)
+    dataGenerator = DataGenerator('train', '/work/users/mi186veva/data_preprocessed/augmented',
+                                  '/work/users/mi186veva/data_preprocessed/augmented/shuffled',
+                                  '/work/users/mi186veva/data_preprocessed/augmented/batch_sized', '', split_flag=False)
     print(len(dataGenerator.batches_npz_path))
     print(dataGenerator.get_class_weights(labels=[0, 1]))
-    X, y = dataGenerator.getitem(0)  #Marianne, if you want to try this line - you need to unkomment the public 'getitem' method
+    X_, y_ = dataGenerator.getitem(
+        0)  # Marianne, if you want to try this line - you need to unсomment the public 'getitem' method

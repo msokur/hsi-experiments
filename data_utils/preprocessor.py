@@ -1,7 +1,6 @@
 import os
 import sys
 import inspect
-from typing import Union, Iterable
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -133,7 +132,8 @@ class Preprocessor():
 
     '''Add here some specific preprocessing if needed'''
 
-    def preprocess(self, X, y):
+    @staticmethod
+    def preprocess(X, y):
         # ill_indexes = np.flatnonzero(_y == 1)   #TODO remove!
         # _X[ill_indexes, :-1] = savgol_filter(_X[ill_indexes, :-1], 5, 2) #TODO remove!
 
@@ -264,7 +264,7 @@ class Preprocessor():
 
             if config.WITH_PREPROCESS_DURING_SPLITTING:
                 _X, _y = arrs[0][row], arrs[1][row]
-                _X, _y = self.preprocess(_X, _y)
+                _X, _y = Preprocessor.preprocess(_X, _y)
                 arch[self.dict_names[0]] = _X.copy()
                 arch[self.dict_names[1]] = _y.copy()
 
@@ -447,14 +447,15 @@ class Preprocessor():
 
 if __name__ == '__main__':
     execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
+    execution_flags['load_data_with_dataloader'] = False
     execution_flags['scale'] = False
-    execution_flags['add_sample_weights'] = True
+    execution_flags['add_sample_weights'] = False
     execution_flags['shuffle'] = True
-    execution_flags['load_data_with_dataloader'] = True
+
     
-    #for db in ['Colon_MedianFilter', 'Colon_SNV']:
+    for db in ['Colon_MedianFilter', 'Colon_SNV']:
     #for db in ['EsophagusDatabase', 'Esophagus_MedFilter', 'Esophagus_SNV']:
-    for db in ['DatabaseBrainMM', 'DatabaseBrainSNV', 'DatabaseBrainFMed']:
+    #for db in ['DatabaseBrainMM', 'DatabaseBrainSNV', 'DatabaseBrainFMed']:
 
         preprocessor = Preprocessor()
         #pth = os.path.join('/work/users/mi186veva/data_bea_db', db)

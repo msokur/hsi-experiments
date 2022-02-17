@@ -1,10 +1,10 @@
 from tensorflow import keras
 
 import config
-from trainer_easy import TrainerEasy
+import trainer_easy
 import model_3d
 
-class TrainerEasySeveralOutputs(TrainerEasy):
+class TrainerEasySeveralOutputs(trainer_easy.TrainerEasy):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
     
