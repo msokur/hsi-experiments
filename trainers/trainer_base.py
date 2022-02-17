@@ -8,7 +8,7 @@ import abc
 
 import config
 from utils import send_tg_message, send_tg_message_history
-from generator import DataGenerator
+import generator
 import callbacks
 
 
@@ -18,7 +18,7 @@ class Trainer():
         self.excepted_indexes = excepted_indexes
 
     @abc.abstractmethod
-    def compile_model(self):
+    def compile_model(self, model):
         pass
 
     @abc.abstractmethod
@@ -36,14 +36,14 @@ class Trainer():
 
     def get_datasets(self, for_tuning=False):
         # train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
-        train_generator = DataGenerator('train',
+        train_generator = generator.DataGenerator('train',
                                         config.SHUFFLED_PATH,
                                         config.BATCHED_PATH,
                                         self.log_dir,
-                                        split_flag=True,
+                                        split_flag=False,
                                         except_indexes=self.excepted_indexes,
                                         for_tuning=for_tuning)
-        valid_generator = DataGenerator('valid',
+        valid_generator = generator.DataGenerator('valid',
                                         config.SHUFFLED_PATH,
                                         config.BATCHED_PATH,
                                         self.log_dir,
@@ -109,7 +109,7 @@ class Trainer():
     def save_history(self, history):
         np.save(os.path.join(self.log_dir, 'history'), history.history)
 
-    def __train(self, mirrored_strategy=None):
+    def train_process(self, mirrored_strategy=None):
         self.mirrored_strategy = mirrored_strategy
         self.logging_and_copying()
 
@@ -166,9 +166,9 @@ class Trainer():
                 # mirrored_strategy = tf.distribute.MirroredStrategy()
 
                 with mirrored_strategy.scope():
-                    model, history = self.__train(mirrored_strategy=mirrored_strategy)
+                    model, history = self.train_process(mirrored_strategy=mirrored_strategy)
             else:
-                model, history = self.__train()
+                model, history = self.train_process()
 
         except Exception as e:
             send_tg_message(f'Mariia, ERROR!!!, training {self.log_dir} has finished with error {e}')

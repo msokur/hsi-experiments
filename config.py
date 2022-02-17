@@ -41,7 +41,7 @@ DATABASES = {   # for data_loader
 
 
 # ----------------------------------------------------------------------------------------------------------
-bea_db = 'Colon_SNV' #TODO remove
+bea_db = 'DatabaseBrainFMed'  # TODO remove
 
 #RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
 RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db, 'raw_3d_weighted')
@@ -86,7 +86,7 @@ WITH_SAMPLE_WEIGHTS = True
 WITH_BATCH_NORM = False
 WITH_BACKGROUND_EXTRACTION = False
 WITH_PREPROCESS_DURING_SPLITTING = False  # used in __split_arrays in preprocessor.py to run method preprocess()...
-WITH_TUNING = False
+WITH_TUNING = True
 
 WRITE_CHECKPOINT_EVERY_Xth_STEP = 2  # callbacks
 WRITE_GRADIENTS_EVERY_Xth_BATCH = 50000000000  # callbacks
@@ -135,15 +135,16 @@ TELEGRAM_SENDING = True  # utils
 # General guide: https://keras.io/guides/keras_tuner/getting_started/#tune-model-training
 TUNER_CLASS = 'BayesianOptimization'  # RandomSearch, BayesianOptimization or Hyperband. Read about differences:
 # https://medium.com/swlh/hyperparameter-tuning-in-keras-tensorflow-2-with-keras-tuner-randomsearch-hyperband-3e212647778f
-TUNER_MAX_TRIALS = 1
+TUNER_MAX_TRIALS = 2
 TUNER_EPOCHS = 1
 TUNER_EPOCHS_PER_TRIAL = 1
 TUNER_OBJECTIVE = "val_loss"  # Read about objective:
 # https://keras.io/guides/keras_tuner/getting_started/#specify-the-tuning-objective
-TUNER_DIRECTORY = "tuner_results"
-TUNER_PROJECT_NAME = "inception_3d"
+#TUNER_DIRECTORY = "tuner_results"
+#TUNER_PROJECT_NAME = "inception_3d"
 TUNER_ADD_TIME = True
 TUNER_OVERWRITE = True
+TUNER_MODEL = 'KerasTunerModelOnes'  # or KerasTunerModelOnes
 
 # ---------------------------------------------------------------------------------------------------
 
@@ -184,8 +185,6 @@ else:
     SYSTEM_PATHS_DELIMITER = '/'
 
 # ----------------------------MODES
-import platform
-
 MODE_TYPES = {
     'CLUSTER': 'CLUSTER',
     'LOCAL_GPU': 'LOCAL_GPU',
@@ -239,8 +238,7 @@ CUSTOM_OBJECTS = {'f1_m': tf_metrics.f1_m}
 # ----------------------------CROSS_VALIDATION SPLIT
 
 paths = glob.glob(os.path.join(RAW_NPZ_PATH, '*npz'))
-CROSS_VALIDATION_SPLIT = int(len(paths) / CV_HOW_MANY_PATIENTS_EXCLUDE)
-# int(number_of_all_patients / how_many_exclude_per_cv)
+CROSS_VALIDATION_SPLIT = int(len(paths) / CV_HOW_MANY_PATIENTS_EXCLUDE)  # int(number_of_all_patients / how_many_exclude_per_cv)
 
 # ----------------------------OUTPUT FEATURES
 OUTPUT_SIGNATURE_X_FEATURES = LAST_NM - FIRST_NM  # train
