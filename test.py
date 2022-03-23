@@ -79,6 +79,8 @@ class Tester():
         specificity = tn / (tn + fp)
 
         F1 = f1_score(gt, predictions, average=None)  # 2 * precision * sensitivity / (precision + sensitivity) #DICE score
+        if len(F1) == 1:
+            F1 = np.insert(F1, [float('NaN')], int(np.unique(gt)))
 
         print('name', name, ', sensitivity: ', sensitivity, ', specificity: ', specificity, ', F1-score(DICE): ', F1)
 

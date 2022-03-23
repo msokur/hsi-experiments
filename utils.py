@@ -28,5 +28,5 @@ def glob_multiple_file_types(path, *patterns):
     return list(it.chain.from_iterable(glob.iglob(os.path.join(path, pattern)) for pattern in patterns))
 
 
-def round_to_the_nearest_even_int(number):
-    return int(np.round(number / 2) * 2)
+def round_to_the_nearest_even_int(number, nearest_int=config.WRITE_CHECKPOINT_EVERY_Xth_STEP):
+    return int(np.round(number / nearest_int) * nearest_int)

@@ -88,6 +88,9 @@ class CrossValidator:
                                  'specificity':str(specificity_p),
                                 'dice':str(dice_p)})'''
 
+            mcc_s, dices = np.array(mcc_s), np.array(dices)
+            mcc_s[mcc_s == 0] = float('NaN')
+            dices[dices == 0] = float('NaN')
             sensitivity_median = np.nanmedian(senss)
             specificity_median = np.nanmedian(specs)
             dice_median = np.nanmedian(dices, axis=0)
@@ -524,9 +527,12 @@ class CrossValidator:
                                                            test_path,
                                                            csv_path,
                                                            #thr_ranges=[],
-                                                           thr_ranges=[[0.001, 0.009, 10],
+                                                           thr_ranges=[
+                                                               #[0.001, 0.009, 10],
                                                                        [0.01, 0.09, 10],
-                                                                       [0.1, 0.6, 10]],
+                                                                       #[0.1, 0.6, 10],
+                                                               #[0.15, 0.25, 10]
+                                                           ],
                                                            execution_flags=[False])
 
 

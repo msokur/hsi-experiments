@@ -41,12 +41,15 @@ DATABASES = {   # for data_loader
 
 
 # ----------------------------------------------------------------------------------------------------------
-bea_db = 'DatabaseBrainFMed'  # TODO remove
-
+bea_db = 'CV_combi_WRA_50max_8inc_30epochs_1pat'  # TODO remove
+#'CV_combi_WRA_50max_8inc_30epochs_1pat'inception_l2_norm_all_data
 #RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
-RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db, 'raw_3d_weighted')
+#RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db, 'raw_3d_weighted')
 
-TEST_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db)
+#TEST_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db)
+RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
+TEST_NPZ_PATH = RAW_NPZ_PATH
+
 SHUFFLED_PATH = os.path.join(RAW_NPZ_PATH, 'shuffled')
 BATCHED_PATH = os.path.join(RAW_NPZ_PATH, 'batch_sized')
 
@@ -88,7 +91,7 @@ WITH_BACKGROUND_EXTRACTION = False
 WITH_PREPROCESS_DURING_SPLITTING = False  # used in __split_arrays in preprocessor.py to run method preprocess()...
 WITH_TUNING = True
 
-WRITE_CHECKPOINT_EVERY_Xth_STEP = 2  # callbacks
+WRITE_CHECKPOINT_EVERY_Xth_STEP = 2  # callbacks and get_best_checkpoint
 WRITE_GRADIENTS_EVERY_Xth_BATCH = 50000000000  # callbacks
 # every GRADIENTS_WRITING_STEP batches we write gradients, so not epochs - gradients
 WRITE_IMAGES = False  # callbacks
