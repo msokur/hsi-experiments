@@ -350,7 +350,7 @@ class CrossValidator:
                                                                  show=False, test_all_spectra=test_all_spectra,
                                                                  saving_path='', spectrum_shift=0)
 
-    def cross_validation(self, root_folder_name):
+    def cross_validation(self, root_folder_name, csv_filename=None):
         config.MODEL_NAME_PATHS.append(root_folder_name)
 
         root_folder = os.path.join(*config.MODEL_NAME_PATHS)
@@ -362,7 +362,10 @@ class CrossValidator:
         paths, splits = data_loader.get_paths_and_splits()
         
         date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
-        csv_filename = os.path.join(root_folder, root_folder_name + '_stats' + date_ + '.csv')
+
+        if csv_filename is None:
+            csv_filename = os.path.join(root_folder, root_folder_name + '_stats' + date_ + '.csv')
+        csv_filename = os.path.join(root_folder, csv_filename)
 
         for ind, indexes in enumerate(splits):                
             old_model_name = config.MODEL_NAME
@@ -373,6 +376,8 @@ class CrossValidator:
                     config.MODEL_NAME += '_' + str(i)
             else:
                 config.MODEL_NAME += '_' + str(ind) + '_' + DataLoader.get_name_easy(np.array(paths)[indexes][0])
+                # скопировала на всякий случай с сервера, когда-то тут была ошибка
+                #config.MODEL_NAME += '_' + str(indexes[0]) + '_' + np.array(paths)[indexes][0].split("/")[-1].split(".")[0].split('SpecCube')[0]
 
             trainer = get_trainer(except_indexes=[DataLoader.get_name_easy(p) for p in np.array(paths)[indexes]])
             model = trainer.train()
