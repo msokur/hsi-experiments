@@ -176,11 +176,20 @@ files_to_copy = ['*.py',
                  'trainers/*.py',
                  'utils/*.py']
 
+preprocessor_files_to_copy = ['config.py',
+                 'data_utils/*.py',
+                 'data_utils/data_loaders/*.py']
+
 FILES_TO_COPY = []
+P_FILES_TO_COPY = []
 for f in files_to_copy:
     FILES_TO_COPY += glob.glob(os.path.join(current_dir, f))
 
+for f in preprocessor_files_to_copy:
+    P_FILES_TO_COPY += glob.glob(os.path.join(current_dir, f))
+
 print('FILES_TO_COPY', FILES_TO_COPY)
+print('P_FILES_TO_COPY', P_FILES_TO_COPY)
 
 # ----------------------------SYSTEM_PATHS_DELIMITER
 

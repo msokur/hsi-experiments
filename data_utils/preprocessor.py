@@ -17,6 +17,7 @@ from tqdm import tqdm
 import pickle
 from scipy.signal import savgol_filter
 from sklearn import preprocessing
+from shutil import copyfile
 
 import provider
 from data_loaders.data_loader_base import DataLoader
@@ -160,6 +161,8 @@ class Preprocessor():
         self.shuffle_saving_path = shuffle_saving_path
         self.augmented = augmented
 
+        Preprocessor.copy_preprocessor_paths(shuffle_saving_path)
+
         if not os.path.exists(self.shuffle_saving_path):
             os.mkdir(self.shuffle_saving_path)
 
@@ -294,6 +297,7 @@ class Preprocessor():
                                           archives_of_batch_size_saving_path,
                                           except_names=[],
                                           valid_except_names=[]):
+        Preprocessor.copy_preprocessor_paths(archives_of_batch_size_saving_path)
 
         print('--------Splitting into npz of batch size started--------')
         self.batch_size = batch_size
@@ -306,6 +310,9 @@ class Preprocessor():
 
         if not os.path.exists(self.valid_archives_saving_path):
             os.mkdir(self.valid_archives_saving_path)
+
+        Preprocessor.copy_preprocessor_paths(archives_of_batch_size_saving_path)
+        Preprocessor.copy_preprocessor_paths(self.valid_archives_saving_path)
 
         for except_name in except_names:
             print(f'We except {except_name}')
@@ -443,6 +450,12 @@ class Preprocessor():
             "shuffle": True
         }
 
+    @staticmethod
+    def copy_preprocessor_paths(path):
+        for file in config.P_FILES_TO_COPY:
+            if os.path.exists(file):
+                copyfile(file, os.path.join(path, file.split(config.SYSTEM_PATHS_DELIMITER)[-1]))
+
     def pipeline(self, root_path,
                  preprocessed_path,
                  scaler_path=None,
@@ -453,6 +466,8 @@ class Preprocessor():
 
         if not os.path.exists(preprocessed_path):
             os.mkdir(preprocessed_path)
+
+        Preprocessor.copy_preprocessor_paths(preprocessed_path)
 
         # ---------Data reading part--------------
         if execution_flags['load_data_with_dataloader']:

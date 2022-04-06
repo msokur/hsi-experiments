@@ -165,7 +165,7 @@ if __name__ == '__main__':
     dataGenerator = DataGenerator('all', #'../data_preprocessed/raw_3d_weights',
                                   os.path.join(parentdir, 'data_preprocessed', 'EsophagusDatabase', 'raw_3d_weights','shuffled'),
                                   os.path.join(parentdir, 'data_preprocessed', 'EsophagusDatabase','raw_3d_weights','batch_sized'),
-                                  split_flag=False,
+                                  split_flag=True,
                                   except_indexes=['EP3'])
 
     print(len(dataGenerator.batches_npz_path))
