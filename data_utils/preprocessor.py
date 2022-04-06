@@ -466,6 +466,9 @@ class Preprocessor():
 
         if not os.path.exists(preprocessed_path):
             os.mkdir(preprocessed_path)
+            
+        print('ROOT PATH', root_path)
+        print('PREPROCESSED PATH', preprocessed_path)
 
         Preprocessor.copy_preprocessor_paths(preprocessed_path)
 
@@ -481,6 +484,7 @@ class Preprocessor():
 
         # ----------scaler part ------------------
         if execution_flags['scale']:
+            print('NORMALIZATION TYPE', config.NORMALIZATION_TYPE)
             if scaler_path is None and config.NORMALIZATION_TYPE != 'svn_T':
                 scaler_path = os.path.join(preprocessed_path, scaler_name + config.SCALER_FILE_NAME)
                 self.fit_scale_from_path(preprocessed_path, scaler_path)
@@ -498,11 +502,14 @@ class Preprocessor():
 if __name__ == '__main__':
     execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
     execution_flags['load_data_with_dataloader'] = True
-    execution_flags['scale'] = False
+    execution_flags['scale'] = True
     execution_flags['add_sample_weights'] = True
     execution_flags['shuffle'] = True
+    
+    preprocessor = Preprocessor()
+    preprocessor.pipeline('/work/users/mi186veva/data_dat', config.RAW_NPZ_PATH, execution_flags=execution_flags)
 
-    for db in ['ColonData']:
+    '''for db in ['ColonData']:
     #for db in ['Colon_MedianFilter', 'Colon_SNV']:
     #for db in ['EsophagusDatabase', 'Esophagus_MedFilter', 'Esophagus_SNV']:
     #for db in ['DatabaseBrainMM', 'DatabaseBrainSNV', 'DatabaseBrainFMed']:
@@ -511,7 +518,7 @@ if __name__ == '__main__':
         pth = os.path.join('/work/users/mi186veva/data_bea_db', db)
         #pth = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', db, db)
         preprocessor.pipeline(pth,
-                              os.path.join(pth, 'raw_3d_weighted'), execution_flags=execution_flags)
+                              os.path.join(pth, 'raw_3d_weighted'), execution_flags=execution_flags)'''
     #preprocessor.pipeline('../data_preprocessed/EsophagusDatabase',
     #                      '../data_preprocessed/EsophagusDatabase/raw_3d_weights', execution_flags=execution_flags)
     #paths = glob.glob('/work/users/mi186veva/data_bea/ColonData/raw_3d_weights/shuffled/*.npz')

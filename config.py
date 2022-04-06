@@ -30,7 +30,7 @@ NORMALIZATION_TYPES = {
     'l2_norm': 'l2_norm',
     'svn_T': 'svn_T'
 }
-NORMALIZATION_TYPE = NORMALIZATION_TYPES['svn_T']
+NORMALIZATION_TYPE = NORMALIZATION_TYPES['l2_norm']
 
 DATABASES = {   # for data_loader
     'data_loader_easy': 'colon',
@@ -41,13 +41,17 @@ DATABASES = {   # for data_loader
 
 
 # ----------------------------------------------------------------------------------------------------------
-bea_db = 'CV_combi_WRA_50max_8inc_30epochs_1pat'  # TODO remove
+bea_db = 'False'
+#bea_db = 'CV_combi_WRA_50max_8inc_30epochs_1pat'  # TODO remove
 #'CV_combi_WRA_50max_8inc_30epochs_1pat'inception_l2_norm_all_data
 #RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
 #RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db, 'raw_3d_weighted')
 
 #TEST_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db)
-RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
+#RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
+
+
+RAW_NPZ_PATH = os.path.join('data_3d', 'raw_3d')
 TEST_NPZ_PATH = RAW_NPZ_PATH
 
 SHUFFLED_PATH = os.path.join(RAW_NPZ_PATH, 'shuffled')
@@ -89,7 +93,7 @@ WITH_SAMPLE_WEIGHTS = True
 WITH_BATCH_NORM = False
 WITH_BACKGROUND_EXTRACTION = False
 WITH_PREPROCESS_DURING_SPLITTING = False  # used in __split_arrays in preprocessor.py to run method preprocess()...
-WITH_TUNING = True
+WITH_TUNING = False
 
 WRITE_CHECKPOINT_EVERY_Xth_STEP = 2  # callbacks and get_best_checkpoint
 WRITE_GRADIENTS_EVERY_Xth_BATCH = 50000000000  # callbacks

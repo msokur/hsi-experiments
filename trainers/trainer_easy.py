@@ -19,9 +19,9 @@ class TrainerEasy(trainer_base.Trainer):
             keras.metrics.Recall(name='sensitivity')
         ]
         WEIGHTED_METRICS = [
-            keras.metrics.BinaryAccuracy(name='accuracy'),
+            #keras.metrics.BinaryAccuracy(name='accuracy'),
             # keras.metrics.AUC(name='auc'),
-            # tf_metrics.f1_m
+            tf_metrics.f1_m
             # specificity_m
         ]
         # model = inception_model()
@@ -33,7 +33,7 @@ class TrainerEasy(trainer_base.Trainer):
             loss=keras.losses.BinaryCrossentropy(),
             metrics=keras.metrics.BinaryAccuracy(name='accuracy'),
             # metrics=METRICS,
-            # weighted_metrics=WEIGHTED_METRICS
+            weighted_metrics=WEIGHTED_METRICS
         )
 
         return model
