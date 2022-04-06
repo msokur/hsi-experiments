@@ -125,7 +125,9 @@ LEARNING_RATE = 1e-4  # train
 
 SPLIT_FACTOR = 0.9  # train   #for data sets: train\test data percentage
 
-CV_HOW_MANY_PATIENTS_EXCLUDE = 1  # cv
+CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY = True  # cv + preprocessor
+CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID = 3  # cv + preprocessor, to create validation dataset for training
+CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST = 1  # cv, for testing (exactly on this excluded patients we count end metrics)
 HISTORY_ARGMIN = "val_loss"  # cv. through which parameter of history(returned by model.fit() and then saved) choose the
 # best checkpoint in validation data
 
@@ -243,7 +245,7 @@ CUSTOM_OBJECTS = {'f1_m': tf_metrics.f1_m}
 # ----------------------------CROSS_VALIDATION SPLIT
 
 paths = glob.glob(os.path.join(RAW_NPZ_PATH, '*npz'))
-CROSS_VALIDATION_SPLIT = int(len(paths) / CV_HOW_MANY_PATIENTS_EXCLUDE)  # int(number_of_all_patients / how_many_exclude_per_cv)
+CROSS_VALIDATION_SPLIT = int(len(paths) / CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST)  # int(number_of_all_patients / how_many_exclude_per_cv)
 
 # ----------------------------OUTPUT FEATURES
 OUTPUT_SIGNATURE_X_FEATURES = LAST_NM - FIRST_NM  # train

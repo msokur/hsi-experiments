@@ -39,6 +39,8 @@ class Preprocessor():
                  dict_names=['PatientIndex', 'indexes_in_datacube', 'weights']):
                  #dict_names=['PatientIndex', 'indexes_in_datacube']):
         self.load_name_for_name = load_name_for_name
+        self.load_name_for_X = load_name_for_x
+        self.load_name_for_y = load_name_for_y
         self.dict_names = [load_name_for_x, load_name_for_y, load_name_for_name]
         for name in dict_names:
             self.dict_names.append(name)
@@ -244,31 +246,33 @@ class Preprocessor():
             data['X'] = X.copy()
             np.savez(os.path.join(destination_path, DataLoader.get_name_easy(path)), **data)
 
-    def __split_arrays(self, *args):
+    def __split_arrays(self, path, data):
         # ---------------splitting into archives----------
-        chunks = args[0].shape[0] // self.batch_size
+        chunks = np.array(data[self.load_name_for_X]).shape[0] // self.batch_size
         chunks_max = chunks * self.batch_size
 
-        arrs = [np.array_split(arg[:chunks_max], chunks) for arg in args]
+        data_ = {k: np.array_split(a[:chunks_max], chunks) for k, a in data.items()}
+
+        #arrs = [np.array_split(arg[:chunks_max], chunks) for arg in args]
 
         # ---------------saving of the non equal last part for the future partition---------
-        for i in range(len(args)):
-            self.rest_arrs[i] += list(args[i][chunks_max:])
+        #for i in range(len(args)):
+        #    self.rest_arrs[i] += list(args[i][chunks_max:])
 
         # ---------------saving of the non equal last part for the future partition---------
-        ind = len(glob.glob(os.path.join(self.archives_of_batch_size_saving_path, "*")))
+        ind = len(glob.glob(os.path.join(path, "*")))
         for row in range(chunks):
             arch = {}
             for i, n in enumerate(self.dict_names):
-                arch[n] = arrs[i][row]
+                arch[n] = data_[n][row]
 
             if config.WITH_PREPROCESS_DURING_SPLITTING:
-                _X, _y = arrs[0][row], arrs[1][row]
+                _X, _y = data_[self.load_name_for_X][row], data_[self.load_name_for_y][row]
                 _X, _y = Preprocessor.preprocess(_X, _y)
                 arch[self.dict_names[0]] = _X.copy()
                 arch[self.dict_names[1]] = _y.copy()
 
-            np.savez(os.path.join(self.archives_of_batch_size_saving_path, 'batch' + str(ind)), **arch)
+            np.savez(os.path.join(path, 'batch' + str(ind)), **arch)
             ind += 1
 
     def __init_rest(self):
@@ -288,25 +292,43 @@ class Preprocessor():
     def split_data_into_npz_of_batch_size(self, paths,
                                           batch_size,
                                           archives_of_batch_size_saving_path,
-                                          scaler_saving_path,
-                                          except_names=[]):
+                                          except_names=[],
+                                          valid_except_names=[]):
 
         print('--------Splitting into npz of batch size started--------')
         self.batch_size = batch_size
         self.archives_of_batch_size_saving_path = archives_of_batch_size_saving_path
+        self.valid_archives_saving_path = os.path.join(self.archives_of_batch_size_saving_path, 'valid')
+        valid_except_names = list(valid_except_names)
 
         if not os.path.exists(archives_of_batch_size_saving_path):
             os.mkdir(archives_of_batch_size_saving_path)
 
+        if not os.path.exists(self.valid_archives_saving_path):
+            os.mkdir(self.valid_archives_saving_path)
+
         for except_name in except_names:
             print(f'We except {except_name}')
+
+        for except_name in valid_except_names:
+            print(f'We except VALID {except_name}')
+
+        except_names += valid_except_names
 
         # ------------removing of previously generated archives (of the previous CV step) ----------------
         files = glob.glob(os.path.join(archives_of_batch_size_saving_path, '*.npz'))
         for f in files:
             os.remove(f)
 
+        files = glob.glob(os.path.join(self.valid_archives_saving_path, '*.npz'))
+        for f in files:
+            os.remove(f)
+
         self.__init_rest()
+
+        valid_data = {}
+        for k in self.dict_names:
+            valid_data[k] = []
 
         for p in tqdm(paths):
             # ------------ except_indexes filtering ---------------
@@ -317,6 +339,22 @@ class Preprocessor():
             data = {name: data_[name] for name in self.dict_names}
             p_names = data[self.load_name_for_name]
 
+            # ------------ get only needed classes--------------
+            indexes = np.zeros(data['y'].shape).astype(bool)
+            for label in config.LABELS_OF_CLASSES_TO_TRAIN:
+                indexes = indexes | (data['y'] == label)
+
+            indexes = np.flatnonzero(indexes)
+            data = {n: a[indexes] for n, a in data.items()}
+            p_names = p_names[indexes]
+
+            # ------------ get validation data --------------
+            valid_indexes = np.isin(p_names, valid_except_names)
+
+            for k in self.dict_names:
+                valid_data[k] += list(data[k][valid_indexes])
+
+            # ------------ get data without excepted_names--------------
             for except_name in except_names:
                 indexes = np.flatnonzero(p_names != except_name)
                 if indexes.shape[0] == 0:
@@ -325,21 +363,18 @@ class Preprocessor():
                 p_names = p_names[indexes]
                 data = {n: a[indexes] for n, a in data.items()}
 
-            indexes = np.zeros(data['y'].shape).astype(bool)
-            for label in config.LABELS_OF_CLASSES_TO_TRAIN:
-                indexes = indexes | (data['y'] == label)
-
-            indexes = np.flatnonzero(indexes)
-            data = {n: a[indexes] for n, a in data.items()}
-
-            self.__split_arrays(*[a for _, a in data.items()])
+            self.__split_arrays(self.archives_of_batch_size_saving_path, data)#*[a for _, a in data.items()])
 
         # ------------------save rest of rest archives----------------
-        rest_arrs = [np.array(rest_arr) for rest_arr in self.rest_arrs]
+        #rest_arrs = [np.array(rest_arr) for rest_arr in self.rest_arrs]
         self.__init_rest()
 
-        if rest_arrs[0].shape[0] >= batch_size:
-            self.__split_arrays(*rest_arrs)
+        self.__split_arrays(self.valid_archives_saving_path, valid_data)#*[a for _, a in valid_data.items()])
+
+        #self.__init_rest()
+
+        #if rest_arrs[0].shape[0] >= batch_size:
+        #    self.__split_arrays(self.archives_of_batch_size_saving_path, *rest_arrs)
 
         print('--------Splitting into npz of batch size finished--------')
 
