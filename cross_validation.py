@@ -420,18 +420,24 @@ class CrossValidator:
 
     def get_history(self, model_path):
         history_paths = utils.glob_multiple_file_types(model_path, '.*.npy', '*.npy')
+        #print(history_paths)
         if len(history_paths) == 0:
-            raise ValueError('Error! No history files were found!')
+            print('Error! No history files were found!')
+            #raise ValueError('Error! No history files were found!')
+            return {}, model_path
         if len(history_paths) > 1:
-            raise ValueError(f'Error! Too many .npy files were found in {model_path}!')
+            print(f'Error! Too many .npy files were found in {model_path}!')
+            return {}, model_path
+            #raise ValueError(f'Error! Too many .npy files were found in {model_path}!')
 
         history_path = history_paths[0]
         history = np.load(history_path, allow_pickle=True)
+        #print(history)
         if len(history.shape) == 0:
             history = history.item()
-        return history
+        return history, history_path
 
-    def get_best_checkpoint_from_valid(self, results_file):
+    def get_best_checkpoint_from_valid(self, results_file, nearest_int=config.WRITE_CHECKPOINT_EVERY_Xth_STEP):
         model_paths = []
         best_checkpoints = []
 
@@ -444,12 +450,17 @@ class CrossValidator:
 
                 model_paths.append(model_path)
 
-                history = self.get_history(model_path)
-
+                history, history_path = self.get_history(model_path)
+                if not bool(history):
+                    print(f'Attention!! {history_path} is empty!!!')
+                    continue
                 best_checkpoint = np.argmin(history[config.HISTORY_ARGMIN])
                 best_checkpoints.append(best_checkpoint)
-         
-        best_checkpoint = utils.round_to_the_nearest_even_int(np.median(best_checkpoints))
+        
+        if len(best_checkpoints) == 0:
+            return -1, best_checkpoints, model_paths
+        
+        best_checkpoint = utils.round_to_the_nearest_even_int(np.median(best_checkpoints), nearest_int = nearest_int)
             
         return best_checkpoint, best_checkpoints, model_paths
 
@@ -492,60 +503,104 @@ class CrossValidator:
 
         for checkpoint in tqdm(checkpoints):
             self.save_ROC_thresholds_for_checkpoint(checkpoint, save_path_, results_file)
-
-    def cross_validation_spain(self):
-        #prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
-        prefix = 'C:\\Users\\tkachenko\\Desktop\\HSI\\'
-
-        name = config.bea_db
+    
+    def get_nearest_int_delimiter(self, path):
+        checkpoints_paths = glob.glob(os.path.join(path, 'cp-*'))
+        checkpoints_paths = sorted(checkpoints_paths)
+                
+        return int(checkpoints_paths[0].split(config.SYSTEM_PATHS_DELIMITER)[-1].split('-')[-1])
+        
+    
+    def cross_validation_spain(self, name=config.bea_db):
+        if config.MODE == 'CLUSTER':
+            prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
+        else:
+            prefix = 'C:\\Users\\tkachenko\\Desktop\\HSI\\'
+        
+        #name = config.bea_db
 
         #csv_path = cross_validator.cross_validation(name)
 
         if name == 'ColonDatabase':
             csv_path = 'C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\logs\\CV_3d_bea_colon_sample_weights_1output\\CV_3d_bea_colon_sample_weights_1output_stats_16.12.2021-13_09_52.csv'
         else:
-            csv_path = glob.glob(os.path.join(prefix, 'hsi-experiments', 'logs', name + '*', '*.csv'))[0]
-        print(csv_path)
-
-        best_checkpoint, best_checkpoints, model_paths = cross_validator.get_best_checkpoint_from_valid(csv_path)
-        print(best_checkpoint)
-        print(best_checkpoints)
-        print(model_paths)
-
+            #search_path = os.path.join(prefix, 'logs', name + '*', '*.csv')
+            search_path = search_path = os.path.join(prefix, 'logs', name, '*.csv')
+            csv_paths = glob.glob(search_path)
+            if len(csv_paths) > 1:
+                raise ValueError(name + ' has more then one .csv files!')
+            if len(csv_paths) == 0:
+                raise ValueError('No .csv files were found in ' + search_path)
+            csv_path = csv_paths[0]
+        #print(csv_path)
+        
         test_path = os.path.join('test', name)
         test_path_whole = os.path.join('test', name+'_whole_image')
         if config.MODE == 'CLUSTER':
             test_path = os.path.join(prefix, test_path)
             test_path_whole = os.path.join(prefix, test_path_whole)
+        
+        nearest_int = self.get_nearest_int_delimiter(test_path)
 
-        #save predictions for whole image
-        self.test_path = config.TEST_NPZ_PATH
-        cross_validator.save_ROC_thresholds_for_checkpoint(best_checkpoint,
-                                                           test_path_whole,
-                                                           csv_path,
-                                                           thr_ranges=[],
-                                                           execution_flags=[False])
+        best_checkpoint, best_checkpoints, model_paths = cross_validator.get_best_checkpoint_from_valid(csv_path, nearest_int=nearest_int)
+        print('best checkpoint', best_checkpoint)
+        #print(best_checkpoints)
+        #print(model_paths)
+        
+        if best_checkpoint > 0:
 
-        #save annotated predictions
-        self.test_path = config.RAW_NPZ_PATH
-        cross_validator.save_ROC_thresholds_for_checkpoint(best_checkpoint,
-                                                           test_path,
-                                                           csv_path,
-                                                           #thr_ranges=[],
-                                                           thr_ranges=[
-                                                               #[0.001, 0.009, 10],
-                                                                       [0.01, 0.09, 10],
-                                                                       #[0.1, 0.6, 10],
-                                                               #[0.15, 0.25, 10]
-                                                           ],
-                                                           execution_flags=[False])
+            #save predictions for whole image
+            #self.test_path = config.TEST_NPZ_PATH
+            '''cross_validator.save_ROC_thresholds_for_checkpoint(best_checkpoint,
+                                                               test_path_whole,
+                                                               csv_path,
+                                                               thr_ranges=[],
+                                                               execution_flags=[False])'''
+
+            #save annotated predictions
+            self.test_path = config.RAW_NPZ_PATH
+            cross_validator.save_ROC_thresholds_for_checkpoint(best_checkpoint,
+                                                               test_path,
+                                                               csv_path,
+                                                               #thr_ranges=[],
+                                                               thr_ranges=[
+                                                                   #[0.001, 0.009, 10],
+                                                                           [0.01, 0.09, 10],
+                                                                           [0.1, 0.6, 10],
+                                                                   #[0.75, 0.8, 10]
+                                                                   #[0.45, 0.45, 1]
+                                                                   #[0.15, 0.25, 10]
+                                                               ],
+                                                               execution_flags=[False])
+        else:
+            print('ATTENTION! Something during the comparing was wrong (probably history was empty)!')
 
 
 if __name__ =='__main__':
     
     try:
+        prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
         cross_validator = CrossValidator()
-        cross_validator.cross_validation_spain()
+        cross_validator.results_file = os.path.join(prefix, 'logs', 'CV_3d_inception', 'CV_3d_inception_stats_07.12.2021-00_01_56.csv')
+        compiled_path = os.path.join(prefix, 'test', 'CV_3d_inception', 'compiled')
+        cross_validator.count_metrics_on_diff_thresholds(compiled_path, threshold_range_params=[0.01, 0.09, 10])
+        cross_validator.count_metrics_on_diff_thresholds(compiled_path, threshold_range_params=[0.1, 0.6, 10])
+
+        #cross_validator.cross_validation_spain(name='CV_3d_sample_weights_every_third')
+        
+        #paths = glob.glob(os.path.join(prefix, 'test', '*'))
+        #paths = ['CV_lstm_10', 'CV_3d_svn_every_third']
+        print(paths)
+        #import random
+        #random.shuffle(paths)
+        
+        for ind, path in enumerate(paths):
+            #path = path.split(config.SYSTEM_PATHS_DELIMITER)[-1]
+            if not 'bea' in path and 'CV' in path:
+                print(ind, 'name', path)
+                cross_validator.cross_validation_spain(name=path)
+                print('-------------------------')
+                
         '''prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
         
         name = config.bea_db
@@ -574,11 +629,11 @@ if __name__ =='__main__':
         #validator = Validator()
         #validator.find_best_checkpoint(test_path)
         
-        #utils.send_tg_message('Mariia, operations in cross_validation.py are successfully completed!')
+        utils.send_tg_message('Mariia, operations in cross_validation.py are successfully completed!')
                
     except Exception as e:
         print(e)
 
-        #utils.send_tg_message(f'Mariia, ERROR!!!, In CV error {e}')
+        utils.send_tg_message(f'Mariia, ERROR!!!, In CV error {e}')
         
         raise e

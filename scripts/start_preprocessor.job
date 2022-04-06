@@ -30,4 +30,4 @@ module load OpenCV/4.2.0-fosscuda-2019b-Python-3.7.4
 module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
 
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments-bea-db/data_utils/preprocessor.py
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/data_utils/preprocessor.py

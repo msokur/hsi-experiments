@@ -54,11 +54,11 @@ class Tester():
 
     @staticmethod
     def count_metrics(gt, predictions, name, folder_name='', save_stats=True, return_dice=False):
-        print('--------------------method count_metrics params----------------------')
+        #print('--------------------method count_metrics params----------------------')
         signature = inspect.signature(Tester.count_metrics)
-        for param in signature.parameters.values():
-            print(param)
-        print('------------------------------------------------')
+        #for param in signature.parameters.values():
+        #    print(param)
+        #print('------------------------------------------------')
 
         if save_stats and folder_name == '':
             folder_name = self.SAVING_PATH
@@ -80,9 +80,9 @@ class Tester():
 
         F1 = f1_score(gt, predictions, average=None)  # 2 * precision * sensitivity / (precision + sensitivity) #DICE score
         if len(F1) == 1:
-            F1 = np.insert(F1, [float('NaN')], int(np.unique(gt)))
+            F1 = np.insert(F1, [0], int(np.unique(gt)))
 
-        print('name', name, ', sensitivity: ', sensitivity, ', specificity: ', specificity, ', F1-score(DICE): ', F1)
+        #print('name', name, ', sensitivity: ', sensitivity, ', specificity: ', specificity, ', F1-score(DICE): ', F1)
 
         if save_stats:
             with open(os.path.join(folder_name, 'stats.csv'), 'a', newline='') as csvfile:
@@ -103,14 +103,14 @@ class Tester():
                        folder_name='', grayscale_result=False, return_dice=False, test_batch=False,
                        spectrum_shift=0):  # TODO remove test_batch
 
-        print('--------------------method test_one_image params----------------------')
+        #print('--------------------method test_one_image params----------------------')
         signature = inspect.signature(self.test_one_image)
         print('path_dat: ', path_dat)
-        for param in signature.parameters.values():
-            print(param)
-        print('------------------------------------------------')
+        #for param in signature.parameters.values():
+        #    print(param)
+        #print('------------------------------------------------')
 
-        print('test_batch', test_batch)
+        #print('test_batch', test_batch)
 
         if folder_name == '':
             folder_name = self.SAVING_PATH
@@ -121,7 +121,7 @@ class Tester():
             data = np.load(path_dat)
             spectrum = data['X']
             # gt_image = cv2.imread(path_image)
-            print('test_batch shape', spectrum.shape)
+            #print('test_batch shape', spectrum.shape)
         else:
             gt_image, spectrum_data, gesund_indexes, ill_indexes, not_certain_indexes = data_loader.get_data_for_showing(
                 path_dat, "")
@@ -156,8 +156,8 @@ class Tester():
 
         # predictions = self.model.predict(np.expand_dims(spectrum, axis=-1))
         predictions = self.model.predict(spectrum)
-        print('dsd gt.shape, predictions.shape', gt.shape, predictions.shape)
-        print('dsd gt.unique, predictions.unique', np.unique(gt), np.unique(np.rint(predictions)))
+        #print('dsd gt.shape, predictions.shape', gt.shape, predictions.shape)
+        #print('dsd gt.unique, predictions.unique', np.unique(gt), np.unique(np.rint(predictions)))
 
         name = path_dat.split(config.SYSTEM_PATHS_DELIMITER)[-1].split('_S')[0]
 

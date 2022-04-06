@@ -170,7 +170,9 @@ files_to_copy = ['*.py',
                  'data_utils/*.py', 
                  'models/*.py',
                  'data_utils/data_loaders/*.py',
-                 'scrips/start_cv.job']
+                 'scrips/start_cv.job',
+                 'trainers/*.py',
+                 'utils/*.py']
 
 FILES_TO_COPY = []
 for f in files_to_copy:

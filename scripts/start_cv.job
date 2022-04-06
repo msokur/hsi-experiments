@@ -7,9 +7,11 @@
 ##SBATCH --job-name=e_DB
 ##SBATCH --job-name=c_MF
 ##SBATCH --job-name=c_SNV
-#SBATCH --job-name=b_Med
+##SBATCH --job-name=b_Med
 ##SBATCH --job-name=b_MM
 ##SBATCH --job-name=b_SNV
+
+#SBATCH --job-name=paper_test
 
 #SBATCH --partition=clara-job
 #SBATCH --time=10-00:00:00
@@ -30,7 +32,9 @@
 ##SBATCH --output=_predictions_Esophagus_Database_%j.log
 ##SBATCH --output=_predictions_Colon_SNV_%j.log
 ##SBATCH --output=_predictions_Esophagus_MedianFilter_%j.log
-#SBATCH --output=_predictions_Brain_Fmed_%j.log
+##SBATCH --output=_predictions_Brain_Fmed_%j.log
+
+#SBATCH --output=_compiled_metrics_CV_3d_inception_%j.log
 
 module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
 #module load Python
@@ -64,4 +68,4 @@ module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
 
 
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments-bea-db/cross_validation.py
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validation.py

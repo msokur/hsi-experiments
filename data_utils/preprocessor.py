@@ -449,17 +449,17 @@ if __name__ == '__main__':
     execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
     execution_flags['load_data_with_dataloader'] = True
     execution_flags['scale'] = False
-    execution_flags['add_sample_weights'] = False
-    execution_flags['shuffle'] = False
+    execution_flags['add_sample_weights'] = True
+    execution_flags['shuffle'] = True
 
-    for db in ['ColonDatabase']:
+    for db in ['ColonData']:
     #for db in ['Colon_MedianFilter', 'Colon_SNV']:
     #for db in ['EsophagusDatabase', 'Esophagus_MedFilter', 'Esophagus_SNV']:
     #for db in ['DatabaseBrainMM', 'DatabaseBrainSNV', 'DatabaseBrainFMed']:
 
         preprocessor = Preprocessor()
-        #pth = os.path.join('/work/users/mi186veva/data_bea_db', db)
-        pth = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', db, db)
+        pth = os.path.join('/work/users/mi186veva/data_bea_db', db)
+        #pth = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', db, db)
         preprocessor.pipeline(pth,
                               os.path.join(pth, 'raw_3d_weighted'), execution_flags=execution_flags)
     #preprocessor.pipeline('../data_preprocessed/EsophagusDatabase',

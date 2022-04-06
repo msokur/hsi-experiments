@@ -7,8 +7,8 @@ from data_utils.data_loaders.data_loader_mat_brain import DataLoaderMatBrain
 from data_utils.data_loaders.data_loader_mat_colon import DataLoaderMatColon
 import trainer_easy
 import trainer_easy_several_outputs
-import models.keras_tuner_model as keras_tuner_model
-import models.keras_tuner_models_with_ones as keras_tuner_models_with_ones
+#import models.keras_tuner_model as keras_tuner_model
+#import models.keras_tuner_models_with_ones as keras_tuner_models_with_ones
 
 
 def get_trainer(except_indexes=[]):
