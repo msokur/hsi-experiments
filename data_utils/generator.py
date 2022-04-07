@@ -109,7 +109,6 @@ class DataGenerator(keras.utils.Sequence):
             print('Getting new validation patients')
             raw_paths = glob.glob(os.path.join(self.raw_npz_path, '*.npz'))
             raw_paths = [r.split(config.SYSTEM_PATHS_DELIMITER)[-1].split('.')[0] for r in raw_paths ]
-            print(raw_paths)
 
             return np.random.choice([r for r in raw_paths if r not in self.except_indexes],
                                     size=config.CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID,

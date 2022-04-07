@@ -350,6 +350,58 @@ class CrossValidator:
                                                                  show=False, test_all_spectra=test_all_spectra,
                                                                  saving_path='', spectrum_shift=0)
 
+    def cross_validation_step(self, csv_filename, ind, indexes, paths, root_folder):
+        old_model_name = config.MODEL_NAME
+        #print(indexes)
+        #indexes = np.array(indexes[0])
+
+        if len(indexes) > 1:
+            for i in indexes:
+                config.MODEL_NAME += '_' + str(i)
+        else:
+            config.MODEL_NAME += '_' + str(ind) + '_' + DataLoader.get_name_easy(np.array(paths)[indexes][0])
+            # скопировала на всякий случай с сервера, когда-то тут была ошибка
+            # config.MODEL_NAME += '_' + str(indexes[0]) + '_' + np.array(paths)[indexes][0].split("/")[-1].split(".")[0].split('SpecCube')[0]
+
+        trainer = get_trainer(except_indexes=[DataLoader.get_name_easy(p) for p in np.array(paths)[indexes]])
+        model = trainer.train()
+        for i in indexes:
+            name = DataLoader.get_name_easy(paths[i])
+
+            tester = test.Tester(f'cp-{config.EPOCHS:04d}',
+                                 ['data'],
+                                 '',
+                                 LOGS_PATH=root_folder,
+                                 MODEL_NAME=config.MODEL_NAME.split(config.SYSTEM_PATHS_DELIMITER)[-1])
+
+            # sensitivity, specificity = tester.test_one_image(paths[i],
+            sensitivity, specificity = 0, 0
+            '''sensitivity, specificity = tester.test_one_image(os.path.join(config.RAW_NPY_PATH, name + ".npz"),
+                                path_image=paths[i] + '_Mask JW Kolo.png',
+                                save=False,
+                                show=False,
+                                test_all_spectra=False,
+                                save_stats=False,
+                                folder_name=config.MODEL_NAME,
+                                test_batch=True,  #be careful!
+                                spectrum_shift=0)   #be careful!'''
+
+            print('For path=', paths[i], ', (index: ', str(i), ') sensitivity= ', str(sensitivity), ' specificity= ',
+                  str(specificity), ' MODEL_NAME = ', config.MODEL_NAME)
+
+            with open(csv_filename, 'a', newline='') as csvfile:  # for full cross_valid and for separate file
+                fieldnames = ['time', 'index', 'sensitivity', 'specificity', 'name', 'model_name']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                writer.writerow({'time': datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+                                 'index': str(i),
+                                 'sensitivity': str(sensitivity),
+                                 'specificity': str(specificity),
+                                 'name': paths[i],
+                                 'model_name': config.MODEL_NAME})
+
+        config.MODEL_NAME = old_model_name
+
     def cross_validation(self, root_folder_name, csv_filename=None):
         config.MODEL_NAME_PATHS.append(root_folder_name)
 
@@ -368,54 +420,8 @@ class CrossValidator:
         csv_filename = os.path.join(root_folder, csv_filename)
 
         for ind, indexes in enumerate(splits):                
-            old_model_name = config.MODEL_NAME
-            indexes = np.array(indexes[0])
-            
-            if len(indexes) > 1:
-                for i in indexes:
-                    config.MODEL_NAME += '_' + str(i)
-            else:
-                config.MODEL_NAME += '_' + str(ind) + '_' + DataLoader.get_name_easy(np.array(paths)[indexes][0])
-                # скопировала на всякий случай с сервера, когда-то тут была ошибка
-                #config.MODEL_NAME += '_' + str(indexes[0]) + '_' + np.array(paths)[indexes][0].split("/")[-1].split(".")[0].split('SpecCube')[0]
+            self.cross_validation_step(csv_filename, ind, indexes, paths, root_folder)
 
-            trainer = get_trainer(except_indexes=[DataLoader.get_name_easy(p) for p in np.array(paths)[indexes]])
-            model = trainer.train()
-            for i in indexes:
-                name = DataLoader.get_name_easy(paths[i])
-
-                tester = test.Tester( f'cp-{config.EPOCHS:04d}',
-                                      ['data'],
-                                      '',
-                                      LOGS_PATH=root_folder,
-                                      MODEL_NAME=config.MODEL_NAME.split(config.SYSTEM_PATHS_DELIMITER)[-1])
-
-                #sensitivity, specificity = tester.test_one_image(paths[i],
-                sensitivity, specificity = 0, 0
-                '''sensitivity, specificity = tester.test_one_image(os.path.join(config.RAW_NPY_PATH, name + ".npz"),
-                                    path_image=paths[i] + '_Mask JW Kolo.png',
-                                    save=False,
-                                    show=False,
-                                    test_all_spectra=False,
-                                    save_stats=False,
-                                    folder_name=config.MODEL_NAME,
-                                    test_batch=True,  #be careful!
-                                    spectrum_shift=0)   #be careful!'''
-
-                print('For path=', paths[i], ', (index: ', str(i), ') sensitivity= ', str(sensitivity), ' specificity= ', str(specificity), ' MODEL_NAME = ', config.MODEL_NAME)
-
-                with open(csv_filename,'a', newline='') as csvfile: # for full cross_valid and for separate file
-                    fieldnames = ['time', 'index', 'sensitivity', 'specificity', 'name', 'model_name']
-                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-                    writer.writerow({'time':datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
-                                     'index':str(i),
-                                     'sensitivity':str(sensitivity),
-                                     'specificity':str(specificity),
-                                     'name': paths[i],
-                                     'model_name': config.MODEL_NAME})
-
-            config.MODEL_NAME = old_model_name
         return csv_filename
 
     def get_history(self, model_path):
@@ -581,25 +587,26 @@ if __name__ =='__main__':
     try:
         prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
         cross_validator = CrossValidator()
-        cross_validator.results_file = os.path.join(prefix, 'logs', 'CV_3d_inception', 'CV_3d_inception_stats_07.12.2021-00_01_56.csv')
-        compiled_path = os.path.join(prefix, 'test', 'CV_3d_inception', 'compiled')
-        cross_validator.count_metrics_on_diff_thresholds(compiled_path, threshold_range_params=[0.01, 0.09, 10])
-        cross_validator.count_metrics_on_diff_thresholds(compiled_path, threshold_range_params=[0.1, 0.6, 10])
+        cross_validator.cross_validation('CV_eso_test')
+        #cross_validator.results_file = os.path.join(prefix, 'logs', 'CV_3d_inception', 'CV_3d_inception_stats_07.12.2021-00_01_56.csv')
+        #compiled_path = os.path.join(prefix, 'test', 'CV_3d_inception', 'compiled')
+        #cross_validator.count_metrics_on_diff_thresholds(compiled_path, threshold_range_params=[0.01, 0.09, 10])
+        #cross_validator.count_metrics_on_diff_thresholds(compiled_path, threshold_range_params=[0.1, 0.6, 10])
 
         #cross_validator.cross_validation_spain(name='CV_3d_sample_weights_every_third')
         
         #paths = glob.glob(os.path.join(prefix, 'test', '*'))
         #paths = ['CV_lstm_10', 'CV_3d_svn_every_third']
-        print(paths)
+        #print(paths)
         #import random
         #random.shuffle(paths)
         
-        for ind, path in enumerate(paths):
+        #for ind, path in enumerate(paths):
             #path = path.split(config.SYSTEM_PATHS_DELIMITER)[-1]
-            if not 'bea' in path and 'CV' in path:
-                print(ind, 'name', path)
-                cross_validator.cross_validation_spain(name=path)
-                print('-------------------------')
+            #if not 'bea' in path and 'CV' in path:
+                #print(ind, 'name', path)
+                #cross_validator.cross_validation_spain(name=path)
+                #print('-------------------------')
                 
         '''prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
         

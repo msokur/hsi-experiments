@@ -5,6 +5,7 @@ import os
 import model_3d
 import config
 import trainer_base
+import tf_metrics
 
 class TrainerEasy(trainer_base.Trainer):
     def __init__(self, **kwargs):

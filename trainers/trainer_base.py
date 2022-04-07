@@ -39,14 +39,12 @@ class Trainer():
         train_generator = generator.DataGenerator('train',
                                         config.SHUFFLED_PATH,
                                         config.BATCHED_PATH,
-                                        self.log_dir,
                                         split_flag=False,
                                         except_indexes=self.excepted_indexes,
                                         for_tuning=for_tuning)
         valid_generator = generator.DataGenerator('valid',
                                         config.SHUFFLED_PATH,
                                         config.BATCHED_PATH,
-                                        self.log_dir,
                                         split_flag=False,
                                         except_indexes=self.excepted_indexes,
                                         for_tuning=for_tuning)
