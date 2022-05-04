@@ -41,7 +41,7 @@ DATABASES = {   # for data_loader
 
 
 # ----------------------------------------------------------------------------------------------------------
-bea_db = 'False'
+bea_db = 'Eso'
 #bea_db = 'CV_combi_WRA_50max_8inc_30epochs_1pat'  # TODO remove
 #'CV_combi_WRA_50max_8inc_30epochs_1pat'inception_l2_norm_all_data
 #RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
@@ -51,7 +51,8 @@ bea_db = 'False'
 #RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
 
 
-RAW_NPZ_PATH = os.path.join('data_3d', 'raw_3d')
+#RAW_NPZ_PATH = os.path.join('data_3d', 'raw_3d')
+RAW_NPZ_PATH = os.path.join('data_preprocessed', 'EsophagusDatabase', 'raw_3d_weights')
 TEST_NPZ_PATH = RAW_NPZ_PATH
 
 SHUFFLED_PATH = os.path.join(RAW_NPZ_PATH, 'shuffled')
@@ -124,7 +125,7 @@ LABELS_OF_CLASSES_TO_TRAIN = np.arange(NUMBER_OF_CLASSES_TO_TRAIN)  # data. It's
 assert len(LABELS_OF_CLASSES_TO_TRAIN) == NUMBER_OF_CLASSES_TO_TRAIN  # check yourself
 
 BATCH_SIZE = 100  # train
-EPOCHS = 40  # train
+EPOCHS = 1  # train
 LEARNING_RATE = 1e-4  # train
 
 SPLIT_FACTOR = 0.9  # train   #for data sets: train\test data percentage

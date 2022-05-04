@@ -89,8 +89,8 @@ class DataGenerator(keras.utils.Sequence):
         else:
             print('!!!!!   Dataset not split   !!!!!')
 
-        batches_paths = glob.glob(os.path.join(self.batches_npz_path, '*.npz'))  # TODO, for test, remove!!!
-        valid_batches_paths = glob.glob(os.path.join(self.batches_npz_path, 'valid', '*.npz'))  # TODO, for test, remove!!!
+        batches_paths = glob.glob(os.path.join(self.batches_npz_path, '*.npz'))[:1]  # TODO, for test, remove!!!
+        valid_batches_paths = glob.glob(os.path.join(self.batches_npz_path, 'valid', '*.npz'))[:1]  # TODO, for test, remove!!!
 
         if self.for_tuning:
             batches_paths = batches_paths[:10]

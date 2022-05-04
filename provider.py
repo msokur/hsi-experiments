@@ -11,7 +11,7 @@ import trainer_easy_several_outputs
 #import models.keras_tuner_models_with_ones as keras_tuner_models_with_ones
 
 
-def get_trainer(except_indexes=[]):
+def get_trainer(*args, **kwargs):
     if config.RESTORE_MODEL & config.WITH_TUNING:
         raise ValueError("Custom Error! Choose if restore(config.RESTORE_MODEL) or tune(config.WITH_TUNING) "
                          "model! They could not be simultaneously True")
@@ -19,17 +19,17 @@ def get_trainer(except_indexes=[]):
     if config.WITH_TUNING:
         from trainers.trainer_tuner import TrainerTuner
         print('TrainerTuner')
-        return TrainerTuner(excepted_indexes=except_indexes)
+        return TrainerTuner(*args, **kwargs)
 
     if config.DATABASE == 'bea_colon':
         print('TrainerEasy')
-        return trainer_easy.TrainerEasy(excepted_indexes=except_indexes)
+        return trainer_easy.TrainerEasy(*args, **kwargs)
 
     if 'bea' in config.DATABASE:
         print('TrainerEasySeveralOutputs')
-        return trainer_easy_several_outputs.TrainerEasySeveralOutputs(excepted_indexes=except_indexes)
+        return trainer_easy_several_outputs.TrainerEasySeveralOutputs(*args, **kwargs)
 
-    return trainer_easy.TrainerEasy(excepted_indexes=except_indexes)
+    return trainer_easy.TrainerEasy(*args, **kwargs)
 
 
 def get_data_loader(**kwargs):

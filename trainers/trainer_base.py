@@ -13,9 +13,9 @@ import callbacks
 
 
 class Trainer():
-    def __init__(self, excepted_indexes=[]):
-        self.log_dir = config.MODEL_NAME
-        self.excepted_indexes = excepted_indexes
+    def __init__(self, model_name=config.MODEL_NAME, except_indexes=[]):
+        self.log_dir = model_name
+        self.excepted_indexes = except_indexes
 
     @abc.abstractmethod
     def compile_model(self, model):
