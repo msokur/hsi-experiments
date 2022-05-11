@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 import os
-from shutil import copyfile
+from shutil import copyfile, rmtree
 import numpy as np
 import psutil
 import abc
@@ -36,18 +36,26 @@ class Trainer():
 
     def get_datasets(self, for_tuning=False):
         # train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
+        self.batch_path = config.BATCHED_PATH + '_' + self.excepted_indexes[0]
+        if not os.path.exists(self.batch_path):
+            os.mkdir(self.batch_path)
+                        
         train_generator = generator.DataGenerator('train',
                                         config.SHUFFLED_PATH,
-                                        config.BATCHED_PATH,
-                                        split_flag=False,
-                                        except_indexes=self.excepted_indexes,
+                                        #config.BATCHED_PATH,
+                                        self.batch_path,
+                                        split_flag=True,
+                                        except_indexes=self.excepted_indexes.copy(),
                                         for_tuning=for_tuning)
         valid_generator = generator.DataGenerator('valid',
                                         config.SHUFFLED_PATH,
-                                        config.BATCHED_PATH,
+                                        #config.BATCHED_PATH,
+                                        self.batch_path,
                                         split_flag=False,
                                         except_indexes=self.excepted_indexes,
+                                        valid_except_indexes = train_generator.valid_except_indexes,
                                         for_tuning=for_tuning)
+
         class_weights = train_generator.get_class_weights()
         print(class_weights)
 
@@ -93,9 +101,11 @@ class Trainer():
             period=config.WRITE_CHECKPOINT_EVERY_Xth_STEP)
 
         early_stopping_callback = keras.callbacks.EarlyStopping(
-            monitor='val_auc',
+            monitor='val_f1_m',
+            mode='max',
             min_delta=0,
-            patience=25,
+            patience=5,
+            verbose=1,
             restore_best_weights=True)
 
         callbacks_ = [tensorboard_callback, checkpoints_callback]
@@ -141,6 +151,8 @@ class Trainer():
             workers=int(os.cpu_count()))
 
         self.save_history(history)
+        
+        rmtree(self.batch_path)
 
         return model, history
 
