@@ -140,7 +140,7 @@ class Tester():
 
         if test_batch:
             gt = data['y']  # test batch
-            '''indx_ = np.zeros(gt.shape).astype(bool)
+            indx_ = np.zeros(gt.shape).astype(bool)
 
             for label in config.LABELS_OF_CLASSES_TO_TRAIN:
                 indx_ = indx_ | (gt == label)  # ((gt == 0) | (gt == 1))
@@ -149,7 +149,7 @@ class Tester():
                 spectrum = spectrum[indx_ & data['bg_mask']]
 
             gt = gt[indx_]
-            spectrum = spectrum[indx_]'''
+            spectrum = spectrum[indx_]
 
         else:
             gt = [0] * len(gesund_indexes) + [1] * len(ill_indexes)
