@@ -62,7 +62,7 @@ class TrainerEasy(trainer_base.Trainer):
         return model, initial_epoch
 
     def get_easy_model(self):
-        model = model_3d.paper_model()
+        model = model_3d.inception3d_model()
         model = self.compile_model(model)
         return model
 

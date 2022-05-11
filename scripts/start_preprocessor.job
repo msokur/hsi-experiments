@@ -4,9 +4,9 @@
 #SBATCH --job-name=l2_db_preproc
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
-#SBATCH --mem=64G
+#SBATCH --mem=100G
 ##SBATCH --gres=gpu:v100:2
-#SBATCH --gres=gpu:rtx2080ti:1
+#SBATCH --gres=gpu:rtx2080ti:2
 #SBATCH --output=_db_l2_preprocessing_%j.log
 
 module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
