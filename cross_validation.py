@@ -580,13 +580,13 @@ if __name__ =='__main__':
     try:
         #prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
         cross_validator = CrossValidator()
-        #CrossValidator.cross_validation('_remove_CVn_3d_inception')
+        CrossValidator.cross_validation('_remove_CVn_3d_inception')
         #cross_validator.get_best_checkpoint_from_csv('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CVn_3d_inception/3d_54_2020_06_23_19_23_37_/')
         
         cross_validator.save_ROC_thresholds_for_checkpoint(0,
-                                           os.path.join('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test', 'CVn_3d_inception_v10'),
-                                           '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CVn_3d_inception_v10/CVn_3d_inception_v10_stats_09.05.2022-00_07_19.csv',
-                                           thr_ranges=[[0.01, 0.09, 10],
+                                           os.path.join('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test', 'CVn_3d_inception_v20'),
+                                           '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CVn_3d_inception_v20/CVn_3d_inception_v20_stats_10.05.2022-12_13_11.csv',
+                                           thr_ranges=[#[0.01, 0.09, 10],
                                                        [0.1, 0.6, 10]],
                                            execution_flags=[True])
 
