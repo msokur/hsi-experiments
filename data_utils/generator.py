@@ -6,6 +6,7 @@ import numpy as np
 from tensorflow import keras
 
 import config
+from util import compare_distributions
 
 
 class DataGenerator(keras.utils.Sequence):
@@ -78,7 +79,9 @@ class DataGenerator(keras.utils.Sequence):
             self.except_indexes = except_indexes
 
         if self.for_tuning:
-            self.shuffled_npz_paths = self.shuffled_npz_paths[:1]
+            ds = compare_distributions.DistributionsChecker(self.shuffled_npz_path)
+            tuning_index = ds.get_small_database_for_tuning()
+            self.shuffled_npz_paths = [self.shuffled_npz_paths[tuning_index]]
 
         if self.split_flag:
             self.preprocessor.split_data_into_npz_of_batch_size(self.shuffled_npz_paths,
@@ -92,8 +95,8 @@ class DataGenerator(keras.utils.Sequence):
         batches_paths = glob.glob(os.path.join(self.batches_npz_path, '*.npz'))  # TODO, for test, remove!!!
         valid_batches_paths = glob.glob(os.path.join(self.batches_npz_path, 'valid', '*.npz'))  # TODO, for test, remove!!!
 
-        if self.for_tuning:
-            batches_paths = batches_paths[:10]
+        #if self.for_tuning:
+        #    batches_paths = batches_paths[:10]
 
         #split_factor = int(self.split_factor * len(batches_paths))
 
@@ -164,8 +167,9 @@ if __name__ == '__main__':
     dataGenerator = DataGenerator('all', #'../data_preprocessed/raw_3d_weights',
                                   os.path.join(parentdir, 'data_preprocessed', 'EsophagusDatabase', 'raw_3d_weights','shuffled'),
                                   os.path.join(parentdir, 'data_preprocessed', 'EsophagusDatabase','raw_3d_weights','batch_sized'),
-                                  split_flag=True,
-                                  except_indexes=['EP3'])
+                                  split_flag=False,
+                                  except_indexes=['EP3'],
+                                 for_tuning=True)
 
     print(len(dataGenerator.batches_npz_path))
 

@@ -123,7 +123,7 @@ class Trainer():
 
         '''-------DATASET---------'''
 
-        train_dataset, valid_dataset, train_generator, class_weights = self.get_datasets()
+        train_dataset, valid_dataset, train_generator, class_weights = self.get_datasets(for_tuning=config.WITH_SMALLER_DATASET)
 
         '''-------CALLBACKS---------'''
 

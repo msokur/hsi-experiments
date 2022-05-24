@@ -6,15 +6,15 @@ import inspect
 import numpy as np
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-sys.path.insert(0, os.path.join(current_dir, 'utils'))
+sys.path.insert(0, os.path.join(current_dir, 'util'))
 sys.path.insert(1, os.path.join(current_dir, 'data_utils'))
 sys.path.insert(1, os.path.join(current_dir, os.path.join('data_utils', 'data_loaders')))
 sys.path.insert(2, os.path.join(current_dir, 'models'))
 sys.path.insert(3, os.path.join(current_dir, 'trainers'))
-
+print('paths from config', sys.path)
 import tf_metrics
 
-print('paths from config', sys.path)
+
 
 # ----------------------------------------------------------------------------------------------------------
 
@@ -95,6 +95,7 @@ WITH_BATCH_NORM = False
 WITH_BACKGROUND_EXTRACTION = False
 WITH_PREPROCESS_DURING_SPLITTING = False  # used in __split_arrays in preprocessor.py to run method preprocess()...
 WITH_TUNING = False
+WITH_SMALLER_DATASET = True 
 
 WRITE_CHECKPOINT_EVERY_Xth_STEP = 2  # callbacks and get_best_checkpoint
 WRITE_GRADIENTS_EVERY_Xth_BATCH = 50000000000  # callbacks
@@ -168,6 +169,12 @@ AUGMENTATION = {
 
 if WITH_AUGMENTATION:
     BATCH_SIZE = int(BATCH_SIZE / AUGMENTATION['new_rows_per_sample'])
+    
+# ----------------------------DISTRIBUTIONS CHECKING
+Z_TEST = False
+Z_TEST_P_VALUE = 0.05
+Z_TEST_STD_DELTA = 0.01
+KS_TEST_P_VALUE = 0.05
 
 # ----------------------------FILES_TO_COPY
 
