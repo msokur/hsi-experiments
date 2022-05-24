@@ -6,15 +6,15 @@ import inspect
 import numpy as np
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-sys.path.insert(0, os.path.join(current_dir, 'utils'))
+sys.path.insert(0, os.path.join(current_dir, 'util'))
 sys.path.insert(1, os.path.join(current_dir, 'data_utils'))
 sys.path.insert(1, os.path.join(current_dir, os.path.join('data_utils', 'data_loaders')))
 sys.path.insert(2, os.path.join(current_dir, 'models'))
 sys.path.insert(3, os.path.join(current_dir, 'trainers'))
-
+print('paths from config', sys.path)
 import tf_metrics
 
-print('paths from config', sys.path)
+
 
 # ----------------------------------------------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ DATABASES = {   # for data_loader
 
 
 # ----------------------------------------------------------------------------------------------------------
-bea_db = 'Eso'
+bea_db = 'colon_other'
 #bea_db = 'CV_combi_WRA_50max_8inc_30epochs_1pat'  # TODO remove
 #'CV_combi_WRA_50max_8inc_30epochs_1pat'inception_l2_norm_all_data
 #RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
@@ -51,8 +51,8 @@ bea_db = 'Eso'
 #RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
 
 
-#RAW_NPZ_PATH = os.path.join('data_3d', 'raw_3d')
-RAW_NPZ_PATH = os.path.join('data_preprocessed', 'EsophagusDatabase', 'raw_3d_weights')
+RAW_NPZ_PATH = os.path.join('data_3d', 'raw_3d')
+#RAW_NPZ_PATH = os.path.join('data_preprocessed', 'EsophagusDatabase', 'raw_3d_weights')
 TEST_NPZ_PATH = RAW_NPZ_PATH
 
 SHUFFLED_PATH = os.path.join(RAW_NPZ_PATH, 'shuffled')
@@ -90,17 +90,18 @@ MODEL_PATH = 'model'
 # ----------------------------------------------------------------------------------------------------------
 
 WITH_AUGMENTATION = False
-WITH_SAMPLE_WEIGHTS = True
+WITH_SAMPLE_WEIGHTS = False
 WITH_BATCH_NORM = False
 WITH_BACKGROUND_EXTRACTION = False
 WITH_PREPROCESS_DURING_SPLITTING = False  # used in __split_arrays in preprocessor.py to run method preprocess()...
 WITH_TUNING = False
+WITH_SMALLER_DATASET = True 
 
 WRITE_CHECKPOINT_EVERY_Xth_STEP = 2  # callbacks and get_best_checkpoint
 WRITE_GRADIENTS_EVERY_Xth_BATCH = 50000000000  # callbacks
 # every GRADIENTS_WRITING_STEP batches we write gradients, so not epochs - gradients
 WRITE_IMAGES = False  # callbacks
-WITH_EARLY_STOPPING = False  # callbacks
+WITH_EARLY_STOPPING = True  # callbacks
 
 _3D = True  # data
 _3D_SIZE = [5, 5]  # data
@@ -125,15 +126,15 @@ LABELS_OF_CLASSES_TO_TRAIN = np.arange(NUMBER_OF_CLASSES_TO_TRAIN)  # data. It's
 assert len(LABELS_OF_CLASSES_TO_TRAIN) == NUMBER_OF_CLASSES_TO_TRAIN  # check yourself
 
 BATCH_SIZE = 100  # train
-EPOCHS = 1  # train
+EPOCHS = 50  # train
 LEARNING_RATE = 1e-4  # train
 
 SPLIT_FACTOR = 0.9  # train   #for data sets: train\test data percentage
 
 CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY = True  # cv + preprocessor
-CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID = 3  # cv + preprocessor, to create validation dataset for training
+CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID = 20 # cv + preprocessor, to create validation dataset for training
 CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST = 1  # cv, for testing (exactly on this excluded patients we count end metrics)
-HISTORY_ARGMIN = "val_loss"  # cv. through which parameter of history(returned by model.fit() and then saved) choose the
+HISTORY_ARGMIN = "val_f1_m"  # cv. through which parameter of history(returned by model.fit() and then saved) choose the
 # best checkpoint in validation data
 
 ADD_TIME = False  # pipeline   #whether to add time to logs paths
@@ -168,6 +169,12 @@ AUGMENTATION = {
 
 if WITH_AUGMENTATION:
     BATCH_SIZE = int(BATCH_SIZE / AUGMENTATION['new_rows_per_sample'])
+    
+# ----------------------------DISTRIBUTIONS CHECKING
+Z_TEST = False
+Z_TEST_P_VALUE = 0.05
+Z_TEST_STD_DELTA = 0.01
+KS_TEST_P_VALUE = 0.05
 
 # ----------------------------FILES_TO_COPY
 

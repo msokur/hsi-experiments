@@ -193,13 +193,15 @@ class Preprocessor():
         return pickle.load(open(scaler_path, 'rb'))
 
     def fit_scale_from_path(self, root_path, scaler_saving_path, scaling_type=config.NORMALIZATION_TYPE):
-        X, _, _ = self.X_y_concatenate(root_path)
-        return self.scale_from_X(X, scaler_saving_path, scaling_type=scaling_type)
+        X = [[1, 1], [1, 1]] #cap
+        if scaling_type != 'l2_norm':
+            X, _, _ = self.X_y_concatenate(root_path)
+        return self.fit_scale_from_X(X, scaler_saving_path, scaling_type=scaling_type)
 
     def fit_scale_from_X(self, X, scaler_saving_path, scaling_type=config.NORMALIZATION_TYPE):
         scaler = None
 
-        if scaling_type == 0:  # svn
+        if scaling_type == 'svn':  # svn
             scaler = preprocessing.StandartScaler().fit(X)
         else:  # l2_norm
             scaler = preprocessing.Normalizer().fit(X)
@@ -501,13 +503,13 @@ class Preprocessor():
 
 if __name__ == '__main__':
     execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
-    execution_flags['load_data_with_dataloader'] = True
-    execution_flags['scale'] = True
+    execution_flags['load_data_with_dataloader'] = False
+    execution_flags['scale'] = False
     execution_flags['add_sample_weights'] = True
     execution_flags['shuffle'] = True
     
     preprocessor = Preprocessor()
-    preprocessor.pipeline('/work/users/mi186veva/data_dat', config.RAW_NPZ_PATH, execution_flags=execution_flags)
+    preprocessor.pipeline('/work/users/mi186veva/data_dat', '/work/users/mi186veva/data_3d/raw_3d', execution_flags=execution_flags)
 
     '''for db in ['ColonData']:
     #for db in ['Colon_MedianFilter', 'Colon_SNV']:

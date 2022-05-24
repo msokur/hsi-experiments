@@ -1,13 +1,18 @@
 #!/bin/bash
+sbatch <<EOT
+#!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=l2_db_preproc
+#SBATCH --job-name=db_preproc
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
-#SBATCH --mem=100G
+#SBATCH --mem=64G
 ##SBATCH --gres=gpu:v100:2
 #SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=_db_l2_preprocessing_%j.log
+#SBATCH --output=_cv_3d_inception_v20_step_$2_%j.log
+
+
+
 
 module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
 
@@ -30,4 +35,7 @@ module load OpenCV/4.2.0-fosscuda-2019b-Python-3.7.4
 module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
 
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/data_utils/preprocessor.py
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validation_step.py --model_name=$1 --except_names=$2
+
+exit 0
+EOT

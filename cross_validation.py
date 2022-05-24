@@ -241,7 +241,13 @@ class CrossValidator:
         plt.savefig(os.path.join(npy_folder, 'thresholds_metrics_curves_mean.png'))
         #plt.show()
         plt.clf()
-
+        
+    def get_best_checkpoint_from_csv(self, model_path):
+        checkpoints_paths = sorted(glob.glob(os.path.join(model_path, 'checkpoints/*/')))
+        best_checkpoint_path = checkpoints_paths[-1]
+        return best_checkpoint_path.split(config.SYSTEM_PATHS_DELIMITER)[-2]
+        
+        
     def count_ROC(self, csv_path, save_path, checkpoint=None, save_roc_auc_curve=False):
         """
 
@@ -276,6 +282,9 @@ class CrossValidator:
                 model_path = row[5]
                 if 'LOCAL' in config.MODE:
                     model_path = row[5].split('hsi-experiments')[-1][1:]
+                
+                checkpoint = self.get_best_checkpoint_from_csv(model_path)
+                print(f'We get checkpoint {checkpoint} for {model_path}')
                 
                 tester = test.Tester(checkpoint, ['data'], '', MODEL_FOLDER=model_path)
                 
@@ -563,23 +572,24 @@ class CrossValidator:
                                                                execution_flags=[False])
         else:
             print('ATTENTION! Something during the comparing was wrong (probably history was empty)!')
+            
 
 
 if __name__ =='__main__':
     
     try:
         #prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
-        #cross_validator = CrossValidator()
-        CrossValidator.cross_validation('CV_eso_test')
+        cross_validator = CrossValidator()
+        CrossValidator.cross_validation('_remove_CVn_3d_inception')
+        #cross_validator.get_best_checkpoint_from_csv('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CVn_3d_inception/3d_54_2020_06_23_19_23_37_/')
+        
+        cross_validator.save_ROC_thresholds_for_checkpoint(0,
+                                           os.path.join('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test', 'CVn_3d_inception_v20'),
+                                           '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CVn_3d_inception_v20/CVn_3d_inception_v20_stats_10.05.2022-12_13_11.csv',
+                                           thr_ranges=[#[0.01, 0.09, 10],
+                                                       [0.1, 0.6, 10]],
+                                           execution_flags=[True])
 
-        '''parser = argparse.ArgumentParser(description='Process some integers.')
-
-        parser.add_argument('--arg',
-                            help='sum the integers (default: find the max)')
-
-        args = parser.parse_args()'''
-
-        print(args)
         #cross_validator.results_file = os.path.join(prefix, 'logs', 'CV_3d_inception', 'CV_3d_inception_stats_07.12.2021-00_01_56.csv')
         #compiled_path = os.path.join(prefix, 'test', 'CV_3d_inception', 'compiled')
         #cross_validator.count_metrics_on_diff_thresholds(compiled_path, threshold_range_params=[0.01, 0.09, 10])
@@ -631,7 +641,6 @@ if __name__ =='__main__':
         utils.send_tg_message('Mariia, operations in cross_validation.py are successfully completed!')
                
     except Exception as e:
-        print(e)
 
         utils.send_tg_message(f'Mariia, ERROR!!!, In CV error {e}')
         
