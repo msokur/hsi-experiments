@@ -15,7 +15,6 @@ print('paths from config', sys.path)
 import tf_metrics
 
 
-
 # ----------------------------------------------------------------------------------------------------------
 
 FILE_EXTENSIONS = {
@@ -132,7 +131,7 @@ LEARNING_RATE = 1e-4  # train
 SPLIT_FACTOR = 0.9  # train   #for data sets: train\test data percentage
 
 CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY = True  # cv + preprocessor
-CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID = 20 # cv + preprocessor, to create validation dataset for training
+CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID = 20  # cv + preprocessor, to create validation dataset for training
 CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST = 1  # cv, for testing (exactly on this excluded patients we count end metrics)
 HISTORY_ARGMIN = "val_f1_m"  # cv. through which parameter of history(returned by model.fit() and then saved) choose the
 # best checkpoint in validation data
@@ -189,8 +188,8 @@ files_to_copy = ['*.py',
                  'utils/*.py']
 
 preprocessor_files_to_copy = ['config.py',
-                 'data_utils/*.py',
-                 'data_utils/data_loaders/*.py']
+                              'data_utils/*.py',
+                              'data_utils/data_loaders/*.py']
 
 FILES_TO_COPY = []
 P_FILES_TO_COPY = []

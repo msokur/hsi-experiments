@@ -1,7 +1,5 @@
 import os
 import glob
-import random
-
 import numpy as np
 from tensorflow import keras
 
@@ -87,13 +85,14 @@ class DataGenerator(keras.utils.Sequence):
             self.preprocessor.split_data_into_npz_of_batch_size(self.shuffled_npz_paths,
                                                                 self.batch_size,
                                                                 self.batches_npz_path,
-                                                                except_names = self.except_indexes,
-                                                                valid_except_names = self.valid_except_indexes)
+                                                                except_names=self.except_indexes,
+                                                                valid_except_names=self.valid_except_indexes)
         else:
             print('!!!!!   Dataset not split   !!!!!')
 
         batches_paths = glob.glob(os.path.join(self.batches_npz_path, '*.npz'))  # TODO, for test, remove!!!
-        valid_batches_paths = glob.glob(os.path.join(self.batches_npz_path, 'valid', '*.npz'))  # TODO, for test, remove!!!
+        valid_batches_paths = glob.glob(os.path.join(self.batches_npz_path,
+                                                     'valid', '*.npz'))  # TODO, for test, remove!!!
 
         #if self.for_tuning:
         #    batches_paths = batches_paths[:10]
@@ -101,7 +100,7 @@ class DataGenerator(keras.utils.Sequence):
         #split_factor = int(self.split_factor * len(batches_paths))
 
         if self.mode == 'all':
-            self.batches_npz_path = batches_paths + valid_batches_paths #batches_paths.copy()
+            self.batches_npz_path = batches_paths + valid_batches_paths  #batches_paths.copy()
         if self.mode == 'train':
             self.batches_npz_path = batches_paths  # [:split_factor]
         if self.mode == 'valid':
@@ -111,7 +110,7 @@ class DataGenerator(keras.utils.Sequence):
         if len(self.valid_except_indexes) == 0 and config.CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY:
             print('Getting new validation patients')
             raw_paths = glob.glob(os.path.join(self.raw_npz_path, '*.npz'))
-            raw_paths = [r.split(config.SYSTEM_PATHS_DELIMITER)[-1].split('.')[0] for r in raw_paths ]
+            raw_paths = [r.split(config.SYSTEM_PATHS_DELIMITER)[-1].split('.')[0] for r in raw_paths]
 
             return np.random.choice([r for r in raw_paths if r not in self.except_indexes],
                                     size=config.CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID,
@@ -119,8 +118,6 @@ class DataGenerator(keras.utils.Sequence):
         else:
             print('Return existing validation patients')
             return self.valid_except_indexes
-
-
 
     def get_class_weights(self, labels=None):
         if labels is None:
@@ -165,11 +162,13 @@ if __name__ == '__main__':
     import config
 
     dataGenerator = DataGenerator('all', #'../data_preprocessed/raw_3d_weights',
-                                  os.path.join(parentdir, 'data_preprocessed', 'EsophagusDatabase', 'raw_3d_weights','shuffled'),
-                                  os.path.join(parentdir, 'data_preprocessed', 'EsophagusDatabase','raw_3d_weights','batch_sized'),
+                                  os.path.join(parentdir, 'data_preprocessed', 'EsophagusDatabase',
+                                               'raw_3d_weights', 'shuffled'),
+                                  os.path.join(parentdir, 'data_preprocessed', 'EsophagusDatabase',
+                                               'raw_3d_weights', 'batch_sized'),
                                   split_flag=False,
                                   except_indexes=['EP3'],
-                                 for_tuning=True)
+                                  for_tuning=True)
 
     print(len(dataGenerator.batches_npz_path))
 

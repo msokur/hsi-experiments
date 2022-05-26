@@ -12,7 +12,7 @@ import generator
 import callbacks
 
 
-class Trainer():
+class Trainer:
     def __init__(self, model_name=config.MODEL_NAME, except_indexes=[]):
         self.log_dir = model_name
         self.excepted_indexes = except_indexes
@@ -41,20 +41,20 @@ class Trainer():
             os.mkdir(self.batch_path)
                         
         train_generator = generator.DataGenerator('train',
-                                        config.SHUFFLED_PATH,
-                                        #config.BATCHED_PATH,
-                                        self.batch_path,
-                                        split_flag=True,
-                                        except_indexes=self.excepted_indexes.copy(),
-                                        for_tuning=for_tuning)
+                                                  config.SHUFFLED_PATH,
+                                                  #config.BATCHED_PATH,
+                                                  self.batch_path,
+                                                  split_flag=True,
+                                                  except_indexes=self.excepted_indexes.copy(),
+                                                  for_tuning=for_tuning)
         valid_generator = generator.DataGenerator('valid',
-                                        config.SHUFFLED_PATH,
-                                        #config.BATCHED_PATH,
-                                        self.batch_path,
-                                        split_flag=False,
-                                        except_indexes=self.excepted_indexes,
-                                        valid_except_indexes = train_generator.valid_except_indexes,
-                                        for_tuning=for_tuning)
+                                                  config.SHUFFLED_PATH,
+                                                  #config.BATCHED_PATH,
+                                                  self.batch_path,
+                                                  split_flag=False,
+                                                  except_indexes=self.excepted_indexes,
+                                                  valid_except_indexes=train_generator.valid_except_indexes,
+                                                  for_tuning=for_tuning)
 
         class_weights = train_generator.get_class_weights()
         print(class_weights)
@@ -123,7 +123,8 @@ class Trainer():
 
         '''-------DATASET---------'''
 
-        train_dataset, valid_dataset, train_generator, class_weights = self.get_datasets(for_tuning=config.WITH_SMALLER_DATASET)
+        train_dataset, valid_dataset, train_generator, class_weights = self.get_datasets(
+            for_tuning=config.WITH_SMALLER_DATASET)
 
         '''-------CALLBACKS---------'''
 
@@ -169,11 +170,11 @@ class Trainer():
                     except RuntimeError as e:
                         print(e)
 
-                # mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
-                # mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.ReductionToOneDevice())
-                # mirrored_strategy = tf.distribute.CentralStorageStrategy()
+                #mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
+                #mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.ReductionToOneDevice())
+                #mirrored_strategy = tf.distribute.CentralStorageStrategy()
                 mirrored_strategy = tf.distribute.MultiWorkerMirroredStrategy()
-                # mirrored_strategy = tf.distribute.MirroredStrategy()
+                #mirrored_strategy = tf.distribute.MirroredStrategy()
 
                 with mirrored_strategy.scope():
                     model, history = self.train_process(mirrored_strategy=mirrored_strategy)

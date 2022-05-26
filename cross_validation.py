@@ -13,7 +13,6 @@ import sklearn.metrics as metrics
 import matplotlib.pyplot as plt
 
 import utils
-from validator import Validator
 from data_utils.data_loaders.data_loader_base import DataLoader
 
 
@@ -330,7 +329,6 @@ class CrossValidator:
             #plt.show()
             plt.clf()
 
-
     #old one, needs actualization
     def run_csv_and_save_images(self, csv_path, save_path, test_all_spectra=True):
         """
@@ -352,7 +350,7 @@ class CrossValidator:
                 if int(row[1]) in [0, 1, 2, 3]:
                     tester = test.Tester('cp-0200', ['data'], save_path, MODEL_FOLDER=row[5])
                 else:
-                    tester = test.Tester( f'cp-{config.EPOCHS:04d}', ['data'], save_path, MODEL_FOLDER=row[5])
+                    tester = test.Tester(f'cp-{config.EPOCHS:04d}', ['data'], save_path, MODEL_FOLDER=row[5])
 
                 name = DataLoader.get_name_easy(row[4])
                 #sensitivity, specificity = tester.test_one_image(row[4],
@@ -397,7 +395,8 @@ class CrossValidator:
             print('model_name', model_name)
             paths_patch = np.array(paths)[indexes]
 
-            CrossValidator.cross_validation_step(model_name, except_names=[DataLoader.get_name_easy(p) for p in paths_patch])
+            CrossValidator.cross_validation_step(model_name,
+                                                 except_names=[DataLoader.get_name_easy(p) for p in paths_patch])
 
             for i, path_ in enumerate(paths_patch):
 
@@ -416,7 +415,8 @@ class CrossValidator:
 
         return csv_filename
 
-    def get_history(self, model_path):
+    @staticmethod
+    def get_history(model_path):
         history_paths = utils.glob_multiple_file_types(model_path, '.*.npy', '*.npy')
         #print(history_paths)
         if len(history_paths) == 0:
@@ -458,7 +458,7 @@ class CrossValidator:
         if len(best_checkpoints) == 0:
             return -1, best_checkpoints, model_paths
         
-        best_checkpoint = utils.round_to_the_nearest_even_int(np.median(best_checkpoints), nearest_int = nearest_int)
+        best_checkpoint = utils.round_to_the_nearest_even_int(np.median(best_checkpoints), nearest_int=nearest_int)
             
         return best_checkpoint, best_checkpoints, model_paths
 
@@ -501,14 +501,14 @@ class CrossValidator:
 
         for checkpoint in tqdm(checkpoints):
             self.save_ROC_thresholds_for_checkpoint(checkpoint, save_path_, results_file)
-    
-    def get_nearest_int_delimiter(self, path):
+
+    @staticmethod
+    def get_nearest_int_delimiter(path):
         checkpoints_paths = glob.glob(os.path.join(path, 'cp-*'))
         checkpoints_paths = sorted(checkpoints_paths)
                 
         return int(checkpoints_paths[0].split(config.SYSTEM_PATHS_DELIMITER)[-1].split('-')[-1])
-        
-    
+
     def cross_validation_spain(self, name=config.bea_db):
         if config.MODE == 'CLUSTER':
             prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
@@ -540,7 +540,8 @@ class CrossValidator:
         
         nearest_int = self.get_nearest_int_delimiter(test_path)
 
-        best_checkpoint, best_checkpoints, model_paths = self.get_best_checkpoint_from_valid(csv_path, nearest_int=nearest_int)
+        best_checkpoint, best_checkpoints, model_paths = self.get_best_checkpoint_from_valid(csv_path,
+                                                                                             nearest_int=nearest_int)
         print('best checkpoint', best_checkpoint)
         #print(best_checkpoints)
         #print(model_paths)
@@ -558,24 +559,23 @@ class CrossValidator:
             #save annotated predictions
             self.test_path = config.RAW_NPZ_PATH
             self.save_ROC_thresholds_for_checkpoint(best_checkpoint,
-                                                               test_path,
-                                                               csv_path,
-                                                               #thr_ranges=[],
-                                                               thr_ranges=[
-                                                                   #[0.001, 0.009, 10],
-                                                                           [0.01, 0.09, 10],
-                                                                           [0.1, 0.6, 10],
-                                                                   #[0.75, 0.8, 10]
-                                                                   #[0.45, 0.45, 1]
-                                                                   #[0.15, 0.25, 10]
-                                                               ],
-                                                               execution_flags=[False])
+                                                    test_path,
+                                                    csv_path,
+                                                    #thr_ranges=[],
+                                                    thr_ranges=[
+                                                       #[0.001, 0.009, 10],
+                                                       [0.01, 0.09, 10],
+                                                       [0.1, 0.6, 10],
+                                                       #[0.75, 0.8, 10]
+                                                       #[0.45, 0.45, 1]
+                                                       #[0.15, 0.25, 10]
+                                                    ],
+                                                    execution_flags=[False])
         else:
             print('ATTENTION! Something during the comparing was wrong (probably history was empty)!')
             
 
-
-if __name__ =='__main__':
+if __name__ == '__main__':
     
     try:
         #prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
@@ -584,11 +584,12 @@ if __name__ =='__main__':
         #cross_validator.get_best_checkpoint_from_csv('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CVn_3d_inception/3d_54_2020_06_23_19_23_37_/')
         
         cross_validator.save_ROC_thresholds_for_checkpoint(0,
-                                           os.path.join('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test', 'CVn_3d_inception_v20'),
-                                           '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CVn_3d_inception_v20/CVn_3d_inception_v20_stats_10.05.2022-12_13_11.csv',
-                                           thr_ranges=[#[0.01, 0.09, 10],
-                                                       [0.1, 0.6, 10]],
-                                           execution_flags=[True])
+                                                           os.path.join('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test',
+                                                                        'CVn_3d_inception_v20'),
+                                                           '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CVn_3d_inception_v20/CVn_3d_inception_v20_stats_10.05.2022-12_13_11.csv',
+                                                           thr_ranges=[#[0.01, 0.09, 10],
+                                                                       [0.1, 0.6, 10]],
+                                                           execution_flags=[True])
 
         #cross_validator.results_file = os.path.join(prefix, 'logs', 'CV_3d_inception', 'CV_3d_inception_stats_07.12.2021-00_01_56.csv')
         #compiled_path = os.path.join(prefix, 'test', 'CV_3d_inception', 'compiled')
