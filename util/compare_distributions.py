@@ -40,7 +40,7 @@ class DistributionsChecker:
             prints (bool): if True, prints intermediate information
         """
         self.path = path
-        self.test_paths = glob(os.path.join(self.path, '*.npz'))[:10]
+        self.test_paths = glob(os.path.join(self.path, '*.npz'))
         self.all_data = np.array(self.get_data(self.test_paths))
         self.prints = prints
 

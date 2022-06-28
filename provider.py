@@ -60,7 +60,7 @@ def get_keras_tuner_model():
 
 
 if __name__ == '__main__':
-    trainer = get_trainer()
+    trainer = get_trainer(valid_except_indexes=['2019_09_04_12_43_40_', '2020_05_28_15_20_27_', '2019_07_12_11_15_49_', '2020_05_15_12_43_58_'])
     trainer.train()
 
     #dataLoader = get_data_loader()
