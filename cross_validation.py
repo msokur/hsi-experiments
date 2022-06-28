@@ -11,6 +11,7 @@ import csv
 import datetime
 import sklearn.metrics as metrics
 import matplotlib.pyplot as plt
+import json
 
 import utils
 from data_utils.data_loaders.data_loader_base import DataLoader
@@ -508,6 +509,16 @@ class CrossValidator:
         checkpoints_paths = sorted(checkpoints_paths)
                 
         return int(checkpoints_paths[0].split(config.SYSTEM_PATHS_DELIMITER)[-1].split('-')[-1])
+    
+    def get_csv(self, search_path):
+        csv_paths = glob.glob(search_path)
+        if len(csv_paths) > 1:
+            raise ValueError(search_path + ' has more then one .csv files!')
+        if len(csv_paths) == 0:
+            raise ValueError('No .csv files were found in ' + search_path)
+        csv_path = csv_paths[0]
+        
+        return csv_path
 
     def cross_validation_spain(self, name=config.bea_db):
         if config.MODE == 'CLUSTER':
@@ -523,13 +534,8 @@ class CrossValidator:
             csv_path = 'C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\logs\\CV_3d_bea_colon_sample_weights_1output\\CV_3d_bea_colon_sample_weights_1output_stats_16.12.2021-13_09_52.csv'
         else:
             #search_path = os.path.join(prefix, 'logs', name + '*', '*.csv')
-            search_path = search_path = os.path.join(prefix, 'logs', name, '*.csv')
-            csv_paths = glob.glob(search_path)
-            if len(csv_paths) > 1:
-                raise ValueError(name + ' has more then one .csv files!')
-            if len(csv_paths) == 0:
-                raise ValueError('No .csv files were found in ' + search_path)
-            csv_path = csv_paths[0]
+            search_path = os.path.join(prefix, 'logs', name, '*.csv')
+            csv_path = self.get_csv(search_path)
         #print(csv_path)
         
         test_path = os.path.join('test', name)
@@ -573,23 +579,81 @@ class CrossValidator:
                                                     execution_flags=[False])
         else:
             print('ATTENTION! Something during the comparing was wrong (probably history was empty)!')
+        
+    def cross_validation_experiment(self):
+        prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
+        test_root_path = os.path.join(prefix, 'test')
+        
+        #-------------------------parser
+        parser = argparse.ArgumentParser(description='Process some integers.')
+
+        parser.add_argument('--experiment_folder', type=str)
+        parser.add_argument('--cv_name', type=str)
+        parser.add_argument('--config_index', type=str)
+	parser.add_argument('--test_path', type=str)
+
+        args = parser.parse_args()
+
+        print(f'Hi from CV! with {args.experiment_folder}, {args.cv_name} and {args.config_index}')
+        root_folder = args.experiment_folder.split(config.SYSTEM_PATHS_DELIMITER)[-1]
+        
+        #-------------------------test path
+        
+        test_path = os.path.join(args.test_path, args.cv_name)
+        if not os.path.exists(test_path):
+            os.mkdir(test_path)
+        
+        #-------------------------configs
+        
+        config.MODEL_NAME_PATHS.append(root_folder)
+        
+        configs = None
+        with open(os.path.join(args.experiment_folder, 'combinations.json'), 'r') as json_file:
+            data = json.load(json_file)
+            configs = data[int(args.config_index)]
+            print(configs)
+         
+        for key, value in configs.items():
+            setattr(config, key, value)
             
+        config.BATCHED_PATH += '_' + args.config_index
+        
+        #------------------------cv
+        
+        self.cross_validation(args.cv_name)
+        
+        #------------------------testing
+        
+        search_path = os.path.join(prefix, 'logs', root_folder, args.cv_name, '*.csv')
+        csv_path = self.get_csv(search_path)
+        
+        self.save_ROC_thresholds_for_checkpoint(0,
+                                               test_path,
+                                               csv_path,
+                                               thr_ranges=[#[0.01, 0.09, 10],
+                                                           [0.1, 0.6, 10]],
+                                               execution_flags=[True])
+
+	utils.send_tg_message(f'Mariia, operations in cross_validation.py for {args.cv_name} are successfully completed!')
+
 
 if __name__ == '__main__':
     
     try:
-        #prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
         cross_validator = CrossValidator()
-        CrossValidator.cross_validation('_remove_CVn_3d_inception')
-        #cross_validator.get_best_checkpoint_from_csv('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CVn_3d_inception/3d_54_2020_06_23_19_23_37_/')
+        cross_validator.cross_validation_experiment()
         
-        cross_validator.save_ROC_thresholds_for_checkpoint(0,
+        
+        #prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
+        #cross_validator.get_best_checkpoint_from_csv('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CVn_3d_inception/3d_54_2020_06_23_19_23_37_/')
+                
+        '''1cross_validator.save_ROC_thresholds_for_checkpoint(0,
                                                            os.path.join('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test',
                                                                         'CVn_3d_inception_v20'),
                                                            '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CVn_3d_inception_v20/CVn_3d_inception_v20_stats_10.05.2022-12_13_11.csv',
                                                            thr_ranges=[#[0.01, 0.09, 10],
                                                                        [0.1, 0.6, 10]],
-                                                           execution_flags=[True])
+                                                           execution_flags=[True])'''
 
         #cross_validator.results_file = os.path.join(prefix, 'logs', 'CV_3d_inception', 'CV_3d_inception_stats_07.12.2021-00_01_56.csv')
         #compiled_path = os.path.join(prefix, 'test', 'CV_3d_inception', 'compiled')
@@ -639,7 +703,7 @@ if __name__ == '__main__':
         #validator = Validator()
         #validator.find_best_checkpoint(test_path)
         
-        utils.send_tg_message('Mariia, operations in cross_validation.py are successfully completed!')
+        #utils.send_tg_message('Mariia, operations in cross_validation.py are successfully completed!')
                
     except Exception as e:
 
