@@ -1,3 +1,10 @@
+from numpy.random import seed
+seed(1)
+from tensorflow.random import set_seed
+set_seed(2)
+import random as python_random
+python_random.seed(123)
+
 from tensorflow import keras
 
 import config

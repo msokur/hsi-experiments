@@ -1,5 +1,13 @@
+#from numpy.random import seed
+#seed(1)
+#from tensorflow.random import set_seed
+#set_seed(2)
+#import random as python_random
+#python_random.seed(123)
+
 from datetime import datetime
 import os
+os.environ['TF_DETERMINISTIC_OPS'] = '1'
 import tensorflow as tf
 import sys
 import inspect
@@ -22,7 +30,7 @@ FILE_EXTENSIONS = {
     '_npz': '.npz',
     '_mat': '.mat'
 }
-FILE_EXTENSION = FILE_EXTENSIONS['_mat']
+FILE_EXTENSION = FILE_EXTENSIONS['_dat']
 
 NORMALIZATION_TYPES = {
     'svn': 'svn',
@@ -41,8 +49,6 @@ DATABASES = {   # for data_loader
 
 # ----------------------------------------------------------------------------------------------------------
 bea_db = 'colon_other'
-#bea_db = 'CV_combi_WRA_50max_8inc_30epochs_1pat'  # TODO remove
-#'CV_combi_WRA_50max_8inc_30epochs_1pat'inception_l2_norm_all_data
 #RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
 #RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db, 'raw_3d_weighted')
 
@@ -95,6 +101,7 @@ WITH_BACKGROUND_EXTRACTION = False
 WITH_PREPROCESS_DURING_SPLITTING = False  # used in __split_arrays in preprocessor.py to run method preprocess()...
 WITH_TUNING = False
 WITH_SMALLER_DATASET = True 
+WITH_RANDOM_SEED = True
 
 WRITE_CHECKPOINT_EVERY_Xth_STEP = 2  # callbacks and get_best_checkpoint
 WRITE_GRADIENTS_EVERY_Xth_BATCH = 50000000000  # callbacks
@@ -125,7 +132,7 @@ LABELS_OF_CLASSES_TO_TRAIN = np.arange(NUMBER_OF_CLASSES_TO_TRAIN)  # data. It's
 assert len(LABELS_OF_CLASSES_TO_TRAIN) == NUMBER_OF_CLASSES_TO_TRAIN  # check yourself
 
 BATCH_SIZE = 100  # train
-EPOCHS = 50  # train
+EPOCHS = 10  # train
 LEARNING_RATE = 1e-4  # train
 
 SPLIT_FACTOR = 0.9  # train   #for data sets: train\test data percentage
@@ -138,7 +145,7 @@ HISTORY_ARGMIN = "val_f1_m"  # cv. through which parameter of history(returned b
 
 ADD_TIME = False  # pipeline   #whether to add time to logs paths
 RESTORE_MODEL = False  # pipeline
-TELEGRAM_SENDING = True  # utils
+TELEGRAM_SENDING = False  # utils
 # ---------------------------------------Tuning params-----------------------------------------------
 
 

@@ -4,10 +4,10 @@
 #SBATCH --job-name=test_3d_inc
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
-#SBATCH --mem=64G
-##SBATCH --gres=gpu:rtx2080ti:2
+#SBATCH --mem=8G
+#SBATCH --gres=gpu:rtx2080ti:2
 ##SBATCH --gres=gpu:v100:1
-#SBATCH --output=_z_test_%j.log
+#SBATCH --output=_test_randomness_%j.log
 
 #module load Python
 #module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4
@@ -27,4 +27,4 @@ module load OpenCV/4.2.0-fosscuda-2019b-Python-3.7.4
 module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
 
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/utils/compare_distributions.py
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/provider.py
