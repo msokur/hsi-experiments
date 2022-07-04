@@ -1,13 +1,10 @@
-#from numpy.random import seed
-#seed(1)
-#from tensorflow.random import set_seed
-#set_seed(2)
-#import random as python_random
-#python_random.seed(123)
-
 from datetime import datetime
+
 import os
-os.environ['TF_DETERMINISTIC_OPS'] = '1'
+WITHOUT_RANDOMNESS = True
+if WITHOUT_RANDOMNESS:
+    os.environ['TF_DETERMINISTIC_OPS'] = '1'
+
 import tensorflow as tf
 import sys
 import inspect
@@ -100,8 +97,8 @@ WITH_BATCH_NORM = False
 WITH_BACKGROUND_EXTRACTION = False
 WITH_PREPROCESS_DURING_SPLITTING = False  # used in __split_arrays in preprocessor.py to run method preprocess()...
 WITH_TUNING = False
-WITH_SMALLER_DATASET = True 
-WITH_RANDOM_SEED = True
+WITH_SMALLER_DATASET = False 
+
 
 WRITE_CHECKPOINT_EVERY_Xth_STEP = 2  # callbacks and get_best_checkpoint
 WRITE_GRADIENTS_EVERY_Xth_BATCH = 50000000000  # callbacks
@@ -132,7 +129,7 @@ LABELS_OF_CLASSES_TO_TRAIN = np.arange(NUMBER_OF_CLASSES_TO_TRAIN)  # data. It's
 assert len(LABELS_OF_CLASSES_TO_TRAIN) == NUMBER_OF_CLASSES_TO_TRAIN  # check yourself
 
 BATCH_SIZE = 100  # train
-EPOCHS = 10  # train
+EPOCHS = 1000  # train
 LEARNING_RATE = 1e-4  # train
 
 SPLIT_FACTOR = 0.9  # train   #for data sets: train\test data percentage
@@ -145,7 +142,7 @@ HISTORY_ARGMIN = "val_f1_m"  # cv. through which parameter of history(returned b
 
 ADD_TIME = False  # pipeline   #whether to add time to logs paths
 RESTORE_MODEL = False  # pipeline
-TELEGRAM_SENDING = False  # utils
+TELEGRAM_SENDING = True  # utils
 # ---------------------------------------Tuning params-----------------------------------------------
 
 

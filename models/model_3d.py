@@ -3,10 +3,18 @@ from tensorflow import keras
 import config
 from tensorflow.keras import activations
 
+def get_dropout(net, dropout_value=config.DROPOUT):
+    if config.WITHOUT_RANDOMNESS:
+        net = tf.keras.layers.Dropout(dropout_value, seed=3)(net)
+    else:
+        net = tf.keras.layers.Dropout(dropout_value)(net)
+    return net
+    
+
 def get_inizializers():
     kernel_initializer ='glorot_uniform'
     bias_initializer = 'zeros'
-    if config.WITH_RANDOM_SEED:
+    if config.WITHOUT_RANDOMNESS:
         kernel_initializer = keras.initializers.RandomNormal(seed=1337)
         bias_initializer = keras.initializers.Constant(value=0.1)
         
@@ -38,7 +46,7 @@ def paper_model():
     net = tf.keras.layers.Flatten()(net)
 
     #net = tf.keras.layers.Dense(50, activation='relu')(net)
-    net = tf.keras.layers.Dropout(config.DROPOUT, seed=3)(net)
+    net = get_dropout(net)
     
     activation = 'sigmoid'
     number = 1
@@ -83,7 +91,8 @@ def inception3d_block(input_, factor=16):
     return net
 
 def inception3d_model():
-    tf.random.set_seed(3)
+    if config.WITHOUT_RANDOMNESS:
+        tf.random.set_seed(3)
     
     input_ = tf.keras.layers.Input(
         shape=(config._3D_SIZE[0], config._3D_SIZE[1], config.OUTPUT_SIGNATURE_X_FEATURES), name="title"
@@ -104,7 +113,9 @@ def inception3d_model():
     #net = tf.keras.layers.Dense(100, activation='relu')(net)
     #net = tf.keras.layers.Dropout(config.DROPOUT_VALUE)(net)
     #net = tf.keras.layers.Dense(50, activation='relu')(net)
-    net = tf.keras.layers.Dropout(config.DROPOUT, seed=3)(net)
+    
+    net = get_dropout(net)
+    
     result = tf.keras.layers.Dense(1, activation='sigmoid', kernel_initializer=kernel_initializer,
                bias_initializer=bias_initializer)(net)
 

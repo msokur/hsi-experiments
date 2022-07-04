@@ -1,10 +1,3 @@
-#from numpy.random import seed
-#seed(1)
-#from tensorflow.random import set_seed
-#set_seed(2)
-#import random as python_random
-#python_random.seed(123)
-
 import tensorflow as tf
 from tensorflow import keras
 import os
@@ -12,6 +5,7 @@ from shutil import copyfile, rmtree
 import numpy as np
 import psutil
 import abc
+import pickle
 
 import config
 from utils import send_tg_message, send_tg_message_history
@@ -24,12 +18,6 @@ class Trainer:
         self.log_dir = model_name
         self.excepted_indexes = except_indexes.copy()
         self.valid_except_indexes = valid_except_indexes.copy()
-        
-        #if config.WITH_RANDOM_SEED:
-        #    tf.random.set_seed(1234)
-        #tf.keras.utils.set_random_seed(42) 
-        #tf.config.experimental.enable_op_determinism()
-        #    np.random.seed(7)
 
     @abc.abstractmethod
     def compile_model(self, model):
@@ -38,7 +26,11 @@ class Trainer:
     @abc.abstractmethod
     def get_model(self):
         pass
-
+    
+    def save_valid_except_indexes(self, valid_except_indexes):
+        with open(os.path.join(self.log_dir, 'valid.valid_except_names'), 'wb') as f:
+            pickle.dump(valid_except_indexes, f, pickle.HIGHEST_PROTOCOL)
+        
     def logging_and_copying(self):
         if not config.RESTORE_MODEL:
             if not os.path.exists(self.log_dir):
@@ -60,18 +52,20 @@ class Trainer:
                                                   config.SHUFFLED_PATH,
                                                   #config.BATCHED_PATH,
                                                   self.batch_path,
-                                                  split_flag=False,
-                                          valid_except_indexes=self.valid_except_indexes.copy(),
+                                                  split_flag=True,
+                                                  valid_except_indexes=self.valid_except_indexes.copy(),
                                                   except_indexes=self.excepted_indexes.copy(),
                                                   for_tuning=for_tuning)
+        self.save_valid_except_indexes(train_generator.valid_except_indexes)
         valid_generator = generator.DataGenerator('valid',
                                                   config.SHUFFLED_PATH,
                                                   #config.BATCHED_PATH,
                                                   self.batch_path,
                                                   split_flag=False,
                                                   except_indexes=self.excepted_indexes,
-                                                  valid_except_indexes=train_generator.valid_except_indexes,
+                                            valid_except_indexes=train_generator.valid_except_indexes,
                                                   for_tuning=for_tuning)
+        
 
         class_weights = train_generator.get_class_weights()
         print(class_weights)
@@ -96,7 +90,6 @@ class Trainer:
         return train_dataset, valid_dataset, train_generator, class_weights
 
     def get_callbacks(self):
-        tf.random.set_seed(3)
         process = psutil.Process(os.getpid())
 
         tensorboard_callback = callbacks.CustomTensorboardCallback(
@@ -130,13 +123,12 @@ class Trainer:
         if config.WITH_EARLY_STOPPING:
             callbacks_.append(early_stopping_callback)
 
-        return []#callbacks_
+        return callbacks_
 
     def save_history(self, history):
         np.save(os.path.join(self.log_dir, 'history'), history.history)
 
     def train_process(self, mirrored_strategy=None):
-        tf.random.set_seed(3)
         self.mirrored_strategy = mirrored_strategy
         self.logging_and_copying()
 
@@ -166,19 +158,17 @@ class Trainer:
             initial_epoch=initial_epoch,
             batch_size=config.BATCH_SIZE,
             callbacks=callbacks_,
-            shuffle=False, 
             use_multiprocessing=True,
             class_weight=class_weights,
             workers=int(os.cpu_count()))
 
         self.save_history(history)
         
-        #rmtree(self.batch_path)
+        rmtree(self.batch_path)
 
         return model, history
 
     def train(self):
-        tf.random.set_seed(3)
         try:
             if config.MODE == 'LOCAL_GPU' or config.MODE == 'CLUSTER':
                 gpus = tf.config.experimental.list_physical_devices('GPU')
