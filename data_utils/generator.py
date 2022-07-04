@@ -76,7 +76,7 @@ class DataGenerator(keras.utils.Sequence):
         else:
             self.except_indexes = except_indexes
 
-        if self.for_tuning:
+        if self.for_tuning and self.split_flag:
             ds = compare_distributions.DistributionsChecker(self.shuffled_npz_path)
             tuning_index = ds.get_small_database_for_tuning()
             self.shuffled_npz_paths = [self.shuffled_npz_paths[tuning_index]]

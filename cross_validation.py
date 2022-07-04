@@ -490,11 +490,6 @@ class CrossValidator:
         for rng in thr_ranges:
             self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=rng)
 
-        # self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.0001, 0.0009, 9])
-        # self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.05, 0.25, 8])
-        # self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.001, 0.04, 8])
-        # self.count_metrics_on_diff_thresholds(save_path, threshold_range_params=[0.05, 0.5, 5])
-
     def compare_checkpoints(self, rng, save_path_, results_file):
         rg = np.linspace(rng[0], rng[1], rng[2]).astype(int)
         checkpoints = [f'cp-{i:04d}' for i in rg]
@@ -590,7 +585,7 @@ class CrossValidator:
         parser.add_argument('--experiment_folder', type=str)
         parser.add_argument('--cv_name', type=str)
         parser.add_argument('--config_index', type=str)
-	parser.add_argument('--test_path', type=str)
+        parser.add_argument('--test_path', type=str)
 
         args = parser.parse_args()
 
@@ -630,11 +625,11 @@ class CrossValidator:
         self.save_ROC_thresholds_for_checkpoint(0,
                                                test_path,
                                                csv_path,
-                                               thr_ranges=[#[0.01, 0.09, 10],
-                                                           [0.1, 0.6, 10]],
+                                               thr_ranges=[#[0.1, 0.6, 10],
+                                                           [0.4, 0.5, 100]],
                                                execution_flags=[True])
 
-	utils.send_tg_message(f'Mariia, operations in cross_validation.py for {args.cv_name} are successfully completed!')
+        utils.send_tg_message(f'Mariia, operations in cross_validation.py for {args.cv_name} are successfully completed!')
 
 
 if __name__ == '__main__':
