@@ -2,6 +2,7 @@ import os
 import glob
 import numpy as np
 from tensorflow import keras
+import pickle
 
 import config
 from util import compare_distributions
@@ -19,7 +20,8 @@ class DataGenerator(keras.utils.Sequence):
                  batch_size=config.BATCH_SIZE,
                  split_factor=config.SPLIT_FACTOR,
                  split_flag=True,
-                 for_tuning=False):
+                 for_tuning=False,
+                log_dir=None):
         self.class_weight = None
         import preprocessor
 
@@ -31,6 +33,7 @@ class DataGenerator(keras.utils.Sequence):
         self.split_factor = split_factor
         self.split_flag = split_flag
         self.for_tuning = for_tuning
+        self.log_dir = log_dir
 
         self.shuffled_npz_paths = glob.glob(os.path.join(shuffled_npz_path, 'shuffl*.npz'))
 
@@ -107,17 +110,31 @@ class DataGenerator(keras.utils.Sequence):
             self.batches_npz_path = valid_batches_paths  # batches_paths[split_factor:]
 
     def get_valid_except_names(self):
-        if len(self.valid_except_indexes) == 0 and config.CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY:
-            print('Getting new validation patients')
-            raw_paths = glob.glob(os.path.join(self.raw_npz_path, '*.npz'))
-            raw_paths = [r.split(config.SYSTEM_PATHS_DELIMITER)[-1].split('.')[0] for r in raw_paths]
+        if len(self.valid_except_indexes) == 0:
+            if config.CV_RESTORE_VALID_PATIENTS:
+                print('Restore names of patients that will be used for validation dataset')
+                restore_paths = glob.glob(os.path.join(config.CV_RESTORE_VALID_PATIENTS_PATH, '*/'))
+                restore_path = restore_paths[np.flatnonzero(np.core.defchararray.find(restore_paths, config.CV_RESTORE_VALID_PATIENTS_SEQUENCE) != -1)[0]]
+                
+                log_name = self.log_dir.split('/')[-1]
+                log_index = log_name.split('_')[1]   #can be problems
+                
+                restore_log_paths = glob.glob(os.path.join(restore_path, '*/'))
+                restore_log_path = restore_log_paths[np.flatnonzero(np.core.defchararray.find(restore_log_paths, '3d_'+str(log_index)+'_') != -1)[0]]
+                
+                valid_except_indexes = pickle.load(open(os.path.join(restore_log_path, 'valid.valid_except_names'), 'rb'))
+                print(f'We restore {valid_except_indexes} from {restore_log_path} with {config.CV_RESTORE_VALID_PATIENTS_SEQUENCE}')
+                return valid_except_indexes
+            elif config.CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY:
+                print('Getting new validation patients')
+                raw_paths = glob.glob(os.path.join(self.raw_npz_path, '*.npz'))
+                raw_paths = [r.split(config.SYSTEM_PATHS_DELIMITER)[-1].split('.')[0] for r in raw_paths]
 
-            return np.random.choice([r for r in raw_paths if r not in self.except_indexes],
-                                    size=config.CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID,
-                                    replace=False)
-        else:
-            print('Return existing validation patients')
-            return self.valid_except_indexes
+                return np.random.choice([r for r in raw_paths if r not in self.except_indexes],
+                                        size=config.CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID,
+                                        replace=False)
+        print('Return existing validation patients')
+        return self.valid_except_indexes
 
     def get_class_weights(self, labels=None):
         if labels is None:

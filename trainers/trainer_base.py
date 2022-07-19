@@ -55,7 +55,8 @@ class Trainer:
                                                   split_flag=True,
                                                   valid_except_indexes=self.valid_except_indexes.copy(),
                                                   except_indexes=self.excepted_indexes.copy(),
-                                                  for_tuning=for_tuning)
+                                                  for_tuning=for_tuning,
+                                                 log_dir=self.log_dir)
         self.save_valid_except_indexes(train_generator.valid_except_indexes)
         valid_generator = generator.DataGenerator('valid',
                                                   config.SHUFFLED_PATH,
@@ -64,7 +65,8 @@ class Trainer:
                                                   split_flag=False,
                                                   except_indexes=self.excepted_indexes,
                                             valid_except_indexes=train_generator.valid_except_indexes,
-                                                  for_tuning=for_tuning)
+                                                  for_tuning=for_tuning,
+                                                  log_dir=self.log_dir)
         
 
         class_weights = train_generator.get_class_weights()

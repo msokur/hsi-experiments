@@ -43,6 +43,13 @@ DATABASES = {   # for data_loader
     'data_loader_mat_colon': 'bea_colon'
 }
 
+SMOOTHING_TYPES = {
+    'median_filter': 'median_filter',
+    'gaussian_filter': 'gaussian_filter',
+    'None': None
+}
+
+SMOOTHING_TYPE = SMOOTHING_TYPES['None']
 
 # ----------------------------------------------------------------------------------------------------------
 bea_db = 'colon_other'
@@ -99,7 +106,6 @@ WITH_PREPROCESS_DURING_SPLITTING = False  # used in __split_arrays in preprocess
 WITH_TUNING = False
 WITH_SMALLER_DATASET = False 
 
-
 WRITE_CHECKPOINT_EVERY_Xth_STEP = 2  # callbacks and get_best_checkpoint
 WRITE_GRADIENTS_EVERY_Xth_BATCH = 50000000000  # callbacks
 # every GRADIENTS_WRITING_STEP batches we write gradients, so not epochs - gradients
@@ -112,6 +118,7 @@ FIRST_NM = 8  # data
 LAST_NM = 100  # data
 SCALER_FILE_NAME = '.scaler'  # data
 WAVE_AREA = 100  # data
+SMOOTHING_VALUE = 5 # preprocessing, sigma for GaussianFilter and window size for MedianFilter
 
 INCEPTION_FACTOR = 8  # model
 DROPOUT = 0.1  # model
@@ -135,8 +142,12 @@ LEARNING_RATE = 1e-4  # train
 SPLIT_FACTOR = 0.9  # train   #for data sets: train\test data percentage
 
 CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY = True  # cv + preprocessor
+CV_RESTORE_VALID_PATIENTS = True
+CV_RESTORE_VALID_PATIENTS_PATH = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/ExperimentHowManyValidPatExclude'
+CV_RESTORE_VALID_PATIENTS_SEQUENCE = ''#[['_C', -1], ['_', 0]]
 CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID = 20  # cv + preprocessor, to create validation dataset for training
 CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST = 1  # cv, for testing (exactly on this excluded patients we count end metrics)
+CV_FIRST_SPLIT = 10 # cv, if we need to start not from the first split
 HISTORY_ARGMIN = "val_f1_m"  # cv. through which parameter of history(returned by model.fit() and then saved) choose the
 # best checkpoint in validation data
 
