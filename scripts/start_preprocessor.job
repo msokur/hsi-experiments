@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=l2_db_preproc
+#SBATCH --job-name=l2_norm
 #SBATCH --partition=clara-job
 #SBATCH --time=40:00:00
 #SBATCH --mem=100G

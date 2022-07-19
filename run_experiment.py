@@ -118,18 +118,19 @@ if __name__ == '__main__':
     }'''
     config_for_experiment = {
         'WITH_SMALLER_DATASET': [False],
-        'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [1, 3, 10, 20, 40]#[1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
+        'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [1], #[1, 3, 10, 20, 40]#[1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
+        #'CV_FIRST_SPLIT': [33]
     }
     
-    config_for_experiment = {
+    '''config_for_experiment = {
         'WITH_SMALLER_DATASET': [True],
         'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
-    }
+    }'''
 
-    exp = HowManyValidPatExcludeExperiment('ExperimentHowManyValidPatExclude', config_for_experiment)
-    #exp.run_experiment()
+    exp = HowManyValidPatExcludeExperiment('ExperimentALLHowManyValidPatExclude', config_for_experiment)
+    exp.run_experiment()
     
-    print(exp.get_results())
+    #print(exp.get_results())
     
     '''config_for_experiment = {
         'WITH_SMALLER_DATASET': [False],

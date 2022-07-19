@@ -46,7 +46,7 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
         if len(except_indexes) > 0:
             self.are_excepted = True
             self.except_indexes = except_indexes
-            self.__get_spectrum_of_excluded_patients()
+            #self.__get_spectrum_of_excluded_patients()
             
 
     def __get_spectrum_of_excluded_patients(self):

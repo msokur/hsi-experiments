@@ -7,7 +7,7 @@
 #SBATCH --mem=8G
 #SBATCH --gres=gpu:rtx2080ti:2
 ##SBATCH --gres=gpu:v100:1
-#SBATCH --output=_test_randomness_%j.log
+#SBATCH --output=_test_folders_%j.log
 
 #module load Python
 #module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4
