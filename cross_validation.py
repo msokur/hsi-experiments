@@ -383,13 +383,13 @@ class CrossValidator:
         if csv_filename is None:
             csv_filename = os.path.join(root_folder, root_folder_name + '_stats' + date_ + '.csv')
 
-        for ind, indexes in enumerate(splits):
+        for indexes in splits[config.CV_FIRST_SPLIT:]:
             model_name = config.MODEL_NAME #config.MODEL_NAME
             if len(indexes) > 1:
                 for i in indexes:
                     model_name += '_' + str(i)
             else:
-                model_name += '_' + str(ind) + '_' + DataLoader.get_name_easy(np.array(paths)[indexes][0])
+                model_name += '_' + str(indexes[0]) + '_' + DataLoader.get_name_easy(np.array(paths)[indexes][0])
                 # скопировала на всякий случай с сервера, когда-то тут была ошибка
                 # config.model_name += '_' + str(indexes[0]) + '_' + np.array(paths)[indexes][0].split("/")[-1].split(".")[0].split('SpecCube')[0]
 
@@ -586,10 +586,11 @@ class CrossValidator:
         parser.add_argument('--cv_name', type=str)
         parser.add_argument('--config_index', type=str)
         parser.add_argument('--test_path', type=str)
+        parser.add_argument('--abbreviation', type=str)
 
         args = parser.parse_args()
 
-        print(f'Hi from CV! with {args.experiment_folder}, {args.cv_name} and {args.config_index}')
+        print(f'Hi from CV! with {args.experiment_folder}, {args.cv_name} and config_index {args.config_index}')
         root_folder = args.experiment_folder.split(config.SYSTEM_PATHS_DELIMITER)[-1]
         
         #-------------------------test path
@@ -610,8 +611,10 @@ class CrossValidator:
          
         for key, value in configs.items():
             setattr(config, key, value)
+        config.CV_RESTORE_VALID_PATIENTS_SEQUENCE = args.abbreviation.replace('WF', 'WT')
+        
             
-        config.BATCHED_PATH += '_' + args.config_index
+        config.BATCHED_PATH += '_' + args.cv_name
         
         #------------------------cv
         
