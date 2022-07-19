@@ -5,6 +5,7 @@ import os
 from glob import glob
 from tqdm import tqdm
 import pickle
+from scipy.ndimage import gaussian_filter, median_filter
 
 import config
 from background_detection import detect_background
@@ -43,10 +44,21 @@ class DataLoader:
         splits = np.array_split(range(len(paths)), config.CROSS_VALIDATION_SPLIT)
         
         return paths, splits
+    
+    @staticmethod
+    def smooth(spectrum):
+        if config.SMOOTHING_TYPE is not None:
+            if config.SMOOTHING_TYPE == 'median_filter':
+                spectrum = median_filter(spectrum, size=config.SMOOTHING_VALUE)
+            if config.SMOOTHING_TYPE == 'gaussian_filter':
+                spectrum = gaussian_filter(spectrum, self.size)
+        return spectrum
 
     def file_read(self, path):
         print(f'Reading {path}')
         spectrum, mask = self.file_read_mask_and_spectrum(path)
+        
+        spectrum = DataLoader.smooth(spectrum)
 
         background_mask = DataLoader.background_get_mask(spectrum, mask.shape[:2])
 
