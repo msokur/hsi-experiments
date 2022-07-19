@@ -335,12 +335,16 @@ class Preprocessor():
 
         self.__init_rest()
 
-        valid_data = {}
-        for k in self.dict_names:
-            valid_data[k] = []
+        #valid_data = {}
+        #for k in self.dict_names:
+        #    valid_data[k] = []
 
         for p in tqdm(paths):
             # ------------ except_indexes filtering ---------------
+            valid_data = {}
+            for k in self.dict_names:
+                valid_data[k] = []
+                
             data_ = np.load(p)
             self.__check_dict_names(self.dict_names, data_)
             self.dict_names = list(set(self.dict_names).intersection(set(data_)))
@@ -373,12 +377,13 @@ class Preprocessor():
                 data = {n: a[indexes] for n, a in data.items()}
 
             self.__split_arrays(self.archives_of_batch_size_saving_path, data)#*[a for _, a in data.items()])
+            self.__split_arrays(self.valid_archives_saving_path, valid_data)#*[a for _, a in valid_data.items()])
 
         # ------------------save rest of rest archives----------------
         #rest_arrs = [np.array(rest_arr) for rest_arr in self.rest_arrs]
-        self.__init_rest()
+        #self.__init_rest()
 
-        self.__split_arrays(self.valid_archives_saving_path, valid_data)#*[a for _, a in valid_data.items()])
+        #self.__split_arrays(self.valid_archives_saving_path, valid_data)#*[a for _, a in valid_data.items()])
 
         #self.__init_rest()
 
@@ -503,10 +508,11 @@ class Preprocessor():
 
 if __name__ == '__main__':
     execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
-    execution_flags['load_data_with_dataloader'] = False
-    execution_flags['scale'] = False
+    execution_flags['load_data_with_dataloader'] = True
     execution_flags['add_sample_weights'] = True
-    execution_flags['shuffle'] = True
+    execution_flags['scale'] = True
+    execution_flags['shuffle'] = False
+   
     
     preprocessor = Preprocessor()
     preprocessor.pipeline('/work/users/mi186veva/data_dat', '/work/users/mi186veva/data_3d/raw_3d', execution_flags=execution_flags)
