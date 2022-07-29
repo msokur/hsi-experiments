@@ -512,10 +512,13 @@ if __name__ == '__main__':
     execution_flags['add_sample_weights'] = True
     execution_flags['scale'] = True
     execution_flags['shuffle'] = False
+    
+    config.bea_db = 'colon_raw'
+    config.DATABASE = config.DATABASES['data_loader_raw_colon']
    
     
     preprocessor = Preprocessor()
-    preprocessor.pipeline('/work/users/mi186veva/data_dat', '/work/users/mi186veva/data_3d/raw_3d', execution_flags=execution_flags)
+    preprocessor.pipeline('/work/users/mi186veva/data_dat', '/work/users/mi186veva/data_3d/raw_3d_raw', execution_flags=execution_flags)
 
     '''for db in ['ColonData']:
     #for db in ['Colon_MedianFilter', 'Colon_SNV']:

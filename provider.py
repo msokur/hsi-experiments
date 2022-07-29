@@ -5,6 +5,8 @@ from data_utils.data_loaders.data_loader_easy import DataLoaderColon
 from data_utils.data_loaders.data_loader_mat import DataLoaderMat
 from data_utils.data_loaders.data_loader_mat_brain import DataLoaderMatBrain
 from data_utils.data_loaders.data_loader_mat_colon import DataLoaderMatColon
+from data_utils.data_loaders.data_loader_colon_raw import DataLoaderColonRaw
+from data_utils.smoothing import MedianFilter, GaussianFilter
 import trainer_easy
 import trainer_easy_several_outputs
 #import models.keras_tuner_model as keras_tuner_model
@@ -29,6 +31,7 @@ def get_trainer(*args, **kwargs):
         print('TrainerEasySeveralOutputs')
         return trainer_easy_several_outputs.TrainerEasySeveralOutputs(*args, **kwargs)
 
+
     return trainer_easy.TrainerEasy(*args, **kwargs)
 
 
@@ -45,6 +48,9 @@ def get_data_loader(**kwargs):
     if config.DATABASE == 'bea_colon':
         print('DataLoaderMatColon')
         return DataLoaderMatColon(**kwargs)
+    if config.DATABASE == 'colon_raw':
+        print('DataLoaderRawColon')
+        return DataLoaderColonRaw(**kwargs)
 
     raise ValueError(f'Error! Database type {config.DATABASE} specified wrong (either in config.py or in provider.py)')
 
@@ -58,9 +64,16 @@ def get_keras_tuner_model():
     raise ValueError(f'Error! Tuner model type {config.TUNER_MODEL} specified wrong (either in config.py or in '
                      f'provider.py)')
 
+def get_smoother(*args, **kwargs):
+    if config.SMOOTHING_TYPE == 'median_filter':
+        return MedianFilter(*args, **kwargs)
+    if config.SMOOTHING_TYPE == 'gaussian_filter':
+        return GaussianFilter(*args, **kwargs)
+    
+    raise ValueError(f'Error! Smoother type is {config.SMOOTHING_TYPE}')
 
 if __name__ == '__main__':
-    trainer = get_trainer(valid_except_indexes=['2019_09_04_12_43_40_', '2020_05_28_15_20_27_', '2019_07_12_11_15_49_', '2020_05_15_12_43_58_'])
+    trainer = get_trainer(except_indexes=['2020_02_04_20_48_03_'], valid_except_indexes=['2019_09_04_12_43_40_', '2020_05_28_15_20_27_', '2019_07_12_11_15_49_', '2020_05_15_12_43_58_'])
     trainer.train()
 
     #dataLoader = get_data_loader()
