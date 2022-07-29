@@ -559,7 +559,7 @@ class CrossValidator:
 
             #save annotated predictions
             self.test_path = config.RAW_NPZ_PATH
-            self.save_ROC_thresholds_for_checkpoint(best_checkpoint,
+            self.save_ROC_thresholds_for_checkpoint(0,
                                                     test_path,
                                                     csv_path,
                                                     #thr_ranges=[],

@@ -118,7 +118,7 @@ if __name__ == '__main__':
     }'''
     config_for_experiment = {
         'WITH_SMALLER_DATASET': [False],
-        'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [1], #[1, 3, 10, 20, 40]#[1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
+        'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [10], #[1, 3, 10, 20, 40]#[1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
         #'CV_FIRST_SPLIT': [33]
     }
     

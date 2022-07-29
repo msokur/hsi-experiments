@@ -8,7 +8,7 @@ sbatch <<EOT
 #SBATCH --time=10-00:00:00
 #SBATCH --mem=72G
 ##SBATCH --gres=gpu:v100:2
-#SBATCH --gres=gpu:rtx2080ti:2
+#SBATCH --gres=gpu:rtx2080ti:5
 #SBATCH --output=_CV_$2_%j.log
 
 module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
