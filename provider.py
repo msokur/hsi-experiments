@@ -1,11 +1,12 @@
 import config
 
 
-from data_utils.data_loaders.data_loader_easy import DataLoaderColon
+from data_utils.data_loaders.data_loader_colon import DataLoaderColon
 from data_utils.data_loaders.data_loader_mat import DataLoaderMat
 from data_utils.data_loaders.data_loader_mat_brain import DataLoaderMatBrain
 from data_utils.data_loaders.data_loader_mat_colon import DataLoaderMatColon
-from data_utils.data_loaders.data_loader_colon_raw import DataLoaderColonRaw
+from data_utils.data_loaders.data_loader_whole_colon import DataLoaderWholeColon
+from data_utils.data_loaders.data_loader_whole_mat import DataLoaderWholeMat
 from data_utils.smoothing import MedianFilter, GaussianFilter
 import trainer_easy
 import trainer_easy_several_outputs
@@ -48,9 +49,20 @@ def get_data_loader(**kwargs):
     if config.DATABASE == 'bea_colon':
         print('DataLoaderMatColon')
         return DataLoaderMatColon(**kwargs)
-    if config.DATABASE == 'colon_raw':
-        print('DataLoaderRawColon')
-        return DataLoaderColonRaw(**kwargs)
+
+    # analogs for whole cubes
+    if config.DATABASE == 'colon_whole':
+        print('DataLoaderWholeColon')
+        return DataLoaderWholeColon(**kwargs)
+    if config.DATABASE == 'bea_brain_whole':
+        print('DataLoaderWholeMat with Brain')
+        return DataLoaderWholeMat(DataLoaderMatBrain(**kwargs), **kwargs)
+    if config.DATABASE == 'bea_eso_whole':
+        print('DataLoaderWholeMat with Eso')
+        return DataLoaderWholeMat(DataLoaderMat(**kwargs), **kwargs)
+    if config.DATABASE == 'bea_colon_whole':
+        print('DataLoaderWholeMat with Colon')
+        return DataLoaderWholeMat(DataLoaderMatColon(**kwargs), **kwargs)
 
     raise ValueError(f'Error! Database type {config.DATABASE} specified wrong (either in config.py or in provider.py)')
 

@@ -32,16 +32,20 @@ FILE_EXTENSION = FILE_EXTENSIONS['_dat']
 NORMALIZATION_TYPES = {
     'svn': 'svn',
     'l2_norm': 'l2_norm',
-    'svn_T': 'svn_T'
+    'svn_T': 'svn_T',
+    'None': None
 }
 NORMALIZATION_TYPE = NORMALIZATION_TYPES['l2_norm']
 
 DATABASES = {   # for data_loader
     'data_loader_easy': 'colon',
-    'data_loader_raw_colon': 'colon_raw',
     'data_loader_mat_eso': 'bea_eso',
     'data_loader_mat_brain': 'bea_brain',
-    'data_loader_mat_colon': 'bea_colon'
+    'data_loader_mat_colon': 'bea_colon',
+    'data_loader_whole_colon': 'colon_whole',
+    'data_loader_whole_mat_eso': 'bea_eso_whole',
+    'data_loader_whole_mat_brain': 'bea_brain_whole',
+    'data_loader_whole_mat_colon': 'bea_colon_whole'
 }
 
 SMOOTHING_TYPES = {
@@ -52,16 +56,26 @@ SMOOTHING_TYPES = {
 
 SMOOTHING_TYPE = SMOOTHING_TYPES['None']
 
+CROSS_VALIDATORS = {
+    'cv_old': 'cv_old',
+    'cv_spain': 'cv_spain',
+    'cv_postprocessing': 'cv_postprocessing',
+    'cv_experiment': 'cv_experiment'
+}
+
+CROSS_VALIDATOR = CROSS_VALIDATORS['cv_postprocessing']
+
 # ----------------------------------------------------------------------------------------------------------
-bea_db = 'colon_other'
+bea_db = 'Colon_MedianFilter'
 #RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
-#RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db, 'raw_3d_weighted')
+RAW_SOURCE_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db)
+RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db, 'raw_3d_weighted')
 
 #TEST_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db)
 #RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
 
 
-RAW_NPZ_PATH = os.path.join('data_3d', 'raw_3d')
+#RAW_NPZ_PATH = os.path.join('data_3d', 'raw_3d')
 #RAW_NPZ_PATH = os.path.join('data_preprocessed', 'EsophagusDatabase', 'raw_3d_weights')
 TEST_NPZ_PATH = RAW_NPZ_PATH
 
@@ -74,13 +88,20 @@ elif 'Eso' in bea_db:
     DATABASE = DATABASES['data_loader_mat_eso']
 elif 'Brain' in bea_db:
     DATABASE = DATABASES['data_loader_mat_brain']
-elif bea_db == 'colon_raw':
-    DATABASE = DATABASES['data_loader_raw_colon']
+elif bea_db == 'colon_whole':
+    DATABASE = DATABASES['data_loader_whole_colon']
+elif bea_db == 'bea_brain_whole':
+    DATABASE = DATABASES['data_loader_whole_mat_brain']
+elif bea_db == 'bea_eso_whole':
+    DATABASE = DATABASES['data_loader_whole_mat_eso']
+elif bea_db == 'bea_colon_whole':
+    DATABASE = DATABASES['data_loader_whole_mat_colon']
 else:
     DATABASE = DATABASES['data_loader_easy']
 
 if 'bea' in DATABASE:
     FILE_EXTENSION = FILE_EXTENSIONS['_mat']
+    NORMALIZATION_TYPE = NORMALIZATION_TYPES['None']
 
 #SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled'
 #BATCHED_PATH = r'data_preprocessed/augmented/batch_sized'
@@ -135,6 +156,7 @@ LABELS_OF_CLASSES_TO_TRAIN = np.arange(NUMBER_OF_CLASSES_TO_TRAIN)  # data. It's
 # for example, [1, 2] will mean that we will use only classes with labels 1 and 2.
 # By default, we create labels with np.arange() corresponding to  NUMBER_OF_CLASSES_TO_TRAIN
 # Reminder: you can set the labels itself overriding DataLoader.get_labels()
+USE_ALL_LABELS = False
 
 assert len(LABELS_OF_CLASSES_TO_TRAIN) == NUMBER_OF_CLASSES_TO_TRAIN  # check yourself
 

@@ -142,8 +142,11 @@ class Tester():
             gt = data['y']  # test batch
             indx_ = np.zeros(gt.shape).astype(bool)
 
-            for label in config.LABELS_OF_CLASSES_TO_TRAIN:
-                indx_ = indx_ | (gt == label)  # ((gt == 0) | (gt == 1))
+            if not config.USE_ALL_LABELS:
+                for label in config.LABELS_OF_CLASSES_TO_TRAIN:
+                    indx_ = indx_ | (gt == label)  # ((gt == 0) | (gt == 1))
+            else:
+                indx_ = np.ones(gt.shape).astype(bool)
             if config.WITH_BACKGROUND_EXTRACTION:
                 gt = gt[indx_ & data['bg_mask']]
                 spectrum = spectrum[indx_ & data['bg_mask']]

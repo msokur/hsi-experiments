@@ -490,7 +490,7 @@ class Preprocessor():
             self.weightedData_save(preprocessed_path, weights)
 
         # ----------scaler part ------------------
-        if execution_flags['scale']:
+        if execution_flags['scale'] and config.NORMALIZATION_TYPE is not None:
             print('NORMALIZATION TYPE', config.NORMALIZATION_TYPE)
             if scaler_path is None and config.NORMALIZATION_TYPE != 'svn_T':
                 scaler_path = os.path.join(preprocessed_path, scaler_name + config.SCALER_FILE_NAME)
@@ -509,16 +509,16 @@ class Preprocessor():
 if __name__ == '__main__':
     execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
     execution_flags['load_data_with_dataloader'] = True
-    execution_flags['add_sample_weights'] = True
-    execution_flags['scale'] = True
+    execution_flags['add_sample_weights'] = False
+    execution_flags['scale'] = False
     execution_flags['shuffle'] = False
     
-    config.bea_db = 'colon_raw'
-    config.DATABASE = config.DATABASES['data_loader_raw_colon']
+    #config.bea_db = 'colon_raw'
+    #config.DATABASE = config.DATABASES['data_loader_raw_colon']
    
     
     preprocessor = Preprocessor()
-    preprocessor.pipeline('/work/users/mi186veva/data_dat', '/work/users/mi186veva/data_3d/raw_3d_raw', execution_flags=execution_flags)
+    preprocessor.pipeline('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases\\Colon_SNV\\Colon_SNV', 'C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases\\Colon_SNV\\Colon_SNV\\raw_3d_weighted\\', execution_flags=execution_flags)
 
     '''for db in ['ColonData']:
     #for db in ['Colon_MedianFilter', 'Colon_SNV']:

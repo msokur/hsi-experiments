@@ -1,8 +1,12 @@
 import numpy as np
 
-from data_loader_raw_base import DataLoaderRawBase
+from data_loader_whole_base import DataLoaderWholeBase
+from data_loader_colon import DataLoaderColon
 
-class DataLoaderColonRaw(DataLoaderRawBase):
+class DataLoaderWholeColon(DataLoaderWholeBase):
+    def __init__(self, **kwargs):
+        super().__init__(DataLoaderColon(**kwargs), **kwargs)
+
     def set_mask_with_labels(self, mask):       
         result_mask = np.zeros(mask.shape[:2]) - 1
         

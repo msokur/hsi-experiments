@@ -2,15 +2,36 @@ import abc
 import numpy as np
 
 from data_loader_base import DataLoader
-from data_loader_easy import DataLoaderColon 
+from data_loader_colon import DataLoaderColon
 
 
-class DataLoaderRawBase(DataLoaderColon):
+class DataLoaderWholeBase(DataLoader):
+
+    def __init__(self, class_instance, **kwargs):
+        super().__init__(**kwargs)
+
+        self.class_instance = class_instance
+
+    def get_extension(self):
+        return self.class_instance.get_extension()
+
+    def get_labels(self):
+        return self.class_instance.get_labels()
+
+    def indexes_get_bool_from_mask(self, mask):
+        return self.class_instance.indexes_get_bool_from_mask(mask)
+
+    def file_read_mask_and_spectrum(self, path):
+        return self.class_instance.file_read_mask_and_spectrum(path)
+
+    def get_name(self, path):
+        return self.class_instance.get_name(path)
+
     def file_read(self, path):
         def reshape(arr):
             return np.reshape(arr, tuple([arr.shape[0] * arr.shape[1]]) + tuple(arr.shape[2:]))
         print(f'Reading {path}')
-        spectrum, mask = self.file_read_mask_and_spectrum(path)
+        spectrum, mask = self.class_instance.file_read_mask_and_spectrum(path)
         mask = self.set_mask_with_labels(mask)
         
         spectrum = DataLoader.smooth(spectrum)
@@ -31,10 +52,10 @@ class DataLoaderRawBase(DataLoaderColon):
 
         #values = self.X_y_concatenate_from_spectrum(spectra, indexes_np)
         print(spectrum.shape, mask.shape, np.unique(mask))
-        print(DataLoaderRawBase.get_all_indexes(mask)[0].shape)
+        print(DataLoaderWholeBase.get_all_indexes(mask)[0].shape)
         X = reshape(spectrum)
         y = reshape(mask)
-        indexes_in_datacube = list(np.array(DataLoaderRawBase.get_all_indexes(mask)).T)
+        indexes_in_datacube = list(np.array(DataLoaderWholeBase.get_all_indexes(mask)).T)
         values = [X, y, indexes_in_datacube]
         values = {n: v for n, v in zip(self.dict_names, values)}
 
