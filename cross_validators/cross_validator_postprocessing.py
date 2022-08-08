@@ -13,10 +13,12 @@ import config
 from validator import Validator
 
 class CrossValidatorPostProcessing(CrossValidatorBase):
-    def __init__(self, name, cross_validation_type='0_1', **kwargs):
+    def __init__(self, name, cross_validation_type='0_1', bea_db='bea_colon_whole', database='data_loader_whole_mat_colon', **kwargs):
         super().__init__(name)
-        self.LABELED_NPZ_PATH = config.RAW_SOURCE_PATH
+        self.LABELED_NPZ_PATH = config.RAW_NPZ_PATH
         self.cross_validation_type = cross_validation_type
+        self.bea_db = bea_db
+        self.database = database
 
         self.WHOLE_CUBES_PATH = os.path.join(self.LABELED_NPZ_PATH, 'whole')
         if not os.path.exists(self.WHOLE_CUBES_PATH):
@@ -38,7 +40,7 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
         else:
             self.execution_flags = kwargs['execution_flags']
 
-        self.prefix = 'C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments'
+       
 
         search_path = os.path.join(self.prefix, 'logs', name, '*.csv')
         print(search_path)
@@ -112,6 +114,9 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
         self.results_file = self.csv_path
         self.predictions_filename = self.filtered_labeled_predictions_filename
         self.gt_filename = self.filtered_labeled_gt_filename
+        config.USE_ALL_LABELS = False
+        #config.bea_db = self.bea_db
+        #config.DATABASE = config.DATABASES[self.database]
 
         self.count_metrics_on_diff_thresholds(self.saving_path_with_checkpoint, threshold_range_plain=best_threshold)
         print(self.csv_path)
@@ -140,11 +145,11 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
             execution_flags['scale'] = True
             execution_flags['shuffle'] = False
 
-            config.bea_db = 'bea_colon_whole'
-            config.DATABASE = config.DATABASES['data_loader_whole_mat_colon']
+            config.bea_db = self.bea_db
+            config.DATABASE = config.DATABASES[self.database]
 
             preprocessor = Preprocessor()
-            preprocessor.pipeline(self.LABELED_NPZ_PATH, self.WHOLE_CUBES_PATH,
+            preprocessor.pipeline(config.RAW_SOURCE_PATH, self.WHOLE_CUBES_PATH,
                                   execution_flags=execution_flags)
         else:
             print("We don't generate whole cubes")
@@ -199,7 +204,7 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
             print('pred', np.array(predictions_by_patient[patient]).shape)
             print('gt', np.array(gt_by_patient[patient]).shape)
 
-            size = (640, 480)
+            size = (480, 640)
             pred = np.reshape(np.array(predictions_by_patient[patient])[:, 0], size)
             pred[pred >= best_threshold] = 1
             pred[pred < best_threshold] = 0
@@ -210,7 +215,7 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
             gt[gt_ == 0] = 1
             gt[gt_ == 2] = 0
 
-            pred_filtered = median_filter(pred, size=27)
+            pred_filtered = median_filter(pred, size=55)
             #filtered_predictions.append(np.reshape(pred_filtered, size))
             filtered_predictions.append(pred_filtered)
 
@@ -231,7 +236,7 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
                                                     self.filtered_predictions_filename))
 
         filtered_labeled_predictions = []
-        gt = []
+        gt_ = []
 
         with open(self.csv_path, newline='') as csvfile:
             report_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
@@ -242,12 +247,22 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
                 pred = filtered_predictions[p]
                 print(pred.shape)
                 pred = pred[indexes_in_datacube[:, 0], indexes_in_datacube[:, 1]]
+                
+                gt = data['y']
+                print(gt.shape)
+                print('unique 1', np.unique(gt))
+                indx_ = np.zeros(gt.shape).astype(bool)
+                for label in config.LABELS_OF_CLASSES_TO_TRAIN:
+                    indx_ = indx_ | (gt == label)
+                gt = gt[indx_]
+                pred = pred[indx_]
+                
+                print('unique 2', np.unique(gt))
+                print(gt.shape)
 
                 filtered_labeled_predictions.append(pred)
-                gt.append(data['y'])
-
-                print(row[4], os.path.join(self.LABELED_NPZ_PATH, name+'.npz'), data['indexes_in_datacube'].shape)
+                gt_.append(gt)
 
         np.save(os.path.join(self.saving_path_with_checkpoint, self.filtered_labeled_predictions_filename),
                 filtered_labeled_predictions)
-        np.save(os.path.join(self.saving_path_with_checkpoint, self.filtered_labeled_gt_filename), gt)
+        np.save(os.path.join(self.saving_path_with_checkpoint, self.filtered_labeled_gt_filename), gt_)

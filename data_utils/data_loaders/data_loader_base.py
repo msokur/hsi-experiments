@@ -75,17 +75,13 @@ class DataLoader:
         indexes_np = DataLoader.indexes_get_np_from_bool_indexes(*indexes)
 
         values = self.X_y_concatenate_from_spectrum(spectra, indexes_np)
-        print('values before', values)
         values = {n: v for n, v in zip(self.dict_names, values)}
-        print('values after', values)
 
         return values
 
     def files_read_and_save_to_npz(self, root_path, destination_path):
         print('----Saving of .npz archives is started----')
 
-        print(self.get_extension())
-        print(os.path.join(root_path, "*" + self.get_extension()))
         paths = glob(os.path.join(root_path, "*" + self.get_extension()))
 
         with open(os.path.join(destination_path, DataLoader.get_labels_filename()), 'wb') as f:
@@ -148,8 +144,6 @@ class DataLoader:
 
         assert X.shape[0] == y.shape[0]
         assert y.shape[0] == indexes_in_datacube.shape[0]
-
-        print(X.shape, y.shape, indexes_in_datacube.shape)
 
         return X, y, indexes_in_datacube
 

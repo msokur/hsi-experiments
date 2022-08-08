@@ -11,7 +11,7 @@ class Validator():
                              checkpoints_regex='cp-*', 
                              thresholds_filename='metrics_threshold_relation_by_patient.csv', 
                              threshold_raw=1, 
-                             sens_spec_raws=[2, 3],
+                             sens_spec_raws=[4, 5],
                              prints=True):
         checkpoints = glob.glob(os.path.join(root_path, checkpoints_regex))
         sorted(checkpoints)

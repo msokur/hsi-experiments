@@ -30,12 +30,12 @@ def get_cross_validator(*args, **kwargs):
 if __name__ == '__main__':
     
     try:
-        cross_validator = get_cross_validator(config.bea_db, execution_flags = {
+        cross_validator = get_cross_validator('ExperimentALLHowManyValidPatExclude/ExperimentALLHowManyValidPatExclude_WF_C10_', execution_flags = {
                 "generate_whole_cubes": False,
                 "get_predictions_for_whole_cubes": False,
                 "count_predictions_for_labeled": False,
-                "thr_ranges": [[0.001, 0.01, 20]]
-            })
+                "thr_ranges": [[0.1, 0.6, 5]]
+            }, bea_db='colon_whole', database='data_loader_whole_colon')
         execution_flags = cross_validator.get_execution_flags()
         execution_flags['cross_validation'] = False
         cross_validator.pipeline(execution_flags=execution_flags)

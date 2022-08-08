@@ -66,16 +66,18 @@ CROSS_VALIDATORS = {
 CROSS_VALIDATOR = CROSS_VALIDATORS['cv_postprocessing']
 
 # ----------------------------------------------------------------------------------------------------------
-bea_db = 'Colon_MedianFilter'
+bea_db = 'colon_other'
 #RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
-RAW_SOURCE_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db)
-RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db, 'raw_3d_weighted')
+
+#RAW_SOURCE_PATH= os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db)
+#RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db, 'raw_3d_weighted')
 
 #TEST_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db)
 #RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
 
 
-#RAW_NPZ_PATH = os.path.join('data_3d', 'raw_3d')
+RAW_NPZ_PATH = os.path.join('data_3d', 'raw_3d')
+RAW_SOURCE_PATH = 'data_dat'
 #RAW_NPZ_PATH = os.path.join('data_preprocessed', 'EsophagusDatabase', 'raw_3d_weights')
 TEST_NPZ_PATH = RAW_NPZ_PATH
 
@@ -278,6 +280,7 @@ if MODE == 'CLUSTER':
     prefix = r'/work/users/mi186veva/'
 
     RAW_NPZ_PATH = os.path.join(prefix, RAW_NPZ_PATH)
+    RAW_SOURCE_PATH = os.path.join(prefix, RAW_SOURCE_PATH)
     SHUFFLED_PATH = os.path.join(prefix, SHUFFLED_PATH)
     BATCHED_PATH = os.path.join(prefix, BATCHED_PATH)
     TEST_NPZ_PATH = os.path.join(prefix, TEST_NPZ_PATH)

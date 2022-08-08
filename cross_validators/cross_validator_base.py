@@ -23,7 +23,8 @@ class CrossValidatorBase:
         if config.MODE == 'CLUSTER':
             self.prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
         else:
-            self.prefix = 'C:\\Users\\tkachenko\\Desktop\\HSI\\'
+            #self.prefix = 'C:\\Users\\tkachenko\\Desktop\\HSI\\'
+            self.prefix = 'C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments'
 
         self.predictions_filename = 'predictions_by_patient.npy',
         self.gt_filename = 'gt_by_patient.npy'
@@ -303,6 +304,9 @@ class CrossValidatorBase:
             mcc_s = []
             acc_s = []
             for patient in range(predictions_by_patient.shape[0]):
+                print('unique', np.unique(gt_by_patient[patient]))
+                print(gt_by_patient[patient].shape)
+                print(predictions_by_patient[patient].shape)
                 fpr, tpr, thresholds_p = metrics.roc_curve(np.rint(gt_by_patient[patient]),
                                                            np.array(predictions_by_patient[patient]))
                 roc_auc = metrics.auc(fpr, tpr)

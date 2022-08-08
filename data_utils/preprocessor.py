@@ -509,8 +509,8 @@ class Preprocessor():
 if __name__ == '__main__':
     execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
     execution_flags['load_data_with_dataloader'] = True
-    execution_flags['add_sample_weights'] = False
-    execution_flags['scale'] = False
+    execution_flags['add_sample_weights'] = True
+    execution_flags['scale'] = True
     execution_flags['shuffle'] = False
     
     #config.bea_db = 'colon_raw'
@@ -518,7 +518,8 @@ if __name__ == '__main__':
    
     
     preprocessor = Preprocessor()
-    preprocessor.pipeline('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases\\Colon_SNV\\Colon_SNV', 'C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases\\Colon_SNV\\Colon_SNV\\raw_3d_weighted\\', execution_flags=execution_flags)
+    preprocessor.pipeline(config.RAW_SOURCE_PATH, config.RAW_NPZ_PATH, execution_flags=execution_flags)
+    #preprocessor.pipeline('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases\\Colon_SNV\\Colon_SNV', 'C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases\\Colon_SNV\\Colon_SNV\\raw_3d_weighted\\', execution_flags=execution_flags)
 
     '''for db in ['ColonData']:
     #for db in ['Colon_MedianFilter', 'Colon_SNV']:
