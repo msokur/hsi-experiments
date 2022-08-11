@@ -110,8 +110,8 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
 
         self.save_labeled_from_whole()
 
-        self.metrics_filename_base += 'filtered'
-        self.results_file = self.csv_path
+        self.metrics_for_threshold_filename_base += 'filtered'
+        self.training_csv_file = self.csv_path
         self.predictions_filename = self.filtered_labeled_predictions_filename
         self.gt_filename = self.filtered_labeled_gt_filename
         config.USE_ALL_LABELS = False
@@ -204,7 +204,8 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
             print('pred', np.array(predictions_by_patient[patient]).shape)
             print('gt', np.array(gt_by_patient[patient]).shape)
 
-            size = (480, 640)
+            size = (640, 480)
+            #size = (480, 640)
             pred = np.reshape(np.array(predictions_by_patient[patient])[:, 0], size)
             pred[pred >= best_threshold] = 1
             pred[pred < best_threshold] = 0

@@ -4,6 +4,7 @@ import itertools as it, glob
 import os
 import glob
 import numpy as np
+import inspect
 
 
 def send_tg_message(message):
@@ -30,3 +31,12 @@ def glob_multiple_file_types(path, *patterns):
 
 def round_to_the_nearest_even_int(number, nearest_int=config.WRITE_CHECKPOINT_EVERY_Xth_STEP):
     return int(np.round(number / nearest_int) * nearest_int)
+
+
+def print_function_signature(func, name, printing=False):
+    if printing:
+        print(f'--------------------method {name} params----------------------')
+        signature = inspect.signature(func)
+        for param in signature.parameters.values():
+           print(param)
+        print('------------------------------------------------')
