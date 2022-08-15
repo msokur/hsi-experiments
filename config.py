@@ -66,8 +66,8 @@ CROSS_VALIDATORS = {
 CROSS_VALIDATOR = CROSS_VALIDATORS['cv_postprocessing']
 
 # ----------------------------------------------------------------------------------------------------------
+#bea_db = 'Esophagus_MedFilter'
 bea_db = 'Colon_MedianFilter'
-#bea_db = 'Colon_MedianFilter'
 #RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
 
 RAW_SOURCE_PATH= os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db)
@@ -175,7 +175,8 @@ CV_RESTORE_VALID_PATIENTS_PATH = '/home/sc.uni-leipzig.de/mi186veva/hsi-experime
 CV_RESTORE_VALID_PATIENTS_SEQUENCE = ''#[['_C', -1], ['_', 0]]
 CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID = 20  # cv + preprocessor, to create validation dataset for training
 CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST = 1  # cv, for testing (exactly on this excluded patients we count end metrics)
-CV_FIRST_SPLIT = 44 # cv, if we need to start not from the first split
+CV_FIRST_SPLIT = 0  # cv, if we need to start not from the first split
+CV_GET_CHECKPOINT_FROM_VALID = True  # cv
 HISTORY_ARGMIN = "val_f1_m"  # cv. through which parameter of history(returned by model.fit() and then saved) choose the
 # best checkpoint in validation data
 
