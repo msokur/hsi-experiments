@@ -66,15 +66,17 @@ CROSS_VALIDATORS = {
 CROSS_VALIDATOR = CROSS_VALIDATORS['cv_postprocessing']
 
 # ----------------------------------------------------------------------------------------------------------
-#bea_db = 'Esophagus_MedFilter'
-bea_db = 'Colon_MedianFilter'
-#RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
+#database_abbreviation = 'Esophagus_MedFilter'
+database_abbreviation = 'Colon_SNV'
+#RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')
 
-RAW_SOURCE_PATH= os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db)
-RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db, 'raw_3d_weighted')
+RAW_SOURCE_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
+                              database_abbreviation)
+RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
+                            database_abbreviation, 'raw_3d_weighted')
 
-#TEST_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', bea_db, bea_db)
-#RAW_NPZ_PATH = os.path.join('data_bea_db', bea_db, 'raw_3d_weighted')
+#TEST_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation, database_abbreviation)
+#RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')
 
 
 #RAW_NPZ_PATH = os.path.join('data_3d', 'raw_3d')
@@ -85,19 +87,19 @@ TEST_NPZ_PATH = RAW_NPZ_PATH
 SHUFFLED_PATH = os.path.join(RAW_NPZ_PATH, 'shuffled')
 BATCHED_PATH = os.path.join(RAW_NPZ_PATH, 'batch_sized')
 
-if 'Colon' in bea_db:
+if 'Colon' in database_abbreviation:
     DATABASE = DATABASES['data_loader_mat_colon']
-elif 'Eso' in bea_db:
+elif 'Eso' in database_abbreviation:
     DATABASE = DATABASES['data_loader_mat_eso']
-elif 'Brain' in bea_db:
+elif 'Brain' in database_abbreviation:
     DATABASE = DATABASES['data_loader_mat_brain']
-elif bea_db == 'colon_whole':
+elif database_abbreviation == 'colon_whole':
     DATABASE = DATABASES['data_loader_whole_colon']
-elif bea_db == 'bea_brain_whole':
+elif database_abbreviation == 'bea_brain_whole':
     DATABASE = DATABASES['data_loader_whole_mat_brain']
-elif bea_db == 'bea_eso_whole':
+elif database_abbreviation == 'bea_eso_whole':
     DATABASE = DATABASES['data_loader_whole_mat_eso']
-elif bea_db == 'bea_colon_whole':
+elif database_abbreviation == 'bea_colon_whole':
     DATABASE = DATABASES['data_loader_whole_mat_colon']
 else:
     DATABASE = DATABASES['data_loader_easy']
@@ -174,7 +176,7 @@ CV_RESTORE_VALID_PATIENTS = True
 CV_RESTORE_VALID_PATIENTS_PATH = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/ExperimentHowManyValidPatExclude'
 CV_RESTORE_VALID_PATIENTS_SEQUENCE = ''#[['_C', -1], ['_', 0]]
 CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID = 20  # cv + preprocessor, to create validation dataset for training
-CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST = 1  # cv, for testing (exactly on this excluded patients we count end metrics)
+CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST = 1  # cv, for testing (exactly on this excluded patients we count end evaluation)
 CV_FIRST_SPLIT = 0  # cv, if we need to start not from the first split
 CV_GET_CHECKPOINT_FROM_VALID = True  # cv
 HISTORY_ARGMIN = "val_f1_m"  # cv. through which parameter of history(returned by model.fit() and then saved) choose the

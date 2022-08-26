@@ -1,4 +1,4 @@
-from evaluation_base import EvaluationBase
+from evaluation.evaluation_base import EvaluationBase
 import datetime
 import numpy as np
 
@@ -15,6 +15,9 @@ class EvaluationBinary(EvaluationBase):
         dice_index = np.flatnonzero(fieldnames == "F1-score")
         fieldnames[dice_index] = "F1-score_healthy"
         fieldnames = np.insert(fieldnames, dice_index + 1, "F1-score_cancer")
+        fieldnames = self.add_additional_column_fieldnames(fieldnames)
+
+        print(fieldnames)
 
         return fieldnames
 
@@ -30,6 +33,7 @@ class EvaluationBinary(EvaluationBase):
             csv_row.update({"Time": datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")})
         else:
             csv_row.update({"Time": str(time_string)})
+        self.write_additional_columns(csv_row)
         writer.writerow(csv_row)
 
     def count_predictions(self, predictions, threshold):
@@ -37,14 +41,14 @@ class EvaluationBinary(EvaluationBase):
 
 
 if __name__ == '__main__':
-    eval_binary = EvaluationBinary(config.bea_db)
-    config.CV_GET_CHECKPOINT_FROM_VALID = False
+    eval_binary = EvaluationBinary(config.database_abbreviation)
+    #config.CV_GET_CHECKPOINT_FROM_VALID = False
     eval_binary.save_predictions_and_metrics(training_csv_path='C:\\Users\\tkachenko\\Desktop\\HSI\\hsi'
                                                                '-experiments\\logs\\Colon_MedianFilter'
                                                                '\\Colon_MedianFilter_stats_02.02.2022-13_15_36.csv',
-                                             save_predictions=True,
+                                             save_predictions=False,
                                              npz_folder='C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases'
                                                         '\\Colon_MedianFilter\\Colon_MedianFilter'
-                                                        '\\raw_3d_weighted', checkpoints_raw_list=[38],
-                                             thresholds_range=[0.1, 0.5, 5],
-                                             save_curves=True)
+                                                        '\\raw_3d_weighted',
+                                             thresholds_range=[[0.0001, 0.001, 20]],
+                                             save_curves=False)

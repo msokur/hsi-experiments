@@ -8,7 +8,7 @@ import inspect
 
 import config
 from data_utils.data_loaders.data_loader_base import DataLoader
-from metrics import Metrics
+from evaluation.metrics import Metrics
 
 
 class Predictor:
@@ -42,6 +42,9 @@ class Predictor:
         data = np.load(path)
         spectrum = data['X']
         gt = data['y']
+        size = None
+        if 'size' in data:
+            size = data['size']
 
         # get only needed samples
         indexes = np.zeros(gt.shape).astype(bool)
@@ -59,7 +62,7 @@ class Predictor:
 
         predictions = self.model.predict(spectrum)
 
-        return predictions, gt
+        return predictions, gt, size
 
     @staticmethod
     def edit_model_path_if_local(model_path):
@@ -122,12 +125,13 @@ class Predictor:
                 print(f'We get checkpoint {checkpoint} for {model_path}')
 
                 predictor = Predictor(checkpoint, MODEL_FOLDER=model_path)
-                predictions, gt = predictor.get_predictions_for_npz(os.path.join(npz_folder, name + ".npz"))
+                predictions, gt, size = predictor.get_predictions_for_npz(os.path.join(npz_folder, name + ".npz"))
 
                 results_dictionary.append({
                     'name': name,
                     'predictions': predictions,
-                    'gt': gt
+                    'gt': gt,
+                    'size': size
                 })
 
                 if save_roc_auc_curve:

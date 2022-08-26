@@ -2,12 +2,11 @@ import os
 import abc
 import json
 import itertools
-import numpy as np
 from glob import glob
 import matplotlib.pyplot as plt
 
 import config
-from validator import Validator
+from evaluation.validator import Validator
 
 class Experiment:
     def __init__(self, name, config_for_experiment):

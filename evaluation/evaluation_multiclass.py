@@ -2,7 +2,7 @@ import numpy as np
 import datetime
 
 import config
-from evaluation_base import EvaluationBase
+from evaluation.evaluation_base import EvaluationBase
 
 
 class EvaluationMulticlass(EvaluationBase):
@@ -17,13 +17,14 @@ class EvaluationMulticlass(EvaluationBase):
         for idx in self.labels_of_classes_to_train:
             label = self.labels[idx]
             names = []
-            for key in list(metrics_dict.keys())[1:]:  # all metrics after accuracy
+            for key in list(metrics_dict.keys())[1:]:  # all evaluation after accuracy
                 names.append(key + '_' + label)
             for key in list(metrics_from_scores_dict.keys()):
                 names.append(key + '_' + label)
             labels[idx] = np.array(names)
 
         fieldnames = ['Time', 'Accuracy']
+        fieldnames = self.add_additional_column_fieldnames(fieldnames)
         for m in range(len(metrics_dict) - 1 + len(metrics_from_scores_dict)):
             fieldnames.extend(labels[:, m])
 
@@ -39,6 +40,7 @@ class EvaluationMulticlass(EvaluationBase):
         else:
             csv_row.update({"Time": str(time_string)})
         csv_row.update({"Accuracy": metrics["Accuracy"]})
+        self.write_additional_columns(csv_row)
         writer.writerow(csv_row)
 
     def count_predictions(self, predictions, threshold):
@@ -46,7 +48,7 @@ class EvaluationMulticlass(EvaluationBase):
 
 
 if __name__ == '__main__':
-    eval_multiclass = EvaluationMulticlass(config.bea_db)
+    eval_multiclass = EvaluationMulticlass(config.database_abbreviation)
     config.CV_GET_CHECKPOINT_FROM_VALID = False
     eval_multiclass.save_predictions_and_metrics(training_csv_path='C:\\Users\\tkachenko\\Desktop\\HSI\\hsi'
                                                                    '-experiments\\logs\\Esophagus_MedFilter\\'
