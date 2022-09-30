@@ -48,9 +48,14 @@ class Experiment:
     def get_results(self):
         folders = sorted(glob(os.path.join(self.test_path, '*/')), 
                         key=lambda x: int(x.split('_C')[-1].split('_')[0]))
-        numbers = [int(x.split('_')[-1].split('_')[0]) for x in folders]
+
         means_all = []
+        ticks = []
         for folder in folders:
+            print(folder)
+            print('kaktus', folder.split(config.SYSTEM_PATHS_DELIMITER)[-2])
+            tick = ('_').join(folder.split(config.SYSTEM_PATHS_DELIMITER)[-2].split('_')[1:])
+            ticks.append(tick)
             print(folder)
             checkpoints = glob(os.path.join(folder, 'cp-0000'))
             if len(checkpoints) == 0:
@@ -58,6 +63,8 @@ class Experiment:
                 continue
             best_checkpoint, best_threshold, thresholds, means = Validator().find_best_checkpoint(folder)
             means_all.append(means[0])
+        x = np.arange(len(means_all))
+        plt.xticks(x, ticks, rotation=90)
         plt.plot(means_all)
         plt.savefig(os.path.join(self.test_path, 'means.png'))
          
@@ -127,10 +134,10 @@ if __name__ == '__main__':
         'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
     }'''
 
-    exp = HowManyValidPatExcludeExperiment('ExperimentALLHowManyValidPatExclude', config_for_experiment)
-    exp.run_experiment()
+    exp = HowManyValidPatExcludeExperiment('ExperimentHowManyValidPatExclude', config_for_experiment)
+    #exp.run_experiment()
     
-    #print(exp.get_results())
+    print(exp.get_results())
     
     '''config_for_experiment = {
         'WITH_SMALLER_DATASET': [False],

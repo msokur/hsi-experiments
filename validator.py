@@ -29,6 +29,7 @@ class Validator():
                 data = []
                 for row in reader:
                     data.append(row)
+                
                 data = np.array(data)
                 
                 #get data
