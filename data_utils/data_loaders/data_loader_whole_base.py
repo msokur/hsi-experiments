@@ -11,6 +11,7 @@ class DataLoaderWholeBase(DataLoader):
         super().__init__(**kwargs)
 
         self.class_instance = class_instance
+        self.dict_names.append('size')
 
     def get_extension(self):
         return self.class_instance.get_extension()
@@ -53,10 +54,11 @@ class DataLoaderWholeBase(DataLoader):
         #values = self.X_y_concatenate_from_spectrum(spectra, indexes_np)
         print(spectrum.shape, mask.shape, np.unique(mask))
         print(DataLoaderWholeBase.get_all_indexes(mask)[0].shape)
+        size = spectrum.shape[:2]
         X = reshape(spectrum)
         y = reshape(mask)
         indexes_in_datacube = list(np.array(DataLoaderWholeBase.get_all_indexes(mask)).T)
-        values = [X, y, indexes_in_datacube]
+        values = [X, y, indexes_in_datacube, size]
         values = {n: v for n, v in zip(self.dict_names, values)}
 
         return values

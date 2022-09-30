@@ -10,6 +10,8 @@ from data_utils.data_loaders.data_loader_whole_mat import DataLoaderWholeMat
 from data_utils.smoothing import MedianFilter, GaussianFilter
 import trainer_easy
 import trainer_easy_several_outputs
+from evaluation.evaluation_binary import EvaluationBinary
+from evaluation.evaluation_multiclass import EvaluationMulticlass
 #import models.keras_tuner_model as keras_tuner_model
 #import models.keras_tuner_models_with_ones as keras_tuner_models_with_ones
 
@@ -65,6 +67,35 @@ def get_data_loader(**kwargs):
         return DataLoaderWholeMat(DataLoaderMatColon(**kwargs), **kwargs)
 
     raise ValueError(f'Error! Database type {config.DATABASE} specified wrong (either in config.py or in provider.py)')
+
+
+def get_whole_analog_of_data_loader(original_database):
+    analog = ""
+    if original_database == 'colon':
+        analog = 'colon_whole'
+    if original_database == 'bea_brain':
+        analog = 'bea_brain_whole'
+    if original_database == 'bea_eso':
+        analog = 'bea_eso_whole'
+    if original_database == 'bea_colon':
+        analog = 'bea_colon_whole'
+
+    if analog == "":
+        raise ValueError(f"We didn't found an analog whole database for {original_database}")
+
+    print(f"For {original_database} we have found {analog} whole database")
+
+    return analog
+
+
+def get_evaluation(*args, **kwargs):
+    labels = config.LABELS_OF_CLASSES_TO_TRAIN
+    print('labels', labels)
+    if len(labels) == 2:
+        print('Get EvaluationBinary')
+        return EvaluationBinary(*args, **kwargs)
+    print('Get EvaluationMulticlass')
+    return EvaluationMulticlass(*args, **kwargs)
 
 
 def get_keras_tuner_model():

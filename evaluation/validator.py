@@ -5,35 +5,56 @@ import os
 import numpy as np
 from tqdm import tqdm
 
+import config
+
 class Validator():
+    @staticmethod
+    def find_sens_spec_column(header):
+        header = np.array([s.lower() for s in header])
+
+        sens_column_index = np.where(header == "sensitivity_mean")[0][0]
+        spec_column_index = np.where(header == "specificity_mean")[0][0]
+        threshold_column_index = np.where(header == "threshold")[0][0]
+        print(sens_column_index, spec_column_index, threshold_column_index)
+        return sens_column_index, spec_column_index, threshold_column_index
     
-    def find_best_checkpoint(self, root_path, 
-                             checkpoints_regex='cp-*', 
-                             thresholds_filename='metrics_threshold_relation_by_patient.csv', 
-                             threshold_raw=1, 
-                             sens_spec_raws=[4, 5],
+    def find_best_checkpoint(self, root_path,
+                             checkpoints_regex='cp-0000'+config.SYSTEM_PATHS_DELIMITER,
+                             thresholds_filename='compare_all_thresholds.csv',
                              prints=True):
+        print(os.path.join(root_path, checkpoints_regex))
         checkpoints = glob.glob(os.path.join(root_path, checkpoints_regex))
+        print(checkpoints)
         sorted(checkpoints)
+
         thresholds = []
         means = []
-        i_sens = sens_spec_raws[0]
-        i_spec = sens_spec_raws[1]
-        
+        best_sens = []
+        best_spec = []
+
         for checkpoint in tqdm(checkpoints):
             print(checkpoint)
             metrics_csv_path = os.path.join(checkpoint, thresholds_filename)
-        
+
             with open(metrics_csv_path, newline='') as f:
                 reader = csv.reader(f, delimiter=',')
                 data = []
+                header = next(reader)
+                if str.isdigit(header[0]):
+                    data.append(header)
+                    i_sens = 4
+                    i_spec = 5
+                    threshold_column = 2
+                else:
+                    i_sens, i_spec, threshold_column = Validator.find_sens_spec_column(header)
+
                 for row in reader:
                     data.append(row)
                 
                 data = np.array(data)
                 
                 #get data
-                thr = data[:, threshold_raw].astype(np.float32)
+                thr = data[:, threshold_column].astype(np.float32)
                 sens = data[:, i_sens].astype(np.float32)                
                 spec = data[:, i_spec].astype(np.float32)                
                                 
@@ -60,6 +81,8 @@ class Validator():
                     
                 #get and print results
                 idx = np.argmin(diff).flatten() + 1
+                best_sens.append(sens[idx])
+                best_spec.append(spec[idx])
                 if prints:
                     print('Best index and threshold: ', idx, thr[idx])
                     print('Best sensitivity and specificity: ', sens[idx], spec[idx])
@@ -78,7 +101,7 @@ class Validator():
         print('Means:', means)
         print('------------------------------------------------------')
         
-        return best_checkpoint, best_threshold, thresholds, means
+        return best_checkpoint, best_threshold, thresholds, means, best_sens[best_idx], best_spec[best_idx]
 
     
 if __name__ == '__main__':
