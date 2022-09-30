@@ -14,18 +14,11 @@ from data_utils.data_loaders.data_loader_base import DataLoader
 
 class CrossValidatorBase:
     def __init__(self, name):
-        # self.metrics_saving_path = config.TEST_NPZ_PATH
         self.name = name
 
-        """if config.MODE == 'CLUSTER':
-            self.prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
-        else:
-            # self.prefix = 'C:\\Users\\tkachenko\\Desktop\\HSI\\'
-            self.prefix = 'C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments'"""
-
-        current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-        parent_dir = os.path.dirname(current_dir)
-        self.prefix = parent_dir
+        current_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+        project_folder = os.path.dirname(current_folder)
+        self.project_folder = project_folder
 
     @staticmethod
     def get_execution_flags():
@@ -81,7 +74,6 @@ class CrossValidatorBase:
             else:
                 model_name += '_' + str(indexes[0]) + '_' + DataLoader.get_name_easy(np.array(paths)[indexes][0])
 
-            print('model_name', model_name)
             paths_patch = np.array(paths)[indexes]
 
             CrossValidatorBase.cross_validation_step(model_name,
@@ -101,37 +93,35 @@ class CrossValidatorBase:
                                      # 'model_name': config.MODEL_NAME})
                                      'model_name': model_name})
 
-        return csv_filename
+    @staticmethod
+    def get_nearest_int_delimiter(folder):
+        checkpoints_folders = glob(os.path.join(folder, 'cp-*'))
+        checkpoints_folders = sorted(checkpoints_folders)
+
+        return int(checkpoints_folders[0].split(config.SYSTEM_PATHS_DELIMITER)[-1].split('-')[-1])
 
     @staticmethod
-    def get_nearest_int_delimiter(path):
-        checkpoints_paths = glob(os.path.join(path, 'cp-*'))
-        checkpoints_paths = sorted(checkpoints_paths)
-
-        return int(checkpoints_paths[0].split(config.SYSTEM_PATHS_DELIMITER)[-1].split('-')[-1])
-
-    @staticmethod
-    def get_csv(search_path):
-        csv_paths = glob(search_path)
+    def get_csv(search_folder):
+        csv_paths = glob(os.path.join(search_folder, '*.csv'))
         if len(csv_paths) > 1:
-            raise ValueError(search_path + ' has more then one .csv files!')
+            raise ValueError(search_folder + ' has more then one .csv files!')
         if len(csv_paths) == 0:
-            raise ValueError('No .csv files were found in ' + search_path)
+            raise ValueError('No .csv files were found in ' + search_folder)
         csv_path = csv_paths[0]
 
         return csv_path
 
     @staticmethod
-    def get_history(model_path):
-        history_paths = utils.glob_multiple_file_types(model_path, '.*.npy', '*.npy')
+    def get_history(search_folder):
+        history_paths = utils.glob_multiple_file_types(search_folder, '.*.npy', '*.npy')
         # print(history_paths)
         if len(history_paths) == 0:
             print('Error! No history files were found!')
             # raise ValueError('Error! No history files were found!')
-            return {}, model_path
+            return {}, search_folder
         if len(history_paths) > 1:
-            print(f'Error! Too many history.npy files were found in {model_path}!')
-            return {}, model_path
+            print(f'Error! Too many history.npy files were found in {search_folder}!')
+            return {}, search_folder
             # raise ValueError(f'Error! Too many .npy files were found in {model_path}!')
 
         history_path = history_paths[0]

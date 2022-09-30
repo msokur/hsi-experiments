@@ -45,11 +45,11 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
         else:
             self.execution_flags = kwargs['execution_flags']
 
-        search_path = os.path.join(self.prefix, 'logs', name, '*.csv')
+        search_path = os.path.join(self.project_folder, 'logs', name, '*.csv')
         print(search_path)
         self.training_csv_path = CrossValidatorBase.get_csv(search_path)
 
-        self.saving_folder = os.path.join(self.prefix, 'test', name)
+        self.saving_folder = os.path.join(self.project_folder, 'test', name)
         if not os.path.exists(self.saving_folder):
             os.mkdir(self.saving_folder)
 

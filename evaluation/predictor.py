@@ -78,7 +78,7 @@ class Predictor:
     @staticmethod
     def get_best_checkpoint_from_csv(model_path):
         checkpoints_paths = sorted(glob(os.path.join(model_path,
-                                                     'checkpoints' + config.SYSTEM_PATHS_DELIMITER + '*'
+                                                     'checkpoints', '*'
                                                      + config.SYSTEM_PATHS_DELIMITER)))
         best_checkpoint_path = checkpoints_paths[-1]
         return best_checkpoint_path.split(config.SYSTEM_PATHS_DELIMITER)[-2]

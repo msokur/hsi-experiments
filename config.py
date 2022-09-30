@@ -57,13 +57,13 @@ SMOOTHING_TYPES = {
 SMOOTHING_TYPE = SMOOTHING_TYPES['None']
 
 CROSS_VALIDATORS = {
-    'cv_old': 'cv_old',
+    'cv_normal': 'cv_normal',
     'cv_spain': 'cv_spain',
     'cv_postprocessing': 'cv_postprocessing',
     'cv_experiment': 'cv_experiment'
 }
 
-CROSS_VALIDATOR = CROSS_VALIDATORS['cv_postprocessing']
+CROSS_VALIDATOR = CROSS_VALIDATORS['cv_normal']
 
 # ----------------------------------------------------------------------------------------------------------
 #database_abbreviation = 'Esophagus_MedFilter'
@@ -166,16 +166,16 @@ USE_ALL_LABELS = False
 assert len(LABELS_OF_CLASSES_TO_TRAIN) == NUMBER_OF_CLASSES_TO_TRAIN  # check yourself
 
 BATCH_SIZE = 100  # train
-EPOCHS = 1000  # train
+EPOCHS = 100  # train
 LEARNING_RATE = 1e-4  # train
 
 SPLIT_FACTOR = 0.9  # train   #for data sets: train\test data percentage
 
 CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY = True  # cv + preprocessor
-CV_RESTORE_VALID_PATIENTS = True
+CV_RESTORE_VALID_PATIENTS = False
 CV_RESTORE_VALID_PATIENTS_PATH = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/ExperimentHowManyValidPatExclude'
 CV_RESTORE_VALID_PATIENTS_SEQUENCE = ''#[['_C', -1], ['_', 0]]
-CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID = 20  # cv + preprocessor, to create validation dataset for training
+CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID = 1  # cv + preprocessor, to create validation dataset for training
 CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST = 1  # cv, for testing (exactly on this excluded patients we count end evaluation)
 CV_FIRST_SPLIT = 0  # cv, if we need to start not from the first split
 CV_GET_CHECKPOINT_FROM_VALID = True  # cv

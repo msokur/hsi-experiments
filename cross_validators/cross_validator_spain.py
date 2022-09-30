@@ -17,15 +17,15 @@ class CrossValidatorSpain(CrossValidatorBase):
     def evaluation(self):
         name = self.name
 
-        search_path = os.path.join(self.prefix, 'logs', name, '*.csv')
+        search_path = os.path.join(self.project_folder, 'logs', name, '*.csv')
         csv_path = CrossValidatorBase.get_csv(search_path)
         # print(csv_path)
 
         saving_path = os.path.join('test', name)
         saving_path_whole = os.path.join('test', name + '_whole_image')
         if config.MODE == 'CLUSTER':
-            saving_path = os.path.join(self.prefix, saving_path)
-            saving_path_whole = os.path.join(self.prefix, saving_path_whole)
+            saving_path = os.path.join(self.project_folder, saving_path)
+            saving_path_whole = os.path.join(self.project_folder, saving_path_whole)
 
         nearest_int = self.get_nearest_int_delimiter(saving_path)
 
