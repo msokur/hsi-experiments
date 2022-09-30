@@ -236,7 +236,7 @@ class EvaluationBase(Metrics):
                                      checkpoints_range=None,  # for predictions and evaluation
                                      checkpoints_raw_list=None,  # for predictions and evaluation
                                      thresholds_range=None,  # for evaluation of binary classification
-                                     thresholds_raw_list=None,  # for evaluation of binary classification 
+                                     thresholds_raw_list=None,  # for evaluation of binary classification
                                      save_predictions=False,  # for predictions
                                      save_curves=False,  # for evaluation
                                      predictions_npy_filename=None):
