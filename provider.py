@@ -8,6 +8,7 @@ from data_utils.data_loaders.data_loader_mat_colon import DataLoaderMatColon
 from data_utils.data_loaders.data_loader_whole_colon import DataLoaderWholeColon
 from data_utils.data_loaders.data_loader_whole_mat import DataLoaderWholeMat
 from data_utils.smoothing import MedianFilter, GaussianFilter
+from data_utils.scaler import NormalizerScaler, StandardScaler, StandardScalerTransposed
 import trainer_easy
 import trainer_easy_several_outputs
 from evaluation.evaluation_binary import EvaluationBinary
@@ -114,6 +115,17 @@ def get_smoother(*args, **kwargs):
         return GaussianFilter(*args, **kwargs)
     
     raise ValueError(f'Error! Smoother type is {config.SMOOTHING_TYPE}')
+    
+def get_scaler(*args, **kwargs):
+    if config.NORMALIZATION_TYPE == 'l2_norm':
+        return NormalizerScaler(*args, **kwargs)
+    if config.NORMALIZATION_TYPE == 'svn':
+        print('StandardScaler')
+        return StandardScaler(*args, **kwargs)
+    if config.NORMALIZATION_TYPE == 'svn_T':
+        return StandardScalerTransposed(*args, **kwargs)
+    
+    raise ValueError(f'Error! No corresponding Scaler for {config.SMOOTHING_TYPE}')
 
 if __name__ == '__main__':
     trainer = get_trainer(except_indexes=['2020_02_04_20_48_03_'], valid_except_indexes=['2019_09_04_12_43_40_', '2020_05_28_15_20_27_', '2019_07_12_11_15_49_', '2020_05_15_12_43_58_'])

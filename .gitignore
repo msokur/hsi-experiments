@@ -28,3 +28,4 @@ jupyter/*.mat
 jupyter/weights.npz
 tuner_results
 trainers/my_dir
+scripts/outputs

@@ -16,11 +16,11 @@ import glob
 from tqdm import tqdm
 import pickle
 from scipy.signal import savgol_filter
-from sklearn import preprocessing
 from shutil import copyfile
 
 import provider
 from data_loaders.data_loader_base import DataLoader
+from scaler import Scaler
 
 
 '''
@@ -47,6 +47,7 @@ class Preprocessor():
             self.dict_names.append(name)
         self.piles_number = piles_number
         self.weights_filename = weights_filename
+        
 
     # ------------------divide all samples into piles_number files------------------
     def __create_piles(self):
@@ -133,27 +134,6 @@ class Preprocessor():
 
         print('----Shuffling of piles finished----')
 
-    '''Add here some specific preprocessing if needed'''
-
-    @staticmethod
-    def preprocess(X, y):
-        # ill_indexes = np.flatnonzero(_y == 1)   #TODO remove!
-        # _X[ill_indexes, :-1] = savgol_filter(_X[ill_indexes, :-1], 5, 2) #TODO remove!
-
-        # X[X < 0] = 0.
-        # X = preprocessing.Normalizer().transform(X[:, :-1]) #TODO be careful
-
-        # ill_indexes = np.flatnonzero(y == 1)
-
-        # X = X[:, :-1]
-        # X[X<0] = 0.
-        # X[ill_indexes] = savgol_filter(X[ill_indexes], 7, 2)
-        # X[X<0] = 0.
-        # X = preprocessing.Normalizer().transform(X)
-        # X = preprocessing.MinMaxScaler(feature_range=(-1, 1)).fit_transform(X)
-
-        return X, y
-
     def shuffle(self, paths, piles_number, shuffle_saving_path, augmented=False):
         print('--------Shuffling started--------')
         self.raw_paths = paths
@@ -169,87 +149,6 @@ class Preprocessor():
         self.__create_piles()
         self.__shuffle_piles()
         print('--------Shuffling finished--------')
-
-    def X_y_concatenate(self, root_path):
-        paths = glob.glob(os.path.join(root_path, '*.npz'))
-
-        X, y, indexes = [], [], []
-        for path in paths:
-            data = np.load(path)
-            _X, _y, _i = data['X'], data['y'], data['indexes_in_datacube']
-
-            X += list(_X)
-            y += list(_y)
-            indexes += list(_i)
-
-        X, y, indexes = np.array(X), np.array(y), np.array(indexes)
-
-        return X, y, indexes
-
-    def scaler_save(self, scaler, scaler_path):
-        pickle.dump(scaler, open(scaler_path, 'wb'))
-
-    def scaler_restore(self, scaler_path):
-        return pickle.load(open(scaler_path, 'rb'))
-
-    def fit_scale_from_path(self, root_path, scaler_saving_path, scaling_type=config.NORMALIZATION_TYPE):
-        X = [[1, 1], [1, 1]] #cap
-        if scaling_type != 'l2_norm':
-            X, _, _ = self.X_y_concatenate(root_path)
-        return self.fit_scale_from_X(X, scaler_saving_path, scaling_type=scaling_type)
-
-    def fit_scale_from_X(self, X, scaler_saving_path, scaling_type=config.NORMALIZATION_TYPE):
-        scaler = None
-
-        if scaling_type == 'svn':  # svn
-            scaler = preprocessing.StandartScaler().fit(X)
-        else:  # l2_norm
-            scaler = preprocessing.Normalizer().fit(X)
-
-        self.scaler_save(scaler, scaler_saving_path)
-        return scaler.transform(X)
-
-    def scale_X(self, X, scaler_path):
-        _3d = False
-        shapes = []
-
-        if X.shape[0] != 0:  # reshape X if 3d
-            if len(X.shape) > 2:
-                _3d = True
-                shapes = X.shape
-                X = np.reshape(X, (np.prod(X.shape[:-1]), X.shape[-1]))
-
-            # restore scaler
-            if config.NORMALIZATION_TYPE == 'svn_T':
-                scaler = preprocessing.StandardScaler().fit(X.T)
-            else:
-                scaler = self.scaler_restore(scaler_path)
-
-            # transform X
-            if config.NORMALIZATION_TYPE == 'svn_T':
-                X = scaler.transform(X.T).T
-            else:
-                X = scaler.transform(X)
-
-            # reshape back if 3d
-            if _3d:
-                X = np.reshape(X, shapes)
-
-        return X
-
-    def scaledData_save(self, root_path, destination_path, scaler_path):
-        paths = glob.glob(os.path.join(root_path, '*.npz'))
-
-        if not os.path.exists(destination_path):
-            os.mkdir(destination_path)
-
-        for path in tqdm(paths):
-            data = np.load(path)
-            X = data['X']
-            X = self.scale_X(X, scaler_path)
-            data = {n: a for n, a in data.items()}
-            data['X'] = X.copy()
-            np.savez(os.path.join(destination_path, DataLoader.get_name_easy(path)), **data)
 
     def __split_arrays(self, path, data):
         # ---------------splitting into archives----------
@@ -270,12 +169,6 @@ class Preprocessor():
             arch = {}
             for i, n in enumerate(self.dict_names):
                 arch[n] = data_[n][row]
-
-            if config.WITH_PREPROCESS_DURING_SPLITTING:
-                _X, _y = data_[self.load_name_for_X][row], data_[self.load_name_for_y][row]
-                _X, _y = Preprocessor.preprocess(_X, _y)
-                arch[self.dict_names[0]] = _X.copy()
-                arch[self.dict_names[1]] = _y.copy()
 
             np.savez(os.path.join(path, 'batch' + str(ind)), **arch)
             ind += 1
@@ -466,7 +359,6 @@ class Preprocessor():
     def pipeline(self, root_path,
                  preprocessed_path,
                  scaler_path=None,
-                 scaler_name='scaler',
                  execution_flags=None):
         if execution_flags is None:
             execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
@@ -491,11 +383,9 @@ class Preprocessor():
 
         # ----------scaler part ------------------
         if execution_flags['scale'] and config.NORMALIZATION_TYPE is not None:
-            print('NORMALIZATION TYPE', config.NORMALIZATION_TYPE)
-            if scaler_path is None and config.NORMALIZATION_TYPE != 'svn_T':
-                scaler_path = os.path.join(preprocessed_path, scaler_name + config.SCALER_FILE_NAME)
-                self.fit_scale_from_path(preprocessed_path, scaler_path)
-            self.scaledData_save(preprocessed_path, preprocessed_path, scaler_path)
+            print('SCALER TYPE', config.NORMALIZATION_TYPE)
+            self.Scaler = provider.get_scaler(preprocessed_path, scaler_path=scaler_path)
+            self.Scaler.iterate_over_archives_and_save_scaled_X(preprocessed_path, preprocessed_path)
 
         # ----------shuffle part------------------
         if execution_flags['shuffle']:
@@ -508,8 +398,8 @@ class Preprocessor():
 
 if __name__ == '__main__':
     execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
-    execution_flags['load_data_with_dataloader'] = True
-    execution_flags['add_sample_weights'] = True
+    execution_flags['load_data_with_dataloader'] = False
+    execution_flags['add_sample_weights'] = False
     execution_flags['scale'] = True
     execution_flags['shuffle'] = False
     
