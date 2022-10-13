@@ -53,7 +53,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
     def evaluation(self):
         # ------------------------testing
 
-        search_path = os.path.join(self.prefix, 'logs', self.root_folder, self.args.cv_name, '*.csv')
+        search_path = os.path.join(self.project_folder, 'logs', self.root_folder, self.args.cv_name, '*.csv')
         csv_path = CrossValidatorBase.get_csv(search_path)
 
         self.save_predictions_and_metrics_for_checkpoint(0,

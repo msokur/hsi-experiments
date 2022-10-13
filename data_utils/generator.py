@@ -91,11 +91,11 @@ class DataGenerator(keras.utils.Sequence):
                                                                 except_names=self.except_indexes,
                                                                 valid_except_names=self.valid_except_indexes)
         else:
-            print('!!!!!   Dataset not split   !!!!!')
+            print('!!!!!   Dataset is not split   !!!!!')
 
-        batches_paths = glob.glob(os.path.join(self.batches_npz_path, '*.npz'))  # TODO, for test, remove!!!
+        batches_paths = glob.glob(os.path.join(self.batches_npz_path, '*.npz'))
         valid_batches_paths = glob.glob(os.path.join(self.batches_npz_path,
-                                                     'valid', '*.npz'))  # TODO, for test, remove!!!
+                                                     'valid', '*.npz'))
 
         #if self.for_tuning:
         #    batches_paths = batches_paths[:10]
