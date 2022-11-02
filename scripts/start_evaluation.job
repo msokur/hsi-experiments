@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=16
-#SBATCH --job-name=post
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=test_3d_inc
 #SBATCH --partition=clara
 #SBATCH --time=40:00:00
 #SBATCH --mem=64G
-##SBATCH --gres=gpu:v100:2
-#SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=_postprocessing_for_known_models_%j.log
+#SBATCH --gres=gpu:rtx2080ti:1
+##SBATCH --gres=gpu:v100:1
+#SBATCH --output=_check_what_db_was_used_%j.log
 
 module load Python
 module load TensorFlow
@@ -18,4 +18,4 @@ module load OpenCV
 #module load scikit-image
 
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validation.py
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/evaluation/evaluation_binary.py
