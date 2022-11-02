@@ -22,7 +22,7 @@ module load OpenCV/4.2.0-fosscuda-2019b-Python-3.7.4
 module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
 
 
-python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments/cross_validation.py --experiment_folder=$1 --cv_name=$2 --abbreviation=$3 --config_index=$4 --test_path=$5
+python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/cross_validation.py --experiment_folder=$1 --cv_name=$2 --abbreviation=$3 --config_index=$4 --test_path=$5
 
 exit 0
 EOT

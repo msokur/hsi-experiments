@@ -183,7 +183,7 @@ SPLIT_FACTOR = 0.9  # train   #for data sets: train\test data percentage
 
 CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY = True  # cv + preprocessor
 CV_RESTORE_VALID_PATIENTS = False
-CV_RESTORE_VALID_PATIENTS_PATH = '/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments/logs/ExperimentHowManyValidPatExclude'
+CV_RESTORE_VALID_PATIENTS_PATH = '/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude'
 CV_RESTORE_VALID_PATIENTS_SEQUENCE = ''  # [['_C', -1], ['_', 0]]
 CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID = 1  # cv + preprocessor, to create validation dataset for training
 CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST = 1  # cv, for testing (exactly on this excluded patients we count end evaluation)
@@ -300,7 +300,7 @@ if MODE == 'CLUSTER':
     TEST_NPZ_PATH = os.path.join(prefix, TEST_NPZ_PATH)
 
     # MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs', 'debug_combi']
-    MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments/logs']
+    MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs']
 else:
     MODEL_NAME_PATHS = ['logs']
 
