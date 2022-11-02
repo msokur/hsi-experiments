@@ -28,6 +28,7 @@ class EvaluationBase(Metrics):
         self.comparable_characteristics_csvname = "compare_all_thresholds.csv"
         self.metrics_filename_base = "metrics_by_threshold"
         self.predictions_npy_filename = 'predictions.npy'
+        self.checkpoint_basename = 'cp-'
 
         self.name = name
         self.npz_folder = npz_folder
@@ -143,7 +144,7 @@ class EvaluationBase(Metrics):
         thresholds = self.check_thresholds_for_evaluation(thresholds_range, thresholds_raw_list)
 
         for cp in checkpoints:
-            save_evaluation_folder_with_checkpoint = os.path.join(self.save_evaluation_folder, f'cp-{cp:04d}')
+            save_evaluation_folder_with_checkpoint = os.path.join(self.save_evaluation_folder, f'{self.checkpoint_basename}{cp:04d}')
 
             for threshold in thresholds:
                 comparable_characteristics_csv_path = os.path.join(save_evaluation_folder_with_checkpoint,
@@ -163,7 +164,7 @@ class EvaluationBase(Metrics):
                     cp = int(cp)
 
                     data = np.load(
-                        os.path.join(self.save_evaluation_folder, f'cp-{cp:04d}', predictions_npy_filename),
+                        os.path.join(save_evaluation_folder_with_checkpoint, predictions_npy_filename),
                         allow_pickle=True)
 
                     metrics_all = {}
@@ -295,9 +296,9 @@ class EvaluationBase(Metrics):
             checkpoints = EvaluationBase.check_checkpoints_for_evaluation(checkpoints_range, checkpoints_raw_list)
             for checkpoint in checkpoints:
                 if type(checkpoint) == int:
-                    checkpoint = f'cp-{checkpoint:04d}'
+                    checkpoint_name = f'cp-{checkpoint:04d}'
 
-                save_folder_with_checkpoint = os.path.join(self.save_evaluation_folder, checkpoint)
+                save_folder_with_checkpoint = os.path.join(self.save_evaluation_folder, f'{self.checkpoint_basename}{checkpoint:04d}')
                 if not os.path.exists(save_folder_with_checkpoint):
                     os.mkdir(save_folder_with_checkpoint)
 
@@ -308,7 +309,7 @@ class EvaluationBase(Metrics):
                                            npz_folder,
                                            save_folder_with_checkpoint,
                                            predictions_npy_filename,
-                                           checkpoint=checkpoint,
+                                           checkpoint=checkpoint_name,
                                            save_roc_auc_curve=save_curves)
 
         self.evaluate(checkpoints_rng=checkpoints_range,

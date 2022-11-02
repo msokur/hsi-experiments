@@ -63,7 +63,7 @@ CROSS_VALIDATORS = {
     'cv_experiment': 'cv_experiment'
 }
 
-CROSS_VALIDATOR = CROSS_VALIDATORS['cv_normal']
+CROSS_VALIDATOR = CROSS_VALIDATORS['cv_postprocessing']
 
 # ----------------------------------------------------------------------------------------------------------
 #database_abbreviation = 'Esophagus_MedFilter'

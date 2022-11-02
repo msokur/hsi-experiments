@@ -10,6 +10,8 @@ import config
 from data_utils.data_loaders.data_loader_base import DataLoader
 from evaluation.metrics import Metrics
 
+tf.random.set_seed(1)
+
 
 class Predictor:
     """
