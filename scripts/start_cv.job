@@ -50,3 +50,5 @@ conda activate hsienv
 
 
 python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/cross_validation.py
+
+conda deactivate
