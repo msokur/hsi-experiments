@@ -68,4 +68,4 @@ module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
 
 
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validation.py
+python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments/cross_validation.py

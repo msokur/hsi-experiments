@@ -56,7 +56,7 @@ SMOOTHING_TYPES = {
     'None': None
 }
 
-SMOOTHING_TYPE = SMOOTHING_TYPES['None']
+SMOOTHING_TYPE = SMOOTHING_TYPES['median_filter']
 
 CROSS_VALIDATORS = {
     'cv_normal': 'cv_normal',
@@ -82,7 +82,7 @@ database_abbreviation = 'hno'
 # RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')
 
 
-RAW_NPZ_PATH = os.path.join('data_3d', 'svn_T')
+RAW_NPZ_PATH = os.path.join('data_3d', 'svn_T', 'median')
 RAW_SOURCE_PATH = os.path.join('Parotis-Faelle_unsorted', 'data')
 # RAW_NPZ_PATH = os.path.join('data_preprocessed', 'EsophagusDatabase', 'raw_3d_weights')
 TEST_NPZ_PATH = RAW_NPZ_PATH
@@ -344,5 +344,8 @@ else:
         tf.TensorSpec(shape=(None,), dtype=tf.float32))
 
 # -------------------PLOT
-TISSUE_LABELS = {0: 'Esophagus', 1: 'Tumor', 2: 'Stomach'}
-PLOT_COLORS = {0: 'yellow', 1: 'blue', 2: 'red'}
+TISSUE_LABELS = {0: 'Nerve', 1: 'Tumor', 2: 'Parotis', 3: 'Subcutaneous_Tissue', 4: 'Muscle', 5: 'Vein',
+                 6: 'Cartilage', 7: 'Not_Certain'}
+PLOT_COLORS = {0: 'yellow', 1: 'blue', 2: 'red', 3: 'white', 4: 'green',
+               5: 'grey', 6: 'black', 7: 'cornflowerblue'}
+

@@ -23,7 +23,7 @@ def get_cross_validator(*args, **kwargs):
 if __name__ == '__main__':
     
     try:
-        cross_validator = get_cross_validator('_CV_test')
+        cross_validator = get_cross_validator('_CV_5x5_svnT_med')
 
         # cross validation pipeline consists of 2 parts:
         # (1) cross_validation
