@@ -9,12 +9,14 @@ import pickle
 
 import config
 from utils import send_tg_message, send_tg_message_history
-import generator
+import data_utils.generator as generator
 import callbacks
 
 
 class Trainer:
     def __init__(self, model_name=config.MODEL_NAME, except_indexes=[], valid_except_indexes=[]):
+        self.batch_path = None
+        self.mirrored_strategy = None
         self.log_dir = model_name
         self.excepted_indexes = except_indexes.copy()
         self.valid_except_indexes = valid_except_indexes.copy()
@@ -26,11 +28,11 @@ class Trainer:
     @abc.abstractmethod
     def get_model(self):
         pass
-    
+
     def save_valid_except_indexes(self, valid_except_indexes):
         with open(os.path.join(self.log_dir, 'valid.valid_except_names'), 'wb') as f:
             pickle.dump(valid_except_indexes, f, pickle.HIGHEST_PROTOCOL)
-        
+
     def logging_and_copying(self):
         if not config.RESTORE_MODEL:
             if not os.path.exists(self.log_dir):
@@ -47,27 +49,26 @@ class Trainer:
             self.batch_path += '_' + self.excepted_indexes[0]
         if not os.path.exists(self.batch_path):
             os.mkdir(self.batch_path)
-                        
+
         train_generator = generator.DataGenerator('train',
                                                   config.SHUFFLED_PATH,
-                                                  #config.BATCHED_PATH,
+                                                  # config.BATCHED_PATH,
                                                   self.batch_path,
                                                   split_flag=True,
                                                   valid_except_indexes=self.valid_except_indexes.copy(),
                                                   except_indexes=self.excepted_indexes.copy(),
                                                   for_tuning=for_tuning,
-                                                 log_dir=self.log_dir)
+                                                  log_dir=self.log_dir)
         self.save_valid_except_indexes(train_generator.valid_except_indexes)
         valid_generator = generator.DataGenerator('valid',
                                                   config.SHUFFLED_PATH,
-                                                  #config.BATCHED_PATH,
+                                                  # config.BATCHED_PATH,
                                                   self.batch_path,
                                                   split_flag=False,
                                                   except_indexes=self.excepted_indexes,
-                                            valid_except_indexes=train_generator.valid_except_indexes,
+                                                  valid_except_indexes=train_generator.valid_except_indexes,
                                                   for_tuning=for_tuning,
                                                   log_dir=self.log_dir)
-        
 
         class_weights = train_generator.get_class_weights()
         print(class_weights)
@@ -100,7 +101,7 @@ class Trainer:
             # histogram_freq=1,
             # profile_batch = '20,30',
             except_indexes=self.excepted_indexes,
-            #train_generator=train_generator, #used for gradients counting TODO fix or remove
+            # train_generator=train_generator, #used for gradients counting TODO fix or remove
             strategy=self.mirrored_strategy,
             process=process)
 
@@ -165,7 +166,7 @@ class Trainer:
             workers=int(os.cpu_count()))
 
         self.save_history(history)
-        
+
         rmtree(self.batch_path)
 
         return model, history
@@ -183,11 +184,11 @@ class Trainer:
                     except RuntimeError as e:
                         print(e)
 
-                #mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
-                #mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.ReductionToOneDevice())
-                #mirrored_strategy = tf.distribute.CentralStorageStrategy()
+                # mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
+                # mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.ReductionToOneDevice())
+                # mirrored_strategy = tf.distribute.CentralStorageStrategy()
                 mirrored_strategy = tf.distribute.MultiWorkerMirroredStrategy()
-                #mirrored_strategy = tf.distribute.MirroredStrategy()
+                # mirrored_strategy = tf.distribute.MirroredStrategy()
 
                 with mirrored_strategy.scope():
                     model, history = self.train_process(mirrored_strategy=mirrored_strategy)
@@ -195,7 +196,7 @@ class Trainer:
                 model, history = self.train_process()
 
         except Exception as e:
-            send_tg_message(f'Mariia, ERROR!!!, training {self.log_dir} has finished with error {e}')
+            send_tg_message(f'Benny, ERROR!!!, training {self.log_dir} has finished with error {e}')
             raise e  # TODO REMOVE!!
 
         checkpoints_paths = os.path.join(self.log_dir, 'checkpoints')
@@ -207,7 +208,7 @@ class Trainer:
             os.mkdir(final_model_save_path)
         model.save(final_model_save_path)
 
-        #send_tg_message_history(self.log_dir, history)
+        # send_tg_message_history(self.log_dir, history)
 
         return model
 
@@ -215,4 +216,4 @@ class Trainer:
 if __name__ == '__main__':
     trainer = Trainer()
     trainer.train()
-    #train(except_indexes=['2019_09_04_12_43_40_', '2020_05_28_15_20_27_', '2019_07_12_11_15_49_', '2020_05_15_12_43_58_'])
+    # train(except_indexes=['2019_09_04_12_43_40_', '2020_05_28_15_20_27_', '2019_07_12_11_15_49_', '2020_05_15_12_43_58_'])

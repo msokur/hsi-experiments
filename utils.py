@@ -20,9 +20,9 @@ def send_tg_message(message):
 
 def send_tg_message_history(log_dir, history):
     if history is not None:
-        send_tg_message(f'Mariia, training {log_dir} has finished after {len(history.history["loss"])} epochs')
+        send_tg_message(f'Benny, training {log_dir} has finished after {len(history.history["loss"])} epochs')
     else:
-        send_tg_message(f'Mariia, training {log_dir} has finished')
+        send_tg_message(f'Benny, training {log_dir} has finished')
 
 
 def glob_multiple_file_types(path, *patterns):
@@ -38,5 +38,5 @@ def print_function_signature(func, name, printing=False):
         print(f'--------------------method {name} params----------------------')
         signature = inspect.signature(func)
         for param in signature.parameters.values():
-           print(param)
+            print(param)
         print('------------------------------------------------')

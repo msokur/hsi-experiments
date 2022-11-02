@@ -7,6 +7,7 @@ from cross_validators.cross_validator_base import CrossValidatorBase
 from evaluation.evaluation_binary import EvaluationBinary
 from evaluation.evaluation_multiclass import EvaluationMulticlass
 
+
 class CrossValidationNormal(CrossValidatorBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

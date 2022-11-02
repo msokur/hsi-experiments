@@ -1,9 +1,10 @@
 import config
 from data_loader_base import DataLoader
-from hypercube_data import Cube_Read
+from data_utils.hypercube_data import Cube_Read
 
 
 class DataLoaderColon(DataLoader):
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -51,3 +52,11 @@ class DataLoaderColon(DataLoader):
         import cv2
         mask = cv2.imread(mask_path)[..., ::-1]  # [..., ::-1] - BGR to RGB
         return mask
+
+    @staticmethod
+    def labeled_spectrum_get_from_X_y(X, y):
+        healthy_spectrum = X[y == 0]
+        ill_spectrum = X[y == 1]
+        not_certain_spectrum = X[y == 2]
+
+        return healthy_spectrum, ill_spectrum, not_certain_spectrum

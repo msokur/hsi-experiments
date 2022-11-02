@@ -27,8 +27,8 @@ class CrossValidatorBase:
             "evaluation": True
         }
 
-    def pipeline(self, execution_flags={}, **kwargs):
-        if not execution_flags:
+    def pipeline(self, execution_flags=None, **kwargs):
+        if execution_flags is None:
             execution_flags = CrossValidatorBase.get_execution_flags()
 
         if execution_flags['cross_validation']:
@@ -37,14 +37,16 @@ class CrossValidatorBase:
             self.evaluation(**kwargs)
 
         utils.send_tg_message(
-            f'Mariia, operations in cross_validation.py for {self.name} are successfully completed!')
+            f'Benny, operations in cross_validation.py for {self.name} are successfully completed!')
 
     @abc.abstractmethod
     def evaluation(self, **kwargs):  # has to be implemented in child classes
         pass
 
     @staticmethod
-    def cross_validation_step(model_name, except_names=[]):
+    def cross_validation_step(model_name, except_names=None):
+        if except_names is None:
+            except_names = []
         trainer = get_trainer(model_name=model_name, except_indexes=except_names)
         trainer.train()
 

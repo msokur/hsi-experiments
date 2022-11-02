@@ -82,7 +82,7 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
             7. Get labeled with indexes_in_cube
             8. Count evaluation again for the best threshold
 
-            Steps - 2 varian (median filter is applied to raw predictions)
+            Steps - 2 variant (median filter is applied to raw predictions)
             1.-2. are the same
             3. Apply median filter on the raw predictions
             4. Get labeled with indexes_in_cube

@@ -2,7 +2,8 @@ from tensorflow import keras
 
 import config
 import trainer_easy
-import model_3d
+import models.model_3d as model_3d
+
 
 class TrainerEasySeveralOutputs(trainer_easy.TrainerEasy):
     def __init__(self, **kwargs):

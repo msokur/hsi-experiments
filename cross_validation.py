@@ -31,7 +31,7 @@ if __name__ == '__main__':
         # By default both these parts are executed (True)
         # With execution_flags it's possible not to execute 'cross_validation' or 'evaluation' with False
         execution_flags = cross_validator.get_execution_flags()
-        execution_flags['cross_validation'] = False
+        # execution_flags['cross_validation'] = False
 
         # After execution_flags we pass parameters for evaluation
         # To see all possible parameters, their meaning and possible combinations refer to comments in
@@ -43,11 +43,11 @@ if __name__ == '__main__':
                                  save_predictions=True,
                                  save_curves=False)
 
-        #utils.send_tg_message('Mariia, operations in cross_validation.py are successfully completed!')
+        utils.send_tg_message('Benny, operations in cross_validation.py are successfully completed!')
                
     except Exception as e:
 
-        utils.send_tg_message(f'Mariia, ERROR!!!, In CV error {e}')
+        utils.send_tg_message(f'Benny, ERROR!!!, In CV error {e}')
         
         raise e
 

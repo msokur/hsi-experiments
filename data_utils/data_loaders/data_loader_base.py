@@ -6,13 +6,16 @@ from glob import glob
 from tqdm import tqdm
 import pickle
 from scipy.ndimage import gaussian_filter, median_filter
+import pandas as pd
 
 import config
-from background_detection import detect_background
+from data_utils.background_detection import detect_background
 
 
 class DataLoader:
-    def __init__(self, dict_names=['X', 'y', 'indexes_in_datacube'], _3d=config._3D, _3d_size=config._3D_SIZE):
+    def __init__(self, dict_names=None, _3d=config._3D, _3d_size=config._3D_SIZE):
+        if dict_names is None:
+            dict_names = ['X', 'y', 'indexes_in_datacube']
         self.dict_names = dict_names
         self._3d = _3d
         self._3d_size = _3d_size
@@ -51,7 +54,7 @@ class DataLoader:
             if config.SMOOTHING_TYPE == 'median_filter':
                 spectrum = median_filter(spectrum, size=config.SMOOTHING_VALUE)
             if config.SMOOTHING_TYPE == 'gaussian_filter':
-                spectrum = gaussian_filter(spectrum, self.size)
+                spectrum = gaussian_filter(spectrum, sigma=config.SMOOTHING_VALUE)
         return spectrum
 
     def file_read(self, path):
@@ -61,12 +64,14 @@ class DataLoader:
         spectrum = DataLoader.smooth(spectrum)
 
         background_mask = DataLoader.background_get_mask(spectrum, mask.shape[:2])
+        contamination_mask = DataLoader.get_contamination_mask(os.path.split(path)[0], mask.shape[:2])
 
         if self._3d:
             spectrum = self.patches3d_get_from_spectrum(spectrum)
 
         indexes = self.indexes_get_bool_from_mask(mask)
         indexes = [i * background_mask for i in indexes]
+        indexes = [i * contamination_mask for i in indexes]
 
         spectra = []
         for idx in indexes:
@@ -94,6 +99,7 @@ class DataLoader:
         print('----Saving of .npz archives is over----')
 
     def patches3d_get_from_spectrum(self, spectrum):
+        spectrum_ = np.array([])
         size = self._3d_size
         # Better not to use non even sizes
         pad = [int((s - 1) / 2) for s in size]
@@ -114,9 +120,9 @@ class DataLoader:
     def indexes_get_np_from_mask(self, mask):
         indexes = self.indexes_get_bool_from_mask(mask)
 
-        healthy_indexes, ill_indexes, not_certain_indexes = DataLoader.indexes_get_np_from_bool_indexes(*indexes)
+        tissue_indexes = DataLoader.indexes_get_np_from_bool_indexes(*indexes)
 
-        return healthy_indexes, ill_indexes, not_certain_indexes
+        return tissue_indexes
 
     def X_y_dict_save_to_npz(self, path, destination_path, values):
         name = self.get_name(path)
@@ -148,8 +154,22 @@ class DataLoader:
         return X, y, indexes_in_datacube
 
     @staticmethod
+    def get_contamination_mask(path, shape):
+        mask = np.full(shape, True)
+        contamination_pht = os.path.join(path, DataLoader.get_contamination_filename())
+        if os.path.exists(contamination_pht):
+            c_in = pd.read_csv(contamination_pht, names=['x-start', 'x-end', 'y-start', 'y-end'], header=0, dtype=int)
+            for idx in range(c_in.shape[0]):
+                mask[c_in['y-start'][idx]:c_in['y-end'][idx], c_in['x-start'][idx]:c_in['x-end'][idx]] = False
+        return mask
+
+    @staticmethod
     def get_labels_filename():
         return "labels.labels"
+
+    @staticmethod
+    def get_contamination_filename():
+        return 'contamination.csv'
 
     @staticmethod
     def get_name_easy(path, delimiter=config.SYSTEM_PATHS_DELIMITER):
@@ -172,16 +192,12 @@ class DataLoader:
         data = np.load(npz_path)
         X, y = data['X'], data['y']
 
-        healthy_spectrum, ill_spectrum, not_certain_spectrum = DataLoader.labeled_spectrum_get_from_X_y(X, y)
-
-        return healthy_spectrum, ill_spectrum, not_certain_spectrum
+        return DataLoader.labeled_spectrum_get_from_X_y(X, y)
 
     @staticmethod
+    @abc.abstractmethod
     def labeled_spectrum_get_from_X_y(X, y):
-        healthy_spectrum = X[y == 0]
-        ill_spectrum = X[y == 1]
-        not_certain_spectrum = X[y == 2]
-        return healthy_spectrum, ill_spectrum, not_certain_spectrum
+        pass
 
     @staticmethod
     def background_get_mask(spectrum, shapes):

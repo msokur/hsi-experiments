@@ -5,9 +5,9 @@ import json
 import config
 from cross_validators.cross_validator_base import CrossValidatorBase
 
+
 class CrossValidatorExperiment(CrossValidatorBase):
     def __init__(self):
-
 
         # -------------------------parser
         parser = argparse.ArgumentParser(description='Process some integers.')
@@ -49,7 +49,6 @@ class CrossValidatorExperiment(CrossValidatorBase):
 
         config.BATCHED_PATH += '_' + args.cv_name
 
-
     def evaluation(self):
         # ------------------------testing
 
@@ -60,5 +59,5 @@ class CrossValidatorExperiment(CrossValidatorBase):
                                                          self.metrics_saving_path,
                                                          csv_path,
                                                          thr_ranges=[  # [0.1, 0.6, 10],
-                                                            [0.4, 0.5, 100]],
+                                                             [0.4, 0.5, 100]],
                                                          execution_flags=[True])
