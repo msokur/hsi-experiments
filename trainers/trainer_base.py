@@ -196,7 +196,7 @@ class Trainer:
                 model, history = self.train_process()
 
         except Exception as e:
-            send_tg_message(f'Benny, ERROR!!!, training {self.log_dir} has finished with error {e}')
+            send_tg_message(f'{config.USER}, ERROR!!!, training {self.log_dir} has finished with error {e}')
             raise e  # TODO REMOVE!!
 
         checkpoints_paths = os.path.join(self.log_dir, 'checkpoints')

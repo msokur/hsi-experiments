@@ -43,11 +43,11 @@ if __name__ == '__main__':
                                  save_predictions=True,
                                  save_curves=False)
 
-        utils.send_tg_message('Benny, operations in cross_validation.py are successfully completed!')
+        utils.send_tg_message(f'{config.USER}, operations in cross_validation.py are successfully completed!')
                
     except Exception as e:
 
-        utils.send_tg_message(f'Benny, ERROR!!!, In CV error {e}')
+        utils.send_tg_message(f'{config.USER}, ERROR!!!, In CV error {e}')
         
         raise e
 

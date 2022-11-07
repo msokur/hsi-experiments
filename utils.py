@@ -12,7 +12,7 @@ def send_tg_message(message):
         if config.MODE == 'CLUSTER':
             message = 'CLUSTER ' + message
         try:
-            telegram_send.send(messages=[message], conf='~/hsi-experiments/tg.config')
+            telegram_send.send(messages=[message], conf=config.TGCONFIG)
         except Exception as e:
             print('Some problems with telegram! Messages could not be delivered')
             print(e)
@@ -20,9 +20,9 @@ def send_tg_message(message):
 
 def send_tg_message_history(log_dir, history):
     if history is not None:
-        send_tg_message(f'Benny, training {log_dir} has finished after {len(history.history["loss"])} epochs')
+        send_tg_message(f'{config.USER}, training {log_dir} has finished after {len(history.history["loss"])} epochs')
     else:
-        send_tg_message(f'Benny, training {log_dir} has finished')
+        send_tg_message(f'{config.USER}, training {log_dir} has finished')
 
 
 def glob_multiple_file_types(path, *patterns):

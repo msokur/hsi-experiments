@@ -37,7 +37,7 @@ class CrossValidatorBase:
             self.evaluation(**kwargs)
 
         utils.send_tg_message(
-            f'Benny, operations in cross_validation.py for {self.name} are successfully completed!')
+            f'{config.USER}, operations in cross_validation.py for {self.name} are successfully completed!')
 
     @abc.abstractmethod
     def evaluation(self, **kwargs):  # has to be implemented in child classes

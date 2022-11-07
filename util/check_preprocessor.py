@@ -11,11 +11,11 @@ sys.path.insert(2, os.path.join(currentdir, 'data_utils'))
 
 import config
 
-from hypercube_data import *
+from data_utils.hypercube_data import *
 import numpy as np
 import os
 import glob
-import data_loader
+from data_utils.data_loaders import data_loader_base as data_loader
 import cv2
 from tqdm import tqdm
 

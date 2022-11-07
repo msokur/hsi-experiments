@@ -1,5 +1,6 @@
 import argparse
 
+import config
 from provider import get_trainer
 import utils
 
@@ -26,5 +27,5 @@ if __name__ == '__main__':
 
     except Exception as e:
 
-        utils.send_tg_message(f'Benny, ERROR!!!, In CV error {e}')
+        utils.send_tg_message(f'{config.USER}, ERROR!!!, In CV error {e}')
         raise e

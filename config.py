@@ -20,6 +20,9 @@ sys.path.insert(3, os.path.join(current_dir, 'trainers'))
 print('paths from config', sys.path)
 import util.tf_metrics as tf_metrics
 
+# -------------Telegam---------------------
+USER = "Benny"
+TGCONFIG = "tg_benny.config"
 # ----------------------------------------------------------------------------------------------------------
 
 FILE_EXTENSIONS = {
@@ -293,16 +296,18 @@ def get_model_name(MODEL_NAME_PATHS, model_name='3d'):
 
 if MODE == 'CLUSTER':
     prefix = r'/work/users/bn322dcei/'
-    RAW_NPZ_PATH = os.path.join(prefix, RAW_NPZ_PATH)
-    RAW_SOURCE_PATH = os.path.join(prefix, RAW_SOURCE_PATH)
-    SHUFFLED_PATH = os.path.join(prefix, SHUFFLED_PATH)
-    BATCHED_PATH = os.path.join(prefix, BATCHED_PATH)
-    TEST_NPZ_PATH = os.path.join(prefix, TEST_NPZ_PATH)
 
     # MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs', 'debug_combi']
     MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs']
 else:
+    prefix = r'/media/huber/One Touch/ICCAS/HNO'
     MODEL_NAME_PATHS = ['logs']
+
+RAW_NPZ_PATH = os.path.join(prefix, RAW_NPZ_PATH)
+RAW_SOURCE_PATH = os.path.join(prefix, RAW_SOURCE_PATH)
+SHUFFLED_PATH = os.path.join(prefix, SHUFFLED_PATH)
+BATCHED_PATH = os.path.join(prefix, BATCHED_PATH)
+TEST_NPZ_PATH = os.path.join(prefix, TEST_NPZ_PATH)
 
 MODEL_NAME = get_model_name(MODEL_NAME_PATHS)
 

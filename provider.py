@@ -58,7 +58,7 @@ def get_data_loader(**kwargs):
         return DataLoaderMatColon(**kwargs)
     if config.DATABASE == 'hno':
         print('DataLoaderHNO')
-        return DataLoaderHNO
+        return DataLoaderHNO(**kwargs)
 
     # analogs for whole cubes
     if config.DATABASE == 'colon_whole':
