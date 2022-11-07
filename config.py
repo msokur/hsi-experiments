@@ -38,7 +38,7 @@ NORMALIZATION_TYPES = {
     'svn_T': 'svn_T',
     'None': None
 }
-NORMALIZATION_TYPE = NORMALIZATION_TYPES['svn_T']
+NORMALIZATION_TYPE = NORMALIZATION_TYPES['svn']
 
 DATABASES = {  # for data_loader
     'data_loader_easy': 'colon',
@@ -85,7 +85,7 @@ database_abbreviation = 'hno'
 # RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')
 
 
-RAW_NPZ_PATH = os.path.join('data_3d', 'svn_T', 'median')
+RAW_NPZ_PATH = os.path.join('data_3d', '5x5', 'svn', 'median')
 RAW_SOURCE_PATH = os.path.join('Parotis-Faelle_unsorted', 'data')
 # RAW_NPZ_PATH = os.path.join('data_preprocessed', 'EsophagusDatabase', 'raw_3d_weights')
 TEST_NPZ_PATH = RAW_NPZ_PATH
