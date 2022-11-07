@@ -2,14 +2,13 @@ import os
 import sys
 import inspect
 
-import utils
-
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 sys.path.insert(1, os.path.join(parentdir, 'utils'))
 
 import config
+import utils
 
 import os
 import numpy as np
