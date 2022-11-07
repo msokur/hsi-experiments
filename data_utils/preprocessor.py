@@ -140,10 +140,10 @@ class Preprocessor():
         self.shuffle_saving_path = shuffle_saving_path
         self.augmented = augmented
 
-        Preprocessor.copy_preprocessor_paths(shuffle_saving_path)
-
         if not os.path.exists(self.shuffle_saving_path):
             os.mkdir(self.shuffle_saving_path)
+
+        Preprocessor.copy_preprocessor_paths(shuffle_saving_path)
 
         self.__create_piles()
         self.__shuffle_piles()
