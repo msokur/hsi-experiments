@@ -352,6 +352,9 @@ class Preprocessor():
     @staticmethod
     def copy_preprocessor_paths(path):
         path_ = os.path.join(path, 'py_Files')
+        if not os.path.exists(path_):
+            os.mkdir(path_)
+
         for file in config.P_FILES_TO_COPY:
             if os.path.exists(file):
                 copyfile(file, os.path.join(path_, file.split(config.SYSTEM_PATHS_DELIMITER)[-1]))
