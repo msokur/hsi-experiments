@@ -191,8 +191,6 @@ class Preprocessor():
                                           archives_of_batch_size_saving_path,
                                           except_names=[],
                                           valid_except_names=[]):
-        Preprocessor.copy_preprocessor_paths(archives_of_batch_size_saving_path)
-
         print('--------Splitting into npz of batch size started--------')
         self.batch_size = batch_size
         self.archives_of_batch_size_saving_path = archives_of_batch_size_saving_path
