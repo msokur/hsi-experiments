@@ -21,8 +21,8 @@ print('paths from config', sys.path)
 import util.tf_metrics as tf_metrics
 
 # -------------Telegam---------------------
-USER = "Benny"
-TGCONFIG = "tg_benny.config"
+USER = 'Benny'
+TGCONFIG = r'~/hsi-experiments-BA/tg_benny.config'
 # ----------------------------------------------------------------------------------------------------------
 
 FILE_EXTENSIONS = {
