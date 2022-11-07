@@ -413,7 +413,7 @@ class Preprocessor:
 if __name__ == '__main__':
     execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
     execution_flags['load_data_with_dataloader'] = True
-    execution_flags['add_sample_weights'] = False
+    execution_flags['add_sample_weights'] = True
     execution_flags['scale'] = True
     execution_flags['shuffle'] = True
 
