@@ -365,7 +365,7 @@ class Preprocessor():
             execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
 
         if not os.path.exists(preprocessed_path):
-            os.mkdir(preprocessed_path)
+            os.makedirs(preprocessed_path)
 
         print('ROOT PATH', root_path)
         print('PREPROCESSED PATH', preprocessed_path)
