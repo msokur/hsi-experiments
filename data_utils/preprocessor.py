@@ -9,6 +9,8 @@ sys.path.insert(1, os.path.join(parentdir, 'utils'))
 
 import config
 import utils
+import provider
+from data_loaders.data_loader_base import DataLoader
 
 import os
 import numpy as np
@@ -16,12 +18,7 @@ import random
 import glob
 from tqdm import tqdm
 import pickle
-from scipy.signal import savgol_filter
 from shutil import copyfile
-
-import provider
-from data_loaders.data_loader_base import DataLoader
-from scaler import Scaler
 
 '''
 Preprocessor contains opportunity of
@@ -31,14 +28,22 @@ Link: https://blog.janestreet.com/how-to-shuffle-a-big-dataset/
 '''
 
 
-class Preprocessor():
+class Preprocessor:
     def __init__(self, load_name_for_x='X',
                  load_name_for_y='y',
                  load_name_for_name='PatientName',
                  piles_number=100,
                  weights_filename='.weights',
-                 dict_names=['PatientIndex', 'indexes_in_datacube', 'weights']):
+                 dict_names=None):
         # dict_names=['PatientIndex', 'indexes_in_datacube']):
+        self.valid_archives_saving_path = None
+        self.archives_of_batch_size_saving_path = None
+        self.batch_size = None
+        self.augmented = None
+        self.shuffle_saving_path = None
+        if dict_names is None:
+            dict_names = ['PatientIndex', 'indexes_in_datacube', 'weights']
+        self.raw_paths = None
         self.load_name_for_name = load_name_for_name
         self.load_name_for_X = load_name_for_x
         self.load_name_for_y = load_name_for_y
@@ -189,8 +194,12 @@ class Preprocessor():
     def split_data_into_npz_of_batch_size(self, paths,
                                           batch_size,
                                           archives_of_batch_size_saving_path,
-                                          except_names=[],
-                                          valid_except_names=[]):
+                                          except_names=None,
+                                          valid_except_names=None):
+        if valid_except_names is None:
+            valid_except_names = []
+        if except_names is None:
+            except_names = []
         print('--------Splitting into npz of batch size started--------')
         self.batch_size = batch_size
         self.archives_of_batch_size_saving_path = archives_of_batch_size_saving_path
@@ -282,21 +291,6 @@ class Preprocessor():
 
         print('--------Splitting into npz of batch size finished--------')
 
-    def weightedData_save(self, root_path, weights):
-        paths = glob.glob(os.path.join(root_path, '*.npz'))
-        for i, path in tqdm(enumerate(paths)):
-            data = np.load(path)
-            X, y = data['X'], data['y']
-            weights_ = np.zeros(y.shape)
-
-            for j in np.unique(y):
-                weights_[y == j] = weights[i, j]
-
-            data = {n: a for n, a in data.items()}
-            data['weights'] = weights_
-
-            np.savez(os.path.join(root_path, DataLoader.get_name_easy(path)), **data)
-
     def weights_get_from_file(self, root_path):
         weights_path = os.path.join(root_path, self.weights_filename)
         if os.path.isfile(weights_path):
@@ -324,12 +318,15 @@ class Preprocessor():
 
         quantities = np.array(quantities)
 
-        summ = np.sum(quantities[:, config.LABELS_OF_CLASSES_TO_TRAIN])
-        weights = summ / quantities
+        sum_ = np.sum(quantities[:, config.LABELS_OF_CLASSES_TO_TRAIN])
+        with np.errstate(divide='ignore', invalid='ignore'):
+            weights = sum_ / quantities
+
+        weights[np.isinf(weights)] = 0
 
         data = {
             'weights': weights,
-            'summ': summ,
+            'sum': sum_,
             'quantities': quantities
         }
 
@@ -337,6 +334,22 @@ class Preprocessor():
             pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 
         return weights
+
+    @staticmethod
+    def weightedData_save(root_path, weights):
+        paths = glob.glob(os.path.join(root_path, '*.npz'))
+        for i, path in tqdm(enumerate(paths)):
+            data = np.load(path)
+            X, y = data['X'], data['y']
+            weights_ = np.zeros(y.shape)
+
+            for j in np.unique(y):
+                weights_[y == j] = weights[i, j]
+
+            data = {n: a for n, a in data.items()}
+            data['weights'] = weights_
+
+            np.savez(os.path.join(root_path, DataLoader.get_name_easy(path)), **data)
 
     @staticmethod
     def get_execution_flags_for_pipeline_with_all_true():
