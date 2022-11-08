@@ -279,7 +279,7 @@ MODE_TYPES = {
 
 uname = platform.uname()
 
-MODE = MODE_TYPES['CLUSTER']
+MODE = MODE_TYPES['LOCAL_NO_GPU']
 
 if "clara" in uname.node:
     MODE = MODE_TYPES['CLUSTER']
@@ -300,7 +300,8 @@ if MODE == 'CLUSTER':
     # MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs', 'debug_combi']
     MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs']
 else:
-    prefix = r'/media/huber/One Touch/ICCAS/HNO'
+    # prefix = r'/media/huber/One Touch/ICCAS/HNO'
+    prefix = r'E:\ICCAS\HNO'
     MODEL_NAME_PATHS = ['logs']
 
 RAW_NPZ_PATH = os.path.join(prefix, RAW_NPZ_PATH)

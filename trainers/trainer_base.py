@@ -6,6 +6,7 @@ import numpy as np
 import psutil
 import abc
 import pickle
+from glob import glob
 
 import config
 from utils import send_tg_message, send_tg_message_history
@@ -112,7 +113,7 @@ class Trainer:
         checkpoints_callback = keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,
             verbose=2,
-            save_freq=config.WRITE_CHECKPOINT_EVERY_Xth_STEP*config.BATCH_SIZE)
+            save_freq=self.get_num_of_pat() * config.WRITE_CHECKPOINT_EVERY_Xth_STEP*config.BATCH_SIZE)
 
         early_stopping_callback = keras.callbacks.EarlyStopping(
             monitor='val_f1_m',
@@ -211,6 +212,10 @@ class Trainer:
         # send_tg_message_history(self.log_dir, history)
 
         return model
+
+    def get_num_of_pat(self):
+        paths = glob(os.path.split(self.batch_path)[0] + '*.npz')
+        return len(paths)
 
 
 if __name__ == '__main__':

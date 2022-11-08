@@ -4,8 +4,8 @@
 
 #SBATCH --job-name=r_cv
 
-#SBATCH --partition=clara-long
-#SBATCH --time=10-00:00:00
+#SBATCH --partition=clara
+#SBATCH --time=2-00:00:00
 #SBATCH --mem=64G
 ##SBATCH --gres=gpu:v100:2
 #SBATCH --gres=gpu:rtx2080ti:2
