@@ -178,11 +178,11 @@ USE_ALL_LABELS = False
 
 assert len(LABELS_OF_CLASSES_TO_TRAIN) == NUMBER_OF_CLASSES_TO_TRAIN  # check yourself
 
-BATCH_SIZE = 100  # train
+BATCH_SIZE = 300  # train
 EPOCHS = 100  # train
 LEARNING_RATE = 1e-4  # train
 
-SPLIT_FACTOR = 0.9  # train   #for data sets: train\test data percentage
+SPLIT_FACTOR = 0.8  # train   #for data sets: train\test data percentage
 
 CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY = True  # cv + preprocessor
 CV_RESTORE_VALID_PATIENTS = False
