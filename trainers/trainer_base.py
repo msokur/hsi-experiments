@@ -21,7 +21,6 @@ class Trainer:
         self.log_dir = model_name
         self.excepted_indexes = except_indexes.copy()
         self.valid_except_indexes = valid_except_indexes.copy()
-        self.num_of_pat = 0
 
     @abc.abstractmethod
     def compile_model(self, model):
@@ -47,9 +46,6 @@ class Trainer:
     def get_datasets(self, for_tuning=False):
         # train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
         self.batch_path = config.BATCHED_PATH
-        self.num_of_pat = self.get_num_of_pat()
-        print(f'----------------------##########{self.num_of_pat}############--------------\n'
-              f'-----------###########{(self.num_of_pat//config.BATCH_SIZE)*config.WRITE_CHECKPOINT_EVERY_Xth_STEP}')
         if len(self.excepted_indexes) > 0:
             self.batch_path += '_' + self.excepted_indexes[0]
         if not os.path.exists(self.batch_path):
@@ -117,7 +113,7 @@ class Trainer:
         checkpoints_callback = keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,
             verbose=2,
-            save_freq=(self.num_of_pat//config.BATCH_SIZE)*config.WRITE_CHECKPOINT_EVERY_Xth_STEP)
+            save_freq=len(config.paths)*config.BATCH_SIZE*config.WRITE_CHECKPOINT_EVERY_Xth_STEP)
 
         early_stopping_callback = keras.callbacks.EarlyStopping(
             monitor='val_f1_m',
@@ -216,10 +212,6 @@ class Trainer:
         # send_tg_message_history(self.log_dir, history)
 
         return model
-
-    def get_num_of_pat(self):
-        paths = glob(os.path.split(self.batch_path)[0] + '*.npz')
-        return len(paths)
 
 
 if __name__ == '__main__':
