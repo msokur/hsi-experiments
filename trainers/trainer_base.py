@@ -48,6 +48,8 @@ class Trainer:
         # train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
         self.batch_path = config.BATCHED_PATH
         self.num_of_pat = self.get_num_of_pat()
+        print(f'----------------------##########{self.num_of_pat}############--------------\n'
+              f'-----------###########{(self.num_of_pat//config.BATCH_SIZE)*config.WRITE_CHECKPOINT_EVERY_Xth_STEP}')
         if len(self.excepted_indexes) > 0:
             self.batch_path += '_' + self.excepted_indexes[0]
         if not os.path.exists(self.batch_path):
