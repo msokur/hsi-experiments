@@ -112,7 +112,7 @@ class Trainer:
         checkpoints_callback = keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,
             verbose=2,
-            period=config.WRITE_CHECKPOINT_EVERY_Xth_STEP)
+            save_freq=config.WRITE_CHECKPOINT_EVERY_Xth_STEP*config.BATCH_SIZE)
 
         early_stopping_callback = keras.callbacks.EarlyStopping(
             monitor='val_f1_m',
