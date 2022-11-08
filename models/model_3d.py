@@ -66,7 +66,8 @@ def paper_model():
         activation = None
         number = config.NUMBER_OF_CLASSES_TO_TRAIN
 
-    result = tf.keras.layers.Dense(number, activation=activation)(net)
+    result = tf.keras.layers.Dense(number, activation=activation, kernel_initializer=kernel_initializer,
+                                   bias_initializer=bias_initializer)(net)
 
     model = tf.keras.Model(
         inputs=[input_],
