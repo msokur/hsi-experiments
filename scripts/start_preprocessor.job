@@ -12,7 +12,7 @@
 
 #module load FlexiBLAS/3.0.4-GCC-10.3.0
 module load Python/3.9.5-GCCcore-10.3.0
-module load CUDA/11.3.1
+module load CUDA/11.4.1
 
 
 python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/data_utils/preprocessor.py
