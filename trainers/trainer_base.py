@@ -113,7 +113,7 @@ class Trainer:
         checkpoints_callback = keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,
             verbose=2,
-            save_freq=len(config.paths)*config.BATCH_SIZE*config.WRITE_CHECKPOINT_EVERY_Xth_STEP)
+            save_freq=config.NUM_OF_PAT*config.BATCH_SIZE*config.WRITE_CHECKPOINT_EVERY_Xth_STEP)
 
         early_stopping_callback = keras.callbacks.EarlyStopping(
             monitor='val_f1_m',
@@ -123,7 +123,7 @@ class Trainer:
             verbose=1,
             restore_best_weights=True)
 
-        callbacks_ = [tensorboard_callback, checkpoints_callback]
+        callbacks_ = [checkpoints_callback]
         if config.WITH_EARLY_STOPPING:
             callbacks_.append(early_stopping_callback)
 
@@ -187,8 +187,8 @@ class Trainer:
 
                 # mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
                 # mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.ReductionToOneDevice())
-                # mirrored_strategy = tf.distribute.CentralStorageStrategy()
-                mirrored_strategy = tf.distribute.MultiWorkerMirroredStrategy()
+                mirrored_strategy = tf.distribute.CentralStorageStrategy()
+                # mirrored_strategy = tf.distribute.MultiWorkerMirroredStrategy()
                 # mirrored_strategy = tf.distribute.MirroredStrategy()
 
                 with mirrored_strategy.scope():

@@ -71,23 +71,10 @@ CROSS_VALIDATORS = {
 CROSS_VALIDATOR = CROSS_VALIDATORS['cv_normal']
 
 # ----------------------------------------------------------------------------------------------------------
-# database_abbreviation = 'Esophagus_MedFilter'
-# database_abbreviation = 'colon_other'
 database_abbreviation = 'hno'
-# RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')
-
-# RAW_SOURCE_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
-#                              database_abbreviation)
-# RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
-#                            database_abbreviation, 'raw_3d_weighted')
-
-# TEST_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation, database_abbreviation)
-# RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')
-
 
 RAW_NPZ_PATH = os.path.join('data_3d', '5x5', 'svn', 'median')
 RAW_SOURCE_PATH = os.path.join('Parotis-Faelle_unsorted', 'data')
-# RAW_NPZ_PATH = os.path.join('data_preprocessed', 'EsophagusDatabase', 'raw_3d_weights')
 TEST_NPZ_PATH = RAW_NPZ_PATH
 
 SHUFFLED_PATH = os.path.join(RAW_NPZ_PATH, 'shuffled')
@@ -117,21 +104,6 @@ else:
 if 'bea' in DATABASE:
     FILE_EXTENSION = FILE_EXTENSIONS['_mat']
     NORMALIZATION_TYPE = NORMALIZATION_TYPES['None']
-
-# SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled'
-# BATCHED_PATH = r'data_preprocessed/augmented/batch_sized'
-
-# SHUFFLED_PATH = r'data_preprocessed/combi/shuffled'
-# BATCHED_PATH = r'data_preprocessed/combi/batch_sized'
-
-# SHUFFLED_PATH = r'data_preprocessed/combi_with_raw_ill/shuffled'
-# BATCHED_PATH = r'data_preprocessed/combi_with_raw_ill/batch_sized'
-
-# SHUFFLED_PATH = r'data_bea/ColonData/raw_3d_weights/shuffled'
-# BATCHED_PATH = r'data_bea/ColonData/raw_3d_weights/batch_sized'
-
-# SHUFFLED_PATH = r'data_preprocessed/augmented_l2_norm/shuffled'
-# BATCHED_PATH = r'data_preprocessed/augmented_l2_norm/batch_sized'
 
 CHECKPOINT_PATH = 'checkpoints'
 MODEL_PATH = 'model'
@@ -328,8 +300,9 @@ CUSTOM_OBJECTS = {'f1_m': tf_metrics.f1_m}
 # ----------------------------CROSS_VALIDATION SPLIT
 
 paths = glob.glob(os.path.join(RAW_NPZ_PATH, '*npz'))
+NUM_OF_PAT = len(paths)
 CROSS_VALIDATION_SPLIT = int(
-    len(paths) / CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST)  # int(number_of_all_patients / how_many_exclude_per_cv)
+    NUM_OF_PAT / CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST)  # int(number_of_all_patients / how_many_exclude_per_cv)
 
 # ----------------------------OUTPUT FEATURES
 OUTPUT_SIGNATURE_X_FEATURES = LAST_NM - FIRST_NM  # train
