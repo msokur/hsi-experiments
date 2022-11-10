@@ -255,8 +255,6 @@ MODE = MODE_TYPES['CLUSTER']
 
 if "clara" in uname.node:
     MODE = MODE_TYPES['CLUSTER']
-if "paul" in uname.node:
-    MODE = MODE_TYPES['CLUSTER']
 if "scads" in uname.node:
     MODE = MODE_TYPES['LOCAL_NO_GPU']
 

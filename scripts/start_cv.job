@@ -8,7 +8,7 @@
 #SBATCH --time=2-00:00:00
 #SBATCH --mem=64G
 ##SBATCH --gres=gpu:v100:2
-#SBATCH --gres=gpu:rtx2080ti:4
+#SBATCH --gres=gpu:rtx2080ti:2
 
 #SBATCH --output=output/CV_HNO_SNV_MEDIAN_%j.log
 
