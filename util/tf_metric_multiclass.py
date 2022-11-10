@@ -1,9 +1,10 @@
+from array import array
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric, Precision, Recall
 from tensorflow.keras import backend as K
 
 
-class F1_score(Metric):
+class F1_score_multiclass(Metric):
     def __init__(self, num_classes, name='f1_score', **kwargs):
         super().__init__(name=name, **kwargs)
         self.num_classes = num_classes
@@ -13,7 +14,7 @@ class F1_score(Metric):
 
     # @tf.autograph.experimental.do_not_convert
     def update_state(self, y_true, y_pred, sample_weight=None):
-        f1_s = []
+        f1_s = array('f', [])
         pred = K.argmax(y_pred, axis=-1)
 
         for class_ in range(self.num_classes):
@@ -36,7 +37,7 @@ class F1_score(Metric):
         return self.f1
 
     def reset_states(self):
-        self.f1.assign([0. for i in range(self.num_classes)])
+        self.f1.assign(array('f', [0. for i in range(self.num_classes)]))
         self.__reset_var()
 
     def __reset_var(self):
