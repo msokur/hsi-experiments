@@ -187,7 +187,7 @@ class Trainer:
 
                 # mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
                 # mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.ReductionToOneDevice())
-                mirrored_strategy = tf.distribute.CentralStorageStrategy()
+                mirrored_strategy = tf.distribute.experimental.CentralStorageStrategy()
                 # mirrored_strategy = tf.distribute.MultiWorkerMirroredStrategy()
                 # mirrored_strategy = tf.distribute.MirroredStrategy()
 

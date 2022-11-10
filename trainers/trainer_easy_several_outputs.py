@@ -31,7 +31,7 @@ class TrainerEasySeveralOutputs(trainer_easy.TrainerEasy):
             # optimizer=keras.optimizers.RMSprop(lr=config.LEARNING_RATE),
             loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
             metrics=keras.metrics.SparseCategoricalAccuracy()
-            # metrics=METRICS,
+            # metrics=METRICS
             # weighted_metrics=WEIGHTED_METRICS
         )
 

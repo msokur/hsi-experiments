@@ -150,8 +150,8 @@ USE_ALL_LABELS = False
 
 assert len(LABELS_OF_CLASSES_TO_TRAIN) == NUMBER_OF_CLASSES_TO_TRAIN  # check yourself
 
-BATCH_SIZE = 300  # train
-EPOCHS = 100  # train
+BATCH_SIZE = 500  # train
+EPOCHS = 50  # train
 LEARNING_RATE = 1e-4  # train
 
 SPLIT_FACTOR = 0.8  # train   #for data sets: train\test data percentage
@@ -251,9 +251,11 @@ MODE_TYPES = {
 
 uname = platform.uname()
 
-MODE = MODE_TYPES['LOCAL_NO_GPU']
+MODE = MODE_TYPES['CLUSTER']
 
 if "clara" in uname.node:
+    MODE = MODE_TYPES['CLUSTER']
+if "paul" in uname.node:
     MODE = MODE_TYPES['CLUSTER']
 if "scads" in uname.node:
     MODE = MODE_TYPES['LOCAL_NO_GPU']
