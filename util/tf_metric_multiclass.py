@@ -4,7 +4,7 @@ from tensorflow.keras.metrics import Metric, Precision, Recall
 from tensorflow.keras import backend as K
 
 
-class F1_score_multiclass(Metric):
+class F1_score(Metric):
     def __init__(self, num_classes, name='f1_score', **kwargs):
         super().__init__(name=name, **kwargs)
         self.num_classes = num_classes
