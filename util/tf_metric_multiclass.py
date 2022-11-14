@@ -1,6 +1,5 @@
 from tensorflow.keras.metrics import Metric, Precision, Recall
 from tensorflow.keras import backend as K
-import numpy as np
 
 
 class F1_score(Metric):
@@ -10,17 +9,33 @@ class F1_score(Metric):
         self.f1 = self.add_weight('f1', initializer='zeros')
         self.precision = Precision()
         self.recall = Recall()
-        self.reshape_array = reshape_array
 
     # @tf.autograph.experimental.do_not_convert
     def update_state(self, y_true, y_pred, sample_weight=None):
-        pred = self.reshape_array(K.argmax(y_pred, axis=1), y_pred.shape)
-        true = self.reshape_array(y_true, pred.shape)
-        p = self.precision(true, pred)
-        r = self.recall(true, pred)
-        f1_s = 2 * ((p * r) / (p + r + K.epsilon()))
+        f1_scores = []
+        classes = self.num_classes
+        # get indexes with the highest value from y_pred
+        pred_max = K.argmax(y_pred, axis=1)
 
-        self.f1.assign(f1_s)
+        for class_ in range(self.num_classes):
+            # set all indexes true when there the same as the class
+            pred_bool = K.equal(pred_max, class_)
+            true_bool = K.equal(y_true, class_)
+
+            # convert boolean to float True = 1.0, False = 0.0
+            pred_float = K.cast(pred_bool, 'float32')
+            true_float = K.cast(true_bool, 'float32')
+
+            p = self.precision(true_float, pred_float)
+            r = self.recall(true_float, pred_float)
+            f1_score_class = 2 * ((p * r) / (p + r + K.epsilon()))
+            if f1_score_class <= 0:
+                classes -= 1
+                print(f' Class {class_} has a F1 Score from 0!')
+            f1_scores.append(f1_score_class)
+            self.__reset_var()
+
+        self.f1.assign(K.sum(f1_scores) / classes)
 
     def result(self):
         return self.f1
@@ -32,10 +47,3 @@ class F1_score(Metric):
     def __reset_var(self):
         self.precision.reset_states()
         self.recall.reset_states()
-
-
-def reshape_array(arr, shape):
-    new_arr = np.zeros(shape=(shape[0], 8))
-    arr_indexes = np.reshape(arr, newshape=(shape[0], 1))
-    np.put_along_axis(new_arr, arr_indexes, 1, axis=1)
-    return new_arr

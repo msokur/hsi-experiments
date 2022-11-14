@@ -116,16 +116,16 @@ class TrainerTuner(Trainer):
         '''-------TRAINING---------'''
 
         history = KerasTunerModel().fit(best_hp,
-                                         model,
-                                         x=train_dataset,
-                                         validation_data=valid_dataset,
-                                         verbose=2,
-                                         epochs=config.EPOCHS,
-                                         callbacks=callbacks_,
-                                         use_multiprocessing=True,
-                                         class_weight=class_weights,
-                                         workers=int(os.cpu_count())
-                                         )
+                                        model,
+                                        x=train_dataset,
+                                        validation_data=valid_dataset,
+                                        verbose=2,
+                                        epochs=config.EPOCHS,
+                                        callbacks=callbacks_,
+                                        use_multiprocessing=True,
+                                        class_weight=class_weights,
+                                        workers=int(os.cpu_count())
+                                        )
 
         self.save_history(history)
 
@@ -135,16 +135,15 @@ class TrainerTuner(Trainer):
 if __name__ == '__main__':
     trainer = TrainerTuner()
 
-
-    hypermodel = KerasTunerModel()
+    hypermodel_ = KerasTunerModel()
 
     tuner_ = trainer.restore_tuner(
-                                   directory='C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\tuner_results',
-                                   project_name='inception_3d_17.02.2022-18_20_06')
+        directory='C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\tuner_results',
+        project_name='inception_3d_17.02.2022-18_20_06')
 
-    best_hp = tuner_.get_best_hyperparameters()[0]
-    print(best_hp)
-    model_ = hypermodel.build(best_hp)
+    best_hp_ = tuner_.get_best_hyperparameters()[0]
+    print(best_hp_)
+    model_ = hypermodel_.build(best_hp_)
 
     print(tuner_.results_summary(2))
     # train(except_indexes=['2019_09_04_12_43_40_', '2020_05_28_15_20_27_', '2019_07_12_11_15_49_', '2020_05_15_12_43_58_'])

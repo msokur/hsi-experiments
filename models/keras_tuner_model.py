@@ -3,7 +3,6 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
-from models.keras_tuner_model import *
 import config
 
 
