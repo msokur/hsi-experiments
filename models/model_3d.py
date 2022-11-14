@@ -24,36 +24,29 @@ def get_inizializers():
 
 def paper_model():
     input_ = tf.keras.layers.Input(
-        shape=(config._3D_SIZE[0], config._3D_SIZE[1], config.OUTPUT_SIGNATURE_X_FEATURES), name="title"
+        shape=(config.D3_SIZE[0], config.D3_SIZE[1], config.OUTPUT_SIGNATURE_X_FEATURES), name="title"
     )
+
+    conv_round = range(int(config.D3_SIZE[0] / 2))
 
     kernel_initializer, bias_initializer = get_inizializers()
 
     net = tf.expand_dims(input_, axis=-1)
 
-    net = tf.keras.layers.Conv3D(filters=20, kernel_size=3, padding='valid', activation='relu',
-                                 kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
-    net = tf.keras.layers.Conv3D(filters=20, kernel_size=(1, 1, 3), strides=(1, 1, 2), padding='valid',
-                                 activation='relu', kernel_initializer=kernel_initializer,
-                                 bias_initializer=bias_initializer)(net)
-
-    net = tf.keras.layers.Conv3D(filters=20, kernel_size=3, padding='valid', activation='relu',
-                                 kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
-    net = tf.keras.layers.Conv3D(filters=20, kernel_size=(1, 1, 3), strides=(1, 1, 2), padding='valid',
-                                 activation='relu', kernel_initializer=kernel_initializer,
-                                 bias_initializer=bias_initializer)(net)
+    for r in conv_round:
+        net = tf.keras.layers.Conv3D(filters=20, kernel_size=3, padding='valid', activation='relu',
+                                     kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
+        net = tf.keras.layers.Conv3D(filters=20, kernel_size=(1, 1, 3), strides=(1, 1, 2), padding='valid',
+                                     activation='relu', kernel_initializer=kernel_initializer,
+                                     bias_initializer=bias_initializer)(net)
 
     net = tf.keras.layers.Reshape((net.shape[-2], net.shape[-1]))(net)
 
-    net = tf.keras.layers.Conv1D(filters=35, kernel_size=3, padding='valid', activation='relu',
-                                 kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
-    net = tf.keras.layers.Conv1D(filters=35, kernel_size=3, strides=2, padding='valid', activation='relu',
-                                 kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
-
-    net = tf.keras.layers.Conv1D(filters=35, kernel_size=3, padding='valid', activation='relu',
-                                 kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
-    net = tf.keras.layers.Conv1D(filters=35, kernel_size=3, strides=2, padding='valid', activation='relu',
-                                 kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
+    for r in conv_round:
+        net = tf.keras.layers.Conv1D(filters=35, kernel_size=3, padding='valid', activation='relu',
+                                     kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
+        net = tf.keras.layers.Conv1D(filters=35, kernel_size=3, strides=2, padding='valid', activation='relu',
+                                     kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
 
     net = tf.keras.layers.Flatten()(net)
 
@@ -114,7 +107,7 @@ def inception3d_model():
         tf.random.set_seed(3)
 
     input_ = tf.keras.layers.Input(
-        shape=(config._3D_SIZE[0], config._3D_SIZE[1], config.OUTPUT_SIGNATURE_X_FEATURES), name="title"
+        shape=(config.D3_SIZE[0], config.D3_SIZE[1], config.OUTPUT_SIGNATURE_X_FEATURES), name="title"
     )
 
     kernel_initializer, bias_initializer = get_inizializers()

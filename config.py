@@ -19,6 +19,7 @@ sys.path.insert(2, os.path.join(current_dir, 'models'))
 sys.path.insert(3, os.path.join(current_dir, 'trainers'))
 print('paths from config', sys.path)
 import util.tf_metrics as tf_metrics
+import util.tf_metric_multiclass as tf_metric_multiclass
 
 # -------------Telegam---------------------
 USER = 'Benny'
@@ -73,7 +74,7 @@ CROSS_VALIDATOR = CROSS_VALIDATORS['cv_normal']
 # ----------------------------------------------------------------------------------------------------------
 database_abbreviation = 'hno'
 
-RAW_NPZ_PATH = os.path.join('data_3d', '5x5', 'svn', 'median')
+RAW_NPZ_PATH = os.path.join('data_3d', '3x3', 'svn', 'median')
 RAW_SOURCE_PATH = os.path.join('Parotis-Faelle_unsorted', 'data')
 TEST_NPZ_PATH = RAW_NPZ_PATH
 
@@ -123,8 +124,8 @@ WRITE_GRADIENTS_EVERY_Xth_BATCH = 50000000000  # callbacks
 WRITE_IMAGES = False  # callbacks
 WITH_EARLY_STOPPING = True  # callbacks
 
-_3D = True  # data
-_3D_SIZE = [5, 5]  # data
+D3 = True  # data
+D3_SIZE = [3, 3]  # data
 FIRST_NM = 8  # data
 LAST_NM = 100  # data
 SCALER_FILE_EXTENTION = '.scaler'  # data
@@ -151,7 +152,7 @@ USE_ALL_LABELS = False
 assert len(LABELS_OF_CLASSES_TO_TRAIN) == NUMBER_OF_CLASSES_TO_TRAIN  # check yourself
 
 BATCH_SIZE = 500  # train
-EPOCHS = 50  # train
+EPOCHS = 30  # train
 LEARNING_RATE = 1e-4  # train
 
 SPLIT_FACTOR = 0.8  # train   #for data sets: train\test data percentage
@@ -164,7 +165,7 @@ CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID = 1  # cv + preprocessor, to create valid
 CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST = 1  # cv, for testing (exactly on this excluded patients we count end evaluation)
 CV_FIRST_SPLIT = 0  # cv, if we need to start not from the first split
 CV_GET_CHECKPOINT_FROM_VALID = True  # cv
-HISTORY_ARGMIN = "val_f1_m"  # cv. through which parameter of history(returned by model.fit() and then saved) choose the
+HISTORY_ARGMIN = "val_f1_score"  # cv. through which parameter of history(returned by model.fit() and then saved) choose the
 # best checkpoint in validation data
 
 ADD_TIME = False  # pipeline   #whether to add time to logs paths
@@ -295,7 +296,7 @@ if not RESTORE_MODEL and ADD_TIME:
 
 # ----------------------------CUSTOM_OBJECTS
 
-CUSTOM_OBJECTS = {'f1_m': tf_metrics.f1_m}
+CUSTOM_OBJECTS = {'val_f1_score': tf_metric_multiclass.F1_score}
 
 # ----------------------------CROSS_VALIDATION SPLIT
 
@@ -314,12 +315,12 @@ if DATABASE == 'bea_brain':
 # ----------------------------OUTPUT_SIGNATURE
 if WITH_SAMPLE_WEIGHTS:
     OUTPUT_SIGNATURE = (
-        tf.TensorSpec(shape=(None, _3D_SIZE[0], _3D_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
+        tf.TensorSpec(shape=(None, D3_SIZE[0], D3_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
         tf.TensorSpec(shape=(None,), dtype=tf.float32),
         tf.TensorSpec(shape=(None,), dtype=tf.float32))
 else:
     OUTPUT_SIGNATURE = (
-        tf.TensorSpec(shape=(None, _3D_SIZE[0], _3D_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
+        tf.TensorSpec(shape=(None, D3_SIZE[0], D3_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
         tf.TensorSpec(shape=(None,), dtype=tf.float32))
 
 # -------------------PLOT

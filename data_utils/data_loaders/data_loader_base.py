@@ -13,7 +13,7 @@ from data_utils.background_detection import detect_background
 
 
 class DataLoader:
-    def __init__(self, dict_names=None, _3d=config._3D, _3d_size=config._3D_SIZE):
+    def __init__(self, dict_names=None, _3d=config.D3, _3d_size=config.D3_SIZE):
         if dict_names is None:
             dict_names = ['X', 'y', 'indexes_in_datacube']
         self.dict_names = dict_names

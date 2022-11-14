@@ -122,8 +122,8 @@ class KerasTunerModel(keras_tuner.HyperModel):
 
     def model(self):
         input_ = layers.Input(
-            shape=(config._3D_SIZE[0],
-                   config._3D_SIZE[1],
+            shape=(config.D3_SIZE[0],
+                   config.D3_SIZE[1],
                    config.OUTPUT_SIGNATURE_X_FEATURES),
             name="title"
         )

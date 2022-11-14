@@ -116,7 +116,7 @@ class Trainer:
             save_freq=config.NUM_OF_PAT*config.BATCH_SIZE*config.WRITE_CHECKPOINT_EVERY_Xth_STEP)
 
         early_stopping_callback = keras.callbacks.EarlyStopping(
-            monitor='val_f1_m',
+            monitor='val_f1_score',
             mode='max',
             min_delta=0,
             patience=5,
