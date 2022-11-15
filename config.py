@@ -151,8 +151,8 @@ USE_ALL_LABELS = False
 
 assert len(LABELS_OF_CLASSES_TO_TRAIN) == NUMBER_OF_CLASSES_TO_TRAIN  # check yourself
 
-BATCH_SIZE = 500  # train
-EPOCHS = 30  # train
+BATCH_SIZE = 250  # train
+EPOCHS = 50  # train
 LEARNING_RATE = 1e-4  # train
 
 SPLIT_FACTOR = 0.8  # train   #for data sets: train\test data percentage

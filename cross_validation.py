@@ -21,9 +21,15 @@ def get_cross_validator(*args, **kwargs):
 
 
 if __name__ == '__main__':
-    
+    from datetime import date
     try:
-        cross_validator = get_cross_validator('_CV_5x5_svnT_med')
+        if config.D3:
+            name = f'{date.today()}_CV_{config.D3_SIZE[0]}x{config.D3_SIZE[1]}_{config.NORMALIZATION_TYPE}_' \
+                   f'{config.SMOOTHING_TYPE}'
+        else:
+            name = f'{date.today()}_CV_{config.NORMALIZATION_TYPE}_{config.SMOOTHING_TYPE}'
+
+        cross_validator = get_cross_validator(name)
 
         # cross validation pipeline consists of 2 parts:
         # (1) cross_validation
