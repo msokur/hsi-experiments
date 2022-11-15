@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import numpy as np
 from sklearn.feature_extraction import image
 import abc
@@ -10,6 +12,7 @@ import pandas as pd
 
 import config
 from data_utils.background_detection import detect_background
+import data_utils.border as border
 
 
 class DataLoader:
@@ -57,6 +60,27 @@ class DataLoader:
                 spectrum = gaussian_filter(spectrum, sigma=config.SMOOTHING_VALUE)
         return spectrum
 
+    @staticmethod
+    def remove_border(masks, conf=config.BORDERS_CONFIG):
+        if conf['enable']:
+            border_masks = []
+            for idx, mask in enumerate(masks):
+                if idx not in conf['not_used_labels']:
+                    if len(conf['axis']) == 0:
+                        border_mask = getattr(border, conf.BORDERS_CONFIG['methode'])(in_arr=masks[idx],
+                                                                                      d=conf['depth'])
+                    else:
+                        border_mask = getattr(border, conf.BORDERS_CONFIG['methode'])(in_arr=masks[idx],
+                                                                                      d=conf['depth'],
+                                                                                      axis=conf['axis'])
+                    border_masks.append(border_mask)
+                else:
+                    border_masks.append(masks[idx])
+
+            return border_masks
+
+        return masks
+
     def file_read(self, path):
         print(f'Reading {path}')
         spectrum, mask = self.file_read_mask_and_spectrum(path)
@@ -72,6 +96,8 @@ class DataLoader:
         indexes = self.indexes_get_bool_from_mask(mask)
         indexes = [i * background_mask for i in indexes]
         indexes = [i * contamination_mask for i in indexes]
+        border_masks = DataLoader.remove_border(indexes)
+        indexes = [indexes[i] * border_masks[i] for i in range(len(indexes))]
 
         spectra = []
         for idx in indexes:

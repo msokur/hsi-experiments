@@ -53,7 +53,7 @@ if __name__ == '__main__':
     from sklearn.metrics import f1_score
     from tensorflow_addons.metrics import F1Score
 
-    y_true_ = np.random.randint(8, size=200)
+    y_true_ = np.random.randint(7, size=200)
     # y_pred_one = np.reshape(np.random.randint(8, size=200), newshape=(200, 1))
     # np.put_along_axis(y_pred_, y_pred_one, 1, axis=1)
     y_pred_ = np.random.randint(-50.0, 50, (200, 8))
@@ -68,3 +68,6 @@ if __name__ == '__main__':
     f1 = f1_score(y_true_2, y_pred_2, average=None)
     print(f1)
     print(np.sum(f1) / 8)
+
+    f1_score_self.update_state(y_true_, y_pred_)
+    print(f1_score_self.result())

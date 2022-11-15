@@ -62,6 +62,18 @@ SMOOTHING_TYPES = {
 
 SMOOTHING_TYPE = SMOOTHING_TYPES['median_filter']
 
+BORDER_METHODE = {
+    'detect_border': 'detect_border',
+    'detect_core': 'detect_core'
+}
+BORDERS_CONFIG = {
+    'enable': True,                             # use detect_border or detect_core
+    'methode': BORDER_METHODE['detect_core'],   # select methode
+    'depth': 5,                                 # positive int for the border
+    'axis': [],                                 # empty list means all axis will be recognized, see methode description
+    'not_used_labels': []                       # the methode will be not execute on this labels
+}
+
 CROSS_VALIDATORS = {
     'cv_normal': 'cv_normal',
     'cv_spain': 'cv_spain',
