@@ -163,13 +163,14 @@ USE_ALL_LABELS = False
 
 assert len(LABELS_OF_CLASSES_TO_TRAIN) == NUMBER_OF_CLASSES_TO_TRAIN  # check yourself
 
-BATCH_SIZE = 250  # train
+BATCH_SIZE = 500  # train
 EPOCHS = 50  # train
 LEARNING_RATE = 1e-4  # train
 
 SPLIT_FACTOR = 0.8  # train   #for data sets: train\test data percentage
 
-CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY = True  # cv + preprocessor
+CV_CHOOSE_EXCLUDED_VALID_PATIENTS_BY_CLASSES = True # cv
+CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY = False  # cv + preprocessor
 CV_RESTORE_VALID_PATIENTS = False
 CV_RESTORE_VALID_PATIENTS_PATH = '/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude'
 CV_RESTORE_VALID_PATIENTS_SEQUENCE = ''  # [['_C', -1], ['_', 0]]

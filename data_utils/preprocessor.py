@@ -271,6 +271,7 @@ class Preprocessor:
                 indexes = np.flatnonzero(p_names != except_name)
                 if indexes.shape[0] == 0:
                     print(f'WARNING! For except_name {except_name} no except_samples were found')
+                    # TODO if there more than 1 names, only the last one will filtered out
 
                 p_names = p_names[indexes]
                 data = {n: a[indexes] for n, a in data.items()}

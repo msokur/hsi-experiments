@@ -15,7 +15,11 @@ import callbacks
 
 
 class Trainer:
-    def __init__(self, model_name=config.MODEL_NAME, except_indexes=[], valid_except_indexes=[]):
+    def __init__(self, model_name=config.MODEL_NAME, except_indexes=None, valid_except_indexes=None):
+        if valid_except_indexes is None:
+            valid_except_indexes = []
+        if except_indexes is None:
+            except_indexes = []
         self.batch_path = None
         self.mirrored_strategy = None
         self.log_dir = model_name
