@@ -4,7 +4,7 @@ import tensorflow as tf
 
 
 class F1_score(Metric):
-    def __init__(self, num_classes, name='f1_score', average='macro', **kwargs):
+    def __init__(self, num_classes, name='f1_score', average='weighted', **kwargs):
         super().__init__(name=name, **kwargs)
         self.num_classes = num_classes
         self.average = average
