@@ -19,7 +19,7 @@ sys.path.insert(2, os.path.join(current_dir, 'models'))
 sys.path.insert(3, os.path.join(current_dir, 'trainers'))
 print('paths from config', sys.path)
 import util.tf_metrics as tf_metrics
-import util.tf_metric_multiclass as tf_metric_multiclass
+from util.tf_metric_multiclass import F1_score
 
 # -------------Telegam---------------------
 USER = 'Benny'
@@ -307,16 +307,16 @@ for path_part in MODEL_NAME_PATHS:
 if not RESTORE_MODEL and ADD_TIME:
     MODEL_NAME += datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
 
-# ----------------------------CUSTOM_OBJECTS
-
-CUSTOM_OBJECTS = {'val_f1_score': tf_metric_multiclass.F1_score}
-
 # ----------------------------CROSS_VALIDATION SPLIT
 
 paths = glob.glob(os.path.join(RAW_NPZ_PATH, '*npz'))
 NUM_OF_PAT = len(paths)
 CROSS_VALIDATION_SPLIT = int(
     NUM_OF_PAT / CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST)  # int(number_of_all_patients / how_many_exclude_per_cv)
+
+# ----------------------------CUSTOM_OBJECTS
+
+CUSTOM_OBJECTS = {'F1_score': F1_score}
 
 # ----------------------------OUTPUT FEATURES
 OUTPUT_SIGNATURE_X_FEATURES = LAST_NM - FIRST_NM  # train

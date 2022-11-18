@@ -138,8 +138,8 @@ class DataGenerator(keras.utils.Sequence):
             raw_paths = glob.glob(os.path.join(self.raw_npz_path, '*.npz'))
             raw_paths_names = [r.split(config.SYSTEM_PATHS_DELIMITER)[-1].split('.')[0] for r in raw_paths]
 
+            print('Getting new validation patients')
             if config.CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY:
-                print('Getting new validation patients')
                 return DataGenerator.get_random_choice(paths=raw_paths_names,
                                                        excepts=self.except_indexes,
                                                        size=config.CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID)
@@ -162,7 +162,7 @@ class DataGenerator(keras.utils.Sequence):
         data = np.load(paths[path_idx])
         unique_classes = np.unique(data['y'])
         con_unique_classes = np.unique(np.concatenate((classes, unique_classes)))
-        if len(con_unique_classes) == 8:
+        if len(con_unique_classes) == config.NUMBER_OF_CLASSES_TO_TRAIN:
             return valid
         elif len(con_unique_classes) - len(classes) >= 1:
             return np.concatenate((valid, DataGenerator.choose_path(paths,
@@ -200,7 +200,10 @@ class DataGenerator(keras.utils.Sequence):
 
         weights = {}
         for i, l in enumerate(labels):
-            weights[l] = (1 / sums[i]) * total / 2.0
+            with np.errstate(divide='ignore', invalid='ignore'):
+                weights[l] = (1 / sums[i]) * total / config.NUMBER_OF_CLASSES_TO_TRAIN
+            if weights[l] == np.inf:
+                weights[l] = 0.0
 
         self.class_weight = weights
 
