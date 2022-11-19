@@ -4,13 +4,14 @@ import tensorflow as tf
 
 
 class F1_score(Metric):
-    def __init__(self, num_classes, name='f1_score', average='weighted', **kwargs):
+    def __init__(self, num_classes, name='f1_score', average='weighted', class_weights=None, **kwargs):
         super().__init__(name=name, **kwargs)
         self.num_classes = num_classes
         self.average = average
         self.f1 = None
         self.average_methode = None
-        self.init_average(self.average)
+        self.class_weights = None
+        self.init_average(self.average, class_weights)
 
     @tf.autograph.experimental.do_not_convert
     def update_state(self, y_true, y_pred, sample_weight=None):
@@ -19,29 +20,29 @@ class F1_score(Metric):
         tp = tf.linalg.diag_part(cm)
         fp = tf.math.reduce_sum(cm, 0) - tp
         fn = tf.math.reduce_sum(cm, 1) - tp
-        self.average_methode(tp, fp, fn, sample_weight)
+        self.average_methode(tp, fp, fn)
 
-    def macro(self, tp, fp, fn, weights):
+    def macro(self, tp, fp, fn):
         f1_s = tp / (tp + 0.5 * (fp + fn) + K.epsilon())
         self.f1.assign(K.sum(f1_s) / self.num_classes)
 
-    def micro(self, tp, fp, fn, weights):
+    def micro(self, tp, fp, fn):
         tp_sum = K.sum(tp)
         fp_sum = K.sum(fp)
         fn_sum = K.sum(fn)
         f1_s = tp_sum / (tp_sum + 0.5 * (fp_sum + fn_sum) + K.epsilon())
         self.f1.assign(f1_s)
 
-    def weighted(self, tp, fp, fn, weights):
+    def weighted(self, tp, fp, fn):
         f1_s = tp / (tp + 0.5 * (fp + fn) + K.epsilon())
-        f1_s *= weights
+        f1_s *= self.class_weights
         self.f1.assign(K.sum(f1_s))
 
-    def multi(self, tp, fp, fn, weights):
+    def multi(self, tp, fp, fn):
         f1_s = tp / (tp + 0.5 * (fp + fn) + K.epsilon())
         self.f1.assign(f1_s)
 
-    def init_average(self, average):
+    def init_average(self, average, class_weights=None):
         if average != self.average:
             self.average = average
 
@@ -54,6 +55,11 @@ class F1_score(Metric):
         elif self.average == 'multi':
             self.average_methode = self.multi
             self.f1 = self.add_weight('f1', shape=(self.num_classes,), initializer='zeros')
+            if class_weights is not None:
+                self.class_weights = [class_weights[key] for key in class_weights.keys()]
+            else:
+                self.class_weights = [1.0 for weight in range(self.num_classes)]
+                print('No class weights are given, so all weights have the value 1.0!')
             return
         else:
             raise ValueError("Only the average Keywords: 'macro', 'micro', 'weighted' and 'multi' are allowed!")
@@ -68,7 +74,8 @@ class F1_score(Metric):
 
     def get_config(self):
         base_config = super().get_config()
-        return {**base_config, 'num_classes': self.num_classes, 'average': self.average}
+        return {**base_config, 'num_classes': self.num_classes, 'average': self.average,
+                'class_weights': self.class_weights}
 
 
 if __name__ == '__main__':
