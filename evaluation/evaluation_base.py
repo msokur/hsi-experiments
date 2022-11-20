@@ -108,8 +108,7 @@ class EvaluationBase(Metrics):
                 thresholds = thresholds_raw_list.copy()
             else:
                 for thresholds_rng in thresholds_range:
-                    thresholds += list(np.round(np.linspace(thresholds_rng[0], thresholds_rng[1], thresholds_rng[2]),
-                                                4))
+                    thresholds += list(np.round(np.linspace(thresholds_rng[0], thresholds_rng[1], thresholds_rng[2]), 4))
         return thresholds
 
     def write_additional_columns(self, csv_row):

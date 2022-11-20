@@ -67,20 +67,21 @@ CROSS_VALIDATOR = CROSS_VALIDATORS['cv_postprocessing']
 
 # ----------------------------------------------------------------------------------------------------------
 #database_abbreviation = 'Esophagus_MedFilter'
-database_abbreviation = 'colon_other'
-#RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')
+database_abbreviation = 'Colon_MedianFilter'
 
-#RAW_SOURCE_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
-#                              database_abbreviation)
-#RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
-#                            database_abbreviation, 'raw_3d_weighted')
+RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')
+
+RAW_SOURCE_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
+                              database_abbreviation)
+RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
+                            database_abbreviation, 'raw_3d_weighted')
 
 #TEST_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation, database_abbreviation)
 #RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')
 
 
-RAW_NPZ_PATH = os.path.join('data_3d', 'svn_T')
-RAW_SOURCE_PATH = 'data_dat'
+#RAW_NPZ_PATH = os.path.join('data_3d', 'svn_T')
+#RAW_SOURCE_PATH = 'data_dat'
 #RAW_NPZ_PATH = os.path.join('data_preprocessed', 'EsophagusDatabase', 'raw_3d_weights')
 TEST_NPZ_PATH = RAW_NPZ_PATH
 
@@ -107,21 +108,6 @@ else:
 if 'bea' in DATABASE:
     FILE_EXTENSION = FILE_EXTENSIONS['_mat']
     NORMALIZATION_TYPE = NORMALIZATION_TYPES['None']
-
-#SHUFFLED_PATH = r'data_preprocessed/augmented/shuffled'
-#BATCHED_PATH = r'data_preprocessed/augmented/batch_sized'
-
-#SHUFFLED_PATH = r'data_preprocessed/combi/shuffled'
-#BATCHED_PATH = r'data_preprocessed/combi/batch_sized'
-
-#SHUFFLED_PATH = r'data_preprocessed/combi_with_raw_ill/shuffled'
-#BATCHED_PATH = r'data_preprocessed/combi_with_raw_ill/batch_sized'
-
-#SHUFFLED_PATH = r'data_bea/ColonData/raw_3d_weights/shuffled'
-#BATCHED_PATH = r'data_bea/ColonData/raw_3d_weights/batch_sized'
-
-#SHUFFLED_PATH = r'data_preprocessed/augmented_l2_norm/shuffled'
-#BATCHED_PATH = r'data_preprocessed/augmented_l2_norm/batch_sized'
 
 CHECKPOINT_PATH = 'checkpoints'
 MODEL_PATH = 'model'
