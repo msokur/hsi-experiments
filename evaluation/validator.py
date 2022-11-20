@@ -28,10 +28,10 @@ class Validator():
         threshold_column_index = np.where(header == "threshold")[0][0]
         print(sens_column_index, spec_column_index, threshold_column_index)
         return sens_column_index, spec_column_index, threshold_column_index
-    
-    def find_best_threshold_in_checkpoint(self, checkpoint):
-        print(checkpoint)
-        metrics_csv_path = os.path.join(checkpoint, self.thresholds_filename)
+
+    def get_data(self, checkpoint_folder):
+        print(checkpoint_folder)
+        metrics_csv_path = os.path.join(checkpoint_folder, self.thresholds_filename)
 
         with open(metrics_csv_path, newline='') as f:
             reader = csv.reader(f, delimiter=',')
@@ -39,53 +39,58 @@ class Validator():
             header = next(reader)
             if str.isdigit(header[0]):
                 data.append(header)
-                i_sens = 4
-                i_spec = 5
+                sensitivity_column = 4
+                specificity_column = 5
                 threshold_column = 2
             else:
-                i_sens, i_spec, threshold_column = Validator.find_sens_spec_column(header)
+                sensitivity_column, specificity_column, threshold_column = Validator.find_sens_spec_column(header)
 
             for row in reader:
                 data.append(row)
 
             data = np.array(data)
 
-            #get data
-            thr = data[:, threshold_column].astype(np.float32)
-            sens = data[:, i_sens].astype(np.float32)                
-            spec = data[:, i_spec].astype(np.float32)                
+        return data, sensitivity_column, specificity_column, threshold_column
 
-            #sort data for case if threshold are not sorted
-            sorted_arrays = list(zip(list(thr), list(sens), list(spec)))
-            sorted_arrays = sorted(sorted_arrays) #by default it sorts by the first column
-            sorted_arrays = np.array(sorted_arrays)
-            thr = sorted_arrays[:, 0]
-            sens = sorted_arrays[:, 1]
-            spec = sorted_arrays[:, 2]
+    def find_best_threshold_in_checkpoint(self, checkpoint_folder):
+        data, sensitivity_column, specificity_column, threshold_column = self.get_data(checkpoint_folder)
 
-            #print data
-            #print('Sensitivities', sens)
-            #print('Specificities', spec)
+        #get data
+        thr = data[:, threshold_column].astype(np.float32)
+        sens = data[:, sensitivity_column].astype(np.float32)
+        spec = data[:, specificity_column].astype(np.float32)
 
-            #print intermediate computations
-            #print(np.sign(sens - spec))
-            diff = np.diff(np.sign(sens - spec))
-            #print(diff)
-            #print(np.argmin(diff))
+        #sort data for case if threshold are not sorted
+        sorted_arrays = list(zip(list(thr), list(sens), list(spec)))
+        sorted_arrays = sorted(sorted_arrays) #by default it sorts by the first column
+        sorted_arrays = np.array(sorted_arrays)
+        thr = sorted_arrays[:, 0]
+        sens = sorted_arrays[:, 1]
+        spec = sorted_arrays[:, 2]
 
-            if len(diff[diff == -2]) == 0:
-                print(f'~~~~~~~~~~~~~~~~You need to add new thresholds starts from {checkpoint}~~~~~~~~~~~~~~')
+        #print data
+        #print('Sensitivities', sens)
+        #print('Specificities', spec)
 
-            #get and print results
-            idx = np.argmin(diff).flatten() + 1
+        #print intermediate computations
+        #print(np.sign(sens - spec))
+        diff = np.diff(np.sign(sens - spec))
+        #print(diff)
+        #print(np.argmin(diff))
+
+        if len(diff[diff == -2]) == 0:
+            print(f'~~~~~~~~~~~~~~~~You need to add new thresholds starts from {checkpoint_folder}~~~~~~~~~~~~~~')
+
+        #get and print results
+        idx = np.argmin(diff).flatten() + 1
 
 
-            print(f'Best index and threshold for {checkpoint}: ', idx, thr[idx])
-            print(f'Best sensitivity and specificity for {checkpoint}: ', sens[idx], spec[idx])
-            print(f'Mean value of best sensitivity and specificity for {checkpoint}: ', np.mean([sens[idx], spec[idx]]))
+        print(f'Best index and threshold for {checkpoint_folder}: ', idx, thr[idx])
+        print(f'Best sensitivity and specificity for {checkpoint_folder}: ', sens[idx], spec[idx])
+        print(f'Mean value of best sensitivity and specificity for {checkpoint_folder}: ', np.mean([sens[idx], spec[idx]]))
 
 
-            return thr[idx], sens[idx], spec[idx], np.mean([sens[idx], spec[idx]]), idx
+        return thr[idx], sens[idx], spec[idx], np.mean([sens[idx], spec[idx]]), idx
     
     def find_best_checkpoint(self, ):
         print(os.path.join(self.root_path, self.checkpoints_regex))

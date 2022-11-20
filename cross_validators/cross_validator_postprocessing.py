@@ -2,6 +2,7 @@ import os
 from glob import glob
 import numpy as np
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from scipy.ndimage import median_filter
@@ -17,7 +18,7 @@ from provider import get_whole_analog_of_data_loader, get_evaluation
 
 
 class CrossValidatorPostProcessing(CrossValidatorBase):
-    def __init__(self, name, cross_validation_type='0_1', **kwargs):
+    def __init__(self, name, cross_validation_type='algorithm_plain', **kwargs):
         super().__init__(name)
         self.LABELED_NPZ_FOLDER = config.RAW_NPZ_PATH
         self.cross_validation_type = cross_validation_type
@@ -36,29 +37,32 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
 
         if not kwargs:
             self.execution_flags = {
-                "generate_whole_cubes": False,  #by default if "whole" folder is empty than we generate whole cubes, otherwise we don't. But with generate_whole_cubes it's possible to forse generate
-                "get_predictions_for_whole_cubes": False,  #by default if there is no predictions_whole.npy in test/name/cp-0000 than we count predoctions for whole cubes, otherwise - we don't. But with get_predictions_for_whole_cubes it's possible to forse count
-                "save_predictions_and_metrics_on_labeled":{   #for detailed documentation of params in this dictionary see documentation for evaluation/evaluation_base.py/EvaluationBase.save_predictions_and_metrics()
-                        "save_predictions": False,
-                        "metrics":{
-                            'save_metrics': False,
-                            'checkpoints_range':None,  
-                            'checkpoints_raw_list':None,  
-                            'thresholds_range':None, 
-                            'thresholds_raw_list':None, 
-                            'save_curves': False
-                        }
-                    },
-                "check":{    #what thresholds and median filter sizes to check
+                "generate_whole_cubes": False,
+                # by default if "whole" folder is empty than we generate whole cubes, otherwise we don't. But with generate_whole_cubes it's possible to forse generate
+                "get_predictions_for_whole_cubes": False,
+                # by default if there is no predictions_whole.npy in test/name/cp-0000 than we count predoctions for whole cubes, otherwise - we don't. But with get_predictions_for_whole_cubes it's possible to forse count
+                "save_predictions_and_metrics_on_labeled": {
+                    # for detailed documentation of params in this dictionary see documentation for evaluation/evaluation_base.py/EvaluationBase.save_predictions_and_metrics()
+                    "save_predictions": False,
+                    "metrics": {
+                        'save_metrics': False,
+                        'checkpoints_range': None,
+                        'checkpoints_raw_list': None,
+                        'thresholds_range': None,
+                        'thresholds_raw_list': None,
+                        'save_curves': False
+                    }
+                },
+                "check": {  # what thresholds and median filter sizes to check
                     "median_filters_raw_list": None,
-                    "median_filters_range": None, 
+                    "median_filters_range": None,
                     "thresholds_raw_list": None,
                     "thresholds_range": None
                 }
             }
         else:
             self.execution_flags = kwargs['execution_flags']
-        
+
         print('execution_flags', self.execution_flags)
 
         search_path = os.path.join(self.project_folder, 'logs', name)
@@ -81,12 +85,6 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
         self.filtered_labeled_predictions_filename = 'predictions_filtered_labeled.npy'
 
     def evaluation(self, **kwargs):
-        """ In kwargs
-        execution_flags = {
-        "generate_whole_cubes": True,
-        "get_predictions_for_whole_cubes": True
-        }
-        """
         """
             Steps - 1 variant (median filter is applied to predictions 0-1):
             1. Generate whole cubes, if needed
@@ -108,48 +106,42 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
 
         self.generate_whole_cubes()
         self.count_predictions_on_whole_cubes()
-        if self.cross_validation_type == '0_1':
-            self.evaluation_0_1()
-        if self.cross_validation_type == 'floats':
-            self.evaluation_floats()
-
-    def evaluation_0_1(self):
         self.count_predictions_on_labeled()
 
-        best_threshold, _, _, _, _ = Validator(self.saving_folder).find_best_threshold_in_checkpoint(self.saving_folder_with_checkpoint)
+        if self.cross_validation_type == 'algorithm_with_threshold':
+            thresholds_range = self.execution_flags['check']['thresholds_range']
+            thresholds_raw_list = self.execution_flags['check']['thresholds_raw_list']
+        if self.cross_validation_type == 'algorithm_plain':
+            thresholds_raw_list = [-1]
+            thresholds_range = None
+
+        self.check_different_filter_sizes_and_thresholds(
+            thresholds_range=thresholds_range,
+            thresholds_raw_list=thresholds_raw_list,
+            median_filters_raw_list=self.execution_flags['check']['median_filters_raw_list'],
+            median_filters_range=self.execution_flags['check']['median_filters_range'])
+
+    '''def algorithm_with_threshold(self):
+        best_threshold, _, _, _, _ = Validator(self.saving_folder).find_best_threshold_in_checkpoint(
+            self.saving_folder_with_checkpoint)
         print('Best threshold', best_threshold)
 
-        self.check_different_filter_sizes_and_thresholds(thresholds_range=self.execution_flags['check']['thresholds_range'],
-                                                        thresholds_raw_list=self.execution_flags['check']['thresholds_raw_list'],
-                                                        median_filters_raw_list=self.execution_flags['check']['median_filters_raw_list'],
-                                                        median_filters_range=self.execution_flags['check']['median_filters_range'])#thresholds_range=[0.0001, 0.001, 20],
-                                                         #median_filters_raw_list=[5, 10, 15, 25])
 
-        """
 
-        self.metrics_for_threshold_filename_base += 'filtered'
-        self.training_csv_file = self.training_csv_path
-        self.predictions_filename = self.filtered_labeled_predictions_filename
-        config.USE_ALL_LABELS = False
-        #config.bea_db = self.bea_db
-        #config.DATABASE = config.DATABASES[self.database]
+    def algorithm_plain(self):
+        thresholds_range = self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
+            'thresholds_range']
+        thresholds_raw_list = self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
+                                  'thresholds_raw_list']
+        if thresholds_range is None and thresholds_raw_list is None:
+            data, _, _, threshold_column = Validator().get_data(self.saving_folder_with_checkpoint)
+            thresholds_raw_list = data[:, threshold_column]
 
-        self.count_metrics_on_diff_thresholds(self.saving_folder_with_checkpoint, threshold_range_plain=best_threshold)
-        print(self.training_csv_path)
-
-        #config.DATABASE = self.original_database"""
-
-        '''self.save_predictions_and_metrics_for_checkpoint(0,
-                                                         self.saving_path,
-                                                         self.csv_path,
-                                                         thr_ranges=[[best_threshold, best_checkpoint, 1]],
-                                                         execution_flags=[False],
-                                                         predictions_filename=self.filtered_labeled_predictions_filename,
-                                                         gt_filename=self.filtered_labeled_gt_filename
-                                                         )'''
-
-    def evaluation_floats(self):
-        return
+        self.check_different_filter_sizes_and_thresholds(
+            thresholds_range=thresholds_range,
+            thresholds_raw_list=thresholds_raw_list,
+            median_filters_raw_list=self.execution_flags['check']['median_filters_raw_list'],
+            median_filters_range=self.execution_flags['check']['median_filters_range'])'''
 
     def generate_whole_cubes(self):
         if len(self.WHOLE_CUBES) != len(self.LABELED_CUBES) or self.execution_flags['generate_whole_cubes']:
@@ -166,7 +158,7 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
             preprocessor.pipeline(config.RAW_SOURCE_PATH, self.WHOLE_CUBES_FOLDER,
                                   execution_flags=execution_flags)
             config.DATABASE = self.original_database
-            
+
             print('----------Generating of cubes is finished------------')
         else:
             print("!!!----------We don't generate whole cubes----------!!!")
@@ -184,8 +176,10 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
                 npz_folder=self.WHOLE_CUBES_FOLDER,
                 save_curves=False,
                 predictions_npy_filename=self.whole_predictions_filename,
-                checkpoints_range=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics']['checkpoints_range'],  
-                checkpoints_raw_list=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics']['checkpoints_raw_list']
+                checkpoints_range=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
+                    'checkpoints_range'],
+                checkpoints_raw_list=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
+                    'checkpoints_raw_list']
             )
             config.USE_ALL_LABELS = False
             print('----------Counting of predictions on whole cubes is finished------------')
@@ -194,25 +188,34 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
 
     def count_predictions_on_labeled(self):
         predictions_exist = os.path.exists(os.path.join(self.saving_folder_with_checkpoint, self.predictions_filename))
-        
-        if not predictions_exist or self.execution_flags['save_predictions_and_metrics_on_labeled']['save_predictions'] or \
+
+        if not predictions_exist or self.execution_flags['save_predictions_and_metrics_on_labeled'][
+            'save_predictions'] or \
                 self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics']['save_metrics']:
             print('----------Counting of predictions on labeled samples is started------------')
-            save_predictions=False
-            if not predictions_exist or self.execution_flags['save_predictions_and_metrics_on_labeled']['save_predictions']:
-                save_predictions=True
-                    
+            thresholds_range = self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
+                    'thresholds_range']
+            thresholds_raw_list = self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
+                    'thresholds_raw_list']
+
+            save_predictions = False
+            if not predictions_exist or self.execution_flags['save_predictions_and_metrics_on_labeled'][
+                'save_predictions']:
+                save_predictions = True
+
             self.evaluator.save_predictions_and_metrics(
                 training_csv_path=self.training_csv_path,
                 npz_folder=self.LABELED_NPZ_FOLDER,
                 predictions_npy_filename=self.predictions_filename,
-   
-                checkpoints_range=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics']['checkpoints_range'],  
-                checkpoints_raw_list=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics']['checkpoints_raw_list'], 
-                thresholds_range=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics']['thresholds_range'],  
-                thresholds_raw_list=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics']['thresholds_raw_list'],  
-                save_predictions=save_predictions,  
-                save_curves=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics']['save_curves']  
+
+                checkpoints_range=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
+                    'checkpoints_range'],
+                checkpoints_raw_list=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
+                    'checkpoints_raw_list'],
+                thresholds_range=thresholds_range,
+                thresholds_raw_list=thresholds_raw_list,
+                save_predictions=save_predictions,
+                save_curves=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics']['save_curves']
             )
             print('----------Counting of predictions on labeled samples is finished------------')
         else:
@@ -255,7 +258,8 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
             median_filters_raw_list,
             thresholds_range,
             thresholds_raw_list)
-        print(f'----------We are starting to check different median filter sizes {median_filters} and thresholds {thresholds}----------')
+        print(
+            f'----------We are starting to check different median filter sizes {median_filters} and thresholds {thresholds}----------')
         original_filename = self.evaluator.comparable_characteristics_csvname
         original_metrics_filename = self.evaluator.metrics_filename_base
 
@@ -281,11 +285,17 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
                 np.save(os.path.join(folder, self.filtered_predictions_filename), filtered_predictions)
                 self.save_labeled_from_whole_filtered(folder)
 
-                self.evaluator.comparable_characteristics_csvname = "compare_all_thresholds_filtered.csv"
+                self.evaluator.comparable_characteristics_csvname = "compare_all_thresholds_filtered_AP.csv"
                 self.evaluator.metrics_filename_base += '_filtered_' + str(med_filter)
                 self.evaluator.metrics_filename_base = folder + config.SYSTEM_PATHS_DELIMITER \
                                                        + self.evaluator.metrics_filename_base
                 self.evaluator.additional_columns = {'median': med_filter}
+
+                thresholds_raw_list = [threshold]
+                thresholds_range = None
+                if self.cross_validation_type == 'algorithm_plain':
+                    thresholds_range = [self.execution_flags['check']['thresholds_range']]
+                    thresholds_raw_list = self.execution_flags['check']['thresholds_raw_list']
 
                 self.evaluator.save_predictions_and_metrics(
                     training_csv_path=self.training_csv_path,
@@ -293,24 +303,29 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
                     npz_folder=self.LABELED_NPZ_FOLDER,
                     save_curves=False,
                     predictions_npy_filename=folder_name + config.SYSTEM_PATHS_DELIMITER + self.filtered_labeled_predictions_filename,
-                    thresholds_raw_list=[threshold],
-                    checkpoints_range=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics']['checkpoints_range'],  
-                    checkpoints_raw_list=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics']['checkpoints_raw_list'] 
+                    thresholds_raw_list=thresholds_raw_list,
+                    thresholds_range=thresholds_range,
+                    checkpoints_range=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
+                        'checkpoints_range'],
+                    checkpoints_raw_list=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
+                        'checkpoints_raw_list']
                 )
 
                 self.evaluator.metrics_filename_base = original_metrics_filename
         self.evaluator.comparable_characteristics_csvname = original_filename
         self.evaluator.additional_columns = {}
-        
+
         print(f'----------Checking of different median filter sizes and thresholds is finished----------')
 
     def median_filter(self, patient, threshold, median_filter_size, folder):
 
         size = patient['size']
-        # size = (480, 640)
         pred = np.reshape(np.array(patient['predictions'])[:, 0], size)
-        pred[pred >= threshold] = 1
-        pred[pred < threshold] = 0
+
+        if threshold != -1:
+            pred[pred >= threshold] = 1
+            pred[pred < threshold] = 0
+
         gt = np.reshape(np.array(patient['gt']), size).astype(np.float)
         gt_ = np.array(gt)
         gt[gt_ == 2.] = 0.
