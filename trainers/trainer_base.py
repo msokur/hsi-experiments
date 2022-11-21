@@ -25,7 +25,6 @@ class Trainer:
         self.log_dir = model_name
         self.excepted_indexes = except_indexes.copy()
         self.valid_except_indexes = valid_except_indexes.copy()
-        self.class_weights = None
 
     @abc.abstractmethod
     def compile_model(self, model):
@@ -149,7 +148,7 @@ class Trainer:
 
         '''-------DATASET---------'''
 
-        train_dataset, valid_dataset, train_generator, self.class_weights = self.get_datasets(
+        train_dataset, valid_dataset, train_generator, class_weights = self.get_datasets(
             for_tuning=config.WITH_SMALLER_DATASET)
 
         '''-------CALLBACKS---------'''
@@ -174,7 +173,7 @@ class Trainer:
             batch_size=config.BATCH_SIZE,
             callbacks=callbacks_,
             use_multiprocessing=True,
-            class_weight=self.class_weights,
+            class_weight=class_weights,
             workers=int(os.cpu_count()))
 
         self.save_history(history)
