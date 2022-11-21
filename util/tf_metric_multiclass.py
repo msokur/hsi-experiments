@@ -7,6 +7,7 @@ class F1_score(Metric):
     def __init__(self, num_classes, name='f1_score', average='weighted', **kwargs):
         super().__init__(name=name, **kwargs)
         self.num_classes = num_classes
+        self.average = average
         self.f1 = None
         self.average_methode = None
         self.y_true = None
@@ -48,6 +49,7 @@ class F1_score(Metric):
         self.f1.assign(f1_s)
 
     def init_average(self, average):
+        self.average = average
 
         if average == 'macro':
             self.average_methode = self.macro
