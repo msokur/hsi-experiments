@@ -1,0 +1,80 @@
+{
+	"HNO": {
+		"FILE_EXTENSIONS": ".dat",
+		"DICT_NAMES": ["X", "y", "indexes_in_datacube"],
+		"3D": true,
+		"3D_SIZE": [3, 3],
+		"FIRST_NM": 8,
+		"LAST_NM": 100,
+		"WAVE_AREA": 100,
+		"LABELS": [0, 1, 2, 3, 4, 5, 6, 7],
+		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6, 7],
+		"NAME_SPLIT": "_SpecCube",
+		"MASK_DIFF": ["_SpecCube.dat", ".png"],
+		"NORMALIZATION_TYPE": "svn",
+		"SCALER_FILE": "scaler.scaler",
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING_TYPE": "median_filter",
+		"SMOOTHING_VALUE": 5,
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_border",
+			"depth": 5,
+			"'axis": [],
+			"not_used_labels": []
+		},
+		"MASK_COLOR": {"0": [255, 255, 0], "1": [0, 0, 255], "2": [255, 0, 0],
+						"3": [255, 255, 255], "4": [0, 255, 0], "5": [128, 128, 128],
+						"6": [12, 27, 12], "7": [26, 255, 255]
+		},
+		"TISSUE_LABELS": {"0": "Nerve", "1": "Tumor", "2": "Parotis",
+							"3": "Subcutaneous_Tissue", "4": "Muscle", "5": "Vein",
+							"6": "Cartilage", "7": "Not_Certain"
+		},
+		"PLOT_COLORS": {"0": "yellow", "1": "blue", "2": "red",
+						"3": "white", "4": "green", "5": "grey",
+						"6": "black", "7": "cornflowerblue"
+		},
+		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
+		"WITH_BACKGROUND_EXTRACTION": false
+	},
+	"ESO": {
+		"FILE_EXTENSIONS": ".dat",
+		"DICT_NAMES": ["X", "y", "indexes_in_datacube"],
+		"D3": true,
+		"D3_SIZE": [3, 3],
+		"FIRST_NM": 8,
+		"LAST_NM": 100,
+		"WAVE_AREA": 100,
+		"LABELS": [0, 1, 2, 3],
+		"LABELS_TO_TRAIN": [0, 1, 2],
+		"NAME_SPLIT": "_SpecCube",
+		"MASK_DIFF": ["_SpecCube.dat", ".png"],
+		"NORMALIZATION_TYPE": "svn",
+		"SCALER_FILE": "scaler.scaler",
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING_TYPE": "median_filter",
+		"SMOOTHING_VALUE": 5,
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_border",
+			"depth": 5,
+			"'axis": [],
+			"not_used_labels": []
+		},
+		"MASK_COLOR": {"0": [255, 255, 0], "1": [0, 0, 255], "2": [0, 255, 0],
+						"3": [255, 0, 0]
+		},
+		"TISSUE_LABELS": {"0": "Cancer", "1": "Stomach", "2": "Esophagus",
+							"3": "Not_Certain"
+		},
+		"PLOT_COLORS": {"0": "yellow", "1": "blue", "2": "green",
+						"3": "red"
+		},
+		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
+		"WITH_BACKGROUND_EXTRACTION": false
+	}
+}
+

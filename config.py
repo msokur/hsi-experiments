@@ -18,9 +18,19 @@ sys.path.insert(1, os.path.join(current_dir, os.path.join('data_utils', 'data_lo
 sys.path.insert(2, os.path.join(current_dir, 'models'))
 sys.path.insert(3, os.path.join(current_dir, 'trainers'))
 print('paths from config', sys.path)
+
+from data_utils.configuration.load_config import read_config, read_path_config
 import util.tf_metrics as tf_metrics
 from util.tf_metric_multiclass import F1_score
 
+# ---------Dynamic Configuration-----------
+loader_config = "data_utils/configuration/DataLoader.json"
+loader_section = "HNO"
+path_config = "data_utils/configuration/Paths.json"
+system_section = "Cluster_Benny"
+database_section = "HNO_Database"
+DATALOADER = read_config(file=loader_config, section=loader_section)
+PATHS = read_path_config(file=path_config, system_mode=system_section, database=database_section)
 # -------------Telegam---------------------
 USER = 'Benny'
 TGCONFIG = r'~/hsi-experiments-BA/tg_benny.config'

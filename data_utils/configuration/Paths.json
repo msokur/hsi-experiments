@@ -1,0 +1,30 @@
+{
+  "BASE_PATH": {
+    "CHECKPOINT_PATH": "checkpoints",
+    "MODEL_PATH": "model"
+  },
+  "Cluster_Benny": {
+    "MODE": "CLUSTER",
+    "PREFIX": "/work/users/bn322dcei",
+    "MODEL_NAME_PATHS": ["/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs"]
+  },
+  "Win_Benny": {
+    "MODE": "LOCAL_NO_GPU",
+    "PREFIX": "E:\\ICCAS\\HNO",
+    "MODEL_NAME_PATHS": ["logs"]
+  },
+  "HNO_Database": {
+    "RAW_NPZ_PATH": ["data_3d", "3x3", "svn", "median"],
+    "RAW_SOURCE_PATH": ["Parotis_Faelle_unsorted", "data"],
+    "TEST_NPZ_PATH": ["data_3d", "3x3", "svn", "median"],
+    "SHUFFLED_PATH": ["shuffled"],
+    "BATCHED_PATH": ["batch_sized"]
+  },
+  "ESO_Database": {
+    "RAW_NPZ_PATH": ["data_3d_eso", "3x3", "svn", "median"],
+    "RAW_SOURCE_PATH": ["EsophagusCancer"],
+    "TEST_NPZ_PATH": ["data_3d_eso", "3x3", "svn", "median"],
+    "SHUFFLED_PATH": ["shuffled"],
+    "BATCHED_PATH": ["batch_sized"]
+  }
+}
