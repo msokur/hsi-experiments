@@ -120,7 +120,8 @@ class Predictor:
 
                 model_path = Predictor.edit_model_path_if_local(row[5])
 
-                checkpoint = Predictor.get_checkpoint(checkpoint, model_path)
+                if checkpoint is not None:
+                    checkpoint = Predictor.get_checkpoint(checkpoint, model_path)
                 name = DataLoader.get_name_easy(row[4], delimiter='/')
                 print(f'We get checkpoint {checkpoint} for {model_path}')
 

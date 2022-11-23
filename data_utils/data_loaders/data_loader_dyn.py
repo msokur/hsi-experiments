@@ -9,12 +9,18 @@ from sklearn.feature_extraction import image
 
 from data_utils import border
 from data_utils.background_detection import detect_background
+from data_utils.data_loaders.dat_file import DatFile
+from data_utils.data_loaders.mat_file import MatFile
 
 
 class DataLoaderDyn:
     def __init__(self, loader_conf: dict, path_conf: dict):
         self.loader = loader_conf
         self.paths = path_conf
+        if self.loader["FILE_EXTENSIONS"] == ".dat":
+            self.data_reader = DatFile(loader_conf=self.loader)
+        elif self.loader["FILE_EXTENSIONS"] == ".mat":
+            self.data_reader = MatFile(loader_conf=self.loader)
 
     def get_extension(self):
         return self.loader["FILE_EXTENSIONS"]
@@ -22,28 +28,14 @@ class DataLoaderDyn:
     def get_labels(self):
         return self.loader["LABELS"]
 
-    def indexes_get_bool_from_mask(self, mask):
-        indexes = ()
-        for key, value in self.loader["MASK_COLOR"].items():
-            indexes += (mask[:, :, 0] == value[0]) & (mask[:, :, 1] == value[1]) & (mask[:, :, 2] == value[2])
-        return indexes
-
-    def file_read_mask_and_spectrum(self, path):
-        pass
-
     def get_name(self, path: str) -> str:
         return path.split(self.paths["SYSTEM_PATHS_DELIMITER"])[-1].split(".")[0].split(self.paths["NAME_SPLIT"])[0]
 
     def get_paths_and_splits(self, root_path=None):
         if root_path is None:
             root_path = self.paths["RAW_NPZ_PATH"]
-        paths = glob(os.path.join(root_path, '*.npz'))
-        paths = sorted(paths)
 
-        cv_split = int(len(paths) / self.loader["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"])
-        splits = np.array_split(range(len(paths)), cv_split)
-
-        return paths, splits
+        return self.data_reader.get_paths_and_splits(root_path)
 
     def smooth(self, spectrum):
         if self.loader["SMOOTHING_TYPE"] is not None:
@@ -77,7 +69,7 @@ class DataLoaderDyn:
 
     def file_read(self, path):
         print(f'Reading {path}')
-        spectrum, mask = self.file_read_mask_and_spectrum(path)
+        spectrum, mask = self.data_reader.file_read_mask_and_spectrum(path)
 
         spectrum = self.smooth(spectrum)
 
@@ -87,7 +79,7 @@ class DataLoaderDyn:
         if self.loader["3D"]:
             spectrum = self.patches3d_get_from_spectrum(spectrum)
 
-        indexes = self.indexes_get_bool_from_mask(mask)
+        indexes = self.data_reader.indexes_get_bool_from_mask(mask)
         indexes = [i * background_mask for i in indexes]
         indexes = [i * contamination_mask for i in indexes]
         border_masks = self.remove_border(indexes)
@@ -200,9 +192,6 @@ class DataLoaderDyn:
         data = np.load(npz_path)
         X, y = data['X'], data['y']
 
-        return self.labeled_spectrum_get_from_X_y(X, y)
-
-    def labeled_spectrum_get_from_X_y(self, X, y):
         labeled_spectrum = ()
         for label in self.loader["LABELS"]:
             labeled_spectrum += X[y == label]

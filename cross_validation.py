@@ -45,7 +45,7 @@ if __name__ == '__main__':
         # you can pass any parameters from save_predictions_and_metrics() except training_csv_path and npz_folder,
         # because they passed automatically
         cross_validator.pipeline(execution_flags=execution_flags,
-                                 thresholds_range=[[0.0001, 0.001, 20]],
+                                 # thresholds_range=[[0.0001, 0.001, 20]],
                                  save_predictions=True,
                                  save_curves=False)
 
