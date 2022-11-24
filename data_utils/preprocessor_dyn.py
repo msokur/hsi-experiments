@@ -328,19 +328,19 @@ class Preprocessor:
         return weights
 
     def weightedData_save(self, root_path, weights):
-        paths = glob.glob(os.path.join(root_path, '*.npz'))
+        paths = glob.glob(os.path.join(root_path, "*.npz"))
         for i, path in tqdm(enumerate(paths)):
             data = np.load(path)
-            X, y = data['X'], data['y']
+            X, y = data["X"], data["y"]
             weights_ = np.zeros(y.shape)
 
             for j in np.unique(y):
                 weights_[y == j] = weights[i, j]
 
-            data = {n: a for n, a in data.items()}
-            data['weights'] = weights_
+            data_ = {n: a for n, a in data.items()}
+            data_["weights"] = weights_
 
-            np.savez(os.path.join(root_path, self.dataloader.get_name(path)), **data)
+            np.savez(os.path.join(root_path, self.dataloader.get_name(path)), **data_)
 
     @staticmethod
     def get_execution_flags_for_pipeline_with_all_true():
@@ -357,7 +357,6 @@ class Preprocessor:
 
         root_path = self.paths["RAW_SOURCE_PATH"]
         preprocessed_path = self.paths["RAW_NPZ_PATH"]
-        scaler_path = self.prepro["SCALER_PATH"]
 
         if not os.path.exists(preprocessed_path):
             os.makedirs(preprocessed_path)
@@ -384,7 +383,7 @@ class Preprocessor:
             self.Scaler = provider_dyn.get_scaler(typ=self.prepro["NORMALIZATION_TYPE"],
                                                   preprocessed_path=preprocessed_path,
                                                   scaler_file=self.prepro["SCALER_FILE"],
-                                                  scaler_path=scaler_path)
+                                                  scaler_path=self.prepro["SCALER_PATH"])
             self.Scaler.iterate_over_archives_and_save_scaled_X(preprocessed_path, preprocessed_path)
 
         # ----------shuffle part------------------
@@ -392,14 +391,14 @@ class Preprocessor:
             paths = glob.glob(os.path.join(preprocessed_path, '*.npz'))
             self.shuffle(paths,
                          self.piles_number,
-                         os.path.join(preprocessed_path, 'shuffled'),
+                         self.paths["SHUFFLED_PATH"],
                          augmented=False)
 
 
 if __name__ == '__main__':
     execution_flags_ = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
-    execution_flags_['load_data_with_dataloader'] = False
-    execution_flags_['add_sample_weights'] = False
+    execution_flags_['load_data_with_dataloader'] = True
+    execution_flags_['add_sample_weights'] = True
     execution_flags_['scale'] = True
     execution_flags_['shuffle'] = True
 

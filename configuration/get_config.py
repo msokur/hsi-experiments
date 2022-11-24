@@ -1,6 +1,7 @@
 import inspect
 import os
 import sys
+import platform
 
 from utils import Telegram
 
@@ -22,8 +23,14 @@ loader_section = "HNO"
 DATALOADER = read_config(file=loader_config, section=loader_section)
 
 # --------- Paths
+uname = platform.uname()
+
+if "clara" in uname.node:
+    system_section = "Cluster_Benny"
+else:
+    system_section = "Win_Benny"
+
 path_config = os.path.join(current_dir, "Paths.json")
-system_section = "Win_Benny"
 database_section = "HNO_Database"
 PATHS = read_path_config(file=path_config, system_mode=system_section, database=database_section)
 
