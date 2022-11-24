@@ -12,7 +12,8 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-import config
+# import config
+from configuration import get_config as conf
 
 """
 This class is about choosing a representative small dataset for speed up the training
@@ -97,11 +98,11 @@ class DistributionsChecker:
         if self.prints:
             print(f'std1 - {std1}, std2 - {std2}')
 
-        if np.abs(std1 - std2) < config.Z_TEST_STD_DELTA:
+        if np.abs(std1 - std2) < conf.DISTRO["Z_TEST_STD_DELTA"]:
             z, p_value = weightstats.ztest(d1, x2=d2, value=0)
             if self.prints:
                 print('z-score and p_value:', z, p_value)
-            if p_value > config.Z_TEST_P_VALUE:
+            if p_value > conf.DISTRO["Z_TEST_P_VALUE"]:
                 return True
         else:
             print('WARNING! Distributions (std) are too different, Z-test results '
@@ -121,7 +122,7 @@ class DistributionsChecker:
         ks = ks_2samp(d1, d2)
         if self.prints:
             print(ks)
-        if ks.pvalue > config.KS_TEST_P_VALUE:
+        if ks.pvalue > conf.DISTRO["KS_TEST_P_VALUE"]:
             return True
         return False
 
@@ -136,9 +137,9 @@ class DistributionsChecker:
         test_data = self.get_centers(test_archive['X'])
 
         results = []
-        for i in range(config.LAST_NM - config.FIRST_NM):
+        for i in range(conf.DATALOADER["LAST_NM"] - conf.DATALOADER["FIRST_NM"]):
             z_result = True
-            if config.Z_TEST:
+            if conf.DISTRO["Z_TEST"]:
                 z_result = self.z_test(test_data[:, i], self.all_data[:, i])
 
             ks_result = self.kolmogorov_smirnov_test(self.all_data[:, i], test_data[:, i])

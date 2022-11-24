@@ -5,16 +5,17 @@ from glob import glob
 import os
 import numpy as np
 
-import config
+# import config
+
 
 class Smoother:
-    def __init__(self, path, size=config.SMOOTHING_VALUE):
+    def __init__(self, path, size):
         self.path = path
         self.size = size
     
     @abc.abstractmethod
     def smooth_func(self, X):
-        return
+        pass
     
     def smooth(self):
         paths = glob(os.path.join(self.path, '*.npz'))
@@ -33,6 +34,7 @@ class MedianFilter(Smoother):
     
     def smooth_func(self, X):
         return median_filter(X, size=self.size)
+
 
 class GaussianFilter(Smoother):
     def __init__(self, *args, **kwargs):

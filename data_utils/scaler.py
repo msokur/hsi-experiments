@@ -6,34 +6,36 @@ from glob import glob
 from sklearn import preprocessing
 import pickle
 
-import config
+# import config
 from util.compare_distributions import DistributionsChecker
-from data_loaders.data_loader_base import DataLoader
+from data_loaders.data_loader_dyn import DataLoaderDyn
+
 
 class Scaler:
-    
-    def __init__(self, preprocessed_path, scaler_path=None):
+    def __init__(self, preprocessed_path, scaler_file=None, scaler_path=None):
         self.preprocessed_path = preprocessed_path
         self.scaler_path = scaler_path
         
         if self.scaler_path is not None: 
-            self.scaler = self.restore_scaler(self.scaler_path)
+            self.scaler = Scaler.scaler_restore(self.scaler_path)
         else:
             X = self.get_data_for_fit()
             self.scaler = self.fit(X)
-            self.scaler_save(self.scaler, os.path.join(self.preprocessed_path, config.SCALER_FILE_NAME+config.SCALER_FILE_EXTENTION))
+            if scaler_file is None:
+                scaler_file = "scaler.scaler"
+            self.scaler_save(self.scaler, os.path.join(self.preprocessed_path, scaler_file))
             
     @abc.abstractmethod
     def get_data_for_fit(self):
-        return
+        pass
     
     @abc.abstractmethod
     def fit(self, X):
-        return
+        pass
     
     @abc.abstractmethod
     def transform(self, X):
-        return
+        pass
             
     def X_y_concatenate(self):
         paths = glob(os.path.join(self.preprocessed_path, '*.npz'))
@@ -53,10 +55,12 @@ class Scaler:
 
         return X, y, indexes
 
-    def scaler_save(self, scaler, scaler_path):
+    @staticmethod
+    def scaler_save(scaler, scaler_path):
         pickle.dump(scaler, open(scaler_path, 'wb'))
 
-    def scaler_restore(self, scaler_path):
+    @staticmethod
+    def scaler_restore(scaler_path):
         return pickle.load(open(scaler_path, 'rb'))
 
     def scale_X(self, X):
@@ -89,11 +93,9 @@ class Scaler:
             X = self.scale_X(X)
             data = {n: a for n, a in data.items()}
             data['X'] = X.copy()
-            np.savez(os.path.join(destination_path, DataLoader.get_name_easy(path)), **data)
+            np.savez(os.path.join(destination_path, DataLoaderDyn.get_name_easy(path)), **data)
             
-            
-    
-    
+
 class NormalizerScaler(Scaler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

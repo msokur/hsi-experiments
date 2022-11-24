@@ -1,0 +1,8 @@
+{
+  "Default": {
+    "Z_TEST": true,
+    "Z_TEST_P_VALUE": 0.05,
+    "Z_TEST_STD_DELTA": 0.01,
+    "KS_TEST_P_VALUE": 0.05
+  }
+}

@@ -1,3 +1,5 @@
+import abc
+
 import numpy as np
 import pandas as pd
 import os
@@ -7,7 +9,7 @@ from tqdm import tqdm
 from scipy.ndimage import gaussian_filter, median_filter
 from sklearn.feature_extraction import image
 
-from data_utils import border
+import provider_dyn
 from data_utils.background_detection import detect_background
 from data_utils.data_loaders.dat_file import DatFile
 from data_utils.data_loaders.mat_file import MatFile
@@ -21,6 +23,8 @@ class DataLoaderDyn:
             self.data_reader = DatFile(loader_conf=self.loader)
         elif self.loader["FILE_EXTENSIONS"] == ".mat":
             self.data_reader = MatFile(loader_conf=self.loader)
+        else:
+            raise ValueError(f"For file extension {self.loader['FILE_EXTENSIONS']} is no implementation!")
 
     def get_extension(self):
         return self.loader["FILE_EXTENSIONS"]
@@ -29,7 +33,7 @@ class DataLoaderDyn:
         return self.loader["LABELS"]
 
     def get_name(self, path: str) -> str:
-        return path.split(self.paths["SYSTEM_PATHS_DELIMITER"])[-1].split(".")[0].split(self.paths["NAME_SPLIT"])[0]
+        return path.split(self.paths["SYSTEM_PATHS_DELIMITER"])[-1].split(".")[0].split(self.loader["NAME_SPLIT"])[0]
 
     def get_paths_and_splits(self, root_path=None):
         if root_path is None:
@@ -45,20 +49,22 @@ class DataLoaderDyn:
                 spectrum = gaussian_filter(spectrum, sigma=self.loader["SMOOTHING_VALUE"])
         return spectrum
 
-    def remove_border(self, masks, conf=None):
+    def pixel_detection(self, masks, conf=None):
         if conf is None:
             conf = self.loader["BORDER_CONFIG"]
+
         if conf['enable']:
+            pixel_detect = provider_dyn.get_pixel_detection(conf.BORDERS_CONFIG["methode"])
             border_masks = []
             for idx, mask in enumerate(masks):
                 if idx not in conf['not_used_labels']:
                     if len(conf['axis']) == 0:
-                        border_mask = getattr(border, conf.BORDERS_CONFIG['methode'])(in_arr=masks[idx],
-                                                                                      d=conf['depth'])
+                        border_mask = pixel_detect(in_arr=masks[idx],
+                                                   d=conf['depth'])
                     else:
-                        border_mask = getattr(border, conf.BORDERS_CONFIG['methode'])(in_arr=masks[idx],
-                                                                                      d=conf['depth'],
-                                                                                      axis=conf['axis'])
+                        border_mask = pixel_detect(in_arr=masks[idx],
+                                                   d=conf['depth'],
+                                                   axis=conf['axis'])
                     border_masks.append(border_mask)
                 else:
                     border_masks.append(masks[idx])
@@ -67,9 +73,13 @@ class DataLoaderDyn:
 
         return masks
 
+    def file_read_mask_and_spectrum(self, path):
+        return self.data_reader.file_read_mask_and_spectrum(path)
+
+    @abc.abstractmethod
     def file_read(self, path):
         print(f'Reading {path}')
-        spectrum, mask = self.data_reader.file_read_mask_and_spectrum(path)
+        spectrum, mask = self.file_read_mask_and_spectrum(path)
 
         spectrum = self.smooth(spectrum)
 
@@ -82,7 +92,7 @@ class DataLoaderDyn:
         indexes = self.data_reader.indexes_get_bool_from_mask(mask)
         indexes = [i * background_mask for i in indexes]
         indexes = [i * contamination_mask for i in indexes]
-        border_masks = self.remove_border(indexes)
+        border_masks = self.pixel_detection(indexes)
         indexes = [indexes[i] * border_masks[i] for i in range(len(indexes))]
 
         spectra = []
@@ -99,6 +109,7 @@ class DataLoaderDyn:
     def files_read_and_save_to_npz(self, root_path, destination_path):
         print('----Saving of .npz archives is started----')
 
+        datas = "*" + self.get_extension()
         paths = glob(os.path.join(root_path, "*" + self.get_extension()))
 
         with open(os.path.join(destination_path, self.get_labels_filename()), 'wb') as f:
@@ -128,6 +139,9 @@ class DataLoaderDyn:
         patches = np.reshape(patches, (spectrum.shape[0], spectrum.shape[1], size[0], size[1], patches.shape[-1]))
 
         return patches
+
+    def indexes_get_bool_from_mask(self, mask):
+        return self.data_reader.indexes_get_bool_from_mask(mask)
 
     def indexes_get_np_from_mask(self, mask):
         indexes = self.indexes_get_bool_from_mask(mask)
@@ -192,6 +206,9 @@ class DataLoaderDyn:
         data = np.load(npz_path)
         X, y = data['X'], data['y']
 
+        return self.labeled_spectrum_get_from_X_y(X, y)
+
+    def labeled_spectrum_get_from_X_y(self, X, y):
         labeled_spectrum = ()
         for label in self.loader["LABELS"]:
             labeled_spectrum += X[y == label]
@@ -205,8 +222,29 @@ class DataLoaderDyn:
 
         return background_mask
 
+    @staticmethod
+    def get_name_easy(path, delimiter=None):
+        if delimiter is None:
+            import platform
+
+            if platform.system() == 'Windows':
+                delimiter = '\\'
+            else:
+                delimiter = '/'
+
+        return path.split(delimiter)[-1].split(".")[0].split('SpecCube')[0]
+
 
 if __name__ == "__main__":
-    import config
-    dyn = DataLoaderDyn(config.DATALOADER, config.PATHS)
+    from configuration.load_config import read_config, read_path_config
+
+    sys_prefix = r"D:\HTWK\WiSe22\Bachelorarbeit\Programm\hsi-experiments"
+    loader_config = os.path.join(sys_prefix, "data_utils", "configuration", "DataLoader.json")
+    loader_section = "HNO"
+    path_config = os.path.join(sys_prefix, "data_utils", "configuration", "Paths.json")
+    system_section = "Win_Benny"
+    database_section = "HNO_Database"
+    DATALOADER = read_config(file=loader_config, section=loader_section)
+    PATHS = read_path_config(file=path_config, system_mode=system_section, database=database_section)
+    dyn = DataLoaderDyn(DATALOADER, PATHS)
     x = 1

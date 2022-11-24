@@ -19,13 +19,13 @@ class DatFile:
         return paths, splits
 
     def indexes_get_bool_from_mask(self, mask):
-        indexes = ()
+        indexes = []
         for key, value in self.loader["MASK_COLOR"].items():
             if len(value) < 4:
-                indexes += (mask[:, :, 0] == value[0]) & (mask[:, :, 1] == value[1]) & (mask[:, :, 2] == value[2])
+                indexes.append((mask[:, :, 0] == value[0]) & (mask[:, :, 1] == value[1]) & (mask[:, :, 2] == value[2]))
             else:
-                indexes += (mask[:, :, 0] == value[0]) & (mask[:, :, 1] == value[1]) & (mask[:, :, 2] == value[2]) & \
-                           (mask[:, :, 3] == value[3])
+                indexes.append((mask[:, :, 0] == value[0]) & (mask[:, :, 1] == value[1]) & (mask[:, :, 2] == value[2]) &
+                               (mask[:, :, 3] > value[3]))
 
         return indexes
 
