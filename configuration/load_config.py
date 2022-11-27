@@ -3,6 +3,7 @@ import platform
 import os
 
 CONCAT_KEY = "CONCAT_WITH_"
+CONVERT_KEY = ["MASK_COLOR", "TISSUE_LABELS", "PLOT_COLORS"]
 
 
 def read_path_config(file: str, system_mode: str, database: str) -> dict:
@@ -54,11 +55,22 @@ def concat_dict(dict1: dict, dict2: dict) -> dict:
     return dict_temp
 
 
+def convert_key_to_int(str_dict: dict):
+    int_dict = {}
+    for key, value in str_dict.items():
+        int_dict[int(key)] = value
+    return int_dict
+
+
 def read_config(file: str, section: str) -> dict:
     with open(file, "r") as config_file:
         data = json.load(config_file)
 
     if section in data:
-        return data[section]
+        data_ = data[section]
+        for convert in CONVERT_KEY:
+            if convert in data_:
+                data_[convert] = convert_key_to_int(data_[convert])
+        return data_
     else:
         raise ValueError(f'Section {section}, not found in the {file} file!')

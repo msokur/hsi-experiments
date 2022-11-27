@@ -7,6 +7,7 @@
       ["data_utils", "configuration", "*.py"], ["data_utils", "configuration", "*.json"]],
     "NORMALIZATION_TYPE": "svn",
     "SCALER_FILE": "scaler.scaler",
-    "SCALER_PATH": null
+    "SCALER_PATH": null,
+    "WITH_AUGMENTATION": false
   }
 }

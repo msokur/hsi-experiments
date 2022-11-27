@@ -10,7 +10,7 @@ class DatFile:
         self.loader = loader_conf
 
     def get_paths_and_splits(self, path):
-        paths = glob(os.path.join(path, '*.npz'))
+        paths = glob(os.path.join(path, "*.npz"))
         paths = sorted(paths)
 
         cv_split = int(len(paths) / self.loader["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"])
@@ -52,6 +52,6 @@ class DatFile:
     def mask_read(mask_path):
         mask = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)  # read Image with transparency
         # [..., -2::-1] - BGR to RGB, [..., -1:] - only transparency, '-1' - concatenate along last axis
-        mask = np.r_['-1', mask[..., -2::-1], mask[..., -1:]]
+        mask = np.r_["-1", mask[..., -2::-1], mask[..., -1:]]
 
         return mask

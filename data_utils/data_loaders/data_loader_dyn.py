@@ -6,7 +6,6 @@ import os
 import pickle
 from glob import glob
 from tqdm import tqdm
-from scipy.ndimage import gaussian_filter, median_filter
 from sklearn.feature_extraction import image
 
 import provider_dyn
@@ -43,28 +42,28 @@ class DataLoaderDyn:
 
     def smooth(self, spectrum):
         if self.loader["SMOOTHING_TYPE"] is not None:
-            if self.loader["SMOOTHING_TYPE"] == "median_filter":
-                spectrum = median_filter(spectrum, size=self.loader["SMOOTHING_VALUE"])
-            if self.loader["SMOOTHING_TYPE"] == "gaussian_filter":
-                spectrum = gaussian_filter(spectrum, sigma=self.loader["SMOOTHING_VALUE"])
+            smoother = provider_dyn.get_smoother(typ=self.loader["SMOOTHING_TYPE"],
+                                                 path="",
+                                                 size=self.loader["SMOOTHING_VALUE"])
+            spectrum = smoother.smooth_func(spectrum)
         return spectrum
 
     def pixel_detection(self, masks, conf=None):
         if conf is None:
             conf = self.loader["BORDER_CONFIG"]
 
-        if conf['enable']:
+        if conf["enable"]:
             pixel_detect = provider_dyn.get_pixel_detection(conf.BORDERS_CONFIG["methode"])
             border_masks = []
             for idx, mask in enumerate(masks):
-                if idx not in conf['not_used_labels']:
-                    if len(conf['axis']) == 0:
+                if idx not in conf["not_used_labels"]:
+                    if len(conf["axis"]) == 0:
                         border_mask = pixel_detect(in_arr=masks[idx],
-                                                   d=conf['depth'])
+                                                   d=conf["depth"])
                     else:
                         border_mask = pixel_detect(in_arr=masks[idx],
-                                                   d=conf['depth'],
-                                                   axis=conf['axis'])
+                                                   d=conf["depth"],
+                                                   axis=conf["axis"])
                     border_masks.append(border_mask)
                 else:
                     border_masks.append(masks[idx])
@@ -109,7 +108,6 @@ class DataLoaderDyn:
     def files_read_and_save_to_npz(self, root_path, destination_path):
         print('----Saving of .npz archives is started----')
 
-        datas = "*" + self.get_extension()
         paths = glob(os.path.join(root_path, "*" + self.get_extension()))
 
         with open(os.path.join(destination_path, self.get_labels_filename()), 'wb') as f:
@@ -165,7 +163,7 @@ class DataLoaderDyn:
                              "labels returned from get_labels()")
 
         if np.unique(labels).shape[0] != len(labels):
-            raise ValueError('Error! There are some non unique labels! Check get_labels()')
+            raise ValueError("Error! There are some non unique labels! Check get_labels()")
 
         for spectrum, label, idx in zip(spectra, labels, indexes):
             X += list(spectrum)
@@ -183,9 +181,9 @@ class DataLoaderDyn:
         mask = np.full(shape, True)
         contamination_pht = os.path.join(path, self.get_contamination_filename())
         if os.path.exists(contamination_pht):
-            c_in = pd.read_csv(contamination_pht, names=['x-start', 'x-end', 'y-start', 'y-end'], header=0, dtype=int)
+            c_in = pd.read_csv(contamination_pht, names=["x-start", "x-end", "y-start", "y-end"], header=0, dtype=int)
             for idx in range(c_in.shape[0]):
-                mask[c_in['y-start'][idx]:c_in['y-end'][idx], c_in['x-start'][idx]:c_in['x-end'][idx]] = False
+                mask[c_in["y-start"][idx]:c_in["y-end"][idx], c_in["x-start"][idx]:c_in["x-end"][idx]] = False
         return mask
 
     def get_labels_filename(self):
@@ -193,26 +191,6 @@ class DataLoaderDyn:
 
     def get_contamination_filename(self):
         return self.loader["CONTAMINATION_FILENAME"]
-
-    @staticmethod
-    def indexes_get_np_from_bool_indexes(*args):
-        indexes_np = []
-        for i in args:
-            indexes_np.append(np.where(i))
-
-        return indexes_np
-
-    def labeled_spectrum_get_from_npz(self, npz_path):
-        data = np.load(npz_path)
-        X, y = data['X'], data['y']
-
-        return self.labeled_spectrum_get_from_X_y(X, y)
-
-    def labeled_spectrum_get_from_X_y(self, X, y):
-        labeled_spectrum = ()
-        for label in self.loader["LABELS"]:
-            labeled_spectrum += X[y == label]
-        return labeled_spectrum
 
     def background_get_mask(self, spectrum, shapes):
         background_mask = np.ones(shapes).astype(np.bool)
@@ -223,7 +201,29 @@ class DataLoaderDyn:
         return background_mask
 
     @staticmethod
-    def get_name_easy(path, delimiter=None):
+    def indexes_get_np_from_bool_indexes(*args):
+        indexes_np = []
+        for i in args:
+            indexes_np.append(np.where(i))
+
+        return indexes_np
+
+    @staticmethod
+    def labeled_spectrum_get_from_npz(npz_path: str) -> dict:
+        data = np.load(npz_path)
+        X, y = data['X'], data['y']
+
+        return DataLoaderDyn.labeled_spectrum_get_from_X_y(X, y)
+
+    @staticmethod
+    def labeled_spectrum_get_from_X_y(X: np.ndarray, y: np.ndarray) -> dict:
+        labeled_spectrum = {}
+        for label in np.unique(y):
+            labeled_spectrum[label] = X[y == label]
+        return labeled_spectrum
+
+    @staticmethod
+    def get_name_easy(path: str, delimiter=None):
         if delimiter is None:
             import platform
 

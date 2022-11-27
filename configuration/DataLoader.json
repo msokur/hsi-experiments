@@ -20,7 +20,7 @@
 			"enable": false,
 			"methode": "detect_border",
 			"depth": 5,
-			"'axis": [],
+			"axis": [],
 			"not_used_labels": []
 		},
 		"MASK_COLOR": {
@@ -79,7 +79,7 @@
 			"enable": false,
 			"methode": "detect_border",
 			"depth": 5,
-			"'axis": [],
+			"axis": [],
 			"not_used_labels": []
 		},
 		"MASK_COLOR": {"0": [255, 255, 0], "1": [0, 0, 255], "2": [0, 255, 0],
@@ -117,7 +117,7 @@
 			"enable": false,
 			"methode": "detect_border",
 			"depth": 5,
-			"'axis": [],
+			"axis": [],
 			"not_used_labels": []
 		},
 		"TISSUE_LABELS": {
@@ -165,7 +165,7 @@
 			"enable": false,
 			"methode": "detect_border",
 			"depth": 5,
-			"'axis": [],
+			"axis": [],
 			"not_used_labels": []
 		},
 		"TISSUE_LABELS": {
@@ -202,7 +202,7 @@
 			"enable": false,
 			"methode": "detect_border",
 			"depth": 5,
-			"'axis": [],
+			"axis": [],
 			"not_used_labels": []
 		},
 		"TISSUE_LABELS": {

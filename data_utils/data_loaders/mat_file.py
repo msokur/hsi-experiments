@@ -22,6 +22,7 @@ class MatFile:
     def split_int(self, path_length: int):
         cv_split = int(path_length / self.loader["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"])
         splits = np.array_split(range(path_length), cv_split)
+
         return splits
 
     def split_list(self, paths):
@@ -36,12 +37,13 @@ class MatFile:
             split_list.append(split_part_list_np)
 
         split_list = np.array(split_list)
+
         return np.array_split(split_list, split_list.shape[0])
 
     def indexes_get_bool_from_mask(self, mask):
-        indexes = ()
+        indexes = []
         for value in self.loader["LABELS"]:
-            indexes += (mask == value)
+            indexes.append((mask == value))
 
         return indexes
 
