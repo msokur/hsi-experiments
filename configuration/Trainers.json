@@ -1,0 +1,23 @@
+{
+  "HNO": {
+    "TYPE":  "Several Output",
+    "FILES_TO_COPY": [["*.py"], ["data_utils", ",*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"],
+                 ["scrips", "start_cv.job"], ["trainers", "*.py"], ["utils", "*.py"]],
+    "BATCH_SIZE": 400,
+    "EPOCHS": 50,
+    "SMALLER_DATASET": false,
+    "MODEL_CHECKPOINT": {
+      "monitor": "val_f1_score",
+      "save_best_only": true,
+      "mode": "max"
+    },
+    "EARLY_STOPPING": {
+      "enable": true,
+      "monitor": "val_f1_score",
+      "mode": "max",
+      "min_delta": 0,
+      "patience": 5,
+      "restore_best_weights": true
+    }
+  }
+}
