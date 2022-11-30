@@ -46,11 +46,8 @@ class BatchSplit:
         for f in files:
             os.remove(f)
 
-        self.__init_rest()
-
-        # valid_data = {}
-        # for k in self.dict_names:
-        #    valid_data[k] = []
+        arch_rest = self.__init_rest()
+        valid_rest = self.__init_rest()
 
         for p in tqdm(shuffled_paths):
             # ------------ except_indexes filtering ---------------
@@ -90,8 +87,19 @@ class BatchSplit:
                 p_names = p_names[indexes]
                 data = {n: a[indexes] for n, a in data.items()}
 
-            self.__split_arrays(archives_of_batch_size_saving_path, data)  # *[a for _, a in data.items()])
-            self.__split_arrays(valid_archives_saving_path, valid_data)  # *[a for _, a in valid_data.items()])
+            arch_rest_temp = self.__split_arrays(archives_of_batch_size_saving_path, data)
+            valid_rest_temp = self.__split_arrays(valid_archives_saving_path, valid_data)
+
+        # ---------------- save rest from archive an valid data ------------------
+            for name in self.dict_names:
+                arch_rest[name] += list(arch_rest_temp[name])
+                valid_rest[name] += list(valid_rest_temp[name])
+
+        if len(arch_rest[self.dict_names[0]]) >= self.batch_size:
+            self.__split_arrays(archives_of_batch_size_saving_path, arch_rest)
+
+        if len(valid_rest[self.dict_names[0]]) >= self.batch_size:
+            self.__split_arrays(valid_archives_saving_path, valid_rest)
 
         print('--------Splitting into npz of batch size finished--------')
 
@@ -100,28 +108,28 @@ class BatchSplit:
         chunks = np.array(data[self.dict_names[0]]).shape[0] // self.batch_size
         chunks_max = chunks * self.batch_size
 
-        data_ = {k: np.array_split(a[:chunks_max], chunks) for k, a in data.items()}
+        if chunks > 0:
+            data_ = {k: np.array_split(a[:chunks_max], chunks) for k, a in data.items()}
 
-        # arrs = [np.array_split(arg[:chunks_max], chunks) for arg in args]
+            ind = len(glob(os.path.join(path, "*")))
+            for row in range(chunks):
+                arch = {}
+                for i, n in enumerate(self.dict_names):
+                    arch[n] = data_[n][row]
+
+                np.savez(os.path.join(path, 'batch' + str(ind)), **arch)
+                ind += 1
 
         # ---------------saving of the non equal last part for the future partition---------
-        # for i in range(len(args)):
-        #    self.rest_arrs[i] += list(args[i][chunks_max:])
-
+        rest = {k: a[chunks_max:] for k, a in data.items()}
         # ---------------saving of the non equal last part for the future partition---------
-        ind = len(glob(os.path.join(path, "*")))
-        for row in range(chunks):
-            arch = {}
-            for i, n in enumerate(self.dict_names):
-                arch[n] = data_[n][row]
-
-            np.savez(os.path.join(path, 'batch' + str(ind)), **arch)
-            ind += 1
+        return rest
 
     def __init_rest(self):
-        self.rest_arrs = []
-        for i in range(len(self.dict_names)):
-            self.rest_arrs.append([])
+        rest_array = {}
+        for name in self.dict_names:
+            rest_array[name] = []
+        return rest_array
 
     @staticmethod
     def __check_dict_names(dict_names, data_):
