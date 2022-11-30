@@ -111,7 +111,7 @@
 		"SCALER_FILE": "scaler.scaler",
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": "median_filter",
+		"SMOOTHING_TYPE": "gaussian_filter",
 		"SMOOTHING_VALUE": 5,
 		"BORDER_CONFIG": {
 			"enable": false,

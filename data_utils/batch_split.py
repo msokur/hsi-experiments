@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 class BatchSplit:
     def __init__(self, labels_to_train: list, dict_names: list, batch_size: int):
-        self.labels = labels_to_train
+        self.labels_to_train = labels_to_train
         self.dict_names = dict_names
         self.batch_size = batch_size
 
@@ -67,7 +67,7 @@ class BatchSplit:
 
             # ------------ get only needed classes--------------
             indexes = np.zeros(data['y'].shape).astype(bool)
-            for label in self.labels:
+            for label in self.labels_to_train:
                 indexes = indexes | (data['y'] == label)
 
             indexes = np.flatnonzero(indexes)

@@ -1,11 +1,14 @@
-# import config
-
 from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
 from data_utils.data_loaders.data_loader_whole_dyn import DataLoaderWhole
 from data_utils.smoothing import MedianFilter, GaussianFilter
 from data_utils.scaler import NormalizerScaler, StandardScaler, StandardScalerTransposed
-# import trainers.trainer_easy as trainer_easy
-# import trainers.trainer_easy_several_outputs as trainer_easy_several_outputs
+from cross_validators.cross_validator_normal import CrossValidationNormal
+from cross_validators.cross_validator_spain import CrossValidatorSpain
+from cross_validators.cross_validator_experiment import CrossValidatorExperiment
+from cross_validators.cross_validator_postprocessing import CrossValidatorPostProcessing
+from trainers.trainer_tuner import TrainerTuner
+from trainers.trainer_easy import TrainerEasy
+from trainers.trainer_easy_several_outputs import TrainerEasySeveralOutputs
 # from evaluation.evaluation_binary import EvaluationBinary
 # from evaluation.evaluation_multiclass import EvaluationMulticlass
 # import models.keras_tuner_model as keras_tuner_model
@@ -13,29 +16,18 @@ from data_utils.scaler import NormalizerScaler, StandardScaler, StandardScalerTr
 from data_utils import border
 
 
-'''def get_trainer(**kwargs):
-    if config.RESTORE_MODEL & config.WITH_TUNING:
-        raise ValueError("Custom Error! Choose if restore(config.RESTORE_MODEL) or tune(config.WITH_TUNING) "
-                         "model! They could not be simultaneously True")
-
-    if config.WITH_TUNING:
-        from trainers.trainer_tuner import TrainerTuner
+def get_trainer(typ: str, **kwargs):
+    if typ == "Tuner":
         print('TrainerTuner')
         return TrainerTuner(**kwargs)
-
-    if config.DATABASE == 'bea_colon':
+    elif type == "Easy":
         print('TrainerEasy')
-        return trainer_easy.TrainerEasy(**kwargs)
-
-    if 'bea' in config.DATABASE:
+        return TrainerEasy(**kwargs)
+    elif typ == "Several Output":
         print('TrainerEasySeveralOutputs')
-        return trainer_easy_several_outputs.TrainerEasySeveralOutputs(**kwargs)
+        return TrainerEasySeveralOutputs(**kwargs)
 
-    if 'hno' in config.DATABASE:
-        print('TrainerEasySeveralOutputs')
-        return trainer_easy_several_outputs.TrainerEasySeveralOutputs(**kwargs)
-
-    return trainer_easy.TrainerEasy(**kwargs)'''
+    return TrainerEasy(**kwargs)
 
 
 def get_data_loader(typ: str, loader_config: dict, path_conf: dict):
@@ -113,6 +105,19 @@ def get_pixel_detection(typ: str):
     elif typ == "detect_core":
         return border.detect_core
     value_error("pixel detection", typ)
+
+
+def get_cross_validator(typ: str, *args, **kwargs):
+    if typ == "normal":
+        return CrossValidationNormal(*args, **kwargs)
+    elif typ == "spain":
+        return CrossValidatorSpain(*args, **kwargs)
+    elif typ == "postprocessing":
+        return CrossValidatorPostProcessing(*args, **kwargs)
+    elif typ == "experiment":
+        return CrossValidatorExperiment()
+
+    value_error("Cross validator", typ)
 
 
 def value_error(modul: str, typ: str):

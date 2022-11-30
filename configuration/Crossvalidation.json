@@ -1,5 +1,7 @@
 {
-  "BASE":{
-    "BATCH_SIZE": 100
+  "CV_HNO":{
+    "TYPE": "normal",
+    "NAME": "CV_HNO_3x3_snv_gauss",
+    "FIRST_SPLIT": 0
   }
 }

@@ -1,21 +1,21 @@
 import tensorflow as tf
 from tensorflow import keras
 import os
-from shutil import copyfile, rmtree
+from shutil import rmtree
 import numpy as np
-import psutil
 import abc
 import pickle
-from glob import glob
 
-import config
-from utils import send_tg_message, send_tg_message_history
 import data_utils.generator as generator
-import callbacks
+from configuration.copy_py_files import copy_files
+from configuration import get_config as conf
 
 
 class Trainer:
-    def __init__(self, model_name=config.MODEL_NAME, except_indexes=None, valid_except_indexes=None):
+    def __init__(self, trainer_config: dict, paths: dict, model_name: str, except_indexes=None,
+                 valid_except_indexes=None):
+        self.trainer = trainer_config
+        self.paths = paths
         if valid_except_indexes is None:
             valid_except_indexes = []
         if except_indexes is None:
@@ -35,28 +35,26 @@ class Trainer:
         pass
 
     def save_valid_except_indexes(self, valid_except_indexes):
-        with open(os.path.join(self.log_dir, 'valid.valid_except_names'), 'wb') as f:
+        with open(os.path.join(self.log_dir, "valid.valid_except_names"), "wb") as f:
             pickle.dump(valid_except_indexes, f, pickle.HIGHEST_PROTOCOL)
 
     def logging_and_copying(self):
-        if not config.RESTORE_MODEL:
+        if self.trainer["TYPE"] != "Restore":
             if not os.path.exists(self.log_dir):
                 os.mkdir(self.log_dir)
 
-            for file in config.FILES_TO_COPY:
-                if os.path.exists(file):
-                    copyfile(file, os.path.join(self.log_dir, file.split(config.SYSTEM_PATHS_DELIMITER)[-1]))
+            copy_files(self.log_dir, self.trainer["FILES_TO_COPY"], self.paths["SYSTEM_PATHS_DELIMITER"])
 
     def get_datasets(self, for_tuning=False):
         # train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
-        self.batch_path = config.BATCHED_PATH
+        self.batch_path = self.paths["BATCHED_PATH"]
         if len(self.excepted_indexes) > 0:
             self.batch_path += '_' + self.excepted_indexes[0]
         if not os.path.exists(self.batch_path):
             os.mkdir(self.batch_path)
 
-        train_generator = generator.DataGenerator('train',
-                                                  config.SHUFFLED_PATH,
+        train_generator = generator.DataGenerator("train",
+                                                  self.paths["SHUFFLED_PATH"],
                                                   # config.BATCHED_PATH,
                                                   self.batch_path,
                                                   split_flag=True,
@@ -65,8 +63,8 @@ class Trainer:
                                                   for_tuning=for_tuning,
                                                   log_dir=self.log_dir)
         self.save_valid_except_indexes(train_generator.valid_except_indexes)
-        valid_generator = generator.DataGenerator('valid',
-                                                  config.SHUFFLED_PATH,
+        valid_generator = generator.DataGenerator("valid",
+                                                  self.paths["SHUFFLED_PATH"],
                                                   # config.BATCHED_PATH,
                                                   self.batch_path,
                                                   split_flag=False,
@@ -98,43 +96,25 @@ class Trainer:
         return train_dataset, valid_dataset, train_generator, class_weights
 
     def get_callbacks(self):
-        process = psutil.Process(os.getpid())
-
-        tensorboard_callback = callbacks.CustomTensorboardCallback(
-            log_dir=self.log_dir,
-            # write_graph=True,
-            # histogram_freq=1,
-            # profile_batch = '20,30',
-            except_indexes=self.excepted_indexes,
-            # train_generator=train_generator, #used for gradients counting TODO fix or remove
-            strategy=self.mirrored_strategy,
-            process=process)
-
-        # gradient_callback = callbacks.GradientCallback()
-
-        checkpoint_path = os.path.join(self.log_dir, config.CHECKPOINT_PATH, 'cp-{epoch:04d}')
+        checkpoint_path = os.path.join(self.log_dir, self.paths["CHECKPOINT_PATH"], "cp-{epoch:04d}")
 
         checkpoints_callback = keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,
-            monitor=config.HISTORY_ARGMIN,
+            monitor=self.trainer["MODEL_CHECKPOINT"]["monitor"],
             verbose=1,
-            save_best_only=True,
-            mode='max')
-        '''checkpoints_callback = keras.callbacks.ModelCheckpoint(
-            filepath=checkpoint_path,
-            verbose=2,
-            save_freq=config.NUM_OF_PAT*config.BATCH_SIZE*config.WRITE_CHECKPOINT_EVERY_Xth_STEP)'''
-
-        early_stopping_callback = keras.callbacks.EarlyStopping(
-            monitor='val_f1_score',
-            mode='max',
-            min_delta=0,
-            patience=5,
-            verbose=1,
-            restore_best_weights=True)
+            save_best_only=self.trainer["MODEL_CHECKPOINT"]["save_best_only"],
+            mode=self.trainer["MODEL_CHECKPOINT"]["mode"])
 
         callbacks_ = [checkpoints_callback]
-        if config.WITH_EARLY_STOPPING:
+        if self.trainer["EARLY_STOPPING"]["enable"]:
+            early_stopping_callback = keras.callbacks.EarlyStopping(
+                monitor=self.trainer["EARLY_STOPPING"]["monitor"],
+                mode=self.trainer["EARLY_STOPPING"]["mode"],
+                min_delta=self.trainer["EARLY_STOPPING"]["min_delta"],
+                patience=self.trainer["EARLY_STOPPING"]["patience"],
+                verbose=1,
+                restore_best_weights=self.trainer["EARLY_STOPPING"]["restore_best_weights"])
+
             callbacks_.append(early_stopping_callback)
 
         return callbacks_
@@ -149,7 +129,7 @@ class Trainer:
         '''-------DATASET---------'''
 
         train_dataset, valid_dataset, train_generator, class_weights = self.get_datasets(
-            for_tuning=config.WITH_SMALLER_DATASET)
+            for_tuning=self.trainer["SMALLER_DATASET"])
 
         '''-------CALLBACKS---------'''
 
@@ -167,10 +147,10 @@ class Trainer:
             # validation_data=valid_generator,
             x=train_dataset,
             validation_data=valid_dataset,
-            epochs=config.EPOCHS,
+            epochs=self.trainer["EPOCHS"],
             verbose=2,
             initial_epoch=initial_epoch,
-            batch_size=config.BATCH_SIZE,
+            batch_size=self.trainer["BATCH_SIZE"],
             callbacks=callbacks_,
             use_multiprocessing=True,
             class_weight=class_weights,
@@ -184,7 +164,7 @@ class Trainer:
 
     def train(self):
         try:
-            if config.MODE == 'LOCAL_GPU' or config.MODE == 'CLUSTER':
+            if self.paths["MODE"] == 'LOCAL_GPU' or self.paths["MODE"] == 'CLUSTER':
                 gpus = tf.config.experimental.list_physical_devices('GPU')
                 if gpus:
                     try:
@@ -195,11 +175,7 @@ class Trainer:
                     except RuntimeError as e:
                         print(e)
 
-                # mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
-                # mirrored_strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.ReductionToOneDevice())
                 mirrored_strategy = tf.distribute.experimental.CentralStorageStrategy()
-                # mirrored_strategy = tf.distribute.MultiWorkerMirroredStrategy()
-                # mirrored_strategy = tf.distribute.MirroredStrategy()
 
                 with mirrored_strategy.scope():
                     model, history = self.train_process(mirrored_strategy=mirrored_strategy)
@@ -207,7 +183,7 @@ class Trainer:
                 model, history = self.train_process()
 
         except Exception as e:
-            send_tg_message(f'{config.USER}, ERROR!!!, training {self.log_dir} has finished with error {e}')
+            conf.telegram.send_tg_message(f'ERROR!!!, training {self.log_dir} has finished with error {e}')
             raise e  # TODO REMOVE!!
 
         checkpoints_paths = os.path.join(self.log_dir, 'checkpoints')
@@ -225,6 +201,4 @@ class Trainer:
 
 
 if __name__ == '__main__':
-    trainer = Trainer()
-    trainer.train()
-    # train(except_indexes=['2019_09_04_12_43_40_', '2020_05_28_15_20_27_', '2019_07_12_11_15_49_', '2020_05_15_12_43_58_'])
+    pass

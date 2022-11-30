@@ -26,9 +26,20 @@
   },
   "ESO_Database": {
     "1.CONCAT_WITH_PREFIX": {
-      "RAW_NPZ_PATH": ["data_3d_eso", "eso", "3x3", "svn", "median"],
+      "RAW_NPZ_PATH": ["data_3d", "eso", "3x3", "svn", "median"],
       "RAW_SOURCE_PATH": ["EsophagusCancer"],
-      "TEST_NPZ_PATH": ["data_3d_eso", "eso", "3x3", "svn", "median"]
+      "TEST_NPZ_PATH": ["data_3d", "eso", "3x3", "svn", "median"]
+    },
+    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+      "SHUFFLED_PATH": ["shuffled"],
+      "BATCHED_PATH": ["batch_sized"]
+    }
+  },
+  "MAT_BRAIN_Database": {
+    "1.CONCAT_WITH_PREFIX": {
+      "RAW_NPZ_PATH": ["data_3d", "mat_brain", "3x3", "svn", "gauss"],
+      "RAW_SOURCE_PATH": ["DatabaseBrainSNV"],
+      "TEST_NPZ_PATH": ["data_3d", "mat_brain", "3x3", "svn", "gauss"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
       "SHUFFLED_PATH": ["shuffled"],

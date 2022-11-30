@@ -46,10 +46,29 @@ prepro_config = "Preprocessor.json"
 prepro_section = "HNO"
 PREPRO = get_config(file_name=prepro_config, section=prepro_section)
 
+# --------- Cross validation
+cv_config = "Crossvalidation.json"
+cv_section = "CV_HNO"
+CV = get_config(file_name=cv_config, section=cv_section)
+
+# --------- Trainer
+trainer_config = "Trainers.json"
+trainer_section = "HNO"
+TRAINER = get_config(file_name=trainer_config, section=trainer_section)
+
 # ----------- DISTRIBUTIONS CHECKING
 distro_config = "DistributionsCheck.json"
 distro_section = "Default"
 DISTRO = get_config(file_name=distro_config, section=distro_section)
+
+# ----------- Augmentation
+aug_config = "Augmentation.json"
+aug_section = "Default"
+AUG = get_config(file_name=aug_config, section=aug_section)
+if AUG["enable"]:
+    print("Augmentation is enabled!!!")
+    TRAINER["BATCH_SIZE"] = int(TRAINER["BATCH_SIZE"] / AUG[AUG["use"]])
+
 
 # -------- Telegram --------
 tg_config = "Telegram.json"

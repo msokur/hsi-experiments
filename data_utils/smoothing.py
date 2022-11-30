@@ -5,8 +5,6 @@ from glob import glob
 import os
 import numpy as np
 
-# import config
-
 
 class Smoother:
     def __init__(self, path, size):

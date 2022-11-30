@@ -1,35 +1,13 @@
-import utils
-
-from cross_validators.cross_validator_normal import CrossValidationNormal
-from cross_validators.cross_validator_spain import CrossValidatorSpain
-from cross_validators.cross_validator_experiment import CrossValidatorExperiment
-from cross_validators.cross_validator_postprocessing import CrossValidatorPostProcessing
-import config
-
-
-def get_cross_validator(*args, **kwargs):
-    if config.CROSS_VALIDATOR == 'cv_normal':
-        return CrossValidationNormal(*args, **kwargs)
-    if config.CROSS_VALIDATOR == 'cv_spain':
-        return CrossValidatorSpain(*args, **kwargs)
-    if config.CROSS_VALIDATOR == 'cv_postprocessing':
-        return CrossValidatorPostProcessing(*args, **kwargs)
-    if config.CROSS_VALIDATOR == 'cv_experiment':
-        return CrossValidatorExperiment(*args, **kwargs)
-
-    raise f'Warning! {config.CROSS_VALIDATOR} specified wrong'
+from configuration import get_config as conf
+import provider_dyn
 
 
 if __name__ == '__main__':
     from datetime import date
     try:
-        if config.D3:
-            name = f'{date.today()}_CV_{config.D3_SIZE[0]}x{config.D3_SIZE[1]}_{config.NORMALIZATION_TYPE}_' \
-                   f'{config.SMOOTHING_TYPE}'
-        else:
-            name = f'{date.today()}_CV_{config.NORMALIZATION_TYPE}_{config.SMOOTHING_TYPE}'
 
-        cross_validator = get_cross_validator(name)
+        cross_validator = provider_dyn.get_cross_validator(typ=conf.CV["TYPE"], cv_config=conf.CV, paths=conf.PATHS,
+                                                           loader_config=conf.DATALOADER)
 
         # cross validation pipeline consists of 2 parts:
         # (1) cross_validation
@@ -49,24 +27,10 @@ if __name__ == '__main__':
                                  save_predictions=True,
                                  save_curves=False)
 
-        utils.send_tg_message(f'{config.USER}, operations in cross_validation.py are successfully completed!')
+        conf.telegram.send_tg_message('operations in cross_validation.py are successfully completed!')
                
     except Exception as e:
 
-        utils.send_tg_message(f'{config.USER}, ERROR!!!, In CV error {e}')
+        conf.telegram.send_tg_message(f'ERROR!!!, In CV error {e}')
         
         raise e
-
-
-#cross_validator = get_cross_validator('ExperimentALLHowManyValidPatExclude/ExperimentALLHowManyValidPatExclude_WF_C10_', execution_flags = {
-'''cross_validator = get_cross_validator(
-    config.database_abbreviation, execution_flags={
-        "generate_whole_cubes": False,
-        "get_predictions_for_whole_cubes": False,
-        "count_predictions_for_labeled": False,
-        "thr_ranges": [], #[[0.1, 0.6, 5]],
-        'save_curves': True
-    })
-execution_flags = cross_validator.get_execution_flags()
-execution_flags['cross_validation'] = False
-cross_validator.pipeline(execution_flags=execution_flags)'''

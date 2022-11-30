@@ -53,7 +53,7 @@ class DataLoaderDyn:
             conf = self.loader["BORDER_CONFIG"]
 
         if conf["enable"]:
-            pixel_detect = provider_dyn.get_pixel_detection(conf.BORDERS_CONFIG["methode"])
+            pixel_detect = provider_dyn.get_pixel_detection(conf["methode"])
             border_masks = []
             for idx, mask in enumerate(masks):
                 if idx not in conf["not_used_labels"]:
