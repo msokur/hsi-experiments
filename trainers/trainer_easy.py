@@ -1,13 +1,8 @@
-import tensorflow as tf
 from tensorflow import keras
 import numpy as np
 import os
 
-import models.model_3d as model_3d
-import config
 import trainer_base
-
-import util.tf_metrics as tf_metrics
 
 
 class TrainerEasy(trainer_base.Trainer):
@@ -16,29 +11,14 @@ class TrainerEasy(trainer_base.Trainer):
 
     def compile_model(self, model):
         METRICS = [
-            #keras.metrics.TruePositives(name='tp'),
-            #keras.metrics.FalsePositives(name='fp'),
-            #keras.metrics.TrueNegatives(name='tn'),
-            #keras.metrics.FalseNegatives(name='fn'),
-            #keras.metrics.Recall(name='sensitivity'),
             keras.metrics.BinaryAccuracy(name='accuracy'),
-            tf_metrics.f1_m
         ]
-        WEIGHTED_METRICS = [
-            #keras.metrics.BinaryAccuracy(name='accuracy'),
-            # keras.metrics.AUC(name='auc'),
-            
-            # specificity_m
-        ]
-        # model = inception_model()
+        METRICS += self.trainer["CUSTOM_OBJECTS"]
 
         model.compile(
-            # optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE, clipnorm=1.),
-            optimizer=keras.optimizers.Adam(learning_rate=config.LEARNING_RATE),
-            # optimizer=keras.optimizers.RMSprop(lr=config.LEARNING_RATE),
+            optimizer=keras.optimizers.Adam(learning_rate=self.trainer["LEARNING_RATE"]),
             loss=keras.losses.BinaryCrossentropy(),
             metrics=METRICS,
-            #weighted_metrics=WEIGHTED_METRICS
         )
 
         return model
@@ -56,32 +36,30 @@ class TrainerEasy(trainer_base.Trainer):
         if self.mirrored_strategy is not None:
             with self.mirrored_strategy.scope():
                 model = keras.models.load_model(all_checkpoints[-1],
-                                                custom_objects=config.CUSTOM_OBJECTS,
+                                                custom_objects=self.trainer["CUSTOM_OBJECTS"],
                                                 compile=True)
         else:
-            model = keras.models.load_model(all_checkpoints[-1], custom_objects=config.CUSTOM_OBJECTS)
+            model = keras.models.load_model(all_checkpoints[-1], self.trainer["CUSTOM_OBJECTS"])
 
         model = self.compile_model(model)
 
         return model, initial_epoch
 
     def get_easy_model(self):
-        model = model_3d.inception3d_model()
+        model = self.trainer["MODEL"](shape=self.__get_output_shape(), conf=self.trainer["MODEL_CONFIG"],
+                                      num_of_labels=len(self.loader["LABELS_TO_TRAIN"]))
         model = self.compile_model(model)
         return model
 
     def get_model(self):
         initial_epoch = 0
-        if config.RESTORE_MODEL:
+        if self.trainer["RESTORE"]:
             model, initial_epoch = self.get_restored_model()
         else:
-            # model = model_3d.paper_model()
             model = self.get_easy_model()
 
         return model, initial_epoch
 
 
 if __name__ == '__main__':
-    trainer = Trainer()
-    trainer.train()
-    #train(except_indexes=['2019_09_04_12_43_40_', '2020_05_28_15_20_27_', '2019_07_12_11_15_49_', '2020_05_15_12_43_58_'])
+    pass

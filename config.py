@@ -326,14 +326,19 @@ if DATABASE == 'bea_brain':
     OUTPUT_SIGNATURE_X_FEATURES = 128
 
 # ----------------------------OUTPUT_SIGNATURE
+if D3:
+    shape_ = (None, D3_SIZE[0], D3_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES)
+else:
+    shape_ = (None, OUTPUT_SIGNATURE_X_FEATURES)
+
 if WITH_SAMPLE_WEIGHTS:
     OUTPUT_SIGNATURE = (
-        tf.TensorSpec(shape=(None, D3_SIZE[0], D3_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
+        tf.TensorSpec(shape=shape_, dtype=tf.float32),
         tf.TensorSpec(shape=(None,), dtype=tf.float32),
         tf.TensorSpec(shape=(None,), dtype=tf.float32))
 else:
     OUTPUT_SIGNATURE = (
-        tf.TensorSpec(shape=(None, D3_SIZE[0], D3_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
+        tf.TensorSpec(shape=shape_, dtype=tf.float32),
         tf.TensorSpec(shape=(None,), dtype=tf.float32))
 
 # -------------------PLOT

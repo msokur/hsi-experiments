@@ -45,11 +45,11 @@ class CrossValidatorBase:
     def evaluation(self, **kwargs):  # has to be implemented in child classes
         pass
 
-    @staticmethod
-    def cross_validation_step(model_name, except_names=None):
+    def cross_validation_step(self, model_name, except_names=None):
         if except_names is None:
             except_names = []
-        trainer = get_trainer(model_name=model_name, except_indexes=except_names)
+        trainer = get_trainer(typ=self.cv["TYPE"], trainer_config=conf.TRAINER, loader_config=self.loader,
+                              paths=self.paths, model_name=model_name, except_indexes=except_names)
         trainer.train()
 
     def cross_validation(self, root_folder_name: str, csv_filename=None):
@@ -79,8 +79,7 @@ class CrossValidatorBase:
 
             paths_patch = np.array(paths)[indexes]
 
-            CrossValidatorBase.cross_validation_step(model_name,
-                                                     except_names=[DataLoaderDyn.get_name_easy(p) for p in paths_patch])
+            self.cross_validation_step(model_name, except_names=[DataLoaderDyn.get_name_easy(p) for p in paths_patch])
 
             for i, path_ in enumerate(paths_patch):
                 sensitivity, specificity = 0, 0

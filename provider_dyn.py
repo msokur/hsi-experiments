@@ -27,7 +27,7 @@ def get_trainer(typ: str, **kwargs):
         print('TrainerEasySeveralOutputs')
         return TrainerEasySeveralOutputs(**kwargs)
 
-    return TrainerEasy(**kwargs)
+    value_error("Trainer", typ)
 
 
 def get_data_loader(typ: str, loader_config: dict, path_conf: dict):
@@ -36,7 +36,7 @@ def get_data_loader(typ: str, loader_config: dict, path_conf: dict):
     elif typ == "whole":
         return DataLoaderWhole(loader_conf=loader_config, path_conf=path_conf)
 
-    raise ValueError(f"Error! Dataloader type {typ} specified wrong")
+    value_error("Data Loader", typ)
 
 
 def get_whole_analog_of_data_loader(original_database):

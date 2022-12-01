@@ -5,7 +5,7 @@ import platform
 
 from utils import Telegram
 
-from configuration.load_config import read_config, read_path_config
+from configuration.load_config import read_config, read_path_config, read_trainer_config
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
@@ -22,6 +22,10 @@ def get_config(file_name: str, section: str) -> dict:
 
 def get_paths(file_name: str, sys_section: str, data_section: str) -> dict:
     return read_path_config(file=os.path.join(current_dir, file_name), system_mode=sys_section, database=data_section)
+
+
+def get_trainer(file_name: str, section: str, d3: bool, classes: list) -> dict:
+    return read_trainer_config(file=os.path.join(current_dir, file_name), section=section, d3=d3, classes=classes)
 
 
 # -------- Data Loader
@@ -54,7 +58,8 @@ CV = get_config(file_name=cv_config, section=cv_section)
 # --------- Trainer
 trainer_config = "Trainers.json"
 trainer_section = "HNO"
-TRAINER = get_config(file_name=trainer_config, section=trainer_section)
+TRAINER = get_trainer(file_name=trainer_config, section=trainer_section, d3=DATALOADER["3D"],
+                      classes=DATALOADER["LABELS_TO_TRAIN"])
 
 # ----------- DISTRIBUTIONS CHECKING
 distro_config = "DistributionsCheck.json"

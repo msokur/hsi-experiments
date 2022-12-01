@@ -2,8 +2,27 @@ import json
 import platform
 import os
 
+from util import tf_metric_multiclass, tf_metrics
+from models.inception_model import inception1d_model, inception3d_model
+from models.paper_model import paper1d_model, paper3d_model
+
+
 CONCAT_KEY = "CONCAT_WITH_"
 CONVERT_KEY = ["MASK_COLOR", "TISSUE_LABELS", "PLOT_COLORS"]
+CUSTOM_OBJECTS_MULTI = {
+    "F1_Score": tf_metric_multiclass.F1_score
+}
+CUSTOM_OBJECTS_BINARY = {
+    "F1_Score": tf_metrics.f1_m
+}
+MODELS_3D = {
+    "paper_model": paper3d_model,
+    "inception_model": inception3d_model
+}
+MODELS_1D = {
+    "paper_model": paper1d_model,
+    "inception_model": inception1d_model
+}
 
 
 def read_path_config(file: str, system_mode: str, database: str) -> dict:
@@ -74,3 +93,31 @@ def read_config(file: str, section: str) -> dict:
         return data_
     else:
         raise ValueError(f'Section {section}, not found in the {file} file!')
+
+
+def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dict:
+    trainer = read_config(file=file, section=section)
+    if len(classes) > 2:
+        custom_objects = CUSTOM_OBJECTS_MULTI
+    else:
+        custom_objects = CUSTOM_OBJECTS_BINARY
+
+    obj_dict = {}
+    for obj in trainer["CUSTOM_OBJECTS"]:
+        if obj in custom_objects:
+            obj_dict[obj] = custom_objects[obj]
+        else:
+            print(f"WARNING! Custom object {obj}, not implemented!")
+    trainer["CUSTOM_OBJECTS"] = obj_dict
+
+    if d3:
+        models = MODELS_3D
+    else:
+        models = MODELS_1D
+
+    if trainer["MODEL"] in models:
+        trainer["MODEL_CONFIG"] = read_config(file=file, section=trainer["MODEL"])
+        trainer["MODEL"] = models[trainer["MODEL"]]
+    else:
+        raise ValueError(f"Model {trainer['MODEL']}, not implemented!")
+    return trainer

@@ -12,10 +12,11 @@ from configuration import get_config as conf
 
 
 class Trainer:
-    def __init__(self, trainer_config: dict, paths: dict, model_name: str, except_indexes=None,
-                 valid_except_indexes=None):
+    def __init__(self, trainer_config: dict, paths: dict, loader_config: dict, model_name: str,
+                 except_indexes=None, valid_except_indexes=None):
         self.trainer = trainer_config
         self.paths = paths
+        self.loader = loader_config
         if valid_except_indexes is None:
             valid_except_indexes = []
         if except_indexes is None:
@@ -80,13 +81,15 @@ class Trainer:
             for i in range(train_generator.len):
                 yield train_generator.getitem(i)
 
-        train_dataset = tf.data.Dataset.from_generator(gen_train_generator, output_signature=config.OUTPUT_SIGNATURE)
+        train_dataset = tf.data.Dataset.from_generator(gen_train_generator,
+                                                       output_signature=self.__get_output_signature())
 
         def gen_valid_generator():
             for i in range(valid_generator.len):
                 yield valid_generator.getitem(i)
 
-        valid_dataset = tf.data.Dataset.from_generator(gen_valid_generator, output_signature=config.OUTPUT_SIGNATURE)
+        valid_dataset = tf.data.Dataset.from_generator(gen_valid_generator,
+                                                       output_signature=self.__get_output_signature())
 
         options = tf.data.Options()
         options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
@@ -190,14 +193,40 @@ class Trainer:
         if not os.path.exists(checkpoints_paths):
             os.mkdir(checkpoints_paths)
 
-        final_model_save_path = os.path.join(self.log_dir, 'checkpoints', f'cp-{len(history.history["loss"]):04d}')
-        if not os.path.exists(final_model_save_path):
-            os.mkdir(final_model_save_path)
-        model.save(final_model_save_path)
+        if not self.trainer["EARLY_STOPPING"]["enable"]:
+            final_model_save_path = os.path.join(self.log_dir, 'checkpoints', f'cp-{len(history.history["loss"]):04d}')
+            if not os.path.exists(final_model_save_path):
+                os.mkdir(final_model_save_path)
+            model.save(final_model_save_path)
 
         # send_tg_message_history(self.log_dir, history)
 
         return model
+
+    def __get_output_shape(self):
+        if "OUTPUT_SIGNATURE_X_FEATURES" in self.loader:
+            shape_spec = self.loader["OUTPUT_SIGNATURE_X_FEATURES"]
+        else:
+            shape_spec = self.loader["LAST_NM"] - self.loader["FIRST_NM"]
+
+        if self.loader["3D"]:
+            output_shape = (self.loader["3D_SIZE"][0], self.loader["3D_SIZE"][1], shape_spec)
+        else:
+            output_shape = (shape_spec,)
+
+        return output_shape
+
+    def __get_output_signature(self):
+        shape = self.__get_output_shape()
+
+        output_signature = (
+            tf.TensorSpec(shape=((None,) + shape), dtype=tf.float32),
+            tf.TensorSpec(shape=(None,), dtype=tf.float32))
+
+        if self.trainer["WITH_SAMPLE_WEIGHTS"]:
+            output_signature += (tf.TensorSpec(shape=(None,), dtype=tf.float32),)
+
+        return output_signature
 
 
 if __name__ == '__main__':

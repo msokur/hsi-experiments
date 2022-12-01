@@ -4,6 +4,7 @@ import numpy as np
 from numpy import ndarray
 from tensorflow import keras
 import pickle
+import preprocessor
 
 import config
 from util import compare_distributions
@@ -28,7 +29,7 @@ class DataGenerator(keras.utils.Sequence):
         if except_indexes is None:
             except_indexes = []
         self.class_weight = None
-        import preprocessor
+
 
         '''Initialization'''
         self.raw_npz_path = os.path.dirname(shuffled_npz_path)  # config.RAW_NPZ_PATH
@@ -161,8 +162,9 @@ class DataGenerator(keras.utils.Sequence):
         path_idx = paths_names.index(valid[0])
         data = np.load(paths[path_idx])
         unique_classes = np.unique(data['y'])
-        con_unique_classes = np.unique(np.concatenate((classes, unique_classes)))
-        if len(con_unique_classes) == config.NUMBER_OF_CLASSES_TO_TRAIN:
+        con_classes = np.concatenate((classes, unique_classes))
+        con_unique_classes = np.intersect1d(con_classes, config.LABELS_OF_CLASSES_TO_TRAIN)
+        if len(con_unique_classes) >= config.NUMBER_OF_CLASSES_TO_TRAIN:
             return valid
         elif len(con_unique_classes) - len(classes) >= 1:
             return np.concatenate((valid, DataGenerator.choose_path(paths,

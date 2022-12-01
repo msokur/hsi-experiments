@@ -6,7 +6,6 @@ from glob import glob
 from sklearn import preprocessing
 import pickle
 
-# import config
 from util.compare_distributions import DistributionsChecker
 from data_loaders.data_loader_dyn import DataLoaderDyn
 
@@ -44,8 +43,10 @@ class Scaler:
         for path in paths:
             data = np.load(path)
             _X, _y, _i = data['X'], data['y'], data['indexes_in_datacube']
-            
-            _X = DistributionsChecker.get_centers(_X)
+
+            # check if data 3D
+            if len(np.array(_X).shape) > 2:
+                _X = DistributionsChecker.get_centers(_X)
 
             X += list(_X)
             y += list(_y)

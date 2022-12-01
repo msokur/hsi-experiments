@@ -1,9 +1,14 @@
 {
   "HNO": {
     "TYPE":  "Several Output",
-    "FILES_TO_COPY": [["*.py"], ["data_utils", ",*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"],
+    "RESTORE": false,
+    "FILES_TO_COPY": [["*.py"], ["data_utils", ",*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*dyn.py"],
                  ["scrips", "start_cv.job"], ["trainers", "*.py"], ["utils", "*.py"]],
-    "BATCH_SIZE": 400,
+    "WITH_SAMPLE_WEIGHTS": false,
+    "MODEL": "paper_model",
+    "LEARNING_RATE": 1e-4,
+    "CUSTOM_OBJECTS": ["F1_Score"],
+    "BATCH_SIZE": 500,
     "EPOCHS": 50,
     "SMALLER_DATASET": false,
     "MODEL_CHECKPOINT": {
@@ -19,5 +24,13 @@
       "patience": 5,
       "restore_best_weights": true
     }
+  },
+  "paper_model": {
+    "DROPOUT": 0.1
+  },
+  "inception_model": {
+    "WITH_BATCH_NORM": false,
+    "INCEPTION_FACTOR": 8,
+    "DROPOUT": 0.1
   }
 }
