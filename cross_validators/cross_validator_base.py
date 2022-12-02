@@ -7,16 +7,16 @@ import csv
 import inspect
 
 import utils
-from configuration import get_config as conf
+from configuration.get_config import telegram, CV, PATHS, DATALOADER
 from provider_dyn import get_trainer, get_data_loader
 from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
 
 
 class CrossValidatorBase:
-    def __init__(self, cv_config: dict, paths: dict, loader_config: dict):
-        self.cv = cv_config
-        self.paths = paths
-        self.loader = loader_config
+    def __init__(self):
+        self.cv = CV
+        self.paths = PATHS
+        self.loader = DATALOADER
 
         current_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         project_folder = os.path.dirname(current_folder)
@@ -38,8 +38,8 @@ class CrossValidatorBase:
         if execution_flags['evaluation']:
             self.evaluation(**kwargs)
 
-        conf.telegram.send_tg_message(f'operations in cross_validation.py for {self.cv["NAME"]} '
-                                      f'are successfully completed!')
+        telegram.send_tg_message(f'operations in cross_validation.py for {self.cv["NAME"]} '
+                                 f'are successfully completed!')
 
     @abc.abstractmethod
     def evaluation(self, **kwargs):  # has to be implemented in child classes
@@ -48,8 +48,7 @@ class CrossValidatorBase:
     def cross_validation_step(self, model_name, except_names=None):
         if except_names is None:
             except_names = []
-        trainer = get_trainer(typ=self.cv["TYPE"], trainer_config=conf.TRAINER, loader_config=self.loader,
-                              paths=self.paths, model_name=model_name, except_indexes=except_names)
+        trainer = get_trainer(typ=self.cv["TYPE"], model_name=model_name, except_indexes=except_names)
         trainer.train()
 
     def cross_validation(self, root_folder_name: str, csv_filename=None):
@@ -61,7 +60,7 @@ class CrossValidatorBase:
         if not os.path.exists(root_folder):
             os.makedirs(root_folder)
 
-        data_loader = get_data_loader(typ=self.loader["TYPE"], loader_config=self.loader, path_conf=self.paths)
+        data_loader = get_data_loader(typ=self.loader["TYPE"])
         paths, splits = data_loader.get_paths_and_splits()
 
         date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")

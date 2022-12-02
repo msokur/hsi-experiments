@@ -1,7 +1,14 @@
 {
-  "CV_HNO":{
+  "BASE":{
     "TYPE": "normal",
+    "FIRST_SPLIT": 0,
+    "HOW_MANY_VALID_EXCLUDE": 1,
+    "CHOOSE_EXCLUDED_VALID": "by_class"
+  },
+  "CV_HNO_NORMAL": {
     "NAME": "CV_HNO_3x3_snv_gauss",
-    "FIRST_SPLIT": 0
+    "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
+    "RESTORE_VALID_SEQUENCE": "",
+    "GET_CHECKPOINT_FROM_VALID": true
   }
 }

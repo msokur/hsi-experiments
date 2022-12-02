@@ -12,11 +12,10 @@ from configuration import get_config as conf
 
 
 class Trainer:
-    def __init__(self, trainer_config: dict, paths: dict, loader_config: dict, model_name: str,
-                 except_indexes=None, valid_except_indexes=None):
-        self.trainer = trainer_config
-        self.paths = paths
-        self.loader = loader_config
+    def __init__(self, model_name: str, except_indexes=None, valid_except_indexes=None):
+        self.trainer = conf.TRAINER
+        self.paths = conf.PATHS
+        self.loader = conf.DATALOADER
         if valid_except_indexes is None:
             valid_except_indexes = []
         if except_indexes is None:
@@ -56,8 +55,9 @@ class Trainer:
 
         train_generator = generator.DataGenerator("train",
                                                   self.paths["SHUFFLED_PATH"],
-                                                  # config.BATCHED_PATH,
                                                   self.batch_path,
+                                                  batch_size=self.trainer["BATCH_SIZE"],
+                                                  split_factor=self.trainer["SPLIT_FACTOR"],
                                                   split_flag=True,
                                                   valid_except_indexes=self.valid_except_indexes.copy(),
                                                   except_indexes=self.excepted_indexes.copy(),
@@ -66,8 +66,9 @@ class Trainer:
         self.save_valid_except_indexes(train_generator.valid_except_indexes)
         valid_generator = generator.DataGenerator("valid",
                                                   self.paths["SHUFFLED_PATH"],
-                                                  # config.BATCHED_PATH,
                                                   self.batch_path,
+                                                  batch_size=self.trainer["BATCH_SIZE"],
+                                                  split_factor=self.trainer["SPLIT_FACTOR"],
                                                   split_flag=False,
                                                   except_indexes=self.excepted_indexes,
                                                   valid_except_indexes=train_generator.valid_except_indexes,

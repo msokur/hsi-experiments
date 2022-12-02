@@ -20,7 +20,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
 
         args = parser.parse_args()
         self.args = args
-        super().__init__(args.cv_name)
+        super().__init__()
 
         print(f'Hi from CV! with {args.experiment_folder}, {args.cv_name} and config_index {args.config_index}')
         root_folder = args.experiment_folder.split(config.SYSTEM_PATHS_DELIMITER)[-1]

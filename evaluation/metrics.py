@@ -3,14 +3,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-import config
+from configuration.get_config import DATALOADER
 
 
 class Metrics:
-    def __init__(self, labels_of_classes_to_train=config.LABELS_OF_CLASSES_TO_TRAIN):
-        self.labels_of_classes_to_train = labels_of_classes_to_train
-        self.label_color = config.PLOT_COLORS
-        self.labels = config.TISSUE_LABELS
+    def __init__(self, labels_of_classes_to_train=None):
+        if labels_of_classes_to_train is not None:
+            self.labels_of_classes_to_train = DATALOADER["LABELS_TO_TRAIN"]
+        else:
+            self.labels_of_classes_to_train = labels_of_classes_to_train
+        self.label_color = DATALOADER["PLOT_COLORS"]
+        self.labels = DATALOADER["TISSUE_LABELS"]
         if len(self.labels_of_classes_to_train) == 2:
             print('Metrics binary')
             self.binary = True

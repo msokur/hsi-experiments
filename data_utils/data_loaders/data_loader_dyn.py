@@ -9,15 +9,16 @@ from tqdm import tqdm
 from sklearn.feature_extraction import image
 
 import provider_dyn
+from configuration.get_config import DATALOADER, PATHS
 from data_utils.background_detection import detect_background
 from data_utils.data_loaders.dat_file import DatFile
 from data_utils.data_loaders.mat_file import MatFile
 
 
 class DataLoaderDyn:
-    def __init__(self, loader_conf: dict, path_conf: dict):
-        self.loader = loader_conf
-        self.paths = path_conf
+    def __init__(self):
+        self.loader = DATALOADER
+        self.paths = PATHS
         if self.loader["FILE_EXTENSIONS"] == ".dat":
             self.data_reader = DatFile(loader_conf=self.loader)
         elif self.loader["FILE_EXTENSIONS"] == ".mat":

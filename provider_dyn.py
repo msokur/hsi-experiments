@@ -9,8 +9,8 @@ from cross_validators.cross_validator_postprocessing import CrossValidatorPostPr
 from trainers.trainer_tuner import TrainerTuner
 from trainers.trainer_easy import TrainerEasy
 from trainers.trainer_easy_several_outputs import TrainerEasySeveralOutputs
-# from evaluation.evaluation_binary import EvaluationBinary
-# from evaluation.evaluation_multiclass import EvaluationMulticlass
+from evaluation.evaluation_binary import EvaluationBinary
+from evaluation.evaluation_multiclass import EvaluationMulticlass
 # import models.keras_tuner_model as keras_tuner_model
 # import models.keras_tuner_models_with_ones as keras_tuner_models_with_ones
 from data_utils import border
@@ -30,11 +30,11 @@ def get_trainer(typ: str, **kwargs):
     value_error("Trainer", typ)
 
 
-def get_data_loader(typ: str, loader_config: dict, path_conf: dict):
+def get_data_loader(typ: str):
     if typ == "normal":
-        return DataLoaderDyn(loader_conf=loader_config, path_conf=path_conf)
+        return DataLoaderDyn()
     elif typ == "whole":
-        return DataLoaderWhole(loader_conf=loader_config, path_conf=path_conf)
+        return DataLoaderWhole()
 
     value_error("Data Loader", typ)
 
@@ -60,14 +60,13 @@ def get_whole_analog_of_data_loader(original_database):
     return analog
 
 
-'''def get_evaluation(*args, **kwargs):
-    labels = config.LABELS_OF_CLASSES_TO_TRAIN
+def get_evaluation(labels: list, *args, **kwargs):
     print('labels', labels)
     if len(labels) == 2:
         print('Get EvaluationBinary')
         return EvaluationBinary(*args, **kwargs)
     print('Get EvaluationMulticlass')
-    return EvaluationMulticlass(*args, **kwargs)'''
+    return EvaluationMulticlass(*args, **kwargs)
 
 
 '''def get_keras_tuner_model():
@@ -109,7 +108,7 @@ def get_pixel_detection(typ: str):
 
 def get_cross_validator(typ: str, *args, **kwargs):
     if typ == "normal":
-        return CrossValidationNormal(*args, **kwargs)
+        return CrossValidationNormal()
     elif typ == "spain":
         return CrossValidatorSpain(*args, **kwargs)
     elif typ == "postprocessing":

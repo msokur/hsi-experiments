@@ -1,5 +1,4 @@
 import numpy as np
-from tqdm import tqdm
 import csv
 import datetime
 import os
@@ -7,14 +6,14 @@ import inspect
 import matplotlib.pylab as plt
 import abc
 
-import config
+from configuration.get_config import PATHS, CV
 from evaluation.metrics import Metrics
 from evaluation.predictor import Predictor
 
 
 class EvaluationBase(Metrics):
 
-    def __init__(self, name, npz_folder=config.TEST_NPZ_PATH, *args, **kwargs):
+    def __init__(self, name, npz_folder=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -30,9 +29,9 @@ class EvaluationBase(Metrics):
         self.predictions_npy_filename = 'predictions.npy'
 
         self.name = name
+        if npz_folder is None:
+            self.npz_folder = PATHS["RAW_NPZ_PATH"]
         self.npz_folder = npz_folder
-        self.labels = config.TISSUE_LABELS
-        self.label_color = config.PLOT_COLORS
         self.additional_columns = {}
 
     @abc.abstractmethod
@@ -63,12 +62,12 @@ class EvaluationBase(Metrics):
     @staticmethod
     def check_checkpoints_for_evaluation(checkpoints_rng, checkpoints_raw_list):
         print(f'checkpoints_rng: {checkpoints_rng}, checkpoints_raw_list: {checkpoints_raw_list}')
-        if config.CV_GET_CHECKPOINT_FROM_VALID and (checkpoints_rng is not None or checkpoints_raw_list is not None):
+        if CV["GET_CHECKPOINT_FROM_VALID"] and (checkpoints_rng is not None or checkpoints_raw_list is not None):
             raise ValueError("Error! config.CV_GET_CHECKPOINT_FROM_VALID is True, it means that the last checkpoint "
                              "will be taken for each patient, and checkpoints_rng (or checkpoints_raw_list) is "
                              "specified at the same time. Please don't specify them or set "
                              "CV_GET_CHECKPOINT_FROM_VALID to False")
-        if config.CV_GET_CHECKPOINT_FROM_VALID:
+        if CV["GET_CHECKPOINT_FROM_VALID"]:
             return [0]
 
         if checkpoints_rng is None and checkpoints_raw_list is None:
@@ -78,7 +77,6 @@ class EvaluationBase(Metrics):
             raise ValueError("Error! Both checkpoints_rng and checkpoints_raw_list are specified. Please specify only "
                              "one of them")
 
-        checkpoints = []
         if checkpoints_raw_list is not None:
             checkpoints = checkpoints_raw_list.copy()
         else:
@@ -320,5 +318,4 @@ class EvaluationBase(Metrics):
 
 
 if __name__ == '__main__':
-    mat_validator = EvaluationBase(config.database_abbreviation)
-    mat_validator.validate_checkpoints(checkpoints_raw_list=[38], print_curve=False)
+    pass

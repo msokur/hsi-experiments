@@ -11,6 +11,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
 from configuration import get_config as conf
+from configuration.get_config import PATHS, PREPRO, DATALOADER
 import provider_dyn
 from configuration.copy_py_files import copy_files
 from data_utils.shuffle import Shuffle
@@ -24,13 +25,11 @@ Link: https://blog.janestreet.com/how-to-shuffle-a-big-dataset/
 
 
 class Preprocessor:
-    def __init__(self, prepro_dict: dict, path_dict: dict, loader_dict: dict):
-        self.prepro = prepro_dict
-        self.paths = path_dict
-        self.loader = loader_dict
-        self.dataloader = provider_dyn.get_data_loader(typ=self.loader["TYPE"],
-                                                       loader_config=self.loader,
-                                                       path_conf=self.paths)
+    def __init__(self):
+        self.prepro = PREPRO
+        self.paths = PATHS
+        self.loader = DATALOADER
+        self.dataloader = provider_dyn.get_data_loader(typ=self.loader["TYPE"])
         self.valid_archives_saving_path = None
         self.archives_of_batch_size_saving_path = None
         self.batch_size = None
@@ -162,7 +161,7 @@ if __name__ == '__main__':
     execution_flags_['shuffle'] = True
 
     try:
-        preprocessor = Preprocessor(prepro_dict=conf.PREPRO, path_dict=conf.PATHS, loader_dict=conf.DATALOADER)
+        preprocessor = Preprocessor()
         preprocessor.pipeline(execution_flags=execution_flags_)
 
         conf.telegram.send_tg_message("operations in preprocessor.py are successfully completed!")

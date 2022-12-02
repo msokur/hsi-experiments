@@ -2,8 +2,6 @@ from evaluation.evaluation_base import EvaluationBase
 import datetime
 import numpy as np
 
-import config
-
 
 class EvaluationBinary(EvaluationBase):
     def __init__(self, *args, **kwargs):
@@ -41,14 +39,4 @@ class EvaluationBinary(EvaluationBase):
 
 
 if __name__ == '__main__':
-    eval_binary = EvaluationBinary(config.database_abbreviation)
-    #config.CV_GET_CHECKPOINT_FROM_VALID = False
-    eval_binary.save_predictions_and_metrics(training_csv_path='C:\\Users\\tkachenko\\Desktop\\HSI\\hsi'
-                                                               '-experiments\\logs\\Colon_MedianFilter'
-                                                               '\\Colon_MedianFilter_stats_02.02.2022-13_15_36.csv',
-                                             save_predictions=False,
-                                             npz_folder='C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases'
-                                                        '\\Colon_MedianFilter\\Colon_MedianFilter'
-                                                        '\\raw_3d_weighted',
-                                             thresholds_range=[[0.0001, 0.001, 20]],
-                                             save_curves=False)
+    pass

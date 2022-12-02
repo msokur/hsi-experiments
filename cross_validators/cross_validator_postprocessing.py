@@ -18,7 +18,7 @@ from provider import get_whole_analog_of_data_loader, get_evaluation
 
 class CrossValidatorPostProcessing(CrossValidatorBase):
     def __init__(self, name, cross_validation_type='0_1', **kwargs):
-        super().__init__(name)
+        super().__init__()
         self.LABELED_NPZ_FOLDER = config.RAW_NPZ_PATH
         self.cross_validation_type = cross_validation_type
         self.whole_database = get_whole_analog_of_data_loader(config.DATABASE)
