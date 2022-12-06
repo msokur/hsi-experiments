@@ -7,6 +7,7 @@
   },
   "CV_HNO_NORMAL": {
     "NAME": "CV_HNO_3x3_snv_gauss",
+    "DATABASE_ABBREVIATION": "CV_HNO_3x3_snv_gauss",
     "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
     "RESTORE_VALID_SEQUENCE": "",
     "GET_CHECKPOINT_FROM_VALID": true

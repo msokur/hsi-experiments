@@ -143,3 +143,18 @@ def get_batch_norm(branch):
     branch = tf.keras.layers.BatchNormalization()(branch)
     branch = tf.keras.layers.Activation(activations.relu)(branch)
     return branch
+
+
+if __name__ == "__main__":
+    import os
+
+    os.environ['TF_DETERMINISTIC_OPS'] = '1'
+    shape_ = (3, 3, 92)
+    conf_ = {
+        "WITH_BATCH_NORM": False,
+        "INCEPTION_FACTOR": 8,
+        "DROPOUT": 0.1
+    }
+    labels = 3
+    model_ = inception3d_model(shape=shape_, conf=conf_, num_of_labels=labels)
+    model_.summary()

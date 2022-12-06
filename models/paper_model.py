@@ -77,3 +77,16 @@ def get_conv3d(net, kernel_initializer, bias_initializer):
                                  bias_initializer=bias_initializer)(net)
 
     return net
+
+
+if __name__ == "__main__":
+    import os
+
+    os.environ['TF_DETERMINISTIC_OPS'] = '1'
+    shape_ = (3, 3, 92)
+    conf_ = {
+        "DROPOUT": 0.1
+    }
+    labels = 3
+    model_ = paper3d_model(shape=shape_, conf=conf_, num_of_labels=labels)
+    model_.summary()

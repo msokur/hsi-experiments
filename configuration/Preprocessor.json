@@ -1,5 +1,11 @@
 {
   "HNO": {
+    "EXECUTION_FLAGS": {
+      "LOAD_DATA_WITH_DATALOADER": true,
+      "ADD_SAMPLE_WEIGHTS": true,
+      "SCALE": true,
+      "SHUFFLE": true
+    },
     "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",

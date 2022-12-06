@@ -3,7 +3,10 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
-import config
+# import config
+D3_SIZE = [3, 3]
+NUMBER_OF_CLASSES_TO_TRAIN = 8
+OUTPUT_SIGNATURE_X_FEATURES = 92
 
 
 class KerasTunerModel(keras_tuner.HyperModel):
@@ -121,9 +124,9 @@ class KerasTunerModel(keras_tuner.HyperModel):
 
     def model(self):
         input_ = layers.Input(
-            shape=(config.D3_SIZE[0],
-                   config.D3_SIZE[1],
-                   config.OUTPUT_SIGNATURE_X_FEATURES),
+            shape=(D3_SIZE[0],
+                   D3_SIZE[1],
+                   OUTPUT_SIGNATURE_X_FEATURES),
             name="title"
         )
 
@@ -142,9 +145,9 @@ class KerasTunerModel(keras_tuner.HyperModel):
 
         activation = 'sigmoid'
         number = 1
-        if config.NUMBER_OF_CLASSES_TO_TRAIN > 2:
+        if NUMBER_OF_CLASSES_TO_TRAIN > 2:
             activation = None
-            number = config.NUMBER_OF_CLASSES_TO_TRAIN
+            number = NUMBER_OF_CLASSES_TO_TRAIN
 
         result = tf.keras.layers.Dense(number, activation=activation)(net)
 
@@ -159,7 +162,7 @@ class KerasTunerModel(keras_tuner.HyperModel):
         self.hp = hp
         model = self.model()
 
-        if config.NUMBER_OF_CLASSES_TO_TRAIN == 2:
+        if NUMBER_OF_CLASSES_TO_TRAIN == 2:
             loss = keras.losses.BinaryCrossentropy(),
             metrics = keras.metrics.BinaryAccuracy(name='accuracy')
         else:
@@ -190,3 +193,9 @@ class KerasTunerModel(keras_tuner.HyperModel):
             class_weight=class_weights,
             **kwargs
         )
+
+
+if __name__ == "__main__":
+    keras_ = KerasTunerModel(name="Oi")
+    model_ = keras_.model()
+    model_.summary()

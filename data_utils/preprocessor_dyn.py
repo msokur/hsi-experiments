@@ -155,10 +155,10 @@ class Preprocessor:
 
 if __name__ == '__main__':
     execution_flags_ = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
-    execution_flags_['load_data_with_dataloader'] = True
-    execution_flags_['add_sample_weights'] = True
-    execution_flags_['scale'] = True
-    execution_flags_['shuffle'] = True
+    execution_flags_['load_data_with_dataloader'] = PREPRO["EXECUTION_FLAGS"]["LOAD_DATA_WITH_DATALOADER"]
+    execution_flags_['add_sample_weights'] = PREPRO["EXECUTION_FLAGS"]["ADD_SAMPLE_WEIGHTS"]
+    execution_flags_['scale'] = PREPRO["EXECUTION_FLAGS"]["SCALE"]
+    execution_flags_['shuffle'] = PREPRO["EXECUTION_FLAGS"]["SHUFFLE"]
 
     try:
         preprocessor = Preprocessor()

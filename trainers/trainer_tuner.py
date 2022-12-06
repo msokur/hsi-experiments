@@ -11,7 +11,7 @@ sys.path.insert(2, 'models')"""
 import config
 import keras_tuner as kt
 from datetime import datetime
-import keras
+from tensorflow import keras
 
 import os
 

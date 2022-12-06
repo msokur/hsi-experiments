@@ -14,7 +14,8 @@ class CrossValidationNormal(CrossValidatorBase):
         training_csv_path = self.get_csv(os.path.join(self.project_folder, "logs", self.cv["NAME"]))
         print(training_csv_path)
 
-        evaluator = provider_dyn.get_evaluation(self.loader["LABELS_TO_TRAIN"])
+        evaluator = provider_dyn.get_evaluation(labels=self.loader["LABELS_TO_TRAIN"],
+                                                name=self.cv["DATABASE_ABBREVIATION"])
 
         evaluator.save_predictions_and_metrics(training_csv_path=training_csv_path,
                                                npz_folder=self.paths["RAW_NPZ_PATH"],
