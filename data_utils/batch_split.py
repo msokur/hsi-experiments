@@ -4,17 +4,14 @@ import numpy as np
 from glob import glob
 from tqdm import tqdm
 
-from configuration.get_config import PREPRO
-
 
 class BatchSplit:
-    def __init__(self, labels_to_train: list, batch_size: int, dict_names=None):
+    def __init__(self, labels_to_train: list, dict_names: list, batch_size: int):
         self.labels_to_train = labels_to_train
-        if dict_names is None:
-            self.dict_names = PREPRO["DICT_NAMES"]
-        else:
-            self.dict_names = dict_names
+        self.dict_names = dict_names
         self.batch_size = batch_size
+        self.load_name_for_X = dict_names[0]
+        self.load_name_for_name = dict_names[2]
 
     def split_data_into_npz_of_batch_size(self, shuffled_paths,
                                           archives_of_batch_size_saving_path,
@@ -65,7 +62,7 @@ class BatchSplit:
             self.dict_names = list(set(self.dict_names).intersection(set(data_)))
 
             data = {name: data_[name] for name in self.dict_names}
-            p_names = data[self.dict_names[2]]
+            p_names = data[self.load_name_for_name]
 
             # ------------ get only needed classes--------------
             indexes = np.zeros(data['y'].shape).astype(bool)
@@ -110,7 +107,7 @@ class BatchSplit:
 
     def __split_arrays(self, path, data):
         # ---------------splitting into archives----------
-        chunks = np.array(data[self.dict_names[0]]).shape[0] // self.batch_size
+        chunks = np.array(data[self.load_name_for_X]).shape[0] // self.batch_size
         chunks_max = chunks * self.batch_size
 
         if chunks > 0:
