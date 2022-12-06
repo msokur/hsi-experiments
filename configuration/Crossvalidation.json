@@ -6,8 +6,8 @@
     "CHOOSE_EXCLUDED_VALID": "by_class"
   },
   "CV_HNO_NORMAL": {
-    "NAME": "CV_HNO_3x3_snv_gauss",
-    "DATABASE_ABBREVIATION": "CV_HNO_3x3_snv_gauss",
+    "NAME": "CV_HNO_3x3_snv_median_conf_file",
+    "DATABASE_ABBREVIATION": "CV_HNO_3x3_snv_gauss_conf_file",
     "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
     "RESTORE_VALID_SEQUENCE": "",
     "GET_CHECKPOINT_FROM_VALID": true

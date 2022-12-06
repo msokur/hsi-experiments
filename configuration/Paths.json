@@ -15,9 +15,9 @@
   },
   "HNO_Database": {
     "1.CONCAT_WITH_PREFIX": {
-      "RAW_NPZ_PATH": ["data_3d", "hno", "3x3", "svn", "gaussian"],
+      "RAW_NPZ_PATH": ["data_3d", "hno", "3x3", "svn", "median"],
       "RAW_SOURCE_PATH": ["Parotis-Faelle_unsorted", "data"],
-      "TEST_NPZ_PATH": ["data_3d", "hno", "3x3", "svn", "gaussian"]
+      "TEST_NPZ_PATH": ["data_3d", "hno", "3x3", "svn", "median"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
       "SHUFFLED_PATH": ["shuffled"],
