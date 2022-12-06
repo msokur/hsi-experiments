@@ -80,9 +80,11 @@ def get_evaluation(labels: list, *args, **kwargs):
 
 
 def get_smoother(typ: str, *args, **kwargs):
-    if typ == 'median_filter':
+    if typ == "median_filter":
+        print("Smooth spectrum with median filter!")
         return MedianFilter(*args, **kwargs)
-    elif typ == 'gaussian_filter':
+    elif typ == "gaussian_filter":
+        print("Smooth spectrum with gaussian filter!")
         return GaussianFilter(*args, **kwargs)
     value_error("smoother", typ)
 
