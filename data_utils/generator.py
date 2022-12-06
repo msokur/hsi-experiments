@@ -4,7 +4,6 @@ import numpy as np
 from numpy import ndarray
 from tensorflow import keras
 import pickle
-import data_utils.preprocessor_dyn as preprocessor
 
 from data_utils.batch_split import BatchSplit
 from configuration.get_config import PATHS, CV, TRAINER, DATALOADER, PREPRO
@@ -50,8 +49,7 @@ class DataGenerator(keras.utils.Sequence):
         self.valid_except_indexes = self.get_valid_except_names()
         self.index = 0
 
-        self.preprocessor = preprocessor.Preprocessor()
-        self.batch_split = BatchSplit(labels_to_train=DATALOADER["LABELS_TO_TRAIN"], dict_names=PREPRO["DICT_NAMES"],
+        self.batch_split = BatchSplit(labels_to_train=DATALOADER["LABELS_TO_TRAIN"],
                                       batch_size=self.batch_size)
 
         print("--------------------PARAMS----------------------")

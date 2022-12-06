@@ -4,11 +4,16 @@ import numpy as np
 from glob import glob
 from tqdm import tqdm
 
+from configuration.get_config import PREPRO
+
 
 class BatchSplit:
-    def __init__(self, labels_to_train: list, dict_names: list, batch_size: int):
+    def __init__(self, labels_to_train: list, batch_size: int, dict_names=None):
         self.labels_to_train = labels_to_train
-        self.dict_names = dict_names
+        if dict_names is None:
+            self.dict_names = PREPRO["DICT_NAMES"]
+        else:
+            self.dict_names = dict_names
         self.batch_size = batch_size
 
     def split_data_into_npz_of_batch_size(self, shuffled_paths,

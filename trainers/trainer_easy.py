@@ -46,7 +46,7 @@ class TrainerEasy(trainer_base.Trainer):
         return model, initial_epoch
 
     def get_easy_model(self):
-        model = self.trainer["MODEL"](shape=self.__get_output_shape(), conf=self.trainer["MODEL_CONFIG"],
+        model = self.trainer["MODEL"](shape=self.get_output_shape(), conf=self.trainer["MODEL_CONFIG"],
                                       num_of_labels=len(self.loader["LABELS_TO_TRAIN"]))
         model = self.compile_model(model)
         return model

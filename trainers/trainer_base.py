@@ -204,7 +204,7 @@ class Trainer:
 
         return model
 
-    def __get_output_shape(self):
+    def get_output_shape(self):
         if "OUTPUT_SIGNATURE_X_FEATURES" in self.loader:
             shape_spec = self.loader["OUTPUT_SIGNATURE_X_FEATURES"]
         else:
@@ -218,7 +218,7 @@ class Trainer:
         return output_shape
 
     def __get_output_signature(self):
-        shape = self.__get_output_shape()
+        shape = self.get_output_shape()
 
         output_signature = (
             tf.TensorSpec(shape=((None,) + shape), dtype=tf.float32),
