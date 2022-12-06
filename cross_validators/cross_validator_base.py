@@ -8,7 +8,7 @@ import inspect
 
 import utils
 from configuration.get_config import telegram, CV, PATHS, DATALOADER
-from provider_dyn import get_trainer, get_data_loader
+import provider_dyn
 from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
 
 
@@ -48,7 +48,7 @@ class CrossValidatorBase:
     def cross_validation_step(self, model_name, except_names=None):
         if except_names is None:
             except_names = []
-        trainer = get_trainer(typ=self.cv["TYPE"], model_name=model_name, except_indexes=except_names)
+        trainer = provider_dyn.get_trainer(typ=self.cv["TYPE"], model_name=model_name, except_indexes=except_names)
         trainer.train()
 
     def cross_validation(self, root_folder_name: str, csv_filename=None):
@@ -60,7 +60,7 @@ class CrossValidatorBase:
         if not os.path.exists(root_folder):
             os.makedirs(root_folder)
 
-        data_loader = get_data_loader(typ=self.loader["TYPE"])
+        data_loader = provider_dyn.get_data_loader(typ=self.loader["TYPE"])
         paths, splits = data_loader.get_paths_and_splits()
 
         date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")

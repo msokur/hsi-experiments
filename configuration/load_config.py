@@ -121,3 +121,11 @@ def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dic
     else:
         raise ValueError(f"Model {trainer['MODEL']}, not implemented!")
     return trainer
+
+
+def read_cv_config(file: str, section: str) -> dict:
+    cv_base = read_config(file=file, section="BASE")
+    cv_section = read_config(file=file, section=section)
+    cv = concat_dict(dict1=cv_base, dict2=cv_section)
+
+    return cv

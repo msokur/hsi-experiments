@@ -5,7 +5,7 @@ import platform
 
 from utils import Telegram
 
-from configuration.load_config import read_config, read_path_config, read_trainer_config
+from configuration.load_config import read_config, read_path_config, read_trainer_config, read_cv_config
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
@@ -26,6 +26,10 @@ def get_paths(file_name: str, sys_section: str, data_section: str) -> dict:
 
 def get_trainer(file_name: str, section: str, d3: bool, classes: list) -> dict:
     return read_trainer_config(file=os.path.join(current_dir, file_name), section=section, d3=d3, classes=classes)
+
+
+def get_cv(file_name: str, section: str) -> dict:
+    return read_cv_config(file=os.path.join(current_dir, file_name), section=section)
 
 
 # -------- Data Loader
@@ -52,7 +56,7 @@ PREPRO = get_config(file_name=prepro_config, section=prepro_section)
 
 # --------- Cross validation
 cv_config = "Crossvalidation.json"
-cv_section = "BASE"
+cv_section = "CV_HNO_NORMAL"
 CV = get_config(file_name=cv_config, section=cv_section)
 
 # --------- Trainer
