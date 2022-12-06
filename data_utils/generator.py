@@ -6,7 +6,8 @@ from tensorflow import keras
 import pickle
 import data_utils.preprocessor_dyn as preprocessor
 
-from configuration.get_config import PATHS, CV, TRAINER, DATALOADER
+from data_utils.batch_split import BatchSplit
+from configuration.get_config import PATHS, CV, TRAINER, DATALOADER, PREPRO
 from util import compare_distributions
 
 
@@ -50,6 +51,8 @@ class DataGenerator(keras.utils.Sequence):
         self.index = 0
 
         self.preprocessor = preprocessor.Preprocessor()
+        self.batch_split = BatchSplit(labels_to_train=DATALOADER["LABELS_TO_TRAIN"], dict_names=PREPRO["DICT_NAMES"],
+                                      batch_size=self.batch_size)
 
         print("--------------------PARAMS----------------------")
         print(", \n".join("%s: %s" % item for item in vars(self).items()))
@@ -88,11 +91,10 @@ class DataGenerator(keras.utils.Sequence):
             self.shuffled_npz_paths = [self.shuffled_npz_paths[tuning_index]]
 
         if self.split_flag:
-            self.preprocessor.split_data_into_npz_of_batch_size(self.shuffled_npz_paths,
-                                                                self.batch_size,
-                                                                self.batches_npz_path,
-                                                                except_names=self.except_indexes,
-                                                                valid_except_names=self.valid_except_indexes)
+            self.batch_split.split_data_into_npz_of_batch_size(self.shuffled_npz_paths,
+                                                               self.batches_npz_path,
+                                                               except_names=self.except_indexes,
+                                                               valid_except_names=self.valid_except_indexes)
         else:
             print("!!!!!   Dataset is not split   !!!!!")
 
