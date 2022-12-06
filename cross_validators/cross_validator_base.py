@@ -7,7 +7,7 @@ import csv
 import inspect
 
 import utils
-from configuration.get_config import telegram, CV, PATHS, DATALOADER
+from configuration.get_config import telegram, CV, PATHS, DATALOADER, TRAINER
 import provider_dyn
 from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
 
@@ -17,6 +17,7 @@ class CrossValidatorBase:
         self.cv = CV
         self.paths = PATHS
         self.loader = DATALOADER
+        self.trainer = TRAINER
 
         current_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         project_folder = os.path.dirname(current_folder)
@@ -48,7 +49,7 @@ class CrossValidatorBase:
     def cross_validation_step(self, model_name, except_names=None):
         if except_names is None:
             except_names = []
-        trainer = provider_dyn.get_trainer(typ=self.loader["TYPE"], model_name=model_name, except_indexes=except_names)
+        trainer = provider_dyn.get_trainer(typ=self.trainer["TYPE"], model_name=model_name, except_indexes=except_names)
         trainer.train()
 
     def cross_validation(self, root_folder_name: str, csv_filename=None):
