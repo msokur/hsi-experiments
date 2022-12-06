@@ -48,13 +48,13 @@ class CrossValidatorBase:
     def cross_validation_step(self, model_name, except_names=None):
         if except_names is None:
             except_names = []
-        trainer = provider_dyn.get_trainer(typ=self.cv["TYPE"], model_name=model_name, except_indexes=except_names)
+        trainer = provider_dyn.get_trainer(typ=self.loader["TYPE"], model_name=model_name, except_indexes=except_names)
         trainer.train()
 
     def cross_validation(self, root_folder_name: str, csv_filename=None):
         self.paths["MODEL_NAME_PATHS"].append(root_folder_name)
 
-        root_folder = os.path.join(self.paths["MODEL_NAME_PATHS"])
+        root_folder = os.path.join(*self.paths["MODEL_NAME_PATHS"])
         self.paths["MODEL_NAME_PATHS"] = self.get_model_name(self.paths["MODEL_NAME_PATHS"])
 
         if not os.path.exists(root_folder):

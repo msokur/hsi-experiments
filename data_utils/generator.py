@@ -4,7 +4,7 @@ import numpy as np
 from numpy import ndarray
 from tensorflow import keras
 import pickle
-import preprocessor
+import data_utils.preprocessor_dyn as preprocessor
 
 from configuration.get_config import PATHS, CV, TRAINER, DATALOADER
 from util import compare_distributions

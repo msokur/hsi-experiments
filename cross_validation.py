@@ -8,7 +8,6 @@ if __name__ == '__main__':
 
         cross_validator = provider_dyn.get_cross_validator(typ=conf.CV["TYPE"], cv_config=conf.CV, paths=conf.PATHS,
                                                            loader_config=conf.DATALOADER)
-
         # cross validation pipeline consists of 2 parts:
         # (1) cross_validation
         # (2) evaluation

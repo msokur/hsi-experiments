@@ -2,7 +2,8 @@
   "BASE":{
     "FIRST_SPLIT": 0,
     "HOW_MANY_VALID_EXCLUDE": 1,
-    "CHOOSE_EXCLUDED_VALID": "by_class"
+    "CHOOSE_EXCLUDED_VALID": "by_class",
+    "USE_ALL_LABELS": false
   },
   "CV_HNO_NORMAL": {
     "TYPE": "normal",

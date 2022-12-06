@@ -3,10 +3,10 @@ from data_utils.data_loaders.data_loader_whole_dyn import DataLoaderWhole
 from data_utils.smoothing import MedianFilter, GaussianFilter
 from data_utils.scaler import NormalizerScaler, StandardScaler, StandardScalerTransposed
 from cross_validators.cross_validator_normal import CrossValidationNormal
-from cross_validators.cross_validator_spain import CrossValidatorSpain
-from cross_validators.cross_validator_experiment import CrossValidatorExperiment
-from cross_validators.cross_validator_postprocessing import CrossValidatorPostProcessing
-from trainers.trainer_tuner import TrainerTuner
+# from cross_validators.cross_validator_spain import CrossValidatorSpain
+# from cross_validators.cross_validator_experiment import CrossValidatorExperiment
+# from cross_validators.cross_validator_postprocessing import CrossValidatorPostProcessing
+# from trainers.trainer_tuner import TrainerTuner
 from trainers.trainer_easy import TrainerEasy
 from trainers.trainer_easy_several_outputs import TrainerEasySeveralOutputs
 from evaluation.evaluation_binary import EvaluationBinary
@@ -19,7 +19,7 @@ from data_utils import border
 def get_trainer(typ: str, **kwargs):
     if typ == "Tuner":
         print('TrainerTuner')
-        return TrainerTuner(**kwargs)
+        # return TrainerTuner(**kwargs)
     elif type == "Easy":
         print('TrainerEasy')
         return TrainerEasy(**kwargs)
@@ -111,12 +111,12 @@ def get_pixel_detection(typ: str):
 def get_cross_validator(typ: str, *args, **kwargs):
     if typ == "normal":
         return CrossValidationNormal()
-    elif typ == "spain":
+    '''elif typ == "spain":
         return CrossValidatorSpain(*args, **kwargs)
     elif typ == "postprocessing":
         return CrossValidatorPostProcessing(*args, **kwargs)
     elif typ == "experiment":
-        return CrossValidatorExperiment()
+        return CrossValidatorExperiment()'''
 
     value_error("Cross validator", typ)
 

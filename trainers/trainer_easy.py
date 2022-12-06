@@ -2,7 +2,7 @@ from tensorflow import keras
 import numpy as np
 import os
 
-import trainer_base
+import trainers.trainer_base as trainer_base
 
 
 class TrainerEasy(trainer_base.Trainer):

@@ -1,5 +1,5 @@
 from tensorflow import keras
-import trainer_easy
+import trainers.trainer_easy as trainer_easy
 
 
 class TrainerEasySeveralOutputs(trainer_easy.TrainerEasy):

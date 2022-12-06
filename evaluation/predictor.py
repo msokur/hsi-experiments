@@ -6,8 +6,8 @@ from glob import glob
 import os
 import inspect
 
-import config
-from data_utils.data_loaders.data_loader_base import DataLoader
+from configuration import get_config as conf
+from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
 from evaluation.metrics import Metrics
 
 
@@ -18,44 +18,45 @@ class Predictor:
     2. give MODEL_FOLDER
     """
 
-    def __init__(self, CHECKPOINT, LOGS_PATH='', MODEL_NAME='', MODEL_FOLDER='', custom_objects=config.CUSTOM_OBJECTS):
+    def __init__(self, CHECKPOINT, LOGS_PATH="", MODEL_NAME="", MODEL_FOLDER="",
+                 custom_objects=conf.TRAINER["CUSTOM_OBJECTS"]):
 
         if MODEL_NAME != '':
             self.MODEL_NAME = MODEL_NAME
         else:
-            self.MODEL_NAME = MODEL_FOLDER.split(config.SYSTEM_PATHS_DELIMITER)[-1]  # here can be problem
+            self.MODEL_NAME = MODEL_FOLDER.split(conf.PATHS["SYSTEM_PATHS_DELIMITER"])[-1]  # here can be problem
 
         if MODEL_FOLDER == '':
             MODEL_FOLDER = os.path.join(LOGS_PATH, self.MODEL_NAME)
 
-        CHECKPOINTS_FOLDER_NAME = os.path.join(MODEL_FOLDER, 'checkpoints')
+        CHECKPOINTS_FOLDER_NAME = os.path.join(MODEL_FOLDER, "checkpoints")
         MODEL_PATH = os.path.join(CHECKPOINTS_FOLDER_NAME, CHECKPOINT)
         self.CHECKPOINT = CHECKPOINT
 
         self.model = tf.keras.models.load_model(MODEL_PATH, custom_objects=custom_objects)
 
-        print('--------------------PARAMS----------------------')
-        print(', \n'.join("%s: %s" % item for item in vars(self).items()))
-        print('------------------------------------------------')
+        print("--------------------PARAMS----------------------")
+        print(", \n".join("%s: %s" % item for item in vars(self).items()))
+        print("------------------------------------------------")
 
     def get_predictions_for_npz(self, path):
         data = np.load(path)
-        spectrum = data['X']
-        gt = data['y']
+        spectrum = data["X"]
+        gt = data["y"]
         size = None
-        if 'size' in data:
-            size = data['size']
+        if "size" in data:
+            size = data["size"]
 
         # get only needed samples
         indexes = np.zeros(gt.shape).astype(bool)
-        if not config.USE_ALL_LABELS:
-            for label in config.LABELS_OF_CLASSES_TO_TRAIN:
+        if not conf.CV["USE_ALL_LABELS"]:
+            for label in conf.DATALOADER["LABELS_TO_TRAIN"]:
                 indexes = indexes | (gt == label)
         else:
             indexes = np.ones(gt.shape).astype(bool)
-        if config.WITH_BACKGROUND_EXTRACTION:
-            gt = gt[indexes & data['bg_mask']]
-            spectrum = spectrum[indexes & data['bg_mask']]
+        if conf.DATALOADER["WITH_BACKGROUND_EXTRACTION"]:
+            gt = gt[indexes & data["bg_mask"]]
+            spectrum = spectrum[indexes & data["bg_mask"]]
 
         gt = gt[indexes]
         spectrum = spectrum[indexes]
@@ -66,9 +67,9 @@ class Predictor:
 
     @staticmethod
     def edit_model_path_if_local(model_path):
-        if 'LOCAL' in config.MODE:
-            model_path = model_path.split('hsi-experiments')[-1][1:]
-            model_path = model_path.replace('/', '\\')
+        if "LOCAL" in conf.PATHS["MODE"]:
+            model_path = model_path.split("hsi-experiments")[-1][1:]
+            model_path = model_path.replace("/", "\\")
 
             current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
             parent_dir = os.path.dirname(current_dir)
@@ -78,17 +79,17 @@ class Predictor:
     @staticmethod
     def get_best_checkpoint_from_csv(model_path):
         checkpoints_paths = sorted(glob(os.path.join(model_path,
-                                                     'checkpoints', '*'
-                                                     + config.SYSTEM_PATHS_DELIMITER)))
+                                                     "checkpoints", "*"
+                                                     + conf.PATHS["SYSTEM_PATHS_DELIMITER"])))
         best_checkpoint_path = checkpoints_paths[-1]
-        return best_checkpoint_path.split(config.SYSTEM_PATHS_DELIMITER)[-2]
+        return best_checkpoint_path.split(conf.PATHS["SYSTEM_PATHS_DELIMITER"])[-2]
 
     @staticmethod
     def get_checkpoint(checkpoint, model_path):
         if checkpoint is None:
-            checkpoint = f'cp-{config.EPOCHS:04d}'
+            checkpoint = f"cp-{conf.TRAINER['EPOCHS']:04d}"
 
-        if config.CV_GET_CHECKPOINT_FROM_VALID:
+        if conf.CV["GET_CHECKPOINT_FROM_VALID"]:
             return Predictor.get_best_checkpoint_from_csv(model_path)
         else:
             return checkpoint
@@ -122,7 +123,7 @@ class Predictor:
 
                 if checkpoint is not None:
                     checkpoint = Predictor.get_checkpoint(checkpoint, model_path)
-                name = DataLoader.get_name_easy(row[4], delimiter='/')
+                name = DataLoaderDyn.get_name_easy(row[4], delimiter='/')
                 print(f'We get checkpoint {checkpoint} for {model_path}')
 
                 predictor = Predictor(checkpoint, MODEL_FOLDER=model_path)
