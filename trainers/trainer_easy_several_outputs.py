@@ -10,8 +10,9 @@ class TrainerEasySeveralOutputs(trainer_easy.TrainerEasy):
         METRICS = [
             keras.metrics.SparseCategoricalAccuracy(),
         ]
-        for obj in self.trainer["CUSTOM_OBJECTS"]:
-            METRICS += obj(num_classes=len(self.loader["LABELS_TO_TRAIN"]), average='weighted')
+        for key in self.trainer["CUSTOM_OBJECTS"].keys():
+            METRICS.append(self.trainer["CUSTOM_OBJECTS"][key](num_classes=len(self.loader["LABELS_TO_TRAIN"]),
+                                                               average='weighted'))
 
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=self.trainer["LEARNING_RATE"]),

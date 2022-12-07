@@ -7,7 +7,7 @@
     "WITH_SAMPLE_WEIGHTS": false,
     "MODEL": "paper_model",
     "LEARNING_RATE": 1e-4,
-    "CUSTOM_OBJECTS": ["F1_Score"],
+    "CUSTOM_OBJECTS": ["F1_score"],
     "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 50,

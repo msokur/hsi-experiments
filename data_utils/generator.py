@@ -49,7 +49,7 @@ class DataGenerator(keras.utils.Sequence):
         self.valid_except_indexes = self.get_valid_except_names()
         self.index = 0
 
-        self.batch_split = BatchSplit(labels_to_train=DATALOADER["LABELS_TO_TRAIN"],
+        self.batch_split = BatchSplit(labels_to_train=DATALOADER["LABELS_TO_TRAIN"], dict_names=PREPRO["DICT_NAMES"],
                                       batch_size=self.batch_size)
 
         print("--------------------PARAMS----------------------")

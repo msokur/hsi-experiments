@@ -13,7 +13,7 @@ if __name__ == '__main__':
         # (2) evaluation
         # By default both these parts are executed (True)
         # With execution_flags it's possible not to execute 'cross_validation' or 'evaluation' with False
-        execution_flags = cross_validator.get_execution_flags()
+        execution_flags = conf.CV["EXECUTION_FLAGS"]
         # execution_flags['cross_validation'] = False
 
         # After execution_flags we pass parameters for evaluation
@@ -23,10 +23,10 @@ if __name__ == '__main__':
         # because they passed automatically
         cross_validator.pipeline(execution_flags=execution_flags,
                                  # thresholds_range=[[0.0001, 0.001, 20]],
-                                 save_predictions=True,
-                                 save_curves=False)
+                                 save_predictions=conf.CV["SAVE_PREDICTION"],
+                                 save_curves=conf.CV["SAVE_CURVES"])
 
-        conf.telegram.send_tg_message('operations in cross_validation.py are successfully completed!')
+        # conf.telegram.send_tg_message('operations in cross_validation.py are successfully completed!')
                
     except Exception as e:
 

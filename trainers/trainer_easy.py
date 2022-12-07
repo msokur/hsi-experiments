@@ -13,7 +13,8 @@ class TrainerEasy(trainer_base.Trainer):
         METRICS = [
             keras.metrics.BinaryAccuracy(name='accuracy'),
         ]
-        METRICS += self.trainer["CUSTOM_OBJECTS"]
+        for key in self.trainer["CUSTOM_OBJECTS"].keys():
+            METRICS.append(self.trainer["CUSTOM_OBJECTS"][key]())
 
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=self.trainer["LEARNING_RATE"]),

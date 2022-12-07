@@ -8,7 +8,7 @@ from configuration.get_config import DATALOADER
 
 class Metrics:
     def __init__(self, labels_of_classes_to_train=None):
-        if labels_of_classes_to_train is not None:
+        if labels_of_classes_to_train is None:
             self.labels_of_classes_to_train = DATALOADER["LABELS_TO_TRAIN"]
         else:
             self.labels_of_classes_to_train = labels_of_classes_to_train

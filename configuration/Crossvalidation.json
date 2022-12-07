@@ -1,9 +1,15 @@
 {
   "BASE":{
+    "EXECUTION_FLAGS": {
+      "cross_validation": true,
+      "evaluation": true
+    },
     "FIRST_SPLIT": 0,
     "HOW_MANY_VALID_EXCLUDE": 1,
     "CHOOSE_EXCLUDED_VALID": "by_class",
-    "USE_ALL_LABELS": false
+    "USE_ALL_LABELS": false,
+    "SAVE_PREDICTION": true,
+    "SAVE_CURVES": false
   },
   "CV_HNO_NORMAL": {
     "TYPE": "normal",

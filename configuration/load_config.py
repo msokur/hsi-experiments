@@ -10,10 +10,10 @@ from models.paper_model import paper1d_model, paper3d_model
 CONCAT_KEY = "CONCAT_WITH_"
 CONVERT_KEY = ["MASK_COLOR", "TISSUE_LABELS", "PLOT_COLORS"]
 CUSTOM_OBJECTS_MULTI = {
-    "F1_Score": tf_metric_multiclass.F1_score
+    "F1_score": tf_metric_multiclass.F1_score
 }
 CUSTOM_OBJECTS_BINARY = {
-    "F1_Score": tf_metrics.f1_m
+    "F1_score": tf_metrics.f1_m
 }
 MODELS_3D = {
     "paper_model": paper3d_model,
