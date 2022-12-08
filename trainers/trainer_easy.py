@@ -10,11 +10,12 @@ class TrainerEasy(trainer_base.Trainer):
         super().__init__(**kwargs)
 
     def compile_model(self, model):
+        metric_dict = self.trainer["CUSTOM_OBJECTS"]
         METRICS = [
             keras.metrics.BinaryAccuracy(name='accuracy'),
         ]
-        for key in self.trainer["CUSTOM_OBJECTS"].keys():
-            METRICS.append(self.trainer["CUSTOM_OBJECTS"][key])
+        for key in metric_dict.keys():
+            METRICS.append(metric_dict[key]["metric"](**metric_dict[key]["args"]))
 
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=self.trainer["LEARNING_RATE"]),

@@ -7,12 +7,13 @@ class TrainerEasySeveralOutputs(trainer_easy.TrainerEasy):
         super().__init__(**kwargs)
 
     def compile_model(self, model):
+        metric_dict = self.trainer["CUSTOM_OBJECTS"]
         METRICS = [
             keras.metrics.SparseCategoricalAccuracy(),
         ]
-        for key in self.trainer["CUSTOM_OBJECTS"].keys():
-            METRICS.append(self.trainer["CUSTOM_OBJECTS"][key](num_classes=len(self.loader["LABELS_TO_TRAIN"]),
-                                                               average='weighted'))
+        for key in metric_dict.keys():
+            METRICS.append(metric_dict[key]["metric"](num_classes=len(self.loader["LABELS_TO_TRAIN"]),
+                                                      **metric_dict[key]["args"]))
 
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=self.trainer["LEARNING_RATE"]),
