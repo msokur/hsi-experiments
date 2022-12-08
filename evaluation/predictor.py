@@ -19,7 +19,7 @@ class Predictor:
     """
 
     def __init__(self, CHECKPOINT, LOGS_PATH="", MODEL_NAME="", MODEL_FOLDER="",
-                 custom_objects=conf.TRAINER["CUSTOM_OBJECTS"]):
+                 custom_objects=conf.TRAINER["CUSTOM_OBJECTS_LOAD"]):
 
         if MODEL_NAME != '':
             self.MODEL_NAME = MODEL_NAME

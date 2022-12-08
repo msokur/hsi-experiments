@@ -102,13 +102,20 @@ def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dic
     else:
         custom_objects = CUSTOM_OBJECTS_BINARY
 
+    obj_load_dict = {}
     obj_dict = {}
-    for obj in trainer["CUSTOM_OBJECTS"]:
+    for obj, args in trainer["CUSTOM_OBJECTS"].items():
         if obj in custom_objects:
-            obj_dict[obj] = custom_objects[obj]
+            obj_load_dict[obj] = custom_objects[obj]
+            for idx, arg in enumerate(args):
+                if len(classes) > 2:
+                    obj_dict[idx] = custom_objects[obj](num_classes=len(classes), **arg)
+                else:
+                    obj_dict[idx] = custom_objects[obj](**arg)
         else:
             print(f"WARNING! Custom object {obj}, not implemented!")
     trainer["CUSTOM_OBJECTS"] = obj_dict
+    trainer["CUSTOM_OBJECTS_LOAD"] = obj_load_dict
 
     if d3:
         models = MODELS_3D

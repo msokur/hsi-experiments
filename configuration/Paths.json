@@ -20,7 +20,7 @@
       "TEST_NPZ_PATH": ["data_3d", "hno", "3x3", "svn", "median"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
-      "SHUFFLED_PATH": ["shuffled"],
+      "SHUFFLED_PATH": ["shuffled_no_class_7"],
       "BATCHED_PATH": ["batch_sized"]
     }
   },

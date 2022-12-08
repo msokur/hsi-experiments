@@ -14,7 +14,7 @@ class TrainerEasy(trainer_base.Trainer):
             keras.metrics.BinaryAccuracy(name='accuracy'),
         ]
         for key in self.trainer["CUSTOM_OBJECTS"].keys():
-            METRICS.append(self.trainer["CUSTOM_OBJECTS"][key]())
+            METRICS.append(self.trainer["CUSTOM_OBJECTS"][key])
 
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=self.trainer["LEARNING_RATE"]),
@@ -37,10 +37,10 @@ class TrainerEasy(trainer_base.Trainer):
         if self.mirrored_strategy is not None:
             with self.mirrored_strategy.scope():
                 model = keras.models.load_model(all_checkpoints[-1],
-                                                custom_objects=self.trainer["CUSTOM_OBJECTS"],
+                                                custom_objects=self.trainer["CUSTOM_OBJECTS_LOAD"],
                                                 compile=True)
         else:
-            model = keras.models.load_model(all_checkpoints[-1], self.trainer["CUSTOM_OBJECTS"])
+            model = keras.models.load_model(all_checkpoints[-1], self.trainer["CUSTOM_OBJECTS_LOAD"])
 
         model = self.compile_model(model)
 

@@ -195,19 +195,34 @@ class EvaluationBase(Metrics):
                                                      f'Image_{name}',
                                                      save_evaluation_folder_with_checkpoint)
 
-                        self.write_metrics_to_csv(writer_cp, {k: np.nanmean(v, axis=0) for k, v in metrics_all.items()},
-                                                  time_string="TOTAL MEAN")
-                        self.write_metrics_to_csv(writer_cp, {k: np.nanstd(v, axis=0) for k, v in metrics_all.items()},
-                                                  time_string="TOTAL STD")
-                        self.write_metrics_to_csv(writer_cp,
-                                                  {k: np.nanmedian(v, axis=0) for k, v in metrics_all.items()},
-                                                  time_string="TOTAL MEDIAN")
+                        mean, std, median = {}, {}, {}
+                        for k, v in metrics_all.items():
+                            nan_bool = np.isnan(v).all(axis=0)
+                            if np.any(nan_bool):
+                                mean[k] = [np.nanmean(np.array(v)[:, idx], axis=0) if not nan else float("NaN")
+                                           for idx, nan in enumerate(nan_bool)]
+                                std[k] = [np.nanstd(np.array(v)[:, idx], axis=0) if not nan else float("NaN")
+                                          for idx, nan in enumerate(nan_bool)]
+                                median[k] = [np.nanmedian(np.array(v)[:, idx], axis=0) if not nan else float("NaN")
+                                             for idx, nan in enumerate(nan_bool)]
+                            else:
+                                mean[k] = np.nanmean(v, axis=0)
+                                std[k] = np.nanstd(v, axis=0)
+                                median[k] = np.nanmedian(v, axis=0)
+
+                        self.write_metrics_to_csv(writer_cp, mean, time_string="TOTAL MEAN")
+                        self.write_metrics_to_csv(writer_cp, std, time_string="TOTAL STD")
+                        self.write_metrics_to_csv(writer_cp, median, time_string="TOTAL MEDIAN")
 
                     sensitivity_mean = np.nanmean(metrics_all['Sensitivity'], axis=0)
                     specificity_mean = np.nanmean(metrics_all['Specificity'], axis=0)
 
-                    plt.plot(sensitivity_mean)
-                    plt.plot(specificity_mean)
+                    plt.plot(sensitivity_mean, label="sensitivity mean")
+                    plt.plot(specificity_mean, label="specificity mean")
+                    plt.ylabel("Value")
+                    plt.xlabel("Labels of Classes")
+                    plt.legend(loc="lower right")
+                    plt.title("Sensitivity and specificity mean by classes")
                     plt.savefig(os.path.join(save_evaluation_folder_with_checkpoint,
                                              'thresholds_metrics_curves_mean.png'))
                     plt.clf()

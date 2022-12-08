@@ -9,7 +9,7 @@
 		"LAST_NM": 100,
 		"WAVE_AREA": 100,
 		"LABELS": [0, 1, 2, 3, 4, 5, 6, 7],
-		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6, 7],
+		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6],
 		"NAME_SPLIT": "_SpecCube",
 		"MASK_DIFF": ["_SpecCube.dat", ".png"],
 		"LABELS_FILENAME": "labels.labels",
