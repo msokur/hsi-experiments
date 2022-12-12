@@ -67,17 +67,21 @@ class CrossValidatorBase:
         date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
 
         if csv_filename is None:
-            csv_filename = os.path.join(root_folder, root_folder_name + '_stats' + date_ + '.csv')
+            csv_filename = os.path.join(root_folder, root_folder_name + "_stats" + date_ + ".csv")
 
         for indexes in splits[self.cv["FIRST_SPLIT"]:]:
             model_name = self.paths["MODEL_NAME_PATHS"]
             if len(indexes) > 1:
                 for i in indexes:
-                    model_name += '_' + str(i)
+                    model_name += "_" + str(i)
             else:
-                model_name += '_' + str(indexes[0]) + '_' + data_loader.get_name(np.array(paths)[indexes][0])
+                model_name += "_" + str(indexes[0]) + "_" + data_loader.get_name(np.array(paths)[indexes][0])
 
             paths_patch = np.array(paths)[indexes]
+
+            if self.check_data_label(paths_patch):
+                print(f"In files {paths_patch} are no needed labels for training!")
+                continue
 
             self.cross_validation_step(model_name, except_names=[DataLoaderDyn.get_name_easy(p) for p in paths_patch])
 
@@ -100,6 +104,20 @@ class CrossValidatorBase:
         checkpoints_folders = sorted(checkpoints_folders)
 
         return int(checkpoints_folders[0].split(self.paths["SYSTEM_PATHS_DELIMITER"])[-1].split('-')[-1])
+
+    def check_data_label(self, paths: np.ndarry) -> bool:
+        label_not_to_train = True
+        for path in paths:
+            label_not_to_train = label_not_to_train & self.check_label(path)
+
+        return label_not_to_train
+
+    def check_label(self, path: str) -> bool:
+        data = np.load(path)
+        unique_y = np.unique(data["y"])
+        intersect = np.intersect1d(unique_y, self.loader["LABELS_TO_TRAIN"])
+
+        return True if intersect.__len__() == 0 else False
 
     @staticmethod
     def get_csv(search_folder):
