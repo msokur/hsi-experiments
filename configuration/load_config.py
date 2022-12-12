@@ -1,6 +1,7 @@
 import json
 import platform
 import os
+import datetime
 
 from util import tf_metric_multiclass, tf_metrics
 from models.inception_model import inception1d_model, inception3d_model
@@ -120,7 +121,7 @@ def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dic
         models = MODELS_1D
 
     if trainer["MODEL"] in models:
-        trainer["MODEL_CONFIG"] = read_config(file=file, section=trainer["MODEL"])
+        trainer["MODEL_CONFIG"] = read_config(file=file, section=trainer["MODEL_PARAMS"])
         trainer["MODEL"] = models[trainer["MODEL"]]
     else:
         raise ValueError(f"Model {trainer['MODEL']}, not implemented!")
@@ -131,5 +132,4 @@ def read_cv_config(file: str, section: str) -> dict:
     cv_base = read_config(file=file, section="BASE")
     cv_section = read_config(file=file, section=section)
     cv = concat_dict(dict1=cv_base, dict2=cv_section)
-
     return cv

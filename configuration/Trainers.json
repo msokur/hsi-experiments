@@ -6,6 +6,7 @@
                  ["scrips", "start_cv.job"], ["trainers", "*.py"], ["utils", "*.py"]],
     "WITH_SAMPLE_WEIGHTS": false,
     "MODEL": "paper_model",
+    "MODEL_PARAMS": "paper_model_hno",
     "LEARNING_RATE": 1e-4,
     "CUSTOM_OBJECTS": {
       "F1_score": [{"name":  "f1_score_weighted", "average": "weighted"}]
@@ -28,12 +29,58 @@
       "restore_best_weights": true
     }
   },
-  "paper_model": {
+  "HNO_TUNER": {
+    "TYPE":  "Tuner",
+    "RESTORE": false,
+    "FILES_TO_COPY": [["*.py"], ["data_utils", ",*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*dyn.py"],
+                 ["scrips", "start_cv.job"], ["trainers", "*.py"], ["utils", "*.py"]],
+    "WITH_SAMPLE_WEIGHTS": false,
+    "MODEL": "inception_model",
+    "MODEL_PARAMS": "inception_model_tuner_hno",
+    "LEARNING_RATE": 1e-4,
+    "CUSTOM_OBJECTS": {
+      "F1_score": [{"name":  "f1_score_weighted", "average": "weighted"}]
+      },
+    "BATCH_SIZE": 500,
+    "SPLIT_FACTOR": 0.8,
+    "EPOCHS": 50,
+    "SMALLER_DATASET": false,
+    "TUNER": "BayesianOptimization",
+    "TUNER_OBJECTIVE": "val_loss",
+    "TUNER_MAX_TRIALS": 2,
+    "TUNER_OVERWRITE": true,
+    "MODEL_CHECKPOINT": {
+      "monitor": "val_f1_score_weighted",
+      "save_best_only": true,
+      "mode": "max"
+    },
+    "EARLY_STOPPING": {
+      "enable": true,
+      "monitor": "val_f1_score_weighted",
+      "mode": "max",
+      "min_delta": 0,
+      "patience": 5,
+      "restore_best_weights": true
+    }
+  },
+  "paper_model_hno": {
     "DROPOUT": 0.1
   },
-  "inception_model": {
+  "inception_model_hno": {
     "WITH_BATCH_NORM": false,
     "INCEPTION_FACTOR": 8,
     "DROPOUT": 0.1
+  },
+  "inception_model_tuner_hno": {
+    "NUM_BLOCK": {"min_value":  0, "max_value": 2},
+    "NUM_BRANCHES": {"min_value":  1, "max_value": 3},
+    "BLOCK_FILTERS": {"min_value": 16, "max_value": 128, "step": 16},
+    "BLOCK_KERNEL_SIZE": {"min_value": 1, "max_value": 7, "step":  2},
+    "LEARNING_RATE": {"min_value": 1e-4, "max_value": 1e-2, "sampling": "log"},
+    "NUM_DENSE": {"min_value":  0, "max_value": 2},
+    "DENSE_UNITS": {"min_value": 8, "max_value": 32, "step": 4},
+    "ACTIVATION": ["relu", "tanh", "selu", "exponential", "elu"],
+    "OPTIMIZER": ["adadelta", "adagrad", "adam", "adamax", "ftrl", "nadam", "rms" ,"sgd"],
+    "DROPOUT": {"min_value": 0.1, "max_value": 0.9, "step": 0.1}
   }
 }

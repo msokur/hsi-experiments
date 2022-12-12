@@ -11,84 +11,57 @@ OUTPUT_SIGNATURE_X_FEATURES = 92
 
 class KerasTunerModel(keras_tuner.HyperModel):
 
-    def __init__(self, name=None, tunable=True):
+    def __init__(self, conf: dict, name=None, tunable=True):
         super().__init__(name, tunable)
-        self.hp = None
+        self.config = conf
 
-    def wrap_name(self, layer_name, name):
+    def declare_hyperparameters(self, hp):
+        pass
+
+    @staticmethod
+    def wrap_name(layer_name, name):
         return layer_name + "." + name
 
     def get_activations(self, name):
-        return self.hp.Choice(self.wrap_name(name, "activation"),
-                              ["relu", "tanh", "selu", "exponential", "elu"])
+        return self.hp.Choice(self.wrap_name(name, "activation"), self.config["ACTIVATION"])
 
     def get_optimizer(self):
-        optimizer = self.hp.Choice('optimizer', ['adadelta',
-                                                 'adagrad',
-                                                 'adam',
-                                                 'adamax',
-                                                 'ftrl',
-                                                 'nadam',
-                                                 'rmsprop',
-                                                 'sgd'])
-        lr = self.hp.Float("lr", min_value=1e-4, max_value=1e-2, sampling="log")
-        if optimizer == 'adadelta':
-            return keras.optimizers.Adadelta(learning_rate=lr)
-        if optimizer == 'adagrad':
-            return keras.optimizers.Adagrad(learning_rate=lr)
-        if optimizer == 'adam':
-            return keras.optimizers.Adam(learning_rate=lr)
-        if optimizer == 'adamax':
-            return keras.optimizers.Adamax(learning_rate=lr)
-        if optimizer == 'ftrl':
-            return keras.optimizers.Ftrl(learning_rate=lr)
-        if optimizer == 'nadam':
-            return keras.optimizers.Nadam(learning_rate=lr)
-        if optimizer == 'rmsprop':
-            return keras.optimizers.RMSprop(learning_rate=lr)
-        if optimizer == 'sgd':
-            return keras.optimizers.SGD(learning_rate=lr)
+        optimizer = self.hp.Choice('optimizer', [key for key in self.config["OPTIMIZER"].keys()])
+        lr = self.hp.Float("lr", **self.config["LEARNING_RATE"])
+        return self.config[optimizer](learning_rate=lr)
 
     def wrap_layer(self, layer, name):
-        order_activation_batch_norm = self.hp.Choice(self.wrap_name(name, "mode"), ['without_batchnorm',
-                                                                                    'batchnorm_activation',
-                                                                                    'activation_batchnorm'])
+        order_activation_batch_norm = self.hp.Choice(self.wrap_name(name, "mode"), ['without_batch_norm',
+                                                                                    'batch_norm_activation',
+                                                                                    'activation_batch_norm'])
 
-        batch_name = self.wrap_name(name, 'batchnorm')
+        batch_name = self.wrap_name(name, 'batch_norm')
         activation_name = self.wrap_name(name, 'activation')
         dropout_name = self.wrap_name(name, 'dropout')
 
-        if order_activation_batch_norm == 'without_batchnorm':  # no batch_normalization
-            layer = layers.Activation(self.get_activations(name), name=activation_name)(layer)
-        if order_activation_batch_norm == 'activation_batchnorm':  # activation than batch_normalization
-            layer = layers.Activation(self.get_activations(name), name=activation_name)(layer)
-            layer = layers.BatchNormalization(name=batch_name)(layer)
-        if order_activation_batch_norm == 'batchnorm_activation':  # batch_normalization than activation
-            layer = layers.BatchNormalization(name=batch_name)(layer)
-            layer = layers.Activation(self.get_activations(name), name=activation_name)(layer)
+        if order_activation_batch_norm == "batch_norm_activation":
+            layer = layers.BatchNormalization(name=batch_name)(layer)   # no batch_normalization
+
+        layer = layers.Activation(self.get_activations(name), name=activation_name)(layer)
+
+        if order_activation_batch_norm == "activation_batch_norm":
+            layer = layers.BatchNormalization(name=batch_name)(layer)   # batch_normalization than activation
 
         if self.hp.Boolean(self.wrap_name(name, "dr")):
-            layer = layers.Dropout(self.hp.Float(self.wrap_name(name, "dr_val"),
-                                                 min_value=0.1,
-                                                 max_value=0.9,
-                                                 step=0.1),
+            layer = layers.Dropout(self.hp.Float(self.wrap_name(name, "dr_val"), **self.config["DROPOUT"]),
                                    name=dropout_name)(layer)
 
         return layer
 
-    def model_branch(self, input_, name, i):
-        branch = layers.Conv3D(
-            filters=self.hp.Int(self.wrap_name(name, f"b{i+2}_1.f"), min_value=16, max_value=128, step=16),
-            kernel_size=self.hp.Int(self.wrap_name(name, f"b{i+2}_1.k"), min_value=1, max_value=7, step=2),
-            padding="same",
-            name=self.wrap_name(name, f"b{i+2}_1"))(input_)
-        branch = self.wrap_layer(branch, self.wrap_name(name, f"b{i+2}_1"))
-        branch = layers.Conv3D(
-            filters=self.hp.Int(self.wrap_name(name, f"b{i+2}_2.f"), min_value=16, max_value=128, step=16),
-            kernel_size=self.hp.Int(self.wrap_name(name, f"b{i+2}_2.k"), min_value=1, max_value=7, step=2),
-            padding="same",
-            name=self.wrap_name(name, f"b{i+2}_2"))(branch)
-        branch = self.wrap_layer(branch, self.wrap_name(name, f"b{i+2}_2"))
+    def model_branch(self, input_, name, i,):
+        branch = input_
+        for idx in range(1, 3):
+            branch = layers.Conv3D(
+                filters=self.hp.Int(self.wrap_name(name, f"b{i+1}_{idx}.f"), **self.config["BLOCK_FILTERS"]),
+                kernel_size=self.hp.Int(self.wrap_name(name, f"b{i+1}_{idx}.k"), **self.config["BLOCK_KERNEL_SIZE"]),
+                padding="same",
+                name=self.wrap_name(name, f"b{i + 1}_{idx}"))(branch)
+            branch = self.wrap_layer(branch, self.wrap_name(name, f"b{i + 1}_{idx}"))
 
         return branch
 
@@ -196,6 +169,4 @@ class KerasTunerModel(keras_tuner.HyperModel):
 
 
 if __name__ == "__main__":
-    keras_ = KerasTunerModel(name="Oi")
-    model_ = keras_.model()
-    model_.summary()
+    pass
