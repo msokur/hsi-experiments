@@ -5,6 +5,8 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
+from models.model_randomness import get_dropout, set_tf_seed
+
 
 class InceptionTunerModelBase(kt.HyperModel):
     def __init__(self, shape: tuple, conf: dict, num_of_labels: int, custom_metrics=None, name=None, tunable=True):
@@ -14,6 +16,7 @@ class InceptionTunerModelBase(kt.HyperModel):
         self.config = conf
         self.num_of_classes = num_of_labels
         self.custom_metrics = custom_metrics
+        set_tf_seed()
 
     def build(self, hp):
         self.hp = hp
@@ -64,12 +67,13 @@ class InceptionTunerModelBase(kt.HyperModel):
 
         net = layers.Flatten()(net)
 
-        for fc in range(self.hp("num_fc", **self.config["NUM_DENSE"])):
+        for fc in range(self.hp.Int("num_fc", **self.config["NUM_DENSE"])):
             net = layers.Dense(self.hp.Int(f"fc_{fc}", **self.config["DENSE_UNITS"]),
                                activation=self.get_activations(name=f"fc_{fc}"))(net)
 
             if self.hp.Boolean(f"fc_{fc}_dropout"):
-                net = layers.Dropout(self.hp.Float(f"fc_{fc}_dropout_value", **self.config["DROPOUT"]))(net)
+                net = get_dropout(net=net,
+                                  dropout_value=self.hp.Float(f"fc_{fc}_dropout_value", **self.config["DROPOUT"]))
 
         activation = "sigmoid"
         number = 1
@@ -80,8 +84,8 @@ class InceptionTunerModelBase(kt.HyperModel):
         result = layers.Dense(number, activation=activation)
 
         model = keras.Model(
-            input=[input_],
-            output=[result]
+            inputs=[input_],
+            outputs=[result]
         )
 
         return model

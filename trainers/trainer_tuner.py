@@ -53,7 +53,8 @@ class TrainerTuner(Trainer):
 
         tuner.search_space_summary()
 
-        train_dataset_t, valid_dataset_t, _, class_weights_t = self.get_datasets(for_tuning=True)
+        train_dataset_t, valid_dataset_t, train_generator, class_weights_t = self.get_datasets(for_tuning=True)
+        self.valid_except_indexes = train_generator.valid_except_indexes
 
         tuner.search(x=train_dataset_t,
                      epochs=self.trainer["TUNER_EPOCHS"],
