@@ -1,23 +1,9 @@
-"""import sys
-import os
-import inspect
-
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-
-sys.path.insert(0, 'utils')
-sys.path.insert(1, 'data_utils')
-sys.path.insert(2, 'models')"""
-
-import config
 import keras_tuner as kt
-from datetime import datetime
 from tensorflow import keras
 
 import os
 
-import provider
 from trainer_base import Trainer
-from models.keras_tuner_model import KerasTunerModel
 import pickle
 
 
@@ -36,21 +22,10 @@ class TrainerTuner(Trainer):
         with open(os.path.join(directory, "params.pickle"), "rb") as handle:
             params = pickle.load(handle)
 
-        return self.get_tuner(model,
-                              objective=params["objective"],
-                              overwrite=False,
-                              directory=directory)
-
-    @staticmethod
-    def get_tuner(model, *args, **kwargs):
-        if config.TUNER_CLASS == "RandomSearch":
-            return kt.RandomSearch(model, *args, **kwargs)
-        if config.TUNER_CLASS == "BayesianOptimization":
-            return kt.BayesianOptimization(model, *args, **kwargs)
-        if config.TUNER_CLASS == "Hyperband":
-            return kt.Hyperband(model, *args, **kwargs)
-        raise ValueError("config.TUNER_CLASS was wrongly written = doesn't correspond to any of 'RandomSearch',"
-                         "'BayesianOptimization' or 'Hyperband'")
+        return self.trainer["TUNER"](model,
+                                     objective=kt.Objective(**params["objective"]),
+                                     overwrite=False,
+                                     directory=directory)
 
     @staticmethod
     def save_tuner_params(model, **kwargs):
@@ -64,20 +39,22 @@ class TrainerTuner(Trainer):
     def compile_model(self, model):  # in this case - tune model
 
         params = {
-            "objective": config.TUNER_OBJECTIVE,
-            "max_trials": config.TUNER_MAX_TRIALS,
-            "overwrite": config.TUNER_OVERWRITE,
+            "objective": self.trainer["TUNER_OBJECTIVE"],
+            "max_trials": self.trainer["TUNER_MAX_TRIALS"],
+            "overwrite": self.trainer["TUNER_OVERWRITE"],
             "directory": self.tuner_dir,
         }
+        params_obj = params.copy()
+        params_obj["objective"] = kt.Objective(**self.trainer["TUNER_OBJECTIVE"])
 
-        tuner = self.get_tuner(model, **params)
+        tuner = self.trainer["TUNER"](model, **params_obj)
 
         tuner.search_space_summary()
 
         train_dataset_t, valid_dataset_t, _, class_weights_t = self.get_datasets(for_tuning=True)
 
         tuner.search(x=train_dataset_t,
-                     epochs=config.TUNER_EPOCHS,
+                     epochs=self.trainer["TUNER_EPOCHS"],
                      validation_data=valid_dataset_t,
                      class_weight=class_weights_t,
                      callbacks=[keras.callbacks.TensorBoard(self.tuner_dir)])
@@ -87,14 +64,15 @@ class TrainerTuner(Trainer):
         return tuner
 
     def get_model(self):
-        model = provider.get_keras_tuner_model()
-        tuner = self.compile_model(model)
+        base_model = self.trainer["MODEL"](shape=self.get_output_shape(), conf=self.trainer["MODEL_CONFIG"],
+                                           num_of_labels=len(self.loader["LABELS_TO_TRAIN"]))
+        tuner = self.compile_model(base_model)
         tuner.results_summary()
 
         best_hp = tuner.get_best_hyperparameters()[0]
         best_model = tuner.get_best_models()[0]
 
-        return best_hp, best_model
+        return best_hp, best_model, base_model
 
     def train_process(self, mirrored_strategy=None):
         self.mirrored_strategy = mirrored_strategy
@@ -110,33 +88,28 @@ class TrainerTuner(Trainer):
 
         '''-------MODEL---------'''
 
-        best_hp, model = self.get_model()
+        best_hp, best_model, base_model = self.get_model()
 
         '''-------TRAINING---------'''
 
-        history = KerasTunerModel().fit(best_hp,
-                                        model,
-                                        x=train_dataset,
-                                        validation_data=valid_dataset,
-                                        verbose=2,
-                                        epochs=config.EPOCHS,
-                                        callbacks=callbacks_,
-                                        use_multiprocessing=True,
-                                        class_weight=class_weights,
-                                        workers=int(os.cpu_count())
-                                        )
+        history = base_model.fit(best_hp,
+                                 best_model,
+                                 x=train_dataset,
+                                 validation_data=valid_dataset,
+                                 verbose=2,
+                                 epochs=self.trainer["EPOCHS"],
+                                 callbacks=callbacks_,
+                                 use_multiprocessing=True,
+                                 class_weight=class_weights,
+                                 workers=int(os.cpu_count())
+                                 )
 
         self.save_history(history)
 
-        return model, history
+        return best_model, history
 
 
 if __name__ == '__main__':
-    trainer = TrainerTuner(model_name="test")
-
-    hypermodel_ = KerasTunerModel()
-
-    x = 1
     '''tuner_ = trainer.restore_tuner(
         directory='C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\tuner_results',
         project_name='inception_3d_17.02.2022-18_20_06')
@@ -146,4 +119,6 @@ if __name__ == '__main__':
     model_ = hypermodel_.build(best_hp_)
 
     print(tuner_.results_summary(2))'''
-    # train(except_indexes=['2019_09_04_12_43_40_', '2020_05_28_15_20_27_', '2019_07_12_11_15_49_', '2020_05_15_12_43_58_'])
+    # train(except_indexes=['2019_09_04_12_43_40_',
+    # '2020_05_28_15_20_27_', '2019_07_12_11_15_49_',
+    # '2020_05_15_12_43_58_'])

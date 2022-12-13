@@ -6,7 +6,7 @@ from cross_validators.cross_validator_normal import CrossValidationNormal
 # from cross_validators.cross_validator_spain import CrossValidatorSpain
 # from cross_validators.cross_validator_experiment import CrossValidatorExperiment
 # from cross_validators.cross_validator_postprocessing import CrossValidatorPostProcessing
-# from trainers.trainer_tuner import TrainerTuner
+from trainers.trainer_tuner import TrainerTuner
 from trainers.trainer_easy import TrainerEasy
 from trainers.trainer_easy_several_outputs import TrainerEasySeveralOutputs
 from evaluation.evaluation_binary import EvaluationBinary
@@ -19,11 +19,11 @@ from data_utils import border
 def get_trainer(typ: str, **kwargs):
     if typ == "Tuner":
         print('TrainerTuner')
-        # return TrainerTuner(**kwargs)
+        return TrainerTuner(**kwargs)
     elif type == "Easy":
         print('TrainerEasy')
         return TrainerEasy(**kwargs)
-    elif typ == "Several Output":
+    elif typ == "SeveralOutput":
         print('TrainerEasySeveralOutputs')
         return TrainerEasySeveralOutputs(**kwargs)
 
@@ -67,16 +67,6 @@ def get_evaluation(labels: list, *args, **kwargs):
         return EvaluationBinary(*args, **kwargs)
     print('Get EvaluationMulticlass')
     return EvaluationMulticlass(*args, **kwargs)
-
-
-'''def get_keras_tuner_model():
-    if config.TUNER_MODEL == 'KerasTunerModel':
-        return keras_tuner_model.KerasTunerModel()
-    if config.TUNER_MODEL == 'KerasTunerModelOnes':
-        return keras_tuner_models_with_ones.KerasTunerModelOnes()
-
-    raise ValueError(f'Error! Tuner model type {config.TUNER_MODEL} specified wrong (either in config.py or in '
-                     f'provider.py)')'''
 
 
 def get_smoother(typ: str, *args, **kwargs):

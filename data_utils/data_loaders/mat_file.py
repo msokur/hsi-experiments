@@ -1,5 +1,5 @@
 import os
-import scipy.io
+import scipy.io as sio
 import numpy as np
 from glob import glob
 
@@ -59,7 +59,7 @@ class MatFile:
         return paths
 
     def file_read_mask_and_spectrum(self, path, mask_path=None):
-        data = scipy.io.loadmat(path)
+        data = sio.loadmat(path)
         spectrum, mask = data[self.loader["SPECTRUM"]], data[self.loader["MASK"]]
 
         return spectrum, mask

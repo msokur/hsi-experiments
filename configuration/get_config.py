@@ -61,7 +61,7 @@ CV = get_cv(file_name=cv_config, section=cv_section)
 
 # --------- Trainer
 trainer_config = "Trainers.json"
-trainer_section = "HNO"
+trainer_section = "HNO_TUNER"
 TRAINER = get_trainer(file_name=trainer_config, section=trainer_section, d3=DATALOADER["3D"],
                       classes=DATALOADER["LABELS_TO_TRAIN"])
 

@@ -1,12 +1,13 @@
 import json
 import platform
 import os
-import datetime
 
+import keras_tuner as kt
+from tensorflow.keras.optimizers import Adadelta, Adagrad, Adam, Adamax, Ftrl, Nadam, RMSprop, SGD
 from util import tf_metric_multiclass, tf_metrics
 from models.inception_model import inception1d_model, inception3d_model
 from models.paper_model import paper1d_model, paper3d_model
-
+from models.kt_model import InceptionTunerModel3D, InceptionTunerModel1D
 
 CONCAT_KEY = "CONCAT_WITH_"
 CONVERT_KEY = ["MASK_COLOR", "TISSUE_LABELS", "PLOT_COLORS"]
@@ -24,6 +25,26 @@ MODELS_1D = {
     "paper_model": paper1d_model,
     "inception_model": inception1d_model
 }
+TUNER_MODEL_3D = {
+    "inception_model": InceptionTunerModel3D
+}
+TUNER_MODEL_1D = {
+    "inception_model": InceptionTunerModel1D
+}
+TUNER = {
+    "RandomSearch": kt.RandomSearch,
+    "BayesianOptimization": kt.BayesianOptimization,
+    "Hyperband": kt.Hyperband
+}
+OPTIMIZER = {"adadelta": Adadelta,
+             "adagrad": Adagrad,
+             "adam": Adam,
+             "adamax": Adamax,
+             "ftrl": Ftrl,
+             "nadam": Nadam,
+             "rmsprop": RMSprop,
+             "sgd": SGD
+             }
 
 
 def read_path_config(file: str, system_mode: str, database: str) -> dict:
@@ -116,15 +137,34 @@ def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dic
     trainer["CUSTOM_OBJECTS_LOAD"] = obj_load_dict
 
     if d3:
-        models = MODELS_3D
+        if trainer["TYPE"] == "Tuner":
+            models = TUNER_MODEL_3D
+        else:
+            models = MODELS_3D
     else:
-        models = MODELS_1D
+        if trainer["TYPE"] == "Tuner":
+            models = TUNER_MODEL_1D
+        else:
+            models = MODELS_1D
 
     if trainer["MODEL"] in models:
         trainer["MODEL_CONFIG"] = read_config(file=file, section=trainer["MODEL_PARAMS"])
         trainer["MODEL"] = models[trainer["MODEL"]]
     else:
         raise ValueError(f"Model {trainer['MODEL']}, not implemented!")
+
+    if trainer["TYPE"] == "Tuner":
+        if trainer["TUNER"] in TUNER.keys():
+            trainer["TUNER"] = TUNER[trainer["TUNER"]]
+        else:
+            raise ValueError(f"In file {file}, section {section} 'TUNER' was wrongly written = "
+                             f"doesn't correspond to any of 'RandomSearch', 'BayesianOptimization' or 'Hyperband'")
+        optimizer_dict = {}
+        for optimizer in trainer["MODEL_CONFIG"]["OPTIMIZER"]:
+            if optimizer in OPTIMIZER.keys():
+                optimizer_dict[optimizer] = OPTIMIZER[optimizer]
+            else:
+                raise ValueError(f"Optimizer '{optimizer}' not available!")
     return trainer
 
 

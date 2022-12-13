@@ -13,8 +13,8 @@
   },
   "CV_HNO_NORMAL": {
     "TYPE": "normal",
-    "NAME": "2022-12-09_CV_HNO_3x3_snv_median",
-    "DATABASE_ABBREVIATION": "2022-12-09_CV_HNO_3x3_snv_median",
+    "NAME": "2022-12-13_TUNER_CV_HNO_3x3_snv_median",
+    "DATABASE_ABBREVIATION": "2022-12-13_TUNER_CV_HNO_3x3_snv_median",
     "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
     "RESTORE_VALID_SEQUENCE": "",
     "GET_CHECKPOINT_FROM_VALID": true

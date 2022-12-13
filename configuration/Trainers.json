@@ -1,6 +1,6 @@
 {
   "HNO": {
-    "TYPE":  "Several Output",
+    "TYPE":  "SeveralOutput",
     "RESTORE": false,
     "FILES_TO_COPY": [["*.py"], ["data_utils", ",*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*dyn.py"],
                  ["scrips", "start_cv.job"], ["trainers", "*.py"], ["utils", "*.py"]],
@@ -44,11 +44,11 @@
     "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 50,
-    "SMALLER_DATASET": false,
     "TUNER": "BayesianOptimization",
-    "TUNER_OBJECTIVE": "val_loss",
+    "TUNER_OBJECTIVE": {"name": "val_loss", "direction":  "min"},
     "TUNER_MAX_TRIALS": 2,
     "TUNER_OVERWRITE": true,
+    "TUNER_EPOCHS": 1,
     "MODEL_CHECKPOINT": {
       "monitor": "val_f1_score_weighted",
       "save_best_only": true,
@@ -72,6 +72,7 @@
     "DROPOUT": 0.1
   },
   "inception_model_tuner_hno": {
+    "WITH_ONES": false,
     "NUM_BLOCK": {"min_value":  0, "max_value": 2},
     "NUM_BRANCHES": {"min_value":  1, "max_value": 3},
     "BLOCK_FILTERS": {"min_value": 16, "max_value": 128, "step": 16},

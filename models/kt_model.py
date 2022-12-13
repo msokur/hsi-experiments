@@ -43,6 +43,18 @@ class InceptionTunerModelBase(kt.HyperModel):
 
         return model
 
+    def fit(self, hp, model, class_weight=None, *args, **kwargs):
+        model.summary()
+
+        class_weights = None
+        if hp.Boolean("class_weights"):
+            class_weights = class_weight
+
+        return model.fit(
+            clss_weight=class_weights,
+            **kwargs
+        )
+
     def model(self):
         input_ = layers.Input(shape=self.shape, name="title")
 
@@ -92,7 +104,7 @@ class InceptionTunerModelBase(kt.HyperModel):
         b_last_k_name = self.wrap_name(b_last_name, "k")
         branch_last = self.get_max_pool(input_=input_, name=b_last_name)
         branch_last = self.get_conv_layer(input_=branch_last, name=b_last_name, f_name=b_last_f_name,
-                                          k_name=b_last_k_name)
+                                          k_name=b_last_k_name, kernel_size=1 if self.config["WITH_ONES"] else None)
         branch_last = self.wrap_layer(branch_last, b_last_name)
         branches.append(branch_last)
 
@@ -106,7 +118,8 @@ class InceptionTunerModelBase(kt.HyperModel):
             b_name = self.wrap_name(name, f"b{idx + 1}_{idx_sub}")
             f_name = self.wrap_name(b_name, "f")
             k_name = self.wrap_name(b_name, "k")
-            branch = self.get_conv_layer(input_=branch, name=b_name, f_name=f_name, k_name=k_name)
+            branch = self.get_conv_layer(input_=branch, name=b_name, f_name=f_name, k_name=k_name,
+                                         kernel_size=1 if self.config["WITH_ONES"] & idx_sub == 1 else None)
             branch = self.wrap_layer(branch, b_name)
 
         return branch
@@ -127,7 +140,7 @@ class InceptionTunerModelBase(kt.HyperModel):
         return self.hp.Choice(self.wrap_name(name, "activation"), self.config["ACTIVATION"])
 
     def get_optimizer(self):
-        optimizer = self.hp.Choice('optimizer', [key for key in self.config["OPTIMIZER"].keys()])
+        optimizer = self.hp.Choice("optimizer", [key for key in self.config["OPTIMIZER"].keys()])
         lr = self.hp.Float("lr", **self.config["LEARNING_RATE"])
         return self.config[optimizer](learning_rate=lr)
 

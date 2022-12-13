@@ -7,7 +7,7 @@ import pickle
 
 from data_utils.batch_split import BatchSplit
 from configuration.get_config import PATHS, CV, TRAINER, DATALOADER, PREPRO
-from util import compare_distributions
+from util.compare_distributions import DistributionsChecker
 
 
 class DataGenerator(keras.utils.Sequence):
@@ -84,7 +84,7 @@ class DataGenerator(keras.utils.Sequence):
             self.except_indexes = except_indexes
 
         if self.for_tuning and self.split_flag:
-            ds = compare_distributions.DistributionsChecker(self.shuffled_npz_path)
+            ds = DistributionsChecker(self.shuffled_npz_path)
             tuning_index = ds.get_small_database_for_tuning()
             self.shuffled_npz_paths = [self.shuffled_npz_paths[tuning_index]]
 

@@ -105,7 +105,7 @@ class CrossValidatorBase:
 
         return int(checkpoints_folders[0].split(self.paths["SYSTEM_PATHS_DELIMITER"])[-1].split('-')[-1])
 
-    def check_data_label(self, paths: np.ndarry) -> bool:
+    def check_data_label(self, paths) -> bool:
         label_not_to_train = True
         for path in paths:
             label_not_to_train = label_not_to_train & self.check_label(path)
