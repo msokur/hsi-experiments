@@ -46,7 +46,7 @@
     "EPOCHS": 50,
     "TUNER": "BayesianOptimization",
     "TUNER_OBJECTIVE": {"name": "f1_score_weighted", "direction":  "max"},
-    "TUNER_MAX_TRIALS": 2,
+    "TUNER_MAX_TRIALS": 20,
     "TUNER_OVERWRITE": true,
     "TUNER_EPOCHS": 1,
     "MODEL_CHECKPOINT": {

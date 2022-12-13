@@ -4,7 +4,7 @@ import tensorflow as tf
 
 
 class F1_score(Metric):
-    def __init__(self, num_classes, name='f1_score', average='weighted', **kwargs):
+    def __init__(self, num_classes, name="f1_score", average="weighted", **kwargs):
         super().__init__(name=name, **kwargs)
         self.num_classes = num_classes
         self.average = average
@@ -51,20 +51,20 @@ class F1_score(Metric):
     def init_average(self, average):
         self.average = average
 
-        if average == 'macro':
+        if average == "macro":
             self.average_methode = self.macro
-        elif average == 'micro':
+        elif average == "micro":
             self.average_methode = self.micro
-        elif average == 'weighted':
+        elif average == "weighted":
             self.average_methode = self.weighted
-        elif average == 'multi':
+        elif average == "multi":
             self.average_methode = self.multi
-            self.f1 = self.add_weight('f1', shape=(self.num_classes,), initializer='zeros')
+            self.f1 = self.add_weight("f1", shape=(self.num_classes,), initializer="zeros")
             return
         else:
             raise ValueError("Only the average Keywords: 'macro', 'micro', 'weighted' and 'multi' are allowed!")
 
-        self.f1 = self.add_weight('f1', initializer='zeros')
+        self.f1 = self.add_weight("f1", initializer="zeros")
 
     def result(self):
         return self.f1
@@ -74,4 +74,4 @@ class F1_score(Metric):
 
     def get_config(self):
         base_config = super().get_config()
-        return {**base_config, 'num_classes': self.num_classes, 'average': self.average}
+        return {**base_config, "num_classes": self.num_classes, "average": self.average}
