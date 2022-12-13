@@ -42,7 +42,7 @@ OPTIMIZER = {"adadelta": Adadelta,
              "adamax": Adamax,
              "ftrl": Ftrl,
              "nadam": Nadam,
-             "rmsprop": RMSprop,
+             "rms": RMSprop,
              "sgd": SGD
              }
 
@@ -160,11 +160,17 @@ def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dic
             raise ValueError(f"In file {file}, section {section} 'TUNER' was wrongly written = "
                              f"doesn't correspond to any of 'RandomSearch', 'BayesianOptimization' or 'Hyperband'")
         optimizer_dict = {}
-        for optimizer in trainer["MODEL_CONFIG"]["OPTIMIZER"]:
-            if optimizer in OPTIMIZER.keys():
-                optimizer_dict[optimizer] = OPTIMIZER[optimizer]
-            else:
-                raise ValueError(f"Optimizer '{optimizer}' not available!")
+        if len(trainer["MODEL_CONFIG"]["OPTIMIZER"]) > 0:
+            for optimizer in trainer["MODEL_CONFIG"]["OPTIMIZER"]:
+                if optimizer in OPTIMIZER.keys():
+                    optimizer_dict[optimizer] = OPTIMIZER[optimizer]
+                else:
+                    raise ValueError(f"Optimizer '{optimizer}' not available!")
+        else:
+            optimizer_dict = OPTIMIZER.copy()
+
+        trainer["MODEL_CONFIG"]["OPTIMIZER"] = optimizer_dict
+
     return trainer
 
 
