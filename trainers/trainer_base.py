@@ -50,6 +50,8 @@ class Trainer:
         self.batch_path = self.paths["BATCHED_PATH"]
         if len(self.excepted_indexes) > 0:
             self.batch_path += '_' + self.excepted_indexes[0]
+            if for_tuning:
+                self.batch_path += "tune"
         if not os.path.exists(self.batch_path):
             os.mkdir(self.batch_path)
 

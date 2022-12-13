@@ -1,9 +1,11 @@
+from shutil import rmtree
+
 import keras_tuner as kt
 from tensorflow import keras
 
 import os
 
-from trainer_base import Trainer
+from trainers.trainer_base import Trainer
 import pickle
 
 
@@ -61,12 +63,17 @@ class TrainerTuner(Trainer):
 
         TrainerTuner.save_tuner_params(model, **params)
 
+        rmtree(self.batch_path)
+
         return tuner
 
     def get_model(self):
+        print("------ Start search tuning parameter ---------")
         base_model = self.trainer["MODEL"](shape=self.get_output_shape(), conf=self.trainer["MODEL_CONFIG"],
                                            num_of_labels=len(self.loader["LABELS_TO_TRAIN"]))
         tuner = self.compile_model(base_model)
+        print("------ End search tuning parameter ---------")
+
         tuner.results_summary()
 
         best_hp = tuner.get_best_hyperparameters()[0]
@@ -78,10 +85,6 @@ class TrainerTuner(Trainer):
         self.mirrored_strategy = mirrored_strategy
         self.logging_and_copying()
 
-        '''-------DATASET---------'''
-
-        train_dataset, valid_dataset, _, class_weights = self.get_datasets()
-
         '''-------CALLBACKS---------'''
 
         callbacks_ = self.get_callbacks()
@@ -89,6 +92,10 @@ class TrainerTuner(Trainer):
         '''-------MODEL---------'''
 
         best_hp, best_model, base_model = self.get_model()
+
+        '''-------DATASET---------'''
+
+        train_dataset, valid_dataset, _, class_weights = self.get_datasets()
 
         '''-------TRAINING---------'''
 
@@ -105,6 +112,8 @@ class TrainerTuner(Trainer):
                                  )
 
         self.save_history(history)
+
+        rmtree(self.batch_path)
 
         return best_model, history
 
