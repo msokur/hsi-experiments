@@ -2,8 +2,8 @@ import abc
 
 import keras_tuner as kt
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
+import tensorflow.keras as keras
+from keras import layers
 
 from models.model_randomness import get_dropout, set_tf_seed
 
@@ -54,12 +54,12 @@ class InceptionTunerModelBase(kt.HyperModel):
             class_weights = class_weight
 
         return model.fit(
-            clss_weight=class_weights,
+            class_weight=class_weights,
             **kwargs
         )
 
     def model(self):
-        input_ = layers.Input(shape=self.shape, name="title")
+        input_ = layers.Input(shape=self.shape, name="input")
 
         net = tf.expand_dims(input_, axis=-1)
         for bl in range(self.hp.Int("num_blocks", **self.config["NUM_BLOCK"])):
@@ -69,11 +69,12 @@ class InceptionTunerModelBase(kt.HyperModel):
 
         for fc in range(self.hp.Int("num_fc", **self.config["NUM_DENSE"])):
             net = layers.Dense(self.hp.Int(f"fc_{fc}", **self.config["DENSE_UNITS"]),
-                               activation=self.get_activations(name=f"fc_{fc}"))(net)
+                               activation=self.get_activations(name=f"fc_{fc}"), name=f"fc_{fc}")(net)
 
             if self.hp.Boolean(f"fc_{fc}_dropout"):
                 net = get_dropout(net=net,
-                                  dropout_value=self.hp.Float(f"fc_{fc}_dropout_value", **self.config["DROPOUT"]))
+                                  dropout_value=self.hp.Float(f"fc_{fc}_dropout_value", **self.config["DROPOUT"]),
+                                  name=f"fc_{fc}_dropout")
 
         activation = "sigmoid"
         number = 1
@@ -81,7 +82,7 @@ class InceptionTunerModelBase(kt.HyperModel):
             activation = None
             number = self.num_of_classes
 
-        result = layers.Dense(number, activation=activation)
+        result = layers.Dense(number, activation=activation, name="output")(net)
 
         model = keras.Model(
             inputs=[input_],
@@ -99,7 +100,7 @@ class InceptionTunerModelBase(kt.HyperModel):
         branch1 = self.wrap_layer(branch1, b1_name)
         branches.append(branch1)
 
-        for i in range(self.hp(self.wrap_name(name, "num_branches"), **self.config["NUM_BRANCHES"])):
+        for i in range(self.hp.Int(self.wrap_name(name, "num_branches"), **self.config["NUM_BRANCHES"])):
             branch = self.model_branch(input_, name, i)
             branches.append(branch)
 
@@ -146,7 +147,7 @@ class InceptionTunerModelBase(kt.HyperModel):
     def get_optimizer(self):
         optimizer = self.hp.Choice("optimizer", [key for key in self.config["OPTIMIZER"].keys()])
         lr = self.hp.Float("lr", **self.config["LEARNING_RATE"])
-        return self.config[optimizer](learning_rate=lr)
+        return self.config["OPTIMIZER"][optimizer](learning_rate=lr)
 
     def wrap_layer(self, layer, name):
         order_activation_batch_norm = self.hp.Choice(self.wrap_name(name, "mode"), ['without_batch_norm',

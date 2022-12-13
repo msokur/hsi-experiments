@@ -1,13 +1,13 @@
 import tensorflow as tf
 import os
-from tensorflow import keras
+import tensorflow.keras as keras
 
 
-def get_dropout(net, dropout_value):
+def get_dropout(net, dropout_value, name=None):
     if os.environ["TF_DETERMINISTIC_OPS"] == "1":
-        net = tf.keras.layers.Dropout(dropout_value, seed=3)(net)
+        net = keras.layers.Dropout(dropout_value, seed=3, name=name)(net)
     else:
-        net = tf.keras.layers.Dropout(dropout_value)(net)
+        net = keras.layers.Dropout(dropout_value, name=name)(net)
     return net
 
 

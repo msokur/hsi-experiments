@@ -71,9 +71,10 @@ class TrainerTuner(Trainer):
     def get_model(self):
         print("------ Start search tuning parameter ---------")
         base_model = self.trainer["MODEL"](shape=self.get_output_shape(), conf=self.trainer["MODEL_CONFIG"],
-                                           num_of_labels=len(self.loader["LABELS_TO_TRAIN"]))
+                                           num_of_labels=len(self.loader["LABELS_TO_TRAIN"]),
+                                           custom_metrics=self.trainer["CUSTOM_OBJECTS"])
         tuner = self.compile_model(base_model)
-        print("------ End search tuning parameter ---------")
+        print("------ Finish search tuning parameter ---------")
 
         tuner.results_summary()
 
