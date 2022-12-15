@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras import activations
 
-from models.model_randomness import get_dropout, get_inizializers
+from models.model_randomness import get_dropout, get_initializers
 
 FILTERS = [4, [6, 8], [1, 2]]
 FILTERS_LAST = 2
@@ -16,7 +16,7 @@ def inception1d_model(shape: tuple, conf: dict, num_of_labels: int):
         shape=shape, name="title"
     )
 
-    kernel_initializer, bias_initializer = get_inizializers()
+    kernel_initializer, bias_initializer = get_initializers()
 
     net = inception1d_block(input_, kernel_initializer=kernel_initializer, bias_initializer=bias_initializer,
                             factor=conf["INCEPTION_FACTOR"], with_batch_norm=conf["WITH_BATCH_NORM"])
@@ -30,7 +30,7 @@ def inception3d_model(shape: tuple, conf: dict, num_of_labels: int):
         shape=shape, name="title"
     )
 
-    kernel_initializer, bias_initializer = get_inizializers()
+    kernel_initializer, bias_initializer = get_initializers()
 
     net = inception3d_block(input_, kernel_initializer=kernel_initializer, bias_initializer=bias_initializer,
                             factor=conf["INCEPTION_FACTOR"], with_batch_norm=conf["WITH_BATCH_NORM"])

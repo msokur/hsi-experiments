@@ -35,8 +35,8 @@
     "FILES_TO_COPY": [["*.py"], ["data_utils", ",*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*dyn.py"],
                  ["scrips", "start_cv.job"], ["trainers", "*.py"], ["utils", "*.py"]],
     "WITH_SAMPLE_WEIGHTS": false,
-    "MODEL": "inception_model",
-    "MODEL_PARAMS": "inception_model_tuner_hno",
+    "MODEL": "paper_model",
+    "MODEL_PARAMS": "paper_model_tuner_hno",
     "LEARNING_RATE": 1e-4,
     "CUSTOM_OBJECTS": {
       "F1_score": [{"name":  "f1_score_weighted", "average": "weighted"}]
@@ -80,6 +80,16 @@
     "LEARNING_RATE": {"min_value": 1e-4, "max_value": 1e-2, "sampling": "log"},
     "NUM_DENSE": {"min_value":  0, "max_value": 2},
     "DENSE_UNITS": {"min_value": 8, "max_value": 32, "step": 4},
+    "ACTIVATION": ["relu", "tanh", "selu", "exponential", "elu"],
+    "OPTIMIZER": ["adadelta", "adagrad", "adam", "adamax", "ftrl", "nadam", "rms" ,"sgd"],
+    "DROPOUT": {"min_value": 0.1, "max_value": 0.9, "step": 0.1}
+  },
+  "paper_model_tuner_hno": {
+    "CONV_1D_FILTERS": {"min_value": 32, "max_value": 128, "step": 16},
+    "CONV_3D_FILTERS": {"min_value": 16, "max_value": 128, "step": 16},
+    "NUM_DENSE": {"min_value":  0, "max_value": 2},
+    "DENSE_UNITS": {"min_value": 8, "max_value": 32, "step": 4},
+    "LEARNING_RATE": {"min_value": 1e-4, "max_value": 1e-2, "sampling": "log"},
     "ACTIVATION": ["relu", "tanh", "selu", "exponential", "elu"],
     "OPTIMIZER": ["adadelta", "adagrad", "adam", "adamax", "ftrl", "nadam", "rms" ,"sgd"],
     "DROPOUT": {"min_value": 0.1, "max_value": 0.9, "step": 0.1}

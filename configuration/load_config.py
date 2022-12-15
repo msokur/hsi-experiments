@@ -7,7 +7,8 @@ from tensorflow.keras.optimizers import Adadelta, Adagrad, Adam, Adamax, Ftrl, N
 from util import tf_metric_multiclass, tf_metrics_binary
 from models.inception_model import inception1d_model, inception3d_model
 from models.paper_model import paper1d_model, paper3d_model
-from models.kt_model import InceptionTunerModel3D, InceptionTunerModel1D
+from models.kt_inception_model import InceptionTunerModel3D, InceptionTunerModel1D
+from models.kt_paper_model import PaperTunerModel3D,PaperTunerModel1D
 
 CONCAT_KEY = "CONCAT_WITH_"
 CONVERT_KEY = ["MASK_COLOR", "TISSUE_LABELS", "PLOT_COLORS"]
@@ -26,9 +27,11 @@ MODELS_1D = {
     "inception_model": inception1d_model
 }
 TUNER_MODEL_3D = {
+    "paper_model": PaperTunerModel3D,
     "inception_model": InceptionTunerModel3D
 }
 TUNER_MODEL_1D = {
+    "paper_model": PaperTunerModel1D,
     "inception_model": InceptionTunerModel1D
 }
 TUNER = {

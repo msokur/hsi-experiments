@@ -38,7 +38,7 @@ class TrainerTuner(Trainer):
         with open(os.path.join(path, "params.pickle"), "wb") as handle:
             pickle.dump(kwargs, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def compile_model(self, model):  # in this case - tune model
+    def compile_model(self, model) -> kt.Tuner:  # in this case - tune model
 
         params = {
             "objective": self.trainer["TUNER_OBJECTIVE"],
