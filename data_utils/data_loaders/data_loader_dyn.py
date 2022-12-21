@@ -11,20 +11,15 @@ from sklearn.feature_extraction import image
 import provider_dyn
 from configuration.get_config import DATALOADER, PATHS
 from data_utils.background_detection import detect_background
-from data_utils.data_loaders.dat_file import DatFile
-from data_utils.data_loaders.mat_file import MatFile
+from data_utils.data_loaders.path_splits import get_splits
 
 
 class DataLoaderDyn:
     def __init__(self):
         self.loader = DATALOADER
         self.paths = PATHS
-        if self.loader["FILE_EXTENSIONS"] == ".dat":
-            self.data_reader = DatFile(loader_conf=self.loader)
-        elif self.loader["FILE_EXTENSIONS"] == ".mat":
-            self.data_reader = MatFile(loader_conf=self.loader)
-        else:
-            raise ValueError(f"For file extension {self.loader['FILE_EXTENSIONS']} is no implementation!")
+        self.data_reader = provider_dyn.get_extension_loader(typ=self.loader["FILE_EXTENSIONS"],
+                                                             loader_conf=self.loader)
 
     def get_extension(self):
         return self.loader["FILE_EXTENSIONS"]
@@ -32,14 +27,21 @@ class DataLoaderDyn:
     def get_labels(self):
         return self.loader["LABELS"]
 
-    def get_name(self, path: str) -> str:
-        return path.split(self.paths["SYSTEM_PATHS_DELIMITER"])[-1].split(".")[0].split(self.loader["NAME_SPLIT"])[0]
+    def get_name(self, path: str, delimiter=None) -> str:
+        if delimiter is None:
+            delimiter = self.paths["SYSTEM_PATHS_DELIMITER"]
+        return path.split(delimiter)[-1].split(".")[0].split(self.loader["NAME_SPLIT"])[0]
 
     def get_paths_and_splits(self, root_path=None):
         if root_path is None:
             root_path = self.paths["RAW_NPZ_PATH"]
+        paths = self.data_reader.sort(root_path)
 
-        return self.data_reader.get_paths_and_splits(root_path)
+        splits = get_splits(typ=self.loader["SPLIT_PATHS_BY"], paths=paths,
+                            values=self.loader["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"],
+                            delimiter=self.paths["SYSTEM_PATHS_DELIMITER"])
+
+        return paths, splits
 
     def smooth(self, spectrum):
         if self.loader["SMOOTHING_TYPE"] is not None:
@@ -223,18 +225,6 @@ class DataLoaderDyn:
             labeled_spectrum[label] = X[y == label]
         return labeled_spectrum
 
-    @staticmethod
-    def get_name_easy(path: str, delimiter=None):
-        if delimiter is None:
-            import platform
-
-            if platform.system() == 'Windows':
-                delimiter = '\\'
-            else:
-                delimiter = '/'
-
-        return path.split(delimiter)[-1].split(".")[0].split('SpecCube')[0]
-
 
 if __name__ == "__main__":
     from configuration.load_config import read_config, read_path_config
@@ -247,5 +237,5 @@ if __name__ == "__main__":
     database_section = "HNO_Database"
     DATALOADER = read_config(file=loader_config, section=loader_section)
     PATHS = read_path_config(file=path_config, system_mode=system_section, database=database_section)
-    dyn = DataLoaderDyn(DATALOADER, PATHS)
+    dyn = DataLoaderDyn()
     x = 1

@@ -10,7 +10,7 @@ sys.path.insert(1, os.path.join(parentdir, 'utils'))
 import config
 import utils
 import provider
-from data_loaders.data_loader_base import DataLoader
+from data_utils.data_loaders.archive.data_loader_base import DataLoader
 
 import os
 import numpy as np

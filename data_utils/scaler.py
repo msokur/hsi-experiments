@@ -94,7 +94,7 @@ class Scaler:
             X = self.scale_X(X)
             data = {n: a for n, a in data.items()}
             data['X'] = X.copy()
-            np.savez(os.path.join(destination_path, DataLoaderDyn.get_name_easy(path)), **data)
+            np.savez(os.path.join(destination_path, DataLoaderDyn().get_name(path)), **data)
             
 
 class NormalizerScaler(Scaler):

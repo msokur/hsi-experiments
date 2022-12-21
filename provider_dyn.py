@@ -11,8 +11,8 @@ from trainers.trainer_easy import TrainerEasy
 from trainers.trainer_easy_several_outputs import TrainerEasySeveralOutputs
 from evaluation.evaluation_binary import EvaluationBinary
 from evaluation.evaluation_multiclass import EvaluationMulticlass
-# import models.keras_tuner_model as keras_tuner_model
-# import models.keras_tuner_models_with_ones as keras_tuner_models_with_ones
+from data_utils.data_loaders.dat_file import DatFile
+from data_utils.data_loaders.mat_file import MatFile
 from data_utils import border
 
 
@@ -109,6 +109,15 @@ def get_cross_validator(typ: str, *args, **kwargs):
         return CrossValidatorExperiment()'''
 
     value_error("Cross validator", typ)
+
+
+def get_extension_loader(typ: str, **kwargs):
+    if typ == ".dat":
+        return DatFile(**kwargs)
+    elif typ == ".mat":
+        return MatFile(**kwargs)
+    else:
+        raise ValueError(f"For file extension {typ} is no implementation!")
 
 
 def value_error(modul: str, typ: str):

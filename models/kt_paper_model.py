@@ -83,7 +83,7 @@ class PaperTunerModel3D(PaperTunerModelBase):
     def get_block(self, net):
         max_conv_layer = int(self.shape[0] / 2)
 
-        for r in range(self.hp.Int("num_conv3d", min_value=0, max_value=max_conv_layer)):
+        for r in range(self.hp.Int("num_conv3d", min_value=1, max_value=max_conv_layer)):
             if net.shape[-3] == 1:
                 break
             elif net.shape[-3] == 2:
@@ -112,7 +112,7 @@ class PaperTunerModel3D(PaperTunerModelBase):
 
 class PaperTunerModel1D(PaperTunerModelBase):
     def get_block(self, net):
-        for r in range(self.hp.Int("num_conv1d", min_value=0, max_value=5)):
+        for r in range(self.hp.Int("num_conv1d", min_value=1, max_value=5)):
             if net.shape[-2] == 2:
                 net = self.get_conv1d(net=net, name=f"1D_{r}", kernel_size=2, strides=1)
                 break

@@ -123,7 +123,7 @@ class Predictor:
 
                 if checkpoint is not None:
                     checkpoint = Predictor.get_checkpoint(checkpoint, model_path)
-                name = DataLoaderDyn.get_name_easy(row[4], delimiter='/')
+                name = DataLoaderDyn().get_name(row[4], delimiter='/')
                 print(f'We get checkpoint {checkpoint} for {model_path}')
 
                 predictor = Predictor(checkpoint, MODEL_FOLDER=model_path)

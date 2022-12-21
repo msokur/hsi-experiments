@@ -163,7 +163,7 @@ class DistributionsChecker:
         if not result:
             raise ValueError(
                 f'Error! No matching small archive for {self.path} '
-                f'found. Try changing the requirements (config.KS_TEST_P_VALUE).')
+                f'found. Try changing the requirements (KS_TEST_P_VALUE) in yor DistributionsCheck file.')
         print(f'Index of the chosen small database: {idx}')
         return idx
 

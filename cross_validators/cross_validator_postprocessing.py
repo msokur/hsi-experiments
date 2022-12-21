@@ -8,8 +8,8 @@ from scipy.ndimage import median_filter
 from tqdm import tqdm
 import csv
 
-from data_utils.data_loaders.data_loader_base import DataLoader
-from data_utils.preprocessor import Preprocessor
+from data_utils.data_loaders.archive.data_loader_base import DataLoader
+from data_utils.archive.preprocessor import Preprocessor
 from cross_validators.cross_validator_base import CrossValidatorBase
 import config
 from evaluation.validator import Validator

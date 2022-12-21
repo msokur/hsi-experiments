@@ -1,22 +1,12 @@
 import os
 import numpy as np
 import cv2
-from glob import glob
 from data_utils.hypercube_data import Cube_Read
 
 
 class DatFile:
     def __init__(self, loader_conf: dict):
         self.loader = loader_conf
-
-    def get_paths_and_splits(self, path):
-        paths = glob(os.path.join(path, "*.npz"))
-        paths = sorted(paths)
-
-        cv_split = int(len(paths) / self.loader["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"])
-        splits = np.array_split(range(len(paths)), cv_split)
-
-        return paths, splits
 
     def indexes_get_bool_from_mask(self, mask):
         indexes = []
@@ -39,6 +29,10 @@ class DatFile:
         mask = DatFile.mask_read(mask_path)
 
         return spectrum, mask
+
+    @staticmethod
+    def sort(paths):
+        return sorted(paths)
 
     def spectrum_read_from_dat(self, dat_path):
         spectrum_data, _ = Cube_Read(dat_path,

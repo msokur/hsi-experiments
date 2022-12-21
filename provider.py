@@ -1,21 +1,21 @@
 import config
 
-from data_utils.data_loaders.data_loader_colon import DataLoaderColon
-from data_utils.data_loaders.data_loader_mat import DataLoaderMat
-from data_utils.data_loaders.data_loader_mat_brain import DataLoaderMatBrain
-from data_utils.data_loaders.data_loader_mat_colon import DataLoaderMatColon
-from data_utils.data_loaders.data_loader_whole_colon import DataLoaderWholeColon
-from data_utils.data_loaders.data_loader_whole_mat import DataLoaderWholeMat
-from data_utils.data_loaders.data_loader_hno import DataLoaderHNO
-from data_utils.data_loaders.data_loader_whole_hno import DataLoaderWholeHNO
+from data_utils.data_loaders.archive.data_loader_colon import DataLoaderColon
+from data_utils.data_loaders.archive.data_loader_mat import DataLoaderMat
+from data_utils.data_loaders.archive.data_loader_mat_brain import DataLoaderMatBrain
+from data_utils.data_loaders.archive.data_loader_mat_colon import DataLoaderMatColon
+from data_utils.data_loaders.archive.data_loader_whole_colon import DataLoaderWholeColon
+from data_utils.data_loaders.archive.data_loader_whole_mat import DataLoaderWholeMat
+from data_utils.data_loaders.archive.data_loader_hno import DataLoaderHNO
+from data_utils.data_loaders.archive.data_loader_whole_hno import DataLoaderWholeHNO
 from data_utils.smoothing import MedianFilter, GaussianFilter
 from data_utils.scaler import NormalizerScaler, StandardScaler, StandardScalerTransposed
 import trainers.trainer_easy as trainer_easy
 import trainers.trainer_easy_several_outputs as trainer_easy_several_outputs
 from evaluation.evaluation_binary import EvaluationBinary
 from evaluation.evaluation_multiclass import EvaluationMulticlass
-import models.keras_tuner_model as keras_tuner_model
-import models.keras_tuner_models_with_ones as keras_tuner_models_with_ones
+import models.archive.keras_tuner_model as keras_tuner_model
+import models.archive.keras_tuner_models_with_ones as keras_tuner_models_with_ones
 
 
 def get_trainer(**kwargs):

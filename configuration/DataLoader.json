@@ -53,6 +53,7 @@
 			"6": "black",
 			"7": "cornflowerblue"
 		},
+		"SPLIT_PATHS_BY": "Files",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
 		"WITH_BACKGROUND_EXTRACTION": false
 	},
@@ -91,6 +92,7 @@
 		"PLOT_COLORS": {"0": "yellow", "1": "blue", "2": "green",
 						"3": "red"
 		},
+		"SPLIT_PATHS_BY": "Files",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
 		"WITH_BACKGROUND_EXTRACTION": true
 	},
@@ -134,6 +136,7 @@
 			"3": "black",
 			"4": "green"
 		},
+		"SPLIT_PATHS_BY": "List",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": [
 			["Op8C1", "Op8C2"],
 			["12C1", "12C2"],
@@ -176,6 +179,7 @@
 			"0": "yellow",
 			"1": "blue"
 		},
+		"SPLIT_PATHS_BY": "Files",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
 		"WITH_BACKGROUND_EXTRACTION": false
 	},
@@ -215,6 +219,7 @@
 			"1": "blue",
 			"2": "red"
 		},
+		"SPLIT_PATHS_BY": "Files",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
 		"WITH_BACKGROUND_EXTRACTION": false
 	}

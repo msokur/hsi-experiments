@@ -1,7 +1,7 @@
 import tensorflow as tf
 import config
 from tensorflow.keras import activations
-from models.model_3d import get_dropout, get_inizializers
+from models.archive.model_3d import get_dropout, get_inizializers
 
 
 def inception1d_block(input_, factor=16):

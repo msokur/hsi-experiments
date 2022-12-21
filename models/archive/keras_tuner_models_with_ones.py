@@ -1,6 +1,6 @@
 from tensorflow.keras import layers
 
-from models import keras_tuner_model
+from models.archive import keras_tuner_model
 
 
 class KerasTunerModelOnes(keras_tuner_model.KerasTunerModel):

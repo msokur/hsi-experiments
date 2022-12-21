@@ -83,7 +83,7 @@ class CrossValidatorBase:
                 print(f"In files {paths_patch} are no needed labels for training!")
                 continue
 
-            self.cross_validation_step(model_name, except_names=[DataLoaderDyn.get_name_easy(p) for p in paths_patch])
+            self.cross_validation_step(model_name, except_names=[DataLoaderDyn().get_name(p) for p in paths_patch])
 
             for i, path_ in enumerate(paths_patch):
                 sensitivity, specificity = 0, 0

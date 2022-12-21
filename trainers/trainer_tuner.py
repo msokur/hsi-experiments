@@ -1,7 +1,7 @@
 from shutil import rmtree
 
 import keras_tuner as kt
-from tensorflow import keras
+import tensorflow.keras as keras
 
 import os
 
@@ -76,7 +76,7 @@ class TrainerTuner(Trainer):
         tuner = self.compile_model(base_model)
         print("------ Finish search tuning parameter ---------")
 
-        tuner.results_summary()
+        tuner.results_summary(num_trials=1)
 
         best_hp = tuner.get_best_hyperparameters()[0]
         best_model = tuner.get_best_models()[0]
@@ -107,6 +107,7 @@ class TrainerTuner(Trainer):
                                  validation_data=valid_dataset,
                                  verbose=2,
                                  epochs=self.trainer["EPOCHS"],
+                                 batch_size=self.trainer["BATCH_SIZE"],
                                  callbacks=callbacks_,
                                  use_multiprocessing=True,
                                  class_weight=class_weights,

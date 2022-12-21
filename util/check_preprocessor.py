@@ -15,7 +15,7 @@ from data_utils.hypercube_data import *
 import numpy as np
 import os
 import glob
-from data_utils.data_loaders import data_loader_base as data_loader
+from data_utils.data_loaders.archive import data_loader_base as data_loader
 import cv2
 from tqdm import tqdm
 
