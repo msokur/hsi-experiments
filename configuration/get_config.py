@@ -5,7 +5,11 @@ import platform
 
 from utils import Telegram
 
-from configuration.load_config import read_config, read_path_config, read_trainer_config, read_cv_config
+from configuration.configloader_base import read_config
+from configuration.configloader_paths import read_path_config
+from configuration.configloader_trainer import read_trainer_config
+from configuration.configloader_cv import read_cv_config
+from configuration.configloader_dataloader import read_dataloader_config
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
@@ -32,10 +36,14 @@ def get_cv(file_name: str, section: str) -> dict:
     return read_cv_config(file=os.path.join(current_dir, file_name), section=section)
 
 
+def get_dataloader(file_name: str, section: str) -> dict:
+    return read_dataloader_config(file=os.path.join(current_dir, file_name), section=section)
+
+
 # -------- Data Loader
 loader_config = "DataLoader.json"
 loader_section = "HNO"
-DATALOADER = get_config(file_name=loader_config, section=loader_section)
+DATALOADER = get_dataloader(file_name=loader_config, section=loader_section)
 
 # --------- Paths
 uname = platform.uname()

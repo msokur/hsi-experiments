@@ -8,7 +8,6 @@
 		"FIRST_NM": 8,
 		"LAST_NM": 100,
 		"WAVE_AREA": 100,
-		"LABELS": [0, 1, 2, 3, 4, 5, 6, 7],
 		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6, 7],
 		"NAME_SPLIT": "_SpecCube",
 		"MASK_DIFF": ["_SpecCube.dat", ".png"],
@@ -23,35 +22,47 @@
 			"axis": [],
 			"not_used_labels": []
 		},
-		"MASK_COLOR": {
-			"0": [255, 255, 0],
-			"1": [0, 0, 255],
-			"2": [255, 0, 0],
-			"3": [255, 255, 255],
-			"4": [0, 255, 0],
-			"5": [128, 128, 128],
-			"6": [12, 27, 12],
-			"7": [26, 255, 255]
-		},
-		"TISSUE_LABELS": {
-			"0": "Nerve",
-			"1": "Tumor",
-			"2": "Parotis",
-			"3": "Subcutaneous_Tissue",
-			"4": "Muscle",
-			"5": "Vein",
-			"6": "Cartilage",
-			"7": "Not_Certain"
-		},
-		"PLOT_COLORS": {
-			"0": "yellow",
-			"1": "blue",
-			"2": "red",
-			"3": "white",
-			"4": "green",
-			"5": "grey",
-			"6": "black",
-			"7": "cornflowerblue"
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [[255, 255, 0]],
+				"LABEL": "Nerve",
+				"COLOR": "yellow"
+			},
+			"1": {
+				"MASK": [[0, 0, 255]],
+				"LABEL": "Tumor",
+				"COLOR": "blue"
+			},
+			"2": {
+				"MASK": [[255, 0, 0]],
+				"LABEL": "Parotis",
+				"COLOR": "red"
+			},
+			"3": {
+				"MASK": [[255, 255, 255]],
+				"LABEL": "Subcutaneous_Tissue",
+				"COLOR": "white"
+			},
+			"4": {
+				"MASK": [[0, 255, 0]],
+				"LABEL": "Muscle",
+				"COLOR": "green"
+			},
+			"5": {
+				"MASK": [[128, 128, 128]],
+				"LABEl": "Vein",
+				"COLOR": "grey"
+			},
+			"6": {
+				"MASK": [[12, 27, 12]],
+				"LABEL": "Cartilage",
+				"COLOR": "black"
+			},
+			"7": {
+				"MASK": [[26, 255, 255]],
+				"LABEL": "Not_Certain",
+				"COLOR": "cornflowerblue"
+			}
 		},
 		"SPLIT_PATHS_BY": "Files",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
@@ -66,7 +77,6 @@
 		"FIRST_NM": 8,
 		"LAST_NM": 100,
 		"WAVE_AREA": 100,
-		"LABELS": [0, 1, 2, 3],
 		"LABELS_TO_TRAIN": [0, 1, 2],
 		"NAME_SPLIT": "_SpecCube",
 		"MASK_DIFF": [".dat", ".png"],
@@ -83,14 +93,27 @@
 			"axis": [],
 			"not_used_labels": []
 		},
-		"MASK_COLOR": {"0": [255, 255, 0], "1": [0, 0, 255], "2": [0, 255, 0],
-						"3": [255, 0, 0]
-		},
-		"TISSUE_LABELS": {"0": "Cancer", "1": "Stomach", "2": "Esophagus",
-							"3": "Not_Certain"
-		},
-		"PLOT_COLORS": {"0": "yellow", "1": "blue", "2": "green",
-						"3": "red"
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [[255, 255, 0]],
+				"LABEL": "Cancer",
+				"COLOR": "yellow"
+			},
+			"1": {
+				"MASK": [[0, 0, 255]],
+				"LABEL": "Stomach",
+				"COLOR": "blue"
+			},
+			"2": {
+				"MASK": [[0, 255, 0]],
+				"LABEL": "Esophagus",
+				"COLOR": "green"
+			},
+			"3": {
+				"MASK": [[255, 0, 0]],
+				"LABEL": "Not_Certain",
+				"COLOR": "red"
+			}
 		},
 		"SPLIT_PATHS_BY": "Files",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
@@ -105,7 +128,6 @@
 		"3D": true,
 		"3D_SIZE": [3, 3],
 		"OUTPUT_SIGNATURE_X_FEATURES": 128,
-		"LABELS": [0, 1, 2, 3, 4],
 		"LABELS_TO_TRAIN": [1, 2, 3, 4],
 		"NAME_SPLIT": null,
 		"NUMBER_SPLIT": ["Op", "C"],
@@ -122,19 +144,32 @@
 			"axis": [],
 			"not_used_labels": []
 		},
-		"TISSUE_LABELS": {
-			"0": "Unlabeled data",
-			"1": "Normal (Healthy)",
-			"2": "Tumor",
-			"3": "Blood vessel",
-			"4": "Background"
-		},
-		"PLOT_COLORS": {
-			"0": "yellow",
-			"1": "blue",
-			"2": "red",
-			"3": "black",
-			"4": "green"
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [0],
+				"LABEL": "Unlabeled data",
+				"COLOR": "yellow"
+			},
+			"1": {
+				"MASK": [1],
+				"LABEL": "Normal (Healthy)",
+				"COLOR": "blue"
+			},
+			"2": {
+				"MASK": [2],
+				"LABEL": "Tumor",
+				"COLOR": "red"
+			},
+			"3": {
+				"MASK": [3],
+				"LABEL": "Blood vessel",
+				"COLOR": "black"
+			},
+			"4": {
+				"MASK": [4],
+				"LABEL": "Background",
+				"COLOR": "green"
+			}
 		},
 		"SPLIT_PATHS_BY": "List",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": [
@@ -154,7 +189,6 @@
 		"3D": true,
 		"3D_SIZE": [3, 3],
 		"OUTPUT_SIGNATURE_X_FEATURES": 81,
-		"LABELS": [0, 1],
 		"LABELS_TO_TRAIN": [0, 1],
 		"NAME_SPLIT": null,
 		"NUMBER_SPLIT": ["Cp", null],
@@ -171,13 +205,17 @@
 			"axis": [],
 			"not_used_labels": []
 		},
-		"TISSUE_LABELS": {
-			"0": "Normal (Healthy)",
-			"1": "Ill"
-		},
-		"PLOT_COLORS": {
-			"0": "yellow",
-			"1": "blue"
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [0],
+				"LABEL": "Normal (Healthy)",
+				"COLOR": "yellow"
+			},
+			"1": {
+				"MASK": [1],
+				"LABEL": "Ill",
+				"COLOR": "blue"
+			}
 		},
 		"SPLIT_PATHS_BY": "Files",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
@@ -192,7 +230,6 @@
 		"3D": true,
 		"3D_SIZE": [3, 3],
 		"OUTPUT_SIGNATURE_X_FEATURES": 81,
-		"LABELS": [0, 1, 2],
 		"LABELS_TO_TRAIN": [0, 1, 2],
 		"NAME_SPLIT": null,
 		"NUMBER_SPLIT": ["EP", null],
@@ -209,15 +246,22 @@
 			"axis": [],
 			"not_used_labels": []
 		},
-		"TISSUE_LABELS": {
-			"0": "Normal (Healthy)",
-			"1": "Ill",
-			"2": "not certain"
-		},
-		"PLOT_COLORS": {
-			"0": "yellow",
-			"1": "blue",
-			"2": "red"
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [0],
+				"LABEL": "Normal (Healthy)",
+				"COLOR": "yellow"
+			},
+			"1": {
+				"MASK": [1],
+				"LABEL": "Ill",
+				"COLOR": "blue"
+			},
+			"2": {
+				"MASK": [2],
+				"LABEL": "not certain",
+				"COLOR": "red"
+			}
 		},
 		"SPLIT_PATHS_BY": "Files",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,

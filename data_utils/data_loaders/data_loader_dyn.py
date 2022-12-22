@@ -227,7 +227,8 @@ class DataLoaderDyn:
 
 
 if __name__ == "__main__":
-    from configuration.load_config import read_config, read_path_config
+    from configuration.configloader_dataloader import read_dataloader_config
+    from configuration.configloader_paths import read_path_config
 
     sys_prefix = r"D:\HTWK\WiSe22\Bachelorarbeit\Programm\hsi-experiments"
     loader_config = os.path.join(sys_prefix, "data_utils", "configuration", "DataLoader.json")
@@ -235,7 +236,7 @@ if __name__ == "__main__":
     path_config = os.path.join(sys_prefix, "data_utils", "configuration", "Paths.json")
     system_section = "Win_Benny"
     database_section = "HNO_Database"
-    DATALOADER = read_config(file=loader_config, section=loader_section)
+    DATALOADER = read_dataloader_config(file=loader_config, section=loader_section)
     PATHS = read_path_config(file=path_config, system_mode=system_section, database=database_section)
     dyn = DataLoaderDyn()
     x = 1

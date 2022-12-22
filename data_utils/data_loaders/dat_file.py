@@ -11,13 +11,25 @@ class DatFile:
     def indexes_get_bool_from_mask(self, mask):
         indexes = []
         for key, value in self.loader["MASK_COLOR"].items():
-            if len(value) < 4:
-                indexes.append((mask[:, :, 0] == value[0]) & (mask[:, :, 1] == value[1]) & (mask[:, :, 2] == value[2]))
-            else:
-                indexes.append((mask[:, :, 0] == value[0]) & (mask[:, :, 1] == value[1]) & (mask[:, :, 2] == value[2]) &
-                               (mask[:, :, 3] > value[3]))
+            sub_mask = np.zeros(mask.shape[:2]).astype(dtype=bool)
+            for sub_value in value:
+                if len(sub_value) < 4:
+                    sub_mask |= ((mask[..., 0] == sub_value[0]) & (mask[:, :, 1] == sub_value[1]) &
+                                 (mask[:, :, 2] == sub_value[2]))
+                else:
+                    sub_mask |= ((mask[:, :, 0] == sub_value[0]) & (mask[:, :, 1] == sub_value[1]) &
+                                 (mask[:, :, 2] == sub_value[2]) & (mask[:, :, 3] > sub_value[3]))
+            indexes.append(sub_mask)
 
         return indexes
+
+    def set_mask_with_label(self, mask):
+        result_mask = np.zeros(mask.shape[:2]) - 1
+        indexes = self.indexes_get_bool_from_mask(mask)
+        for sub_mask, key in zip(indexes, self.loader["MASK_COLOR"].keys()):
+            result_mask[sub_mask] = key
+
+        return result_mask
 
     def file_read_mask_and_spectrum(self, path, mask_path=None):
         spectrum = self.spectrum_read_from_dat(path)

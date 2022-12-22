@@ -33,18 +33,7 @@ class DataLoaderWhole(DataLoaderDyn):
         return values
 
     def set_mask_with_label(self, mask):
-        if self.loader["FILE_EXTENSIONS"] == ".dat":
-            result_mask = np.zeros(mask.shape[:2]) - 1
-            for key, value in self.loader["MASK_COLOR"].items():
-                if len(value) < 4:
-                    result_mask[(mask[:, :, 0] == value[0]) & (mask[:, :, 1] == value[1]) & (mask[:, :, 2] == value[2])] = int(key)
-                else:
-                    result_mask[(mask[:, :, 0] == value[0]) & (mask[:, :, 1] == value[1]) & (mask[:, :, 2] == value[2]) & (mask[:, :, 3] > value[3])] = int(key)
-            return result_mask
-        elif self.loader["FILE_EXTENSIONS"] == ".mat":
-            return mask
-        else:
-            raise ValueError(f"For file extension {self.loader['FILE_EXTENSIONS']} is no implementation!")
+        return self.data_reader.set_mask_with_label(mask)
 
     @staticmethod
     def get_all_indexes(mask):

@@ -1,3 +1,4 @@
+import numpy as np
 import scipy.io as sio
 
 
@@ -7,10 +8,21 @@ class MatFile:
 
     def indexes_get_bool_from_mask(self, mask):
         indexes = []
-        for value in self.loader["LABELS"]:
-            indexes.append((mask == value))
+        for key, value in self.loader["MASK_COLOR"].items:
+            sub_mask = np.zeros(mask.shape[:2]).astype(dtype=bool)
+            for sub_value in value:
+                sub_mask |= (mask == sub_value)
+            indexes.append(sub_mask)
 
         return indexes
+
+    def set_mask_with_label(self, mask):
+        result_mask = mask.copy()
+        indexes = self.indexes_get_bool_from_mask(mask)
+        for sub_mask, key in zip(indexes, self.loader["MASK_COLOR"].keys()):
+            result_mask[sub_mask] = key
+
+        return result_mask
 
     def get_number(self, elem: str) -> str:
         return elem.split(self.loader["NUMBER_SPLIT"][0])[-1].split(".")[0].split(self.loader["NUMBER_SPLIT"][1])[0]
