@@ -35,7 +35,8 @@ class DataLoaderDyn:
     def get_paths_and_splits(self, root_path=None):
         if root_path is None:
             root_path = self.paths["RAW_NPZ_PATH"]
-        paths = self.data_reader.sort(root_path)
+        paths = glob(os.path.join(root_path, "*.npz"))
+        paths = self.data_reader.sort(paths)
 
         splits = get_splits(typ=self.loader["SPLIT_PATHS_BY"], paths=paths,
                             values=self.loader["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"],

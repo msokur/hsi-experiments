@@ -50,7 +50,7 @@
 			},
 			"5": {
 				"MASK": [[128, 128, 128]],
-				"LABEl": "Vein",
+				"LABEL": "Vein",
 				"COLOR": "grey"
 			},
 			"6": {
