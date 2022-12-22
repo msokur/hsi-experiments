@@ -181,11 +181,13 @@ class Trainer:
                     except RuntimeError as e:
                         print(e)
 
-                # mirrored_strategy = tf.distribute.experimental.CentralStorageStrategy()
-                mirrored_strategy = tf.distribute.MultiWorkerMirroredStrategy()
-
-                with mirrored_strategy.scope():
-                    model, history = self.train_process(mirrored_strategy=mirrored_strategy)
+                mirrored_strategy = tf.distribute.experimental.CentralStorageStrategy()
+                # mirrored_strategy = tf.distribute.MultiWorkerMirroredStrategy()
+                try:
+                    with mirrored_strategy.scope():
+                        model, history = self.train_process(mirrored_strategy=mirrored_strategy)
+                except IndexError:
+                    pass
             else:
                 model, history = self.train_process()
 

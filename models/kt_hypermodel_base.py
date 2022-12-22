@@ -48,12 +48,9 @@ class KtModelBase(kt.HyperModel):
     def fit(self, hp, model, class_weight=None, *args, **kwargs):
         model.summary()
 
-        class_weights = None
-        if hp.Boolean("class_weights"):
-            class_weights = class_weight
-
         return model.fit(
-            class_weight=class_weights,
+            *args,
+            class_weight=class_weight if hp.Boolean("class_weights") else None,
             **kwargs
         )
 
