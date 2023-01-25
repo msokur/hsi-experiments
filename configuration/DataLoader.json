@@ -2,7 +2,6 @@
 	"HNO": {
 		"TYPE": "normal",
 		"FILE_EXTENSIONS": ".dat",
-		"DICT_NAMES": ["X", "y", "indexes_in_datacube"],
 		"3D": true,
 		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,
@@ -17,7 +16,7 @@
 		"SMOOTHING_VALUE": 5,
 		"BORDER_CONFIG": {
 			"enable": false,
-			"methode": "detect_border",
+			"methode": "detect_core",
 			"depth": 5,
 			"axis": [],
 			"not_used_labels": []
@@ -71,9 +70,8 @@
 	"ESO": {
 		"TYPE": "normal",
 		"FILE_EXTENSIONS": ".dat",
-		"DICT_NAMES": ["X", "y", "indexes_in_datacube"],
-		"D3": true,
-		"D3_SIZE": [3, 3],
+		"3D": true,
+		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,
 		"LAST_NM": 100,
 		"WAVE_AREA": 100,
@@ -88,7 +86,7 @@
 		"SMOOTHING_VALUE": 5,
 		"BORDER_CONFIG": {
 			"enable": false,
-			"methode": "detect_border",
+			"methode": "detect_core",
 			"depth": 5,
 			"axis": [],
 			"not_used_labels": []
@@ -117,12 +115,11 @@
 		},
 		"SPLIT_PATHS_BY": "Files",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
-		"WITH_BACKGROUND_EXTRACTION": true
+		"WITH_BACKGROUND_EXTRACTION": false
 	},
 	"MAT_BRAIN": {
 		"TYPE": "normal",
 		"FILE_EXTENSIONS": ".mat",
-		"DICT_NAMES": ["X", "y", "indexes_in_datacube"],
 		"SPECTRUM": "preProcessedImage",
 		"MASK": "gtMap",
 		"3D": true,
@@ -139,7 +136,7 @@
 		"SMOOTHING_VALUE": 5,
 		"BORDER_CONFIG": {
 			"enable": false,
-			"methode": "detect_border",
+			"methode": "detect_core",
 			"depth": 5,
 			"axis": [],
 			"not_used_labels": []
@@ -183,7 +180,6 @@
 	"MAT_COLON": {
 		"TYPE": "normal",
 		"FILE_EXTENSIONS": ".mat",
-		"DICT_NAMES": ["X", "y", "indexes_in_datacube"],
 		"SPECTRUM": "cube",
 		"MASK": "gtMap",
 		"3D": true,
@@ -224,7 +220,6 @@
 	"MAT_ESO": {
 		"TYPE": "normal",
 		"FILE_EXTENSIONS": ".mat",
-		"DICT_NAMES": ["X", "y", "indexes_in_datacube"],
 		"SPECTRUM": "cube",
 		"MASK": "gtMap",
 		"3D": true,
@@ -241,7 +236,7 @@
 		"SMOOTHING_VALUE": 5,
 		"BORDER_CONFIG": {
 			"enable": false,
-			"methode": "detect_border",
+			"methode": "detect_core",
 			"depth": 5,
 			"axis": [],
 			"not_used_labels": []

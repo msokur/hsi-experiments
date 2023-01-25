@@ -30,11 +30,11 @@ def get_trainer(typ: str, **kwargs):
     value_error("Trainer", typ)
 
 
-def get_data_loader(typ: str):
+def get_data_loader(typ: str, **kwargs):
     if typ == "normal":
-        return DataLoaderDyn()
+        return DataLoaderDyn(**kwargs)
     elif typ == "whole":
-        return DataLoaderWhole()
+        return DataLoaderWhole(**kwargs)
 
     value_error("Data Loader", typ)
 

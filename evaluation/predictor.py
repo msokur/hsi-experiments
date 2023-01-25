@@ -9,6 +9,7 @@ import inspect
 from configuration import get_config as conf
 from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
 from evaluation.metrics import Metrics
+from models.model_randomness import set_tf_seed
 
 
 class Predictor:
@@ -33,6 +34,7 @@ class Predictor:
         MODEL_PATH = os.path.join(CHECKPOINTS_FOLDER_NAME, CHECKPOINT)
         self.CHECKPOINT = CHECKPOINT
 
+        set_tf_seed()
         self.model = tf.keras.models.load_model(MODEL_PATH, custom_objects=custom_objects)
 
         print("--------------------PARAMS----------------------")

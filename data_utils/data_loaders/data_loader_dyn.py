@@ -15,11 +15,14 @@ from data_utils.data_loaders.path_splits import get_splits
 
 
 class DataLoaderDyn:
-    def __init__(self):
+    def __init__(self, dict_names=None):
+        if dict_names is None:
+            dict_names = ["X", "y", "indexes_in_datacube"]
         self.loader = DATALOADER
         self.paths = PATHS
         self.data_reader = provider_dyn.get_extension_loader(typ=self.loader["FILE_EXTENSIONS"],
                                                              loader_conf=self.loader)
+        self.dict_names = dict_names
 
     def get_extension(self):
         return self.loader["FILE_EXTENSIONS"]
@@ -105,7 +108,7 @@ class DataLoaderDyn:
         indexes_np = self.indexes_get_np_from_bool_indexes(*indexes)
 
         values = self.X_y_concatenate_from_spectrum(spectra, indexes_np)
-        values = {n: v for n, v in zip(self.loader["DICT_NAMES"], values)}
+        values = {n: v for n, v in zip(self.dict_names, values)}
 
         return values
 

@@ -163,7 +163,7 @@ class Metrics:
         fpr, tpr = self.get_fpr_tpr(gt, predictions_raw)
         auc_ = self.auc(gt, predictions_raw)
 
-        if len(tpr[0].shape) > 0:
+        if len(tpr) > 1:
             for idx in self.labels_of_classes_to_train:
                 plt.plot(fpr[idx], tpr[idx], color=self.label_color[idx], lw=2,
                          label='ROC curve of {0} (area = {1:0.2f})'

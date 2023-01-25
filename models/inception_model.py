@@ -5,7 +5,7 @@ from models.model_randomness import get_dropout, get_initializers
 
 FILTERS = [4, [6, 8], [1, 2]]
 FILTERS_LAST = 2
-KERNEL_SIZE = [1, [1, 2], [1, 5]]
+KERNEL_SIZE = [1, [1, 3], [1, 5]]
 KERNEL_SIZE_LAST = 1
 POOL_SIZE = 3
 POOL_STRIDES = 1

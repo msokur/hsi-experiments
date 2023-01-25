@@ -29,7 +29,10 @@ class Preprocessor:
         self.prepro = PREPRO
         self.paths = PATHS
         self.loader = DATALOADER
-        self.dataloader = provider_dyn.get_data_loader(typ=self.loader["TYPE"])
+        self.dataloader = provider_dyn.get_data_loader(typ=self.loader["TYPE"],
+                                                       dict_names=[self.prepro["DICT_NAMES"][0],
+                                                                   self.prepro["DICT_NAMES"][1],
+                                                                   self.prepro["DICT_NAMES"][4]])
         self.valid_archives_saving_path = None
         self.archives_of_batch_size_saving_path = None
         self.batch_size = None
