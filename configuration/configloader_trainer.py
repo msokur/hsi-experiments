@@ -2,8 +2,8 @@ import keras_tuner as kt
 from tensorflow.keras.optimizers import Adadelta, Adagrad, Adam, Adamax, Ftrl, Nadam, RMSprop, SGD
 
 from util import tf_metric_multiclass, tf_metrics_binary
-from models.inception_model import inception1d_model, inception3d_model
-from models.paper_model import paper1d_model, paper3d_model
+from models.inception_model import InceptionModel1D, InceptionModel3D
+from models.paper_model import PaperModel1D, PaperModel3D
 from models.kt_inception_model import InceptionTunerModel3D, InceptionTunerModel1D
 from models.kt_paper_model import PaperTunerModel3D, PaperTunerModel1D
 from configuration.configloader_base import read_config
@@ -16,12 +16,12 @@ CUSTOM_OBJECTS_BINARY = {
     "F1_score": tf_metrics_binary.F1_score
 }
 MODELS_3D = {
-    "paper_model": paper3d_model,
-    "inception_model": inception3d_model
+    "paper_model": PaperModel3D().get_model,
+    "inception_model": InceptionModel3D().get_model
 }
 MODELS_1D = {
-    "paper_model": paper1d_model,
-    "inception_model": inception1d_model
+    "paper_model": PaperModel1D().get_model,
+    "inception_model": InceptionModel1D().get_model
 }
 TUNER_MODEL_3D = {
     "paper_model": PaperTunerModel3D,

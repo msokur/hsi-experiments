@@ -1,3 +1,5 @@
+import abc
+
 import tensorflow as tf
 from tensorflow.keras import activations
 
@@ -11,138 +13,107 @@ POOL_SIZE = 3
 POOL_STRIDES = 1
 
 
-def inception1d_model(shape: tuple, conf: dict, num_of_labels: int):
-    input_ = tf.keras.layers.Input(
-        shape=shape, name="title"
-    )
+class InceptionModelBase:
+    def __init__(self):
+        self.conf = None
+        self.num_of_labels = None
+        self.kernel_initializer, self.bias_initializer = get_initializers()
 
-    kernel_initializer, bias_initializer = get_initializers()
+    def get_model(self, shape: tuple, conf: dict, num_of_labels: int):
+        self.conf = conf
+        self.num_of_labels = num_of_labels
 
-    net = inception1d_block(input_, kernel_initializer=kernel_initializer, bias_initializer=bias_initializer,
-                            factor=conf["INCEPTION_FACTOR"], with_batch_norm=conf["WITH_BATCH_NORM"])
+        input_ = tf.keras.layers.Input(
+            shape=shape, name="title"
+        )
 
-    return inception_base(input_=input_, net=net, dropout=conf["DROPOUT"], num_of_labels=num_of_labels,
-                          kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)
+        net = self.inception_block(input_=input_, factor=conf["INCEPTION_FACTOR"],
+                                   with_batch_norm=conf["WITH_BATCH_NORM"])
 
+        return self.inception_base(input_=input_, net=net)
 
-def inception3d_model(shape: tuple, conf: dict, num_of_labels: int):
-    input_ = tf.keras.layers.Input(
-        shape=shape, name="title"
-    )
+    def inception_block(self, input_, factor=16, with_batch_norm=False):
+        input_ = tf.expand_dims(input_, axis=-1)
 
-    kernel_initializer, bias_initializer = get_initializers()
+        branches = []
+        for filter_, kernel_size in zip(FILTERS, KERNEL_SIZE):
+            if isinstance(filter_, int):
+                branch = self.get_conv_layer(filters=factor * filter_, kernel_size=kernel_size, net=input_)
 
-    net = inception3d_block(input_, kernel_initializer=kernel_initializer, bias_initializer=bias_initializer,
-                            factor=conf["INCEPTION_FACTOR"], with_batch_norm=conf["WITH_BATCH_NORM"])
-
-    return inception_base(input_=input_, net=net, dropout=conf["DROPOUT"], num_of_labels=num_of_labels,
-                          kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)
-
-
-def inception_base(input_, net, dropout, num_of_labels, kernel_initializer, bias_initializer):
-    net = tf.keras.layers.Flatten()(net)
-    net = get_dropout(net=net, dropout_value=dropout)
-
-    activation = 'sigmoid'
-    number = 1
-    if num_of_labels > 2:
-        activation = None
-        number = num_of_labels
-    result = tf.keras.layers.Dense(number, activation=activation, kernel_initializer=kernel_initializer,
-                                   bias_initializer=bias_initializer)(net)
-
-    model = tf.keras.Model(
-        inputs=[input_],
-        outputs=[result]
-    )
-
-    return model
-
-
-def inception1d_block(input_, kernel_initializer, bias_initializer, factor=16, with_batch_norm=False):
-    input_ = tf.expand_dims(input_, axis=-1)
-
-    branches = []
-    for filter_, kernel_size in zip(FILTERS, KERNEL_SIZE):
-        if isinstance(filter_, int):
-            branch = get_conv1d(filters=factor * filter_, kernel_size=kernel_size,
-                                kernel_initializer=kernel_initializer,
-                                bias_initializer=bias_initializer, net=input_)
-            if with_batch_norm:
-                branch = get_batch_norm(branch)
-        else:
-            branch = input_
-            for filter_sub, kernel_size_sub in zip(filter_, kernel_size):
-                branch = get_conv1d(filters=factor * filter_sub, kernel_size=kernel_size_sub,
-                                    kernel_initializer=kernel_initializer,
-                                    bias_initializer=bias_initializer, net=branch)
                 if with_batch_norm:
-                    branch = get_batch_norm(branch)
+                    branch = self.get_batch_norm(branch)
+            else:
+                branch = input_
+                for filter_sub, kernel_size_sub in zip(filter_, kernel_size):
+                    branch = self.get_conv_layer(filters=factor * filter_sub, kernel_size=kernel_size_sub, net=branch)
+
+                    if with_batch_norm:
+                        branch = self.get_batch_norm(branch)
+            branches.append(branch)
+
+        branch = self.get_max_pooling_layer(input_=input_)
+        branch = self.get_conv_layer(filters=factor * FILTERS_LAST, kernel_size=KERNEL_SIZE_LAST, net=branch)
+
+        if with_batch_norm:
+            branch = self.get_batch_norm(branch)
         branches.append(branch)
 
-    branch = tf.keras.layers.MaxPooling1D(pool_size=POOL_SIZE, strides=POOL_STRIDES, padding="same")(input_)
-    branch = get_conv1d(filters=factor * FILTERS_LAST, kernel_size=KERNEL_SIZE_LAST,
-                        kernel_initializer=kernel_initializer,
-                        bias_initializer=bias_initializer, net=branch)
-    if with_batch_norm:
-        branch = get_batch_norm(branch)
-    branches.append(branch)
+        net = tf.keras.layers.concatenate(branches)
 
-    net = tf.keras.layers.concatenate(branches)
+        return net
 
-    return net
+    def inception_base(self, input_, net):
+        net = tf.keras.layers.Flatten()(net)
+        net = get_dropout(net=net, dropout_value=self.conf["DROPOUT"])
 
+        activation = 'sigmoid'
+        number = 1
+        if self.num_of_labels > 2:
+            activation = None
+            number = self.num_of_labels
+        result = tf.keras.layers.Dense(number, activation=activation, kernel_initializer=self.kernel_initializer,
+                                       bias_initializer=self.bias_initializer)(net)
 
-def inception3d_block(input_, kernel_initializer, bias_initializer, factor=16, with_batch_norm=False):
-    input_ = tf.expand_dims(input_, axis=-1)
+        model = tf.keras.Model(
+            inputs=[input_],
+            outputs=[result]
+        )
 
-    branches = []
-    for filter_, kernel_size in zip(FILTERS, KERNEL_SIZE):
-        if isinstance(filter_, int):
-            branch = get_conv3d(filters=factor * filter_, kernel_size=kernel_size,
-                                kernel_initializer=kernel_initializer,
-                                bias_initializer=bias_initializer, net=input_)
-            if with_batch_norm:
-                branch = get_batch_norm(branch)
-        else:
-            branch = input_
-            for filter_sub, kernel_size_sub in zip(filter_, kernel_size):
-                branch = get_conv3d(filters=factor * filter_sub, kernel_size=kernel_size_sub,
-                                    kernel_initializer=kernel_initializer,
-                                    bias_initializer=bias_initializer, net=branch)
-                if with_batch_norm:
-                    branch = get_batch_norm(branch)
-        branches.append(branch)
+        return model
 
-    branch = tf.keras.layers.MaxPooling3D(pool_size=POOL_SIZE, strides=POOL_STRIDES, padding="same")(input_)
-    branch = get_conv3d(filters=factor * FILTERS_LAST, kernel_size=KERNEL_SIZE_LAST,
-                        kernel_initializer=kernel_initializer,
-                        bias_initializer=bias_initializer, net=branch)
-    if with_batch_norm:
-        branch = get_batch_norm(branch)
-    branches.append(branch)
+    @abc.abstractmethod
+    def get_conv_layer(self, filters, kernel_size, net):
+        pass
 
-    net = tf.keras.layers.concatenate(branches)
+    @abc.abstractmethod
+    def get_max_pooling_layer(self, input_):
+        pass
 
-    return net
+    @staticmethod
+    def get_batch_norm(branch):
+        branch = tf.keras.layers.BatchNormalization()(branch)
+        branch = tf.keras.layers.Activation(activations.relu)(branch)
+        return branch
 
 
-def get_conv1d(filters, kernel_size, kernel_initializer, bias_initializer, net):
-    return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, padding="same", activation='relu',
-                                  kernel_initializer=kernel_initializer,
-                                  bias_initializer=bias_initializer)(net)
+class InceptionModel3D(InceptionModelBase):
+    def get_conv_layer(self, filters, kernel_size, net):
+        return tf.keras.layers.Conv3D(filters=filters, kernel_size=kernel_size, padding="same", activation='relu',
+                                      kernel_initializer=self.kernel_initializer,
+                                      bias_initializer=self.bias_initializer)(net)
+
+    def get_max_pooling_layer(self, input_):
+        return tf.keras.layers.MaxPooling3D(pool_size=POOL_SIZE, strides=POOL_STRIDES, padding="same")(input_)
 
 
-def get_conv3d(filters, kernel_size, kernel_initializer, bias_initializer, net):
-    return tf.keras.layers.Conv3D(filters=filters, kernel_size=kernel_size, padding="same", activation='relu',
-                                  kernel_initializer=kernel_initializer,
-                                  bias_initializer=bias_initializer)(net)
+class InceptionModel1D(InceptionModelBase):
+    def get_conv_layer(self, filters, kernel_size, net):
+        return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, padding="same", activation='relu',
+                                      kernel_initializer=self.kernel_initializer,
+                                      bias_initializer=self.bias_initializer)(net)
 
-
-def get_batch_norm(branch):
-    branch = tf.keras.layers.BatchNormalization()(branch)
-    branch = tf.keras.layers.Activation(activations.relu)(branch)
-    return branch
+    def get_max_pooling_layer(self, input_):
+        return tf.keras.layers.MaxPooling1D(pool_size=POOL_SIZE, strides=POOL_STRIDES, padding="same")(input_)
 
 
 if __name__ == "__main__":
@@ -156,5 +127,6 @@ if __name__ == "__main__":
         "DROPOUT": 0.1
     }
     labels = 3
-    model_ = inception3d_model(shape=shape_, conf=conf_, num_of_labels=labels)
+    model1 = InceptionModel3D()
+    model_ = model1.get_model(shape=shape_, conf=conf_, num_of_labels=labels)
     model_.summary()

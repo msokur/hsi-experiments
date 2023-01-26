@@ -65,19 +65,6 @@ class PaperTunerModelBase(KtModelBase):
 
         return net
 
-    def get_conv3d(self, net, name, kernel_size=3, strides=2):
-        net = layers.Conv3D(filters=self.hp.Int(f"{name}_1", **self.config["CONV_1D_FILTERS"]),
-                            kernel_size=kernel_size, padding='valid', activation='relu',
-                            kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
-                            name=f"{name}_1")(net)
-        net = layers.Conv3D(filters=self.hp.Int(f"{name}_2", **self.config["CONV_1D_FILTERS"]),
-                            kernel_size=(1, 1, kernel_size), strides=(1, 1, strides), padding='valid',
-                            activation='relu', kernel_initializer=self.kernel_initializer,
-                            bias_initializer=self.bias_initializer,
-                            name=f"{name}_2")(net)
-
-        return net
-
 
 class PaperTunerModel3D(PaperTunerModelBase):
     def get_block(self, net):
@@ -106,6 +93,19 @@ class PaperTunerModel3D(PaperTunerModelBase):
                 net = self.get_conv1d(net=net, name=f"conv_1d_{r}")
 
             net = self.wrap_layer(layer=net, name=f"conv_1d_{r}")
+
+        return net
+
+    def get_conv3d(self, net, name, kernel_size=3, strides=2):
+        net = layers.Conv3D(filters=self.hp.Int(f"{name}_1", **self.config["CONV_1D_FILTERS"]),
+                            kernel_size=kernel_size, padding='valid', activation='relu',
+                            kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
+                            name=f"{name}_1")(net)
+        net = layers.Conv3D(filters=self.hp.Int(f"{name}_2", **self.config["CONV_1D_FILTERS"]),
+                            kernel_size=(1, 1, kernel_size), strides=(1, 1, strides), padding='valid',
+                            activation='relu', kernel_initializer=self.kernel_initializer,
+                            bias_initializer=self.bias_initializer,
+                            name=f"{name}_2")(net)
 
         return net
 
