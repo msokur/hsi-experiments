@@ -10,7 +10,6 @@ class F1_score(Metric):
         self.average = average
         self.f1 = None
         self.average_methode = None
-        self.y_true = None
         self.init_average(average)
 
     @tf.autograph.experimental.do_not_convert
@@ -20,26 +19,22 @@ class F1_score(Metric):
         tp = tf.linalg.diag_part(cm)
         fp = tf.math.reduce_sum(cm, 0) - tp
         fn = tf.math.reduce_sum(cm, 1) - tp
-        self.y_true = y_true
-        self.average_methode(tp, fp, fn)
+        tn = tf.math.reduce_sum(cm) - tp - fp - fn
+        self.average_methode(tp, fp, fn, tn)
 
-    def macro(self, tp, fp, fn):
+    def macro(self, tp, fp, fn, tn):
         f1_s = tp / (tp + 0.5 * (fp + fn) + K.epsilon())
         self.f1.assign(K.sum(f1_s) / self.num_classes)
 
-    def micro(self, tp, fp, fn):
+    def micro(self, tp, fp, fn, tn):
         tp_sum = K.sum(tp)
         fp_sum = K.sum(fp)
         fn_sum = K.sum(fn)
         f1_s = tp_sum / (tp_sum + 0.5 * (fp_sum + fn_sum) + K.epsilon())
         self.f1.assign(f1_s)
 
-    def weighted(self, tp, fp, fn):
-        weights = []
-        for label in range(self.num_classes):
-            weights.append(K.sum(K.cast(K.equal(self.y_true, label), dtype=tf.float32)))
-        weights = K.cast(weights, dtype=tf.float32)
-        weights /= K.sum(weights)
+    def weighted(self, tp, fp, fn, tn):
+        weights = (tp + fn) / (tp + fn + fp + tn)
         f1_s = tp / (tp + 0.5 * (fp + fn) + K.epsilon())
         f1_s *= weights
         self.f1.assign(K.sum(f1_s))
