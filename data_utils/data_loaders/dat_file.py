@@ -57,6 +57,10 @@ class DatFile:
     @staticmethod
     def mask_read(mask_path):
         mask = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)  # read Image with transparency
+        # add alpha channel
+        if mask.shape[-1] == 3:
+            mask = cv2.cvtColor(mask, cv2.COLOR_BGR2BGRA)
+
         # [..., -2::-1] - BGR to RGB, [..., -1:] - only transparency, '-1' - concatenate along last axis
         mask = np.r_["-1", mask[..., -2::-1], mask[..., -1:]]
 

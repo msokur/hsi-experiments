@@ -18,6 +18,8 @@ sys.path.insert(0, parent_dir)
 WITHOUT_RANDOMNESS = True
 if WITHOUT_RANDOMNESS:
     os.environ['TF_DETERMINISTIC_OPS'] = '1'
+else:
+    os.environ['TF_DETERMINISTIC_OPS'] = '0'
 
 
 def get_config(file_name: str, section: str) -> dict:
@@ -42,7 +44,7 @@ def get_dataloader(file_name: str, section: str) -> dict:
 
 # -------- Data Loader
 loader_config = "DataLoader.json"
-loader_section = "HNO"
+loader_section = "ESO"
 DATALOADER = get_dataloader(file_name=loader_config, section=loader_section)
 
 # --------- Paths
@@ -69,7 +71,7 @@ CV = get_cv(file_name=cv_config, section=cv_section)
 
 # --------- Trainer
 trainer_config = "Trainers.json"
-trainer_section = "HNO_TUNER"
+trainer_section = "HNO"
 TRAINER = get_trainer(file_name=trainer_config, section=trainer_section, d3=DATALOADER["3D"],
                       classes=DATALOADER["LABELS_TO_TRAIN"])
 
