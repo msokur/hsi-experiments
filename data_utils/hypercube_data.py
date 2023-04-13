@@ -111,14 +111,14 @@ class cube(object):
         RGB_values = np.zeros((y, 640, 3), dtype=np.dtype('float32'))
 
         # for blue pixel take the 530-560nm
-        new_array_blue = initial_cube[:, :, 6:13].transpose()
-        RGB_values[:, :, 2] = (new_array_blue.mean(axis=0)) * 1.5
+        new_array_blue = initial_cube[:, :, 6:13]
+        RGB_values[:, :, 2] = (new_array_blue.mean(axis=-1)) * 1.5
         # for the green pixel take 540-590nm
-        new_array_green = initial_cube[:, :, 8:19].transpose()
-        RGB_values[:, :, 1] = (new_array_green.mean(axis=0)) * 1.5
+        new_array_green = initial_cube[:, :, 8:19]
+        RGB_values[:, :, 1] = (new_array_green.mean(axis=-1)) * 1.5
         # for the red pixel take 585-725nm
-        new_array_red = initial_cube[:, :, 17:46].transpose()
-        RGB_values[:, :, 0] = (new_array_red.mean(axis=0)) * 1.5
+        new_array_red = initial_cube[:, :, 17:46]
+        RGB_values[:, :, 0] = (new_array_red.mean(axis=-1)) * 1.5
 
         # for normalisation of pixels to be between (0,1)
         R_min = np.min(RGB_values[:, :, 0])
@@ -146,4 +146,5 @@ class cube(object):
         # imgplot=cv2.imshow('Test image',np.flipud(gamma_corrected))
         imgplot = plt.imshow(np.flipud(gamma_corrected))  # ((out * 255).astype(np.uint8))
         # plt.show()
-        return imgplot
+        # return imgplot
+        return gamma_corrected

@@ -117,6 +117,44 @@
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
 		"WITH_BACKGROUND_EXTRACTION": false
 	},
+	"GASTRIC": {
+		"TYPE": "normal",
+		"FILE_EXTENSIONS": ".dat",
+		"3D": true,
+		"3D_SIZE": [3, 3],
+		"FIRST_NM": 8,
+		"LAST_NM": 100,
+		"WAVE_AREA": 100,
+		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+		"NAME_SPLIT": "_SpecCube",
+		"MASK_DIFF": ["_SpecCube.dat", ".png"],
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING_TYPE": "median_filter",
+		"SMOOTHING_VALUE": 5,
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_core",
+			"depth": 5,
+			"axis": [],
+			"not_used_labels": []
+		},
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [[100, 0, 25]],
+				"LABEL": "Oesophagus",
+				"COLOR": "marron"
+			},
+			"1": {
+				"MASK": [[0, 100, 100] ],
+				"LABEL": "Duodenum",
+				"COLOR": "blue"
+			}
+		},
+		"SPLIT_PATHS_BY": "Files",
+		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
+		"WITH_BACKGROUND_EXTRACTION": false
+	},
 	"MAT_BRAIN": {
 		"TYPE": "normal",
 		"FILE_EXTENSIONS": ".mat",
