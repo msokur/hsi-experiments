@@ -14,7 +14,7 @@ from data_utils.prediction_to_image.prediction_to_image_png import PredictionToI
 
 
 def get_csv_path(log_path: str, folder: str):
-    path = os.path.join(log_path, folder)
+    path = os.path.join(*log_path, folder)
     csv_file = glob(os.path.join(path, "*.csv"))
 
     if len(csv_file) > 1:
@@ -33,7 +33,7 @@ def get_prediction_to_image(mode: str):
 
 
 def get_model_path(path: str) -> str:
-    paths = sorted(glob(os.path.join(path, "checkpoints", "cp-*")))
+    paths = sorted(glob(os.path.join(path, PATHS["CHECKPOINT_PATH"], "cp-*")))
 
     return paths[-1]
 
