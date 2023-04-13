@@ -93,7 +93,7 @@ class PredictionToImage_base:
         ax.table(cellText=cell_text, cellColours=cell_colors, colLabels=col_labels, cellLoc="center",
                  loc="center")
         plt.axis("off")
-        plt.subplots_adjust(wspace=0.0)
+        plt.subplots_adjust(wspace=0.2)
         plt.savefig(save_path)
 
     def masks_to_rgba(self, masks: list, mask_alpha=1.0) -> list:
@@ -105,7 +105,8 @@ class PredictionToImage_base:
 
     @staticmethod
     def add_weighted(mask: np.ndarray, alpha: float, original: np.ndarray, beta: float) -> np.ndarray:
-        new_img = mask * alpha + original * beta
+        new_img = (mask * alpha + original * beta)
+        new_img[new_img > 255.0] = 255.0
 
         return new_img.astype(int)
 

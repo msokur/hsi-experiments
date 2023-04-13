@@ -49,8 +49,10 @@ if __name__ == '__main__':
 
     test_npz = PredictionToImage_npz(load_conf=DATALOADER, model_conf=TRAINER)
     npz_path = os.path.join(main_path, "raw_data", "2019_04_30_15_34_56_.npz")
+    dat_path = r"E:\ICCAS\ESO\EsophagusCancer\2019_04_30_15_34_56_SpecCube.dat"
     anno_masks = test_npz.get_annotation_mask(npz_path)
     pred_mask = test_npz.get_prediction_mask(spectrum_path=npz_path, model_path=model_path_)
     diff_mask_ = test_npz.get_diff_mask(annotation_mask=anno_masks, prediction_mask=pred_mask)
     image_save = os.path.join(main_path, "mask.png")
-    test_npz.save_only_masks(image_save, anno_masks, pred_mask, diff_mask_)
+    # test_npz.save_only_masks(image_save, anno_masks, pred_mask, diff_mask_)
+    test_npz.save_with_background(image_save, dat_path, anno_masks, pred_mask, diff_mask_)
