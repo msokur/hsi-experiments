@@ -39,7 +39,11 @@ def get_model_path(path: str) -> str:
 
 
 def get_save_path(main_path: str, name: str) -> str:
-    return os.path.join(main_path, "visualisation", name + ".jpg")
+    path = os.path.join(main_path, "visualisation")
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    return os.path.join(path, name + ".jpg")
 
 
 def get_name_from_npz(path: str) -> str:

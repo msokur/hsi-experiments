@@ -2,7 +2,6 @@ import abc
 import os
 import keras
 import numpy as np
-import cv2
 from matplotlib import colors as mcolor, pyplot as plt
 
 from models.model_randomness import set_tf_seed
@@ -108,7 +107,7 @@ class PredictionToImage_base:
     def add_weighted(mask: np.ndarray, alpha: float, original: np.ndarray, beta: float) -> np.ndarray:
         new_img = mask * alpha + original * beta
 
-        return new_img
+        return new_img.astype(int)
 
     @abc.abstractmethod
     def get_spectrum(self, path: str):
