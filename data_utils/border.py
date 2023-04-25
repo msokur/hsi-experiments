@@ -160,7 +160,12 @@ def detect_border(in_arr: np.ndarray, d: __positive = 1, axis: __list_positive =
     axis = __get_axis(axis, shape)
     for idx in np.arange(len(val[0])):
         index, slices = __get_idx_slice(values=val, idx=idx, shape=shape, d=d, axis=axis)
-        new_array[index] = np.all(in_arr[slices]) ^ np.any(in_arr[slices])
+        if index[0] == 0 or index[0] == shape[0] - 1:
+            new_array[index] = True
+        elif index[1] == 0 or index[1] == shape[1] - 1:
+            new_array[index] = True
+        else:
+            new_array[index] = np.all(in_arr[slices]) ^ np.any(in_arr[slices])
 
     return new_array
 

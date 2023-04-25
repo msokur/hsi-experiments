@@ -126,8 +126,8 @@
 		"LAST_NM": 100,
 		"WAVE_AREA": 100,
 		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-		"NAME_SPLIT": "_SpecCube",
-		"MASK_DIFF": ["_SpecCube.dat", ".png"],
+		"NAME_SPLIT": "",
+		"MASK_DIFF": ["", ".png"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
 		"SMOOTHING_TYPE": "median_filter",
@@ -141,14 +141,69 @@
 		},
 		"LABEL_DATA": {
 			"0": {
-				"MASK": [[100, 0, 25]],
+				"MASK": [[255, 0, 64]],
 				"LABEL": "Oesophagus",
-				"COLOR": "marron"
+				"COLOR": "red"
 			},
 			"1": {
-				"MASK": [[0, 100, 100] ],
+				"MASK": [[0, 255, 255]],
 				"LABEL": "Duodenum",
+				"COLOR": "cyan"
+			},
+			"2": {
+				"MASK": [[127, 127, 127]],
+				"LABEL": "Fat",
+				"COLOR": "gray"
+			},
+			"3": {
+				"MASK": [[255, 255, 0]],
+				"LABEL": "Pancreas",
+				"COLOR": "yellow"
+			},
+			"4": {
+				"MASK": [[0, 0, 255]],
+				"LABEL": "Colon",
 				"COLOR": "blue"
+			},
+			"5": {
+				"MASK": [[255, 0, 255]],
+				"LABEL": "Stomach",
+				"COLOR": "magenta"
+			},
+			"6": {
+				"MASK": [[0, 255, 0]],
+				"LABEL": "Liver",
+				"COLOR": "lime"
+			},
+			"7": {
+				"MASK": [[255, 191, 191]],
+				"LABEL": "Gall Bladder",
+				"COLOR": "pink"
+			},
+			"8": {
+				"MASK": [[26, 51, 77]],
+				"LABEL": "Spleen",
+				"COLOR": "midnightblue"
+			},
+			"9": {
+				"MASK": [[191, 127, 0]],
+				"LABEL": "Small Intestine",
+				"COLOR": "chocolate"
+			},
+			"10": {
+				"MASK": [[115, 115, 255]],
+				"LABEL": "Lungs",
+				"COLOR": "mediumslateblue"
+			},
+			"11": {
+				"MASK": [[77, 102, 77]],
+				"LABEL": "Rectum",
+				"COLOR": "darkolivegreen"
+			},
+			"12": {
+				"MASK": [[127, 77, 77]],
+				"LABEL": "Tumor",
+				"COLOR": "saddlebrown"
 			}
 		},
 		"SPLIT_PATHS_BY": "Files",

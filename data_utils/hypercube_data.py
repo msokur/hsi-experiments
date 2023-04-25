@@ -101,12 +101,11 @@ class cube(object):
 
     # https://stackoverflow.com/questions/1627376/how-do-i-extract-a-ieee-be-binary-file-embedded-in-a-zipfile
 
-    def cube_plot(self):
+    def get_rgb_cube(self):
         from skimage import exposure
         # the plot is done following the guidance from Tivita TM
         # Dokumentation RGB-Image1.4.vi
         initial_cube, y = Cube_Read(self.address, self.wavearea, self.Firstnm, self.Lastnm).cube_matrix()
-
         # pixel rgb values
         RGB_values = np.zeros((y, 640, 3), dtype=np.dtype('float32'))
 
@@ -139,12 +138,15 @@ class cube(object):
         # add the gamma-factor
         gamma_corrected = exposure.adjust_gamma(scaled_RGB, 0.5)
 
+        return gamma_corrected
+
+    def cube_plot(self):
+        rgb_cube = self.get_rgb_cube()
         # plot the rgb image
         imgplot = plt.figure()
         plt.grid(False)
         # import cv2
         # imgplot=cv2.imshow('Test image',np.flipud(gamma_corrected))
-        imgplot = plt.imshow(np.flipud(gamma_corrected))  # ((out * 255).astype(np.uint8))
-        # plt.show()
-        # return imgplot
-        return gamma_corrected
+        imgplot = plt.imshow(np.flipud(rgb_cube))  # ((out * 255).astype(np.uint8))
+        plt.show()
+        return imgplot

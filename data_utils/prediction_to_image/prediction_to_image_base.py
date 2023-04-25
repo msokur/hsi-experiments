@@ -56,7 +56,7 @@ class PredictionToImage_base:
 
         cube_ = cube(background_path, self.load_conf["WAVE_AREA"], self.load_conf["FIRST_NM"],
                      self.load_conf["LAST_NM"])
-        cube_img = cube_.cube_plot()
+        cube_img = cube_.get_rgb_cube()
         cube_img_rgb = cube_img * 255
 
         mixed_img = []
