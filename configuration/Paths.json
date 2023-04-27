@@ -46,7 +46,7 @@
       "BATCHED_PATH": ["batch_sized"]
     },
     "3.CONCAT_WITH_RAW_SOURCE_PATH": {
-      "MASK_PATH": ["annotation", "mk-files"]
+      "MASK_PATH": ["annotation", "mk_files"]
     }
   },
   "GASTRIC_Database_png": {
