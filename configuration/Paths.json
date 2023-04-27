@@ -42,9 +42,11 @@
       "TEST_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "mk2"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
-      "MASK_PATH": ["annotation", "mk-files"],
       "SHUFFLED_PATH": ["shuffled"],
       "BATCHED_PATH": ["batch_sized"]
+    },
+    "3.CONCAT_WITH_RAW_SOURCE_PATH": {
+      "MASK_PATH": ["annotation", "mk-files"]
     }
   },
   "GASTRIC_Database_png": {
@@ -54,10 +56,11 @@
       "TEST_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "png"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
-      "MASK_PATH": ["annotation", "GIMP_png"],
       "SHUFFLED_PATH": ["shuffled"],
       "BATCHED_PATH": ["batch_sized"]
-    }
+    },
+    "3.CONCAT_WITH_RAW_SOURCE_PATH": {
+      "MASK_PATH": ["annotation", "GIMP_png"]
   },
   "MAT_BRAIN_Database": {
     "1.CONCAT_WITH_PREFIX": {
