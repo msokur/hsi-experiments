@@ -18,7 +18,7 @@ class MK_base:
         index, left, top, radius, begin_marker, start_byte = self.load_marker()
         names = self.load_string(start_byte, begin_marker)
         if len(names) > 11:
-            names = self.load_string(0, 8000)
+            names = self.load_string(8000, 0)
 
         return names, left, top, radius, index
 

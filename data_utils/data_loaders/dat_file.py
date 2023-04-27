@@ -112,8 +112,8 @@ class DatFile:
 
 if __name__ == "__main__":
     from configuration.get_config import DATALOADER
-    dat_path_ = r"E:\ICCAS\Gastric\General\Laura_Daten0.dat"
-    mk2_path = r"E:\ICCAS\Gastric\General\Registrations\mk_files\Laura_Daten0.mk2"
+    dat_path_ = r"E:\ICCAS\Gastric\General\Laura_Daten170.dat"
+    mk2_path = r"E:\ICCAS\Gastric\General\annotation\mk_files"
 
     dat_loader = DatFile(DATALOADER)
 
