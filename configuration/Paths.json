@@ -61,6 +61,7 @@
     },
     "3.CONCAT_WITH_RAW_SOURCE_PATH": {
       "MASK_PATH": ["annotation", "GIMP_png"]
+    }
   },
   "MAT_BRAIN_Database": {
     "1.CONCAT_WITH_PREFIX": {
