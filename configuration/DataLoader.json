@@ -125,7 +125,7 @@
 		"WAVE_AREA": 100,
 		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
 		"NAME_SPLIT": "",
-		"MASK_DIFF": ["", ".png"],
+		"MASK_DIFF": [".dat", ".mk2"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
 		"SMOOTHING_TYPE": "median_filter",
