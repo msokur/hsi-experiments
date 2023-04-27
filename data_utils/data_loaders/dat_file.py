@@ -79,7 +79,7 @@ class DatFile:
         names, leftx, topx, radiusx, indexx = mk_loader.load()
 
         class_mask = np.full(shape, -1)
-        for idx in range(len(names)):
+        for idx in range(len(names) - 1):
             classification = -1
             for key, value in self.loader["TISSUE_LABELS"].items():
                 if names[idx].lower() == value.lower():
