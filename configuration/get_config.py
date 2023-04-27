@@ -66,7 +66,7 @@ PREPRO = get_config(file_name=prepro_config, section=prepro_section)
 
 # --------- Cross validation
 cv_config = "Crossvalidation.json"
-cv_section = "CV_HNO_NORMAL"
+cv_section = "CV_GASTRIC_MK"
 CV = get_cv(file_name=cv_config, section=cv_section)
 
 # --------- Trainer
