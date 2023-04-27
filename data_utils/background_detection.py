@@ -69,4 +69,4 @@ def detect_background(cube, minWL=500, maxWL=995, WLsteps=5, cube_index=None, bg
         else:  # scanning bottom2top
             bg_mask[cube_index, :] = bg_mask_line[::-1]
 
-    return bg_mask.astype(np.uint8)
+    return bg_mask.astype(bool)

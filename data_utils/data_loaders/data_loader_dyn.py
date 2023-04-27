@@ -79,13 +79,17 @@ class DataLoaderDyn:
 
         return masks
 
-    def file_read_mask_and_spectrum(self, path):
-        return self.data_reader.file_read_mask_and_spectrum(path)
+    def file_read_mask_and_spectrum(self, path, mask_path):
+        return self.data_reader.file_read_mask_and_spectrum(path=path, mask_path=mask_path)
 
     @abc.abstractmethod
     def file_read(self, path):
         print(f'Reading {path}')
-        spectrum, mask = self.file_read_mask_and_spectrum(path)
+        if "MASK_PATH" in self.paths.keys():
+            mask_path = self.paths["MASK_PATH"]
+        else:
+            mask_path = None
+        spectrum, mask = self.file_read_mask_and_spectrum(path=path, mask_path=mask_path)
 
         spectrum = self.smooth(spectrum)
 
