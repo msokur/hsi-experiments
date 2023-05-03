@@ -56,7 +56,7 @@ else:
     system_section = "Win_Benny"
 
 path_config = "Paths.json"
-database_section = "GASTRIC_Database_mk"
+database_section = "GASTRIC_Database_png"
 PATHS = get_paths(file_name=path_config, sys_section=system_section, data_section=database_section)
 
 # --------- Preprocessing

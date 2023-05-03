@@ -31,6 +31,6 @@
     "NORMALIZATION_TYPE": "svn",
     "SCALER_FILE": "scaler.scaler",
     "SCALER_PATH": null,
-    "WITH_AUGMENTATION": true
+    "WITH_AUGMENTATION": false
   }
 }

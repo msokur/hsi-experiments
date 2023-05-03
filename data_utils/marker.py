@@ -88,8 +88,8 @@ class MK2(MK_base):
 
 if __name__ == "__main__":
     import os
-    path = r"E:\ICCAS\Gastric\General\Registrations\mk_files"
-    file = "Laura_Daten44.mk2"
+    path = r"E:\ICCAS\Gastric\General\annotation\mk_files"
+    file = "Laura_Daten2.mk2"
 
     marker = MK2(os.path.join(path, file))
     datas = marker.load()

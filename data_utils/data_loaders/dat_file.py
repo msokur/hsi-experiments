@@ -82,7 +82,7 @@ class DatFile:
         for idx in range(len(names)):
             classification = -1
             for key, value in self.loader["TISSUE_LABELS"].items():
-                if names[idx].lower() == value.lower():
+                if names[idx].lower().replace(" ", "") == value.lower().replace(" ", ""):
                     classification = key
                     break
 
@@ -112,11 +112,19 @@ class DatFile:
 
 if __name__ == "__main__":
     from configuration.get_config import DATALOADER
-    dat_path_ = r"E:\ICCAS\Gastric\General\Laura_Daten170.dat"
-    mk2_path = r"E:\ICCAS\Gastric\General\annotation\mk_files"
+    from glob import glob
+    import cv2
+    from tqdm import tqdm
+    main_path = r"E:\ICCAS\Gastric\General"
+    mk2_path = r"annotation\mk_files"
+    dat_paths_ = glob(os.path.join(main_path, "*.dat"))
 
     dat_loader = DatFile(DATALOADER)
 
-    spec, mask_ = dat_loader.file_read_mask_and_spectrum(dat_path_, mk2_path)
-    bool_mask = dat_loader.indexes_get_bool_from_mask(mask_)
-    x__ = 1
+    for p in tqdm(dat_paths_):
+        name = p.split("\\")[-1].split(".dat")[0]
+
+        spec, mask_ = dat_loader.file_read_mask_and_spectrum(p, os.path.join(main_path, mk2_path))
+        bool_mask = dat_loader.indexes_get_bool_from_mask(mask_)
+        cv2.imwrite(os.path.join(main_path, mk2_path, "png", name + ".png"),
+                    np.r_["-1", mask_[..., -2::-1], mask_[..., -1:]])
