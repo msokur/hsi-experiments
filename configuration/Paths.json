@@ -26,9 +26,9 @@
   },
   "ESO_Database": {
     "1.CONCAT_WITH_PREFIX": {
-      "RAW_NPZ_PATH": ["data_3d", "eso", "3x3", "svn", "median"],
+      "RAW_NPZ_PATH": ["data_3d", "eso", "3x3", "svn", "median2"],
       "RAW_SOURCE_PATH": ["EsophagusCancer"],
-      "TEST_NPZ_PATH": ["data_3d", "eso", "3x3", "svn", "median"]
+      "TEST_NPZ_PATH": ["data_3d", "eso", "3x3", "svn", "median2"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
       "SHUFFLED_PATH": ["shuffled"],

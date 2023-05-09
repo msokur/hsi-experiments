@@ -3,7 +3,7 @@ import abc
 import tensorflow as tf
 import tensorflow.keras as keras
 
-from models.model_randomness import get_dropout, get_initializers
+from models.model_randomness import get_dropout, get_initializers, set_tf_seed
 
 
 class PaperModelBase:
@@ -11,6 +11,7 @@ class PaperModelBase:
         self.conf = None
         self.num_of_labels = None
         self.kernel_initializer, self.bias_initializer = get_initializers()
+        set_tf_seed()
 
     @abc.abstractmethod
     def get_model(self, shape: tuple, conf: dict, num_of_labels: int):

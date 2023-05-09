@@ -19,6 +19,14 @@
     "RESTORE_VALID_SEQUENCE": "",
     "GET_CHECKPOINT_FROM_VALID": true
   },
+  "CV_ESO_NORMAL": {
+    "TYPE": "normal",
+    "NAME": "2023-05-09_CV_ESO_3x3_snv_median",
+    "DATABASE_ABBREVIATION": "2023-05-09_CV_ESO_3x3_snv_median",
+    "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
+    "RESTORE_VALID_SEQUENCE": "",
+    "GET_CHECKPOINT_FROM_VALID": true
+  },
   "CV_GASTRIC_MK": {
     "TYPE": "normal",
     "NAME": "2023-04-27_CV_GASTRIC_3x3_snv_median_mk",
