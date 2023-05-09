@@ -1,5 +1,4 @@
 import abc
-import gc
 
 import numpy as np
 import os
@@ -63,7 +62,6 @@ class Scaler:
             del _i
             del _X_1d
             del data
-            gc.collect()
 
         return X, y, indexes
 

@@ -143,7 +143,8 @@ class Preprocessor:
             scaler = provider_dyn.get_scaler(typ=self.prepro["NORMALIZATION_TYPE"],
                                              preprocessed_path=preprocessed_path,
                                              scaler_file=self.prepro["SCALER_FILE"],
-                                             scaler_path=self.prepro["SCALER_PATH"])
+                                             scaler_path=self.prepro["SCALER_PATH"],
+                                             dict_names=[self.prepro["DICT_NAMES"][x] for x in [0, 1, 4]])
             scaler.iterate_over_archives_and_save_scaled_X(preprocessed_path, preprocessed_path)
 
         # ----------shuffle part------------------
