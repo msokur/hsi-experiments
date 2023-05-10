@@ -95,6 +95,7 @@ class PredictionToImage_base:
         plt.axis("off")
         plt.subplots_adjust(wspace=0.2)
         plt.savefig(save_path)
+        plt.close(fig)
 
     def masks_to_rgba(self, masks: list, mask_alpha=1.0) -> list:
         masks_rgba = []

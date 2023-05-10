@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import inspect
 import sys
+from tqdm import tqdm
 from glob import glob
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -63,7 +64,7 @@ if __name__ == "__main__":
     csv_path = get_csv_path(log_path=PATHS["MODEL_NAME_PATHS"], folder=CV["NAME"])
     csv_data = pd.read_csv(csv_path, delimiter=",", header=None, names=["Date", "x", "y", "z", "npz", "model"])
 
-    for idx, row in csv_data.iterrows():
+    for idx, row in tqdm(csv_data.iterrows()):
         file_name = get_name_from_npz(row["npz"])
         model_path = get_model_path(path=row["model"])
         npz_path = row["npz"]
