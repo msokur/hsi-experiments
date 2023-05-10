@@ -10,7 +10,7 @@
   },
   "Win_Benny": {
     "MODE": "LOCAL_NO_GPU",
-    "PREFIX": "E:\\ICCAS\\HNO",
+    "PREFIX": "E:\\ICCAS\\Gastric",
     "MODEL_NAME_PATHS": ["logs"]
   },
   "HNO_Database": {

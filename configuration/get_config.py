@@ -44,7 +44,7 @@ def get_dataloader(file_name: str, section: str) -> dict:
 
 # -------- Data Loader
 loader_config = "DataLoader.json"
-loader_section = "ESO"
+loader_section = "GASTRIC"
 DATALOADER = get_dataloader(file_name=loader_config, section=loader_section)
 
 # --------- Paths
@@ -56,17 +56,17 @@ else:
     system_section = "Win_Benny"
 
 path_config = "Paths.json"
-database_section = "ESO_Database"
+database_section = "GASTRIC_Database_mk"
 PATHS = get_paths(file_name=path_config, sys_section=system_section, data_section=database_section)
 
 # --------- Preprocessing
 prepro_config = "Preprocessor.json"
-prepro_section = "HNO"
+prepro_section = "GASTRIC"
 PREPRO = get_config(file_name=prepro_config, section=prepro_section)
 
 # --------- Cross validation
 cv_config = "Crossvalidation.json"
-cv_section = "CV_ESO_NORMAL"
+cv_section = "CV_GASTRIC_MK"
 CV = get_cv(file_name=cv_config, section=cv_section)
 
 # --------- Trainer
