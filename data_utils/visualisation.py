@@ -8,7 +8,7 @@ current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfra
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
-from configuration.get_config import DATALOADER, TRAINER, PATHS
+from configuration.get_config import DATALOADER, TRAINER, PATHS, CV
 from data_utils.prediction_to_image.prediction_to_image_npz import PredictionToImage_npz
 from data_utils.prediction_to_image.prediction_to_image_png import PredictionToImage_png
 
@@ -60,7 +60,7 @@ def get_dat_path(raw_path: str, name: str) -> str:
 
 if __name__ == "__main__":
     pred_to_img = get_prediction_to_image(mode="npz")
-    csv_path = get_csv_path(log_path=PATHS["MODEL_NAME_PATHS"], folder="2022-11-30_CV_ESO_3x3_svn_median_filter")
+    csv_path = get_csv_path(log_path=PATHS["MODEL_NAME_PATHS"], folder=CV["NAME"])
     csv_data = pd.read_csv(csv_path, delimiter=",", header=None, names=["Date", "x", "y", "z", "npz", "model"])
 
     for idx, row in csv_data.iterrows():
