@@ -15,7 +15,8 @@ class Scaler:
     def __init__(self, preprocessed_path, scaler_file=None, scaler_path=None, dict_names=None):
         self.preprocessed_path = preprocessed_path
         self.scaler_path = scaler_path
-        if dict_names is None:
+        self.dict_names = dict_names
+        if self.dict_names is None:
             self.dict_names = ["X", "y", "indexes_in_datacube"]
         
         if self.scaler_path is not None: 
