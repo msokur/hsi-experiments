@@ -3,7 +3,6 @@ import os
 import keras
 import numpy as np
 from matplotlib import colors as mcolor, pyplot as plt
-from glob import glob
 
 from models.model_randomness import set_tf_seed
 from data_utils.hypercube_data import cube
@@ -21,11 +20,9 @@ class PredictionToImage_base:
 
         return diff_mask
 
-    def get_prediction_mask(self, spectrum_path: str, model_path: str, checkpoint_path: str) -> np.ndarray:
+    def get_prediction_mask(self, spectrum_path: str, model_path: str) -> np.ndarray:
         spectrum, indexes = self.get_spectrum(path=spectrum_path)
-        model = self.load_model(model_path=self.get_last_checkpoint(model_path=model_path,
-                                                                    checkpoint_path=checkpoint_path),
-                                custom_objects=self.model_conf["CUSTOM_OBJECTS_LOAD"])
+        model = self.load_model(model_path=model_path, custom_objects=self.model_conf["CUSTOM_OBJECTS_LOAD"])
         predict = model.predict(spectrum)
         predict_max = np.argmax(predict, axis=-1)
         predict_mask = np.full(self.image_size, -1)
@@ -106,13 +103,6 @@ class PredictionToImage_base:
             masks_rgba.append(self.mask_to_rgba(mask=mask, mask_alpha=mask_alpha))
 
         return masks_rgba
-
-    @staticmethod
-    def get_last_checkpoint(model_path, checkpoint_path) -> str:
-        path = os.path.join(model_path, checkpoint_path)
-        best = sorted(glob(os.path.join(path, "*")))[-1]
-
-        return best
 
     @staticmethod
     def add_weighted(mask: np.ndarray, alpha: float, original: np.ndarray, beta: float) -> np.ndarray:
