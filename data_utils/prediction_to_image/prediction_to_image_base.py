@@ -58,10 +58,12 @@ class PredictionToImage_base:
                      self.load_conf["LAST_NM"])
         cube_img = cube_.get_rgb_cube()
         cube_img_rgb = cube_img * 255
+        o_shape = cube_img_rgb.shape
 
         mixed_img = []
         for mask in masks_rgba:
-            mixed_img.append(self.add_weighted(mask=mask[..., 0:3], alpha=mask_alpha, original=cube_img_rgb, beta=1.0))
+            mixed_img.append(self.add_weighted(mask=mask[0:o_shape[0], 0:o_shape[1], 0:3], alpha=mask_alpha,
+                                               original=cube_img_rgb, beta=1.0))
 
         self.save_image(save_path=save_path, masks=mixed_img)
 
