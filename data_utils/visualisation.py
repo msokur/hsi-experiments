@@ -71,7 +71,8 @@ if __name__ == "__main__":
         save_path = get_save_path(main_path=os.path.split(row["model"])[0], name=file_name)
         dat_path = get_dat_path(raw_path=PATHS["RAW_SOURCE_PATH"], name=file_name)
         anno_mask = pred_to_img.get_annotation_mask(path=npz_path)
-        pred_mask = pred_to_img.get_prediction_mask(spectrum_path=npz_path, model_path=model_path)
+        pred_mask = pred_to_img.get_prediction_mask(spectrum_path=npz_path, model_path=model_path,
+                                                    checkpoint_path=PATHS["CHECKPOINT_PATH"])
         diff_mask = pred_to_img.get_diff_mask(annotation_mask=anno_mask, prediction_mask=pred_mask)
 
         print(f'Save Image for "{file_name}" in "{save_path}"')
