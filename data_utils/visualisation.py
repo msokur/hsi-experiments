@@ -52,7 +52,10 @@ def get_name_from_npz(path: str) -> str:
 
 
 def get_dat_path(raw_path: str, name: str) -> str:
-    path = glob(os.path.join(raw_path, f"*{name}*.dat"))
+    if DATALOADER["NAME_SPLIT"] is not None:
+        path = glob(os.path.join(raw_path, f"{name + DATALOADER['NAME_SPLIT']}.dat"))
+    else:
+        path = glob(os.path.join(raw_path, f"{name}.dat"))
     if len(path) > 1:
         raise ValueError(f'Too many .dat files with the name "{name}" in folder "{raw_path}"!')
 
