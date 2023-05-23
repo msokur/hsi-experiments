@@ -33,7 +33,7 @@ There are several functionality parts:
 
 
 class DistributionsChecker:
-    def __init__(self, path, prints=False):
+    def __init__(self, path, prints=DISTRO["PRINTS"]):
         """
         Args:
             path: path with the archives to compare

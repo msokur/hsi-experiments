@@ -1,4 +1,4 @@
-from tensorflow import keras
+import tensorflow.keras as keras
 import numpy as np
 import os
 
@@ -12,7 +12,7 @@ class TrainerEasy(trainer_base.Trainer):
     def compile_model(self, model):
         metric_dict = self.trainer["CUSTOM_OBJECTS"]
         METRICS = [
-            keras.metrics.BinaryAccuracy(name='accuracy'),
+            keras.metrics.BinaryAccuracy(name="accuracy"),
         ]
         for key in metric_dict.keys():
             METRICS.append(metric_dict[key]["metric"](**metric_dict[key]["args"]))

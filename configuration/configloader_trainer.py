@@ -1,5 +1,6 @@
 import keras_tuner as kt
 from tensorflow.keras.optimizers import Adadelta, Adagrad, Adam, Adamax, Ftrl, Nadam, RMSprop, SGD
+from tensorflow.keras.activations import relu, tanh, selu, exponential, elu
 
 from util import tf_metric_multiclass, tf_metrics_binary
 from models.inception_model import InceptionModel1D, InceptionModel3D
@@ -45,6 +46,11 @@ OPTIMIZER = {"adadelta": Adadelta,
              "rms": RMSprop,
              "sgd": SGD
              }
+ACTIVATION = {"relu": relu,
+              "tanh": tanh,
+              "selu": selu,
+              "exponential": exponential,
+              "elu": elu}
 
 
 def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dict:
@@ -77,7 +83,10 @@ def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dic
     if trainer["TYPE"] == "Tuner":
         trainer["TUNER"] = get_tuner(tuner=trainer["TUNER"], file=file, section=section)
 
-        trainer["MODEL_CONFIG"]["OPTIMIZER"] = get_optimizer(optimizer_list=trainer["MODEL_CONFIG"]["OPTIMIZER"])
+        trainer["MODEL_CONFIG"]["OPTIMIZER"] = get_new_dict(load_list=trainer["MODEL_CONFIG"]["OPTIMIZER"],
+                                                            available=OPTIMIZER, name="Optimizer")
+        trainer["MODEL_CONFIG"]["ACTIVATION"] = get_new_dict(load_list=trainer["MODEL_CONFIG"]["ACTIVATION"],
+                                                             available=ACTIVATION, name="Activation")
 
     return trainer
 
@@ -103,15 +112,15 @@ def get_tuner(tuner: str, file: str, section: str):
                          f"doesn't correspond to any of 'RandomSearch', 'BayesianOptimization' or 'Hyperband'")
 
 
-def get_optimizer(optimizer_list: list):
+def get_new_dict(load_list: list, available: dict, name: str):
     optimizer_dict = {}
-    if len(optimizer_list) > 0:
-        for optimizer in optimizer_list:
-            if optimizer in OPTIMIZER.keys():
-                optimizer_dict[optimizer] = OPTIMIZER[optimizer]
+    if len(load_list) > 0:
+        for optimizer in load_list:
+            if optimizer in available.keys():
+                optimizer_dict[optimizer] = available[optimizer]
             else:
-                raise ValueError(f"Optimizer '{optimizer}' not available!")
+                raise ValueError(f"{name} '{optimizer}' not available!")
     else:
-        optimizer_dict = OPTIMIZER.copy()
+        optimizer_dict = available.copy()
 
     return optimizer_dict

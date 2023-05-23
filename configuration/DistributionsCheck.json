@@ -1,5 +1,6 @@
 {
   "Default": {
+    "PRINTS": false,
     "Z_TEST": false,
     "Z_TEST_P_VALUE": 0.05,
     "Z_TEST_STD_DELTA": 0.01,

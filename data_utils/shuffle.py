@@ -10,14 +10,14 @@ from configuration.copy_py_files import copy_files
 
 
 class Shuffle:
-    def __init__(self, raw_paths, dict_names: list, prepro_conf: dict, paths_conf: dict):
+    def __init__(self, raw_paths, dict_names: list, prepro_conf: dict, paths_conf: dict, augmented=False):
         self.raw_paths = raw_paths
         self.prepro = prepro_conf
         self.paths = paths_conf
         self.dict_names = dict_names
         self.piles_number = self.prepro["PILES_NUMBER"]
         self.shuffle_saving_path = self.paths["SHUFFLED_PATH"]
-        self.augmented = self.prepro["WITH_AUGMENTATION"]
+        self.augmented = augmented
 
     def shuffle(self):
         print('--------Shuffling started--------')

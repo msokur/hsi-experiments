@@ -67,7 +67,12 @@ def augment_one(row, row_range=None,
                 new_rows_per_sample=conf.AUG['new_rows_per_sample']):
     # print(percent, aug_range, range(new_rows_per_sample))
     if row_range is None:
-        row_range = [0, conf.DATALOADER["LAST_NM"] - conf.DATALOADER["FIRST_NM"]]
+        if "LAST_NM" in conf.DATALOADER.keys() and "FIRST_NM" in conf.DATALOADER.keys():
+            row_range = [0, conf.DATALOADER["LAST_NM"] - conf.DATALOADER["FIRST_NM"]]
+        elif "OUTPUT_SIGNATURE_X_FEATURES" in conf.DATALOADER.keys():
+            row_range = [0, conf.DATALOADER["OUTPUT_SIGNATURE_X_FEATURES"]]
+        else:
+            raise ValueError("No spectrum size in Dataloader config!")
     row = np.array(row)
     result = []
     for j in range(new_rows_per_sample):

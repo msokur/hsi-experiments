@@ -11,7 +11,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
 from configuration import get_config as conf
-from configuration.get_config import PATHS, PREPRO, DATALOADER
+from configuration.get_config import PATHS, PREPRO, DATALOADER, AUG
 import provider_dyn
 from configuration.copy_py_files import copy_files
 from data_utils.shuffle import Shuffle
@@ -153,7 +153,8 @@ class Preprocessor:
             shuffle = Shuffle(raw_paths=paths,
                               dict_names=self.dict_names,
                               prepro_conf=self.prepro,
-                              paths_conf=self.paths)
+                              paths_conf=self.paths,
+                              augmented=AUG["enable"])
             shuffle.shuffle()
 
 

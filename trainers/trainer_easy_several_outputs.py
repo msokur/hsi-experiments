@@ -1,4 +1,4 @@
-from tensorflow import keras
+import tensorflow.keras as keras
 import trainers.trainer_easy as trainer_easy
 
 
@@ -9,7 +9,7 @@ class TrainerEasySeveralOutputs(trainer_easy.TrainerEasy):
     def compile_model(self, model):
         metric_dict = self.trainer["CUSTOM_OBJECTS"]
         METRICS = [
-            keras.metrics.SparseCategoricalAccuracy(),
+            keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
         ]
         for key in metric_dict.keys():
             METRICS.append(metric_dict[key]["metric"](num_classes=len(self.loader["LABELS_TO_TRAIN"]),
