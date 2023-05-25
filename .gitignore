@@ -29,6 +29,8 @@ jupyter/weights.npz
 tuner_results
 trainers/my_dir
 scripts/outputs
+testingarea/*.py
+testingarea
 *.html
 jupyter/*.png
 jupyter/*.jpg

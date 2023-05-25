@@ -1,0 +1,77 @@
+{
+  "BASE_PATH": {
+    "CHECKPOINT_PATH": "checkpoints",
+    "MODEL_PATH": "model"
+  },
+  "Cluster_Benny": {
+    "MODE": "CLUSTER",
+    "PREFIX": "/work/users/bn322dcei",
+    "MODEL_NAME_PATHS": ["/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs"]
+  },
+  "Win_Benny": {
+    "MODE": "LOCAL_NO_GPU",
+    "PREFIX": "E:\\ICCAS\\Gastric",
+    "MODEL_NAME_PATHS": ["logs"]
+  },
+  "HNO_Database": {
+    "1.CONCAT_WITH_PREFIX": {
+      "RAW_NPZ_PATH": ["data_3d", "hno", "3x3", "svn", "median"],
+      "RAW_SOURCE_PATH": ["Parotis-Faelle_unsorted", "data"],
+      "TEST_NPZ_PATH": ["data_3d", "hno", "3x3", "svn", "median"]
+    },
+    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+      "SHUFFLED_PATH": ["shuffled"],
+      "BATCHED_PATH": ["batch_sized"]
+    }
+  },
+  "ESO_Database": {
+    "1.CONCAT_WITH_PREFIX": {
+      "RAW_NPZ_PATH": ["data_3d", "eso", "3x3", "svn", "median2"],
+      "RAW_SOURCE_PATH": ["EsophagusCancer"],
+      "TEST_NPZ_PATH": ["data_3d", "eso", "3x3", "svn", "median2"]
+    },
+    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+      "SHUFFLED_PATH": ["shuffled"],
+      "BATCHED_PATH": ["batch_sized"]
+    }
+  },
+  "GASTRIC_Database_mk": {
+    "1.CONCAT_WITH_PREFIX": {
+      "RAW_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "mk2"],
+      "RAW_SOURCE_PATH": ["Gastric"],
+      "TEST_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "mk2"]
+    },
+    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+      "SHUFFLED_PATH": ["shuffled"],
+      "BATCHED_PATH": ["batch_sized"]
+    },
+    "3.CONCAT_WITH_RAW_SOURCE_PATH": {
+      "MASK_PATH": ["annotation", "mk_files"]
+    }
+  },
+  "GASTRIC_Database_png": {
+    "1.CONCAT_WITH_PREFIX": {
+      "RAW_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "png"],
+      "RAW_SOURCE_PATH": ["Gastric"],
+      "TEST_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "png"]
+    },
+    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+      "SHUFFLED_PATH": ["shuffled"],
+      "BATCHED_PATH": ["batch_sized"]
+    },
+    "3.CONCAT_WITH_RAW_SOURCE_PATH": {
+      "MASK_PATH": ["annotation", "GIMP_png"]
+    }
+  },
+  "MAT_BRAIN_Database": {
+    "1.CONCAT_WITH_PREFIX": {
+      "RAW_NPZ_PATH": ["data_3d", "mat_brain", "3x3", "svn", "gauss"],
+      "RAW_SOURCE_PATH": ["DatabaseBrainSNV"],
+      "TEST_NPZ_PATH": ["data_3d", "mat_brain", "3x3", "svn", "gauss"]
+    },
+    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+      "SHUFFLED_PATH": ["shuffled"],
+      "BATCHED_PATH": ["batch_sized"]
+    }
+  }
+}
