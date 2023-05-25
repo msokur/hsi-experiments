@@ -28,20 +28,23 @@ def paper_model():
     kernel_initializer, bias_initializer = get_inizializers()
     
     net = tf.expand_dims(input_, axis=-1)
+    
+    # Important difference from Ben Hamida et al.: "Padding is used on the spectral scale only. The strides are alternated between one and two in order to create a pooling effect after every convolutional operation."
+    #So, padding should be not "valid", nut padding = (0, 0, 1)
 
     net = tf.keras.layers.Conv3D(filters=20, kernel_size=3, padding='valid', activation='relu', kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
-    net = tf.keras.layers.Conv3D(filters=20, kernel_size=(1, 1, 3), strides=(1, 1, 2), padding='valid', activation='relu', kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
+    net = tf.keras.layers.Conv3D(filters=20, kernel_size=(1, 1, 3), strides=(1, 1, 2), padding='valid', activation='relu', kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net) #according to original paper should be filter=2
     
-    net = tf.keras.layers.Conv3D(filters=20, kernel_size=3, padding='valid', activation='relu', kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
-    net = tf.keras.layers.Conv3D(filters=20, kernel_size=(1, 1, 3), strides=(1, 1, 2), padding='valid', activation='relu', kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
+    net = tf.keras.layers.Conv3D(filters=20, kernel_size=3, padding='valid', activation='relu', kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)    #according to original paper should be filters=35
+    net = tf.keras.layers.Conv3D(filters=20, kernel_size=(1, 1, 3), strides=(1, 1, 2), padding='valid', activation='relu', kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)  #according to original paper should be filter=2
     
-    net = tf.keras.layers.Reshape((net.shape[-2], net.shape[-1]))(net)
-    
-    net = tf.keras.layers.Conv1D(filters=35, kernel_size=3, padding='valid', activation='relu', kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
-    net = tf.keras.layers.Conv1D(filters=35, kernel_size=3, strides=2, padding='valid', activation='relu', kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
+    net = tf.keras.layers.Reshape((net.shape[-2], net.shape[-1]))(net) #except reshape she uses Conv3d further, but with kernel sizes (1, 1, 3)
     
     net = tf.keras.layers.Conv1D(filters=35, kernel_size=3, padding='valid', activation='relu', kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
-    net = tf.keras.layers.Conv1D(filters=35, kernel_size=3, strides=2, padding='valid', activation='relu', kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
+    net = tf.keras.layers.Conv1D(filters=35, kernel_size=3, strides=2, padding='valid', activation='relu', kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net) #according to original paper should be filter=2
+    
+    net = tf.keras.layers.Conv1D(filters=35, kernel_size=3, padding='valid', activation='relu', kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net)
+    net = tf.keras.layers.Conv1D(filters=35, kernel_size=3, strides=2, padding='valid', activation='relu', kernel_initializer=kernel_initializer, bias_initializer=bias_initializer)(net) #according to original paper should be filter=4
     
     net = tf.keras.layers.Flatten()(net)
 
