@@ -1,21 +1,23 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=16
-#SBATCH --job-name=post
+#SBATCH --ntasks-per-node=1
+#SBATCH --job-name=inc_ex2_e3_l2
 #SBATCH --partition=clara
-#SBATCH --time=40:00:00
-#SBATCH --mem=64G
+#SBATCH --time=10:00:00
+#SBATCH --mem=2G
 ##SBATCH --gres=gpu:v100:2
 #SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=_postprocessing_for_known_models_%j.log
+#SBATCH --output=_postprocessing_CV_3d_inception_31-65_%j.log
 
-module load Python
-module load TensorFlow
-module load matplotlib
+#module load Python
+#module load TensorFlow
+#module load matplotlib
 #module load SciPy-bundle/2019.10-fosscuda-2019b-Python-3.7.4
-module load scikit-learn
-module load OpenCV
+#module load scikit-learn
+#module load OpenCV
 #module load scikit-image
-
+module load TensorFlow/2.7.1-foss-2021b-CUDA-11.4.1
+module load matplotlib/3.4.3-foss-2021b
+module load scikit-learn
 
 python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validation.py
