@@ -35,7 +35,7 @@ class Scaler:
     def transform(self, X):
         return
             
-    def X_y_concatenate(self):
+    def X_y_concatenate(self, _3D=config._3D):
         paths = glob(os.path.join(self.preprocessed_path, '*.npz'))
 
         X, y, indexes = [], [], []
@@ -43,7 +43,8 @@ class Scaler:
             data = np.load(path)
             _X, _y, _i = data['X'], data['y'], data['indexes_in_datacube']
             
-            _X = DistributionsChecker.get_centers(_X)
+            if _3D:
+                _X = DistributionsChecker.get_centers(_X)
 
             X += list(_X)
             y += list(_y)
@@ -96,6 +97,7 @@ class Scaler:
     
 class NormalizerScaler(Scaler):
     def __init__(self, *args, **kwargs):
+        print('NormalizerScaler is created')
         super().__init__(*args, **kwargs)
         
     def get_data_for_fit(self):
@@ -110,6 +112,7 @@ class NormalizerScaler(Scaler):
 
 class StandardScaler(Scaler):
     def __init__(self, *args, **kwargs):
+        print('StandardScaler is created')
         super().__init__(*args, **kwargs)
         
     def get_data_for_fit(self):
