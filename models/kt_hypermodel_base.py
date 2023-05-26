@@ -23,13 +23,13 @@ class KtModelBase(kt.HyperModel):
 
         if self.num_of_classes == 2:
             loss = keras.losses.BinaryCrossentropy(),
-            metrics = [keras.metrics.BinaryAccuracy(name='accuracy')]
+            metrics = [keras.metrics.BinaryAccuracy(name="accuracy")]
             if self.custom_metrics is not None:
                 for key in self.custom_metrics.keys():
                     metrics.append(self.custom_metrics[key]["metric"](**self.custom_metrics[key]["args"]))
         else:
             loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-            metrics = [keras.metrics.SparseCategoricalAccuracy()]
+            metrics = [keras.metrics.SparseCategoricalAccuracy(name="accuracy")]
             if self.custom_metrics is not None:
                 for key in self.custom_metrics.keys():
                     metrics.append(self.custom_metrics[key]["metric"](num_classes=self.num_of_classes,

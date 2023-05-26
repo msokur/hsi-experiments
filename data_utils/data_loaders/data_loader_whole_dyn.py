@@ -13,7 +13,11 @@ class DataLoaderWhole(DataLoaderDyn):
             return np.reshape(arr, tuple([arr.shape[0] * arr.shape[1]]) + tuple(arr.shape[2:]))
 
         print(f'Reading {path}')
-        spectrum, mask = self.file_read_mask_and_spectrum(path)
+        if "MASK_PATH" in self.paths.keys():
+            mask_path = self.paths["MASK_PATH"]
+        else:
+            mask_path = None
+        spectrum, mask = self.file_read_mask_and_spectrum(path, mask_path=mask_path)
         mask = self.set_mask_with_label(mask)
 
         spectrum = self.smooth(spectrum)
