@@ -59,7 +59,7 @@ class KtModelBase(kt.HyperModel):
         pass
 
     def get_activations(self, name):
-        return self.hp.Choice(self.wrap_name(name, "activation"), self.config["ACTIVATION"])
+        return self.hp.Choice(self.wrap_name(name, "activation"), [key for key in self.config["ACTIVATION"].keys()])
 
     def get_optimizer(self):
         optimizer = self.hp.Choice("optimizer", [key for key in self.config["OPTIMIZER"].keys()])
