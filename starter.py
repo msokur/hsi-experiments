@@ -5,7 +5,7 @@ import csv
 
 import config
 from provider import get_data_loader
-from data_utils.data_loaders.data_loader_base import DataLoader
+from data_utils.data_loaders.archive.data_loader_base import DataLoader
 
 def cross_validation_starter(root_folder_name, csv_filename=None):
     config.MODEL_NAME_PATHS.append(root_folder_name)

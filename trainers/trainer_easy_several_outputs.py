@@ -1,43 +1,24 @@
-from tensorflow import keras
+import tensorflow.keras as keras
+import trainers.trainer_easy as trainer_easy
 
-import config
-import trainer_easy
-import model_3d
 
 class TrainerEasySeveralOutputs(trainer_easy.TrainerEasy):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-    
+
     def compile_model(self, model):
+        metric_dict = self.trainer["CUSTOM_OBJECTS"]
         METRICS = [
-            keras.metrics.TruePositives(name='tp'),
-            keras.metrics.FalsePositives(name='fp'),
-            keras.metrics.TrueNegatives(name='tn'),
-            keras.metrics.FalseNegatives(name='fn'),
-            keras.metrics.Recall(name='sensitivity')
+            keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
         ]
-        WEIGHTED_METRICS = [
-            keras.metrics.BinaryAccuracy(name='accuracy'),
-            # keras.metrics.AUC(name='auc'),
-            # tf_metrics.f1_m
-            # specificity_m
-        ]
-        # model = inception_model()
+        for key in metric_dict.keys():
+            METRICS.append(metric_dict[key]["metric"](num_classes=len(self.loader["LABELS_TO_TRAIN"]),
+                                                      **metric_dict[key]["args"]))
 
         model.compile(
-            # optimizer=keras.optimizers.Adam(lr=config.LEARNING_RATE, clipnorm=1.),
-            optimizer=keras.optimizers.Adam(learning_rate=config.LEARNING_RATE),
-            # optimizer=keras.optimizers.RMSprop(lr=config.LEARNING_RATE),
+            optimizer=keras.optimizers.Adam(learning_rate=self.trainer["LEARNING_RATE"]),
             loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-            metrics = keras.metrics.SparseCategoricalAccuracy()
-            #metrics=METRICS,
-            # weighted_metrics=WEIGHTED_METRICS
+            metrics=METRICS
         )
 
         return model
-    
-    def get_easy_model(self):
-        model = model_3d.paper_model()
-        model = self.compile_model(model)
-        return model
-    

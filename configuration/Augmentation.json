@@ -1,0 +1,9 @@
+{
+  "Default": {
+    "enable": false,
+    "percent": 0.9,
+    "range": [-0.02, 0.02],
+    "new_rows_per_sample": 10,
+    "use": "new_rows_per_sample"
+  }
+}

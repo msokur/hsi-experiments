@@ -11,8 +11,8 @@ import utils
 class CrossValidatorSpain(CrossValidatorBase):
     def __init__(self, name):
         if name == "":
-            name = config.database_abbreviation
-        super().__init__(name)
+            self.name = config.database_abbreviation
+        super().__init__()
 
     def evaluation(self):
         name = self.name

@@ -1,7 +1,6 @@
 import numpy as np
 import datetime
 
-import config
 from evaluation.evaluation_base import EvaluationBase
 
 
@@ -33,7 +32,7 @@ class EvaluationMulticlass(EvaluationBase):
     def write_metrics_to_csv(self, writer, metrics, time_string=None):
         csv_row = {}
         for metric_name, metric_value in list(metrics.items())[1:]:
-            for k, v in zip(config.TISSUE_LABELS.values(), metric_value):
+            for k, v in zip(self.labels.values(), metric_value):
                 csv_row[metric_name + '_' + k] = v
         if time_string is None:
             csv_row.update({"Time": datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")})
@@ -48,13 +47,4 @@ class EvaluationMulticlass(EvaluationBase):
 
 
 if __name__ == '__main__':
-    eval_multiclass = EvaluationMulticlass(config.database_abbreviation)
-    config.CV_GET_CHECKPOINT_FROM_VALID = False
-    eval_multiclass.save_predictions_and_metrics(training_csv_path='C:\\Users\\tkachenko\\Desktop\\HSI\\hsi'
-                                                                   '-experiments\\logs\\Esophagus_MedFilter\\'
-                                                                   'Esophagus_MedFilter_stats_02.02.2022-13_32_30.csv',
-                                                 save_predictions=False,
-                                                 npz_folder='C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases'
-                                                            '\\Esophagus_MedFilter\\Esophagus_MedFilter'
-                                                            '\\raw_3d_weighted', checkpoints_raw_list=[38],
-                                                 save_curves=True)
+    pass

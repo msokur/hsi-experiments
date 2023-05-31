@@ -2,26 +2,23 @@ import numpy as np
 from tqdm import tqdm
 import os
 
-import config
+import provider_dyn
 from cross_validators.cross_validator_base import CrossValidatorBase
-from evaluation.evaluation_binary import EvaluationBinary
-from evaluation.evaluation_multiclass import EvaluationMulticlass
+
 
 class CrossValidationNormal(CrossValidatorBase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__()
 
     def evaluation(self, **kwargs):
-        training_csv_path = self.get_csv(os.path.join(self.project_folder, 'logs', self.name))
+        training_csv_path = self.get_csv(os.path.join(self.project_folder, "logs", self.cv["NAME"]))
         print(training_csv_path)
 
-        if len(config.LABELS_OF_CLASSES_TO_TRAIN) > 2:
-            evaluator = EvaluationMulticlass(config.database_abbreviation)
-        else:
-            evaluator = EvaluationBinary(config.database_abbreviation)
+        evaluator = provider_dyn.get_evaluation(labels=self.loader["LABELS_TO_TRAIN"],
+                                                name=self.cv["DATABASE_ABBREVIATION"])
 
         evaluator.save_predictions_and_metrics(training_csv_path=training_csv_path,
-                                               npz_folder=config.RAW_NPZ_PATH,
+                                               npz_folder=self.paths["RAW_NPZ_PATH"],
                                                **kwargs)
 
     def compare_checkpoints(self, rng, save_path_, results_file):
