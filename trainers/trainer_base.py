@@ -170,7 +170,7 @@ class Trainer:
 
     def train(self):
         try:
-            if self.paths["MODE"] == 'LOCAL_GPU' or self.paths["MODE"] == 'CLUSTER':
+            if self.paths["MODE"] == "WITH_GPU":
                 gpus = tf.config.experimental.list_physical_devices('GPU')
                 if gpus:
                     try:
@@ -188,8 +188,10 @@ class Trainer:
                         model, history = self.train_process(mirrored_strategy=mirrored_strategy)
                 except IndexError:
                     pass
-            else:
+            elif self.paths["MODE"] == "WITHOUT_GPU":
                 model, history = self.train_process()
+            else:
+                print(f"ERROR Mode: {self.paths['MODE']} not available! Check your path configurations!")
 
         except Exception as e:
             conf.telegram.send_tg_message(f'ERROR!!!, training {self.log_dir} has finished with error {e}')

@@ -56,7 +56,7 @@ class CrossValidatorBase:
         self.paths["MODEL_NAME_PATHS"].append(root_folder_name)
 
         root_folder = os.path.join(*self.paths["MODEL_NAME_PATHS"])
-        self.paths["MODEL_NAME_PATHS"] = self.get_model_name(self.paths["MODEL_NAME_PATHS"])
+        model_name_prefix = self.get_model_name(self.paths["MODEL_NAME_PATHS"])
 
         if not os.path.exists(root_folder):
             os.makedirs(root_folder)
@@ -70,7 +70,7 @@ class CrossValidatorBase:
             csv_filename = os.path.join(root_folder, root_folder_name + "_stats" + date_ + ".csv")
 
         for indexes in splits[self.cv["FIRST_SPLIT"]:]:
-            model_name = self.paths["MODEL_NAME_PATHS"]
+            model_name = model_name_prefix
             if len(indexes) > 1:
                 for i in indexes:
                     model_name += "_" + str(i)

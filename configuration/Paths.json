@@ -4,12 +4,12 @@
     "MODEL_PATH": "model"
   },
   "Cluster_Benny": {
-    "MODE": "CLUSTER",
+    "MODE": "WITH_GPU",
     "PREFIX": "/work/users/bn322dcei",
     "MODEL_NAME_PATHS": ["/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs"]
   },
   "Win_Benny": {
-    "MODE": "LOCAL_NO_GPU",
+    "MODE": "WITHOUT_GPU",
     "PREFIX": "E:\\ICCAS\\Gastric",
     "MODEL_NAME_PATHS": ["logs"]
   },

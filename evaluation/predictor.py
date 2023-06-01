@@ -71,12 +71,14 @@ class Predictor:
 
     @staticmethod
     def edit_model_path_if_local(model_path):
-        if "LOCAL" in conf.PATHS["MODE"]:
-            model_path = model_path.split("hsi-experiments")[-1][1:]
-            model_path = model_path.replace("/", "\\")
+        current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+        parent_dir = os.path.dirname(current_dir)
+        if parent_dir not in model_path:
+            model_path = os.path.join(conf.PATHS["MODEL_NAME_PATHS"][0],
+                                      model_path.split(conf.PATHS["MODEL_NAME_PATHS"][0])[-1][1:])
+            if conf.PATHS["SYSTEM_PATHS_DELIMITER"] == "\\":
+                model_path = model_path.replace("/", "\\")
 
-            current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-            parent_dir = os.path.dirname(current_dir)
             model_path = os.path.join(parent_dir, model_path)
         return model_path
 
