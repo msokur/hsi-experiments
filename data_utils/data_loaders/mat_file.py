@@ -24,17 +24,6 @@ class MatFile:
 
         return result_mask
 
-    def get_number(self, elem: str) -> str:
-        return elem.split(self.loader["NUMBER_SPLIT"][0])[-1].split(".")[0].split(self.loader["NUMBER_SPLIT"][1])[0]
-
-    def sort(self, paths):
-        def take_only_number(elem):
-            return int(self.get_number(elem=elem))
-
-        paths = sorted(paths, key=take_only_number)
-
-        return paths
-
     def file_read_mask_and_spectrum(self, path, mask_path=None):
         data = sio.loadmat(path)
         spectrum, mask = data[self.loader["SPECTRUM"]], data[self.loader["MASK"]]

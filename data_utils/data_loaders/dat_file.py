@@ -50,10 +50,6 @@ class DatFile:
 
         return spectrum, mask
 
-    @staticmethod
-    def sort(paths):
-        return sorted(paths)
-
     def spectrum_read_from_dat(self, dat_path):
         spectrum_data, _ = Cube_Read(dat_path,
                                      wavearea=self.loader["WAVE_AREA"],

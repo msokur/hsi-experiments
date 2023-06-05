@@ -12,6 +12,7 @@ import provider_dyn
 from configuration.get_config import DATALOADER, PATHS
 from data_utils.background_detection import detect_background
 from data_utils.data_loaders.path_splits import get_splits
+from data_utils.data_loaders.path_sort import get_sort
 
 
 class DataLoaderDyn:
@@ -39,7 +40,8 @@ class DataLoaderDyn:
         if root_path is None:
             root_path = self.paths["RAW_NPZ_PATH"]
         paths = glob(os.path.join(root_path, "*.npz"))
-        paths = self.data_reader.sort(paths)
+        number = "NUMBER_SORT" in self.loader.keys()
+        paths = get_sort(paths=paths, number=number, splits=self.loader["NUMBER_SORT"] if number else None)
 
         splits = get_splits(typ=self.loader["SPLIT_PATHS_BY"], paths=paths,
                             values=self.loader["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"],
