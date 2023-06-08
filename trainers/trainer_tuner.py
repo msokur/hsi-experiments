@@ -14,90 +14,17 @@ class TrainerTuner(Trainer):
         super().__init__(**kwargs)
         self.tuner_dir = os.path.join(self.log_dir, "tuner")
 
-    def restore_tuner(self, directory=''):
-        if directory == '':
-            directory = self.tuner_dir
-
-        with open(os.path.join(directory, "model.pickle"), "rb") as handle:
-            model = pickle.load(handle)
-
-        with open(os.path.join(directory, "params.pickle"), "rb") as handle:
-            params = pickle.load(handle)
-
-        return self.trainer["TUNER"](model,
-                                     objective=kt.Objective(**params["objective"]),
-                                     overwrite=False,
-                                     directory=directory)
-
-    @staticmethod
-    def save_tuner_params(model, **kwargs):
-        path = kwargs["directory"]
-        with open(os.path.join(path, "model.pickle"), "wb") as handle:
-            pickle.dump(model, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        with open(os.path.join(path, "params.pickle"), "wb") as handle:
-            pickle.dump(kwargs, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-    def compile_model(self, model) -> kt.Tuner:  # in this case - tune model
-
-        params = {
-            "objective": self.trainer["TUNER_OBJECTIVE"],
-            "max_trials": self.trainer["TUNER_MAX_TRIALS"],
-            "overwrite": self.trainer["TUNER_OVERWRITE"],
-            "directory": self.tuner_dir,
-        }
-        params_obj = params.copy()
-        params_obj["objective"] = kt.Objective(**self.trainer["TUNER_OBJECTIVE"])
-
-        tuner = self.trainer["TUNER"](model, **params_obj)
-
-        tuner.search_space_summary()
-
-        train_dataset_t, valid_dataset_t, train_generator, class_weights_t = self.get_datasets(for_tuning=True)
-        self.valid_except_indexes = train_generator.valid_except_indexes
-
-        tuner.search(x=train_dataset_t,
-                     epochs=self.trainer["TUNER_EPOCHS"],
-                     validation_data=valid_dataset_t,
-                     class_weight=class_weights_t,
-                     callbacks=[keras.callbacks.TensorBoard(self.tuner_dir)])
-
-        TrainerTuner.save_tuner_params(model, **params)
-
-        rmtree(self.batch_path)
-
-        return tuner
-
-    def get_model(self):
-        print("------ Start search tuning parameter ---------")
-        base_model = self.trainer["MODEL"](shape=self.get_output_shape(), conf=self.trainer["MODEL_CONFIG"],
-                                           num_of_labels=len(self.loader["LABELS_TO_TRAIN"]),
-                                           custom_metrics=self.trainer["CUSTOM_OBJECTS"])
-        tuner = self.compile_model(base_model)
-        print("------ Finish search tuning parameter ---------")
-
-        tuner.results_summary(num_trials=1)
-
-        best_hp = tuner.get_best_hyperparameters()[0]
-        best_model = tuner.get_best_models()[0]
-
-        return best_hp, best_model, base_model
-
-    def train_process(self, mirrored_strategy=None):
-        self.mirrored_strategy = mirrored_strategy
+    def train_process(self):
         self.logging_and_copying()
 
-        '''-------CALLBACKS---------'''
+        '''-------TUNER---------'''
 
-        callbacks_ = self.get_callbacks()
-
-        '''-------MODEL---------'''
-
-        best_hp, best_model, base_model = self.get_model()
+        base_model, tuner = self.get_tuner(self.mirrored_strategy)
+        best_hp, best_model = self.search(tuner)
 
         '''-------DATASET---------'''
 
-        train_dataset, valid_dataset, _, class_weights = self.get_datasets()
+        train_dataset, valid_dataset, _, class_weights = self.get_datasets(for_tuning=self.trainer["SMALLER_DATASET"])
 
         '''-------TRAINING---------'''
 
@@ -108,7 +35,7 @@ class TrainerTuner(Trainer):
                                  verbose=2,
                                  epochs=self.trainer["EPOCHS"],
                                  batch_size=self.trainer["BATCH_SIZE"],
-                                 callbacks=callbacks_,
+                                 callbacks=self.get_callbacks(),
                                  use_multiprocessing=True,
                                  class_weight=class_weights,
                                  workers=int(os.cpu_count())
@@ -119,6 +46,78 @@ class TrainerTuner(Trainer):
         rmtree(self.batch_path)
 
         return best_model, history
+
+    def restore_tuner(self, directory=''):
+        if directory == '':
+            directory = self.tuner_dir
+
+        with open(os.path.join(directory, "model.pickle"), "rb") as handle:
+            model = pickle.load(handle)
+
+        with open(os.path.join(directory, "params.pickle"), "rb") as handle:
+            params = pickle.load(handle)
+
+        params["objective"] = kt.Objective(**params["objective"])
+
+        return model, params
+
+    @staticmethod
+    def save_tuner_params(model, **kwargs):
+        path = kwargs["directory"]
+        with open(os.path.join(path, "model.pickle"), "wb") as handle:
+            pickle.dump(model, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(os.path.join(path, "params.pickle"), "wb") as handle:
+            pickle.dump(kwargs, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def get_params(self):
+        params = {
+            "objective": self.trainer["TUNER_OBJECTIVE"],
+            "max_trials": self.trainer["TUNER_MAX_TRIALS"],
+            "overwrite": self.trainer["TUNER_OVERWRITE"],
+            "directory": self.tuner_dir,
+        }
+        params_obj = params.copy()
+        params_obj["objective"] = kt.Objective(**self.trainer["TUNER_OBJECTIVE"])
+
+        return params_obj
+
+    def search(self, tuner: kt.Tuner) -> tuple[kt.HyperParameters, keras.Model]:
+        print("------ Start search tuning parameter ---------")
+        train_dataset_t, valid_dataset_t, train_generator, class_weights_t = self.get_datasets(for_tuning=True)
+        self.valid_except_indexes = train_generator.valid_except_indexes
+
+        tuner.search(x=train_dataset_t,
+                     epochs=self.trainer["TUNER_EPOCHS"],
+                     validation_data=valid_dataset_t,
+                     class_weight=class_weights_t,
+                     callbacks=[keras.callbacks.TensorBoard(self.tuner_dir)])
+
+        rmtree(self.batch_path)
+        print("------ Finish search tuning parameter ---------")
+        tuner.results_summary(num_trials=1)
+
+        best_hp = tuner.get_best_hyperparameters()[0]
+        best_model = tuner.get_best_models()[0]
+
+        return best_hp, best_model
+
+    def get_tuner(self, mirrored_strategy=None) -> tuple[kt.HyperModel, kt.Tuner]:
+        if self.trainer["RESTORE"]:
+            base_model, params = self.restore_tuner()
+        else:
+            base_model = self.get_model()
+            params = self.get_params()
+            TrainerTuner.save_tuner_params(base_model, **params)
+
+        return base_model, self.trainer["TUNER"](base_model, **params, distribution_strategy=mirrored_strategy)
+
+    def get_model(self) -> kt.HyperModel:
+        base_model = self.trainer["MODEL"](shape=self.get_output_shape(), conf=self.trainer["MODEL_CONFIG"],
+                                           num_of_labels=len(self.loader["LABELS_TO_TRAIN"]),
+                                           custom_metrics=self.trainer["CUSTOM_OBJECTS"])
+
+        return base_model
 
 
 if __name__ == '__main__':

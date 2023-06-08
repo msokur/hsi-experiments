@@ -1,7 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
 import os
-from shutil import rmtree
 import numpy as np
 import abc
 import pickle
@@ -27,11 +26,7 @@ class Trainer:
         self.valid_except_indexes = valid_except_indexes.copy()
 
     @abc.abstractmethod
-    def compile_model(self, model):
-        pass
-
-    @abc.abstractmethod
-    def get_model(self):
+    def train_process(self):
         pass
 
     def save_valid_except_indexes(self, valid_except_indexes):
@@ -39,7 +34,7 @@ class Trainer:
             pickle.dump(valid_except_indexes, f, pickle.HIGHEST_PROTOCOL)
 
     def logging_and_copying(self):
-        if self.trainer["TYPE"] != "Restore":
+        if not self.trainer["RESTORE"]:
             if not os.path.exists(self.log_dir):
                 os.mkdir(self.log_dir)
 
@@ -128,46 +123,6 @@ class Trainer:
     def save_history(self, history):
         np.save(os.path.join(self.log_dir, 'history'), history.history)
 
-    def train_process(self, mirrored_strategy=None):
-        self.mirrored_strategy = mirrored_strategy
-        self.logging_and_copying()
-
-        '''-------DATASET---------'''
-
-        train_dataset, valid_dataset, train_generator, class_weights = self.get_datasets(
-            for_tuning=self.trainer["SMALLER_DATASET"])
-
-        '''-------CALLBACKS---------'''
-
-        callbacks_ = self.get_callbacks()
-
-        '''-------MODEL---------'''
-
-        model, initial_epoch = self.get_model()
-        model.summary()
-
-        '''-------TRAINING---------'''
-
-        history = model.fit(
-            # x=train_generator,
-            # validation_data=valid_generator,
-            x=train_dataset,
-            validation_data=valid_dataset,
-            epochs=self.trainer["EPOCHS"],
-            verbose=2,
-            initial_epoch=initial_epoch,
-            batch_size=self.trainer["BATCH_SIZE"],
-            callbacks=callbacks_,
-            use_multiprocessing=True,
-            class_weight=class_weights,
-            workers=int(os.cpu_count()))
-
-        self.save_history(history)
-
-        rmtree(self.batch_path)
-
-        return model, history
-
     def train(self):
         try:
             if self.paths["MODE"] == "WITH_GPU":
@@ -181,21 +136,15 @@ class Trainer:
                     except RuntimeError as e:
                         print(e)
 
-                mirrored_strategy = tf.distribute.experimental.CentralStorageStrategy()
-                # mirrored_strategy = tf.distribute.MultiWorkerMirroredStrategy()
-                try:
-                    with mirrored_strategy.scope():
-                        model, history = self.train_process(mirrored_strategy=mirrored_strategy)
-                except IndexError:
-                    pass
-            elif self.paths["MODE"] == "WITHOUT_GPU":
-                model, history = self.train_process()
-            else:
-                print(f"ERROR Mode: {self.paths['MODE']} not available! Check your path configurations!")
-
+                self.mirrored_strategy = tf.distribute.experimental.CentralStorageStrategy()
+                # self.mirrored_strategy = tf.distribute.MultiWorkerMirroredStrategy()
+            elif self.paths["MODE"] != "WITHOUT_GPU":
+                print(f"ERROR Mode: {self.paths['MODE']} not available! Continue without GPU strategy")
         except Exception as e:
             conf.telegram.send_tg_message(f'ERROR!!!, training {self.log_dir} has finished with error {e}')
             raise e  # TODO REMOVE!!
+
+        model, history = self.train_process()
 
         checkpoints_paths = os.path.join(self.log_dir, 'checkpoints')
         if not os.path.exists(checkpoints_paths):

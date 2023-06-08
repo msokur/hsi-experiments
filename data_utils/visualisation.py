@@ -40,7 +40,10 @@ def get_model_path(path: str) -> str:
 
 
 def get_save_path(main_path: str, name: str) -> str:
-    path = os.path.join(main_path, "visualisation")
+    main_path_list = main_path.split(PATHS["SYSTEM_PATHS_DELIMITER"])
+    # TODO create a variable in path config for test folder
+    main_path_list[-2] = "test"
+    path = PATHS["SYSTEM_PATHS_DELIMITER"] + os.path.join(*main_path_list, "visualisation")
     if not os.path.exists(path):
         os.makedirs(path)
 

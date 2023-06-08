@@ -6,7 +6,7 @@ class TrainerEasySeveralOutputs(trainer_easy.TrainerEasy):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def compile_model(self, model):
+    def compile_model(self, model: keras.Model) -> keras.Model:
         metric_dict = self.trainer["CUSTOM_OBJECTS"]
         METRICS = [
             keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
