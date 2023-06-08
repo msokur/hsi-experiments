@@ -64,6 +64,9 @@ class TrainerTuner(Trainer):
     @staticmethod
     def save_tuner_params(model, **kwargs):
         path = kwargs["directory"]
+        if not os.path.exists(path):
+            os.mkdir(path)
+
         with open(os.path.join(path, "model.pickle"), "wb") as handle:
             pickle.dump(model, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -71,14 +74,9 @@ class TrainerTuner(Trainer):
             pickle.dump(kwargs, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def get_params(self):
-        params = {
-            "objective": self.trainer["TUNER_OBJECTIVE"],
-            "max_trials": self.trainer["TUNER_MAX_TRIALS"],
-            "overwrite": self.trainer["TUNER_OVERWRITE"],
-            "directory": self.tuner_dir,
-        }
-        params_obj = params.copy()
-        params_obj["objective"] = kt.Objective(**self.trainer["TUNER_OBJECTIVE"])
+        params_obj = self.trainer["TUNER_PARAMS"].copy()
+        params_obj["directory"] = self.tuner_dir
+        params_obj["objective"] = kt.Objective(**params_obj["objective"])
 
         return params_obj
 

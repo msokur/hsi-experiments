@@ -44,10 +44,13 @@
     "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 50,
+    "SMALLER_DATASET": false,
     "TUNER": "BayesianOptimization",
-    "TUNER_OBJECTIVE": {"name": "f1_score_weighted", "direction":  "max"},
-    "TUNER_MAX_TRIALS": 20,
-    "TUNER_OVERWRITE": true,
+    "TUNER_PARAMS": {
+      "objective": {"name": "f1_score_weighted", "direction":  "max"},
+      "max_trials": 20,
+      "overwrite": true
+    },
     "TUNER_EPOCHS": 1,
     "MODEL_CHECKPOINT": {
       "monitor": "val_f1_score_weighted",
