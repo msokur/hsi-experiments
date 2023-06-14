@@ -12,7 +12,6 @@ class F1_score(Metric):
         self.average_methode = None
         self.init_average(average)
 
-    @tf.autograph.experimental.do_not_convert
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_pred_max = K.argmax(y_pred, axis=1)
         cm = tf.math.confusion_matrix(y_true, y_pred_max, dtype=tf.float32, num_classes=self.num_classes)
@@ -39,7 +38,7 @@ class F1_score(Metric):
         f1_s *= weights
         self.f1.assign(K.sum(f1_s))
 
-    def multi(self, tp, fp, fn):
+    def multi(self, tp, fp, fn, tn):
         f1_s = tp / (tp + 0.5 * (fp + fn) + K.epsilon())
         self.f1.assign(f1_s)
 
@@ -60,6 +59,16 @@ class F1_score(Metric):
             raise ValueError("Only the average Keywords: 'macro', 'micro', 'weighted' and 'multi' are allowed!")
 
         self.f1 = self.add_weight("f1", initializer="zeros")
+
+    def merge_state(self, metrics):
+        length = len(metrics) + 1
+        result = self.f1.numpy()
+        for metric in metrics:
+            if len(self.weights) == metric.weights.__len__():
+                result += metric.f1.numpy()
+            else:
+                raise ValueError("Can not merge state!")
+        self.f1.assign(result / length)
 
     def result(self):
         return self.f1

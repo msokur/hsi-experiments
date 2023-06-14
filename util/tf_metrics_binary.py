@@ -9,7 +9,6 @@ class F1_score(Metric):
         self.threshold = threshold
         self.f1 = self.add_weight("f1", initializer="zeros")
 
-    @tf.autograph.experimental.do_not_convert
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_pred_threshold = K.greater_equal(K.cast(y_pred, dtype=tf.float32), self.threshold)
         cm = tf.math.confusion_matrix(y_true, y_pred_threshold, dtype=tf.float32)
@@ -17,6 +16,16 @@ class F1_score(Metric):
         fp = cm[0][1]
         fn = cm[1][0]
         self.f1.assign(tp / (tp + 0.5 * (fp + fn) + K.epsilon()))
+
+    def merge_state(self, metrics):
+        length = len(metrics) + 1
+        result = self.f1.numpy()
+        for metric in metrics:
+            if len(self.weights) == metric.weights.__len__():
+                result += metric.f1.numpy()
+            else:
+                raise ValueError("Can not merge state!")
+        self.f1.assign(result / length)
 
     def result(self):
         return self.f1
