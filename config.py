@@ -66,15 +66,18 @@ CROSS_VALIDATORS = {
 CROSS_VALIDATOR = CROSS_VALIDATORS['cv_postprocessing']
 
 # ----------------------------------------------------------------------------------------------------------
-#database_abbreviation = 'Esophagus_MedFilter'
-database_abbreviation = 'Colon_MedianFilter'
+database_abbreviation = 'Esophagus_MedFilter'
+#database_abbreviation = 'CV_3d_inception'
+#database_abbreviation = 'Colon_MedianFilter'
 
 RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')
+RAW_SOURCE_PATH = os.path.join('data_bea_db', database_abbreviation)
+#RAW_NPZ_PATH = os.path.join('data_3d', 'l2_norm')
 
-RAW_SOURCE_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
-                              database_abbreviation)
-RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
-                            database_abbreviation, 'raw_3d_weighted')
+#RAW_SOURCE_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
+#                              database_abbreviation)
+#RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
+#                            database_abbreviation, 'raw_3d_weighted')
 
 #TEST_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation, database_abbreviation)
 #RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')

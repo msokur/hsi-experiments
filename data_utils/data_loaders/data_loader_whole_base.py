@@ -52,8 +52,9 @@ class DataLoaderWholeBase(DataLoader):
         #indexes_np = DataLoader.indexes_get_np_from_bool_indexes(*indexes)
 
         #values = self.X_y_concatenate_from_spectrum(spectra, indexes_np)
+        
         print(spectrum.shape, mask.shape, np.unique(mask))
-        print(DataLoaderWholeBase.get_all_indexes(mask)[0].shape)
+        #print(DataLoaderWholeBase.get_all_indexes(mask)[0].shape)
         size = spectrum.shape[:2]
         X = reshape(spectrum)
         y = reshape(mask)

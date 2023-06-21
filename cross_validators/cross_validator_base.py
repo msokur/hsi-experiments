@@ -30,7 +30,7 @@ class CrossValidatorBase:
     def pipeline(self, execution_flags={}, **kwargs):
         if not execution_flags:
             execution_flags = CrossValidatorBase.get_execution_flags()
-
+            
         if execution_flags['cross_validation']:
             CrossValidatorBase.cross_validation(self.name)
         if execution_flags['evaluation']:
@@ -114,7 +114,6 @@ class CrossValidatorBase:
     @staticmethod
     def get_history(search_folder):
         history_paths = utils.glob_multiple_file_types(search_folder, '.*.npy', '*.npy')
-        # print(history_paths)
         if len(history_paths) == 0:
             print('Error! No history files were found!')
             # raise ValueError('Error! No history files were found!')
@@ -126,7 +125,7 @@ class CrossValidatorBase:
 
         history_path = history_paths[0]
         history = np.load(history_path, allow_pickle=True)
-        # print(history)
+
         if len(history.shape) == 0:
             history = history.item()
         return history, history_path

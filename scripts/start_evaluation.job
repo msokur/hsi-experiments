@@ -4,18 +4,21 @@
 #SBATCH --job-name=test_3d_inc
 #SBATCH --partition=clara
 #SBATCH --time=40:00:00
-#SBATCH --mem=64G
-#SBATCH --gres=gpu:rtx2080ti:1
+#SBATCH --mem=8G
+##SBATCH --gres=gpu:rtx2080ti:1
 ##SBATCH --gres=gpu:v100:1
-#SBATCH --output=_check_what_db_was_used_%j.log
+#SBATCH --output=_test_evaluation_binary_%j.log
 
-module load Python
+#module load Python
 module load TensorFlow
-module load matplotlib
-#module load SciPy-bundle/2019.10-fosscuda-2019b-Python-3.7.4
-module load scikit-learn
-module load OpenCV
-#module load scikit-image
+module load matplotlib/3.4.3-foss-2021b
 
+#module load matplotlib
+#module load SciPy-bundle/2019.10-fosscuda-2019b-Python-3.7.4 was already commented
+#module load scikit-learn
+#module load OpenCV
+#module load scikit-image was already commented
+
+#pip install --user tqdm
 
 python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/evaluation/evaluation_binary.py
