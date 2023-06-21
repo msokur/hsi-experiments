@@ -3,14 +3,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-import config
+from configuration.get_config import DATALOADER
 
 
 class Metrics:
-    def __init__(self, labels_of_classes_to_train=config.LABELS_OF_CLASSES_TO_TRAIN):
-        self.labels_of_classes_to_train = labels_of_classes_to_train
-        self.label_color = config.PLOT_COLORS
-        self.labels = config.TISSUE_LABELS
+    def __init__(self, labels_of_classes_to_train=None):
+        if labels_of_classes_to_train is None:
+            self.labels_of_classes_to_train = DATALOADER["LABELS_TO_TRAIN"]
+        else:
+            self.labels_of_classes_to_train = labels_of_classes_to_train
+        self.label_color = DATALOADER["PLOT_COLORS"]
+        self.labels = DATALOADER["TISSUE_LABELS"]
         if len(self.labels_of_classes_to_train) == 2:
             print('Metrics binary')
             self.binary = True
@@ -55,8 +58,12 @@ class Metrics:
             return fpr, tpr
         else:
             fpr, tpr = [], []
+            gt_unique = np.unique(gt)
             for idx in np.arange(predictions.shape[-1]):
-                fpr_, tpr_, thresholds = roc_curve(gt, predictions[:, idx], pos_label=idx)
+                if idx in gt_unique and gt_unique.shape[0] > 1:
+                    fpr_, tpr_, thresholds = roc_curve(gt, predictions[:, idx], pos_label=idx)
+                else:
+                    fpr_, tpr_ = np.array("NaN"), np.array("NaN")
                 fpr.append(fpr_)
                 tpr.append(tpr_)
 
@@ -100,21 +107,21 @@ class Metrics:
         gt_unique = np.unique(gt)
 
         if self.binary:
-            if gt_unique.shape[0] != 1:
-                auc_ = roc_auc_score(gt, predictions)
+            if gt_unique.shape[0] > 1:
+                auc_result = roc_auc_score(gt, predictions)
             else:
-                auc_ = float('NaN')
-            return auc_
+                auc_result = float('NaN')
         else:
             number_of_classes = len(self.labels_of_classes_to_train)
-            auc_result = np.array([float('NaN')] * number_of_classes)
-            if len(gt_unique) > 2:
-                auc_ = roc_auc_score(np.eye(number_of_classes)[gt],
-                                     predictions,
-                                     average=None, labels=gt_unique)  # .reshape(-1, 1)
-                auc_result[gt_unique] = auc_
+            if len(gt_unique) == len(self.labels_of_classes_to_train):
+                auc_result = roc_auc_score(np.eye(number_of_classes)[gt],
+                                           predictions,
+                                           average=None, labels=gt_unique)  # .reshape(-1, 1)
             else:
+                auc_result = np.array([float('NaN')] * number_of_classes)
                 for uniq in gt_unique:
+                    if gt_unique.shape[0] < 2:
+                        continue
                     predictions_ = np.argmax(predictions, axis=1)
                     fpr, tpr, thresholds_p = roc_curve(gt, predictions_, pos_label=uniq)
                     auc_ = auc(fpr, tpr)
@@ -156,7 +163,7 @@ class Metrics:
         fpr, tpr = self.get_fpr_tpr(gt, predictions_raw)
         auc_ = self.auc(gt, predictions_raw)
 
-        if len(tpr[0].shape) > 0:
+        if len(tpr) > 1:
             for idx in self.labels_of_classes_to_train:
                 plt.plot(fpr[idx], tpr[idx], color=self.label_color[idx], lw=2,
                          label='ROC curve of {0} (area = {1:0.2f})'

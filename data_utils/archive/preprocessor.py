@@ -4,10 +4,13 @@ import inspect
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir) 
-sys.path.insert(1, os.path.join(parentdir, 'utils')) 
+sys.path.insert(0, parentdir)
+sys.path.insert(1, os.path.join(parentdir, 'utils'))
 
 import config
+import utils
+import provider
+from data_utils.data_loaders.archive.data_loader_base import DataLoader
 
 import os
 import numpy as np
@@ -15,13 +18,7 @@ import random
 import glob
 from tqdm import tqdm
 import pickle
-from scipy.signal import savgol_filter
 from shutil import copyfile
-
-import provider
-from data_loaders.data_loader_base import DataLoader
-from scaler import Scaler
-
 
 '''
 Preprocessor contains opportunity of
@@ -31,14 +28,22 @@ Link: https://blog.janestreet.com/how-to-shuffle-a-big-dataset/
 '''
 
 
-class Preprocessor():
+class Preprocessor:
     def __init__(self, load_name_for_x='X',
                  load_name_for_y='y',
                  load_name_for_name='PatientName',
                  piles_number=100,
                  weights_filename='.weights',
-                 dict_names=['PatientIndex', 'indexes_in_datacube', 'weights']):
-                 #dict_names=['PatientIndex', 'indexes_in_datacube']):
+                 dict_names=None):
+        # dict_names=['PatientIndex', 'indexes_in_datacube']):
+        self.valid_archives_saving_path = None
+        self.archives_of_batch_size_saving_path = None
+        self.batch_size = None
+        self.augmented = None
+        self.shuffle_saving_path = None
+        if dict_names is None:
+            dict_names = ['PatientIndex', 'indexes_in_datacube', 'weights']
+        self.raw_paths = None
         self.load_name_for_name = load_name_for_name
         self.load_name_for_X = load_name_for_x
         self.load_name_for_y = load_name_for_y
@@ -47,7 +52,6 @@ class Preprocessor():
             self.dict_names.append(name)
         self.piles_number = piles_number
         self.weights_filename = weights_filename
-        
 
     # ------------------divide all samples into piles_number files------------------
     def __create_piles(self):
@@ -141,10 +145,10 @@ class Preprocessor():
         self.shuffle_saving_path = shuffle_saving_path
         self.augmented = augmented
 
-        Preprocessor.copy_preprocessor_paths(shuffle_saving_path)
-
         if not os.path.exists(self.shuffle_saving_path):
             os.mkdir(self.shuffle_saving_path)
+
+        Preprocessor.copy_preprocessor_paths(shuffle_saving_path)
 
         self.__create_piles()
         self.__shuffle_piles()
@@ -157,10 +161,10 @@ class Preprocessor():
 
         data_ = {k: np.array_split(a[:chunks_max], chunks) for k, a in data.items()}
 
-        #arrs = [np.array_split(arg[:chunks_max], chunks) for arg in args]
+        # arrs = [np.array_split(arg[:chunks_max], chunks) for arg in args]
 
         # ---------------saving of the non equal last part for the future partition---------
-        #for i in range(len(args)):
+        # for i in range(len(args)):
         #    self.rest_arrs[i] += list(args[i][chunks_max:])
 
         # ---------------saving of the non equal last part for the future partition---------
@@ -190,10 +194,12 @@ class Preprocessor():
     def split_data_into_npz_of_batch_size(self, paths,
                                           batch_size,
                                           archives_of_batch_size_saving_path,
-                                          except_names=[],
-                                          valid_except_names=[]):
-        Preprocessor.copy_preprocessor_paths(archives_of_batch_size_saving_path)
-
+                                          except_names=None,
+                                          valid_except_names=None):
+        if valid_except_names is None:
+            valid_except_names = []
+        if except_names is None:
+            except_names = []
         print('--------Splitting into npz of batch size started--------')
         self.batch_size = batch_size
         self.archives_of_batch_size_saving_path = archives_of_batch_size_saving_path
@@ -228,8 +234,8 @@ class Preprocessor():
 
         self.__init_rest()
 
-        #valid_data = {}
-        #for k in self.dict_names:
+        # valid_data = {}
+        # for k in self.dict_names:
         #    valid_data[k] = []
 
         for p in tqdm(paths):
@@ -237,7 +243,7 @@ class Preprocessor():
             valid_data = {}
             for k in self.dict_names:
                 valid_data[k] = []
-                
+
             data_ = np.load(p)
             self.__check_dict_names(self.dict_names, data_)
             self.dict_names = list(set(self.dict_names).intersection(set(data_)))
@@ -265,40 +271,26 @@ class Preprocessor():
                 indexes = np.flatnonzero(p_names != except_name)
                 if indexes.shape[0] == 0:
                     print(f'WARNING! For except_name {except_name} no except_samples were found')
-                
+                    # TODO if there more than 1 names, only the last one will filtered out
+
                 p_names = p_names[indexes]
                 data = {n: a[indexes] for n, a in data.items()}
 
-            self.__split_arrays(self.archives_of_batch_size_saving_path, data)#*[a for _, a in data.items()])
-            self.__split_arrays(self.valid_archives_saving_path, valid_data)#*[a for _, a in valid_data.items()])
+            self.__split_arrays(self.archives_of_batch_size_saving_path, data)  # *[a for _, a in data.items()])
+            self.__split_arrays(self.valid_archives_saving_path, valid_data)  # *[a for _, a in valid_data.items()])
 
         # ------------------save rest of rest archives----------------
-        #rest_arrs = [np.array(rest_arr) for rest_arr in self.rest_arrs]
-        #self.__init_rest()
+        # rest_arrs = [np.array(rest_arr) for rest_arr in self.rest_arrs]
+        # self.__init_rest()
 
-        #self.__split_arrays(self.valid_archives_saving_path, valid_data)#*[a for _, a in valid_data.items()])
+        # self.__split_arrays(self.valid_archives_saving_path, valid_data)#*[a for _, a in valid_data.items()])
 
-        #self.__init_rest()
+        # self.__init_rest()
 
-        #if rest_arrs[0].shape[0] >= batch_size:
+        # if rest_arrs[0].shape[0] >= batch_size:
         #    self.__split_arrays(self.archives_of_batch_size_saving_path, *rest_arrs)
 
         print('--------Splitting into npz of batch size finished--------')
-
-    def weightedData_save(self, root_path, weights):
-        paths = glob.glob(os.path.join(root_path, '*.npz'))
-        for i, path in tqdm(enumerate(paths)):
-            data = np.load(path)
-            X, y = data['X'], data['y']
-            weights_ = np.zeros(y.shape)
-
-            for j in np.unique(y):
-                weights_[y == j] = weights[i, j]
-
-            data = {n: a for n, a in data.items()}
-            data['weights'] = weights_
-
-            np.savez(os.path.join(root_path, DataLoader.get_name_easy(path)), **data)
 
     def weights_get_from_file(self, root_path):
         weights_path = os.path.join(root_path, self.weights_filename)
@@ -327,12 +319,15 @@ class Preprocessor():
 
         quantities = np.array(quantities)
 
-        summ = np.sum(quantities[:, config.LABELS_OF_CLASSES_TO_TRAIN])
-        weights = summ / quantities
+        sum_ = np.sum(quantities[:, config.LABELS_OF_CLASSES_TO_TRAIN])
+        with np.errstate(divide='ignore', invalid='ignore'):
+            weights = sum_ / quantities
+
+        weights[np.isinf(weights)] = 0
 
         data = {
             'weights': weights,
-            'summ': summ,
+            'sum': sum_,
             'quantities': quantities
         }
 
@@ -340,6 +335,22 @@ class Preprocessor():
             pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 
         return weights
+
+    @staticmethod
+    def weightedData_save(root_path, weights):
+        paths = glob.glob(os.path.join(root_path, '*.npz'))
+        for i, path in tqdm(enumerate(paths)):
+            data = np.load(path)
+            X, y = data['X'], data['y']
+            weights_ = np.zeros(y.shape)
+
+            for j in np.unique(y):
+                weights_[y == j] = weights[i, j]
+
+            data = {n: a for n, a in data.items()}
+            data['weights'] = weights_
+
+            np.savez(os.path.join(root_path, DataLoader.get_name_easy(path)), **data)
 
     @staticmethod
     def get_execution_flags_for_pipeline_with_all_true():
@@ -352,9 +363,13 @@ class Preprocessor():
 
     @staticmethod
     def copy_preprocessor_paths(path):
+        path_ = os.path.join(path, 'py_Files')
+        if not os.path.exists(path_):
+            os.mkdir(path_)
+
         for file in config.P_FILES_TO_COPY:
             if os.path.exists(file):
-                copyfile(file, os.path.join(path, file.split(config.SYSTEM_PATHS_DELIMITER)[-1]))
+                copyfile(file, os.path.join(path_, file.split(config.SYSTEM_PATHS_DELIMITER)[-1]))
 
     def pipeline(self, root_path,
                  preprocessed_path,
@@ -364,8 +379,8 @@ class Preprocessor():
             execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
 
         if not os.path.exists(preprocessed_path):
-            os.mkdir(preprocessed_path)
-            
+            os.makedirs(preprocessed_path)
+
         print('ROOT PATH', root_path)
         print('PREPROCESSED PATH', preprocessed_path)
 
@@ -398,44 +413,18 @@ class Preprocessor():
 
 if __name__ == '__main__':
     execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
-    execution_flags['load_data_with_dataloader'] = False
-    execution_flags['add_sample_weights'] = False
+    execution_flags['load_data_with_dataloader'] = True
+    execution_flags['add_sample_weights'] = True
     execution_flags['scale'] = True
-    execution_flags['shuffle'] = False
-    
-    #config.bea_db = 'colon_raw'
-    #config.DATABASE = config.DATABASES['data_loader_raw_colon']
-   
-    
-    preprocessor = Preprocessor()
-    preprocessor.pipeline(config.RAW_SOURCE_PATH, config.RAW_NPZ_PATH, execution_flags=execution_flags)
-    #preprocessor.pipeline('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases\\Colon_SNV\\Colon_SNV', 'C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases\\Colon_SNV\\Colon_SNV\\raw_3d_weighted\\', execution_flags=execution_flags)
+    execution_flags['shuffle'] = True
 
-    '''for db in ['ColonData']:
-    #for db in ['Colon_MedianFilter', 'Colon_SNV']:
-    #for db in ['EsophagusDatabase', 'Esophagus_MedFilter', 'Esophagus_SNV']:
-    #for db in ['DatabaseBrainMM', 'DatabaseBrainSNV', 'DatabaseBrainFMed']:
-
+    try:
         preprocessor = Preprocessor()
-        pth = os.path.join('/work/users/mi186veva/data_bea_db', db)
-        #pth = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', db, db)
-        preprocessor.pipeline(pth,
-                              os.path.join(pth, 'raw_3d_weighted'), execution_flags=execution_flags)'''
-    #preprocessor.pipeline('../data_preprocessed/EsophagusDatabase',
-    #                      '../data_preprocessed/EsophagusDatabase/raw_3d_weights', execution_flags=execution_flags)
-    #paths = glob.glob('/work/users/mi186veva/data_bea/ColonData/raw_3d_weights/shuffled/*.npz')
-    # print(len(paths))
-    # preprocessor.shuffle(['/work/users/mi186veva/data_preprocessed/augmented/2019_07_12_11_15_49_.npz', '/work/users/mi186veva/data_preprocessed/augmented/2020_03_27_16_56_41_.npz'], 100, '/work/users/mi186veva/data_preprocessed/augmented_l2_norm/shuffled')
-    # preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/raw_3d/shuffled', augmented=False)
-    # preprocessor.shuffle(paths, 100, '/work/users/mi186veva/data_preprocessed/augmented/shuffled', augmented=True)
+        preprocessor.pipeline(config.RAW_SOURCE_PATH, config.RAW_NPZ_PATH, execution_flags=execution_flags)
 
-    # paths = glob.glob('/work/users/mi186veva/data_preprocessed/combi_with_raw_ill/shuffled/*.npz')
-    #preprocessor.split_data_into_npz_of_batch_size(paths, config.BATCH_SIZE,
-    #                                               '/work/users/mi186veva/data_bea/ColonData/raw_3d_weights/batch_sized',
-    #                                               "", except_names=['CP1'])
+        utils.send_tg_message(f'{config.USER}, operations in preprocessor.py are successfully completed!')
 
-    # preprocessor.scale_from_path('/work/users/mi186veva/data_preprocessed/raw', '/work/users/mi186veva/data_preprocessed/raw/raw_all.scaler')
-    # start = time.time()
-    # preprocessor.scaledData_save('/work/users/mi186veva/data_preprocessed/raw', '/work/users/mi186veva/data_preprocessed/raw', '/work/users/mi186veva/data_preprocessed/raw/raw_all.scaler')
-    # end = time.time()
-    # print('Time of scaledData_save', end - start)
+    except Exception as e:
+        utils.send_tg_message(f'{config.USER}, ERROR! in Preprocessor {e}')
+
+        raise e

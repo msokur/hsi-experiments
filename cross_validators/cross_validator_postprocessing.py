@@ -19,8 +19,8 @@ from scipy.ndimage import median_filter
 from tqdm import tqdm
 import csv
 
-from data_utils.data_loaders.data_loader_base import DataLoader
-from data_utils.preprocessor import Preprocessor
+from data_utils.data_loaders.archive.data_loader_base import DataLoader
+from data_utils.archive.preprocessor import Preprocessor
 from cross_validators.cross_validator_base import CrossValidatorBase
 import config
 from provider import get_whole_analog_of_data_loader, get_evaluation
@@ -69,45 +69,25 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
         self.file_with_postprocessed_predictions = 'predictions_postprocessed.npy'
         self.file_with_postprocessed_predictions_for_labeled_samples = 'predictions_postprocessed_for_labeled_samples.npy'
 
-    @staticmethod
-    def blank_configuration():
-        return  {
-                # To apply post-processing first we have to calculate predictions for whole cubes
-                # For this we need to generate whole cubes
-                # by default if self.WHOLE_CUBES_FOLDER is empty than we generate whole cubes, otherwise we don't.
-                # But with generate_whole_cubes it's possible to force generation even if cubes are already generated
-                "generate_whole_cubes": False,
-                # by default if there is no predictions_whole.npy in test/training_name/cp-0000 
-                # than we calculate predictions for whole cubes, otherwise we don't. But with 
-                # calculate_predictions_for_whole_cubes it's possible to force calculation
-                "calculate_predictions_for_whole_cubes": False,
-                "save_predictions_and_evaluate_on_labeled_samples": {
-                    # standard evaluation parameters
-                    # for detailed documentation of params in this section see documentation for
-                    # evaluation/evaluation_base.py/EvaluationBase.save_predictions_and_metrics()
-                    "save_predictions": False,
-                    "metrics": {
-                        'save_metrics': False,
-                        'checkpoints': None,
-                        'thresholds': None,
-                        'save_curves': False
-                    }
-                },
-                "postprocessing": {  # what thresholds and median filter (MF) sizes to check
-                    # if classification is multiclass than specify only MF_sizes (because thresholds are not used)
-                    "MF_sizes": None, # it's better to use odd MF sizes
-                    "thresholds": None, 
-                }
-            }
-    
-    
-    def set_configuration(self, **kwargs):
-        if not kwargs:
-            self.configuration = CrossValidatorPostProcessing.blank_configuration()
-        else:
-            self.configuration = kwargs['configuration']
-    
-    def evaluation(self, **kwargs):    # entry point
+    def evaluation(self, **kwargs):
+        """
+            Steps - 1 variant (median filter is applied to predictions 0-1):
+            1. Generate whole cubes, if needed
+            2. Make predictions for this whole cubes, if needed
+            3. Make save_ROC_... for labeled and for thresholds, if needed
+            4. Get the best threshold
+            5. Due to this threshold create predictions map 0-1
+            6. Apply median filter
+            7. Get labeled with indexes_in_cube
+            8. Count evaluation again for the best threshold
+
+            Steps - 2 varian (median filter is applied to raw predictions)
+            1.-2. are the same
+            3. Apply median filter on the raw predictions
+            4. Get labeled with indexes_in_cube
+            5. Make save_ROC...
+
+        """
 
         self.generate_whole_cubes()
         self.calculate_predictions_on_whole_cubes()

@@ -1,0 +1,351 @@
+{
+	"HNO": {
+		"TYPE": "normal",
+		"FILE_EXTENSIONS": ".dat",
+		"3D": true,
+		"3D_SIZE": [3, 3],
+		"FIRST_NM": 8,
+		"LAST_NM": 100,
+		"WAVE_AREA": 100,
+		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6, 7],
+		"NAME_SPLIT": "_SpecCube",
+		"MASK_DIFF": ["_SpecCube.dat", ".png"],
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING_TYPE": "median_filter",
+		"SMOOTHING_VALUE": 5,
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_core",
+			"depth": 5,
+			"axis": [],
+			"not_used_labels": []
+		},
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [[255, 255, 0]],
+				"LABEL": "Nerve",
+				"COLOR": "yellow"
+			},
+			"1": {
+				"MASK": [[0, 0, 255]],
+				"LABEL": "Tumor",
+				"COLOR": "blue"
+			},
+			"2": {
+				"MASK": [[255, 0, 0]],
+				"LABEL": "Parotis",
+				"COLOR": "red"
+			},
+			"3": {
+				"MASK": [[255, 255, 255]],
+				"LABEL": "Subcutaneous_Tissue",
+				"COLOR": "white"
+			},
+			"4": {
+				"MASK": [[0, 255, 0]],
+				"LABEL": "Muscle",
+				"COLOR": "green"
+			},
+			"5": {
+				"MASK": [[128, 128, 128]],
+				"LABEL": "Vein",
+				"COLOR": "grey"
+			},
+			"6": {
+				"MASK": [[12, 27, 12]],
+				"LABEL": "Cartilage",
+				"COLOR": "black"
+			},
+			"7": {
+				"MASK": [[26, 255, 255]],
+				"LABEL": "Not_Certain",
+				"COLOR": "cornflowerblue"
+			}
+		},
+		"SPLIT_PATHS_BY": "Files",
+		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
+		"WITH_BACKGROUND_EXTRACTION": false
+	},
+	"ESO": {
+		"TYPE": "normal",
+		"FILE_EXTENSIONS": ".dat",
+		"3D": true,
+		"3D_SIZE": [3, 3],
+		"FIRST_NM": 8,
+		"LAST_NM": 100,
+		"WAVE_AREA": 100,
+		"LABELS_TO_TRAIN": [0, 1, 2],
+		"NAME_SPLIT": "_SpecCube",
+		"MASK_DIFF": [".dat", ".png"],
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING_TYPE": "median_filter",
+		"SMOOTHING_VALUE": 5,
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_core",
+			"depth": 5,
+			"axis": [],
+			"not_used_labels": []
+		},
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [[255, 255, 0]],
+				"LABEL": "Cancer",
+				"COLOR": "yellow"
+			},
+			"1": {
+				"MASK": [[0, 0, 255]],
+				"LABEL": "Stomach",
+				"COLOR": "blue"
+			},
+			"2": {
+				"MASK": [[0, 255, 0]],
+				"LABEL": "Esophagus",
+				"COLOR": "green"
+			},
+			"3": {
+				"MASK": [[255, 0, 0]],
+				"LABEL": "Not_Certain",
+				"COLOR": "red"
+			}
+		},
+		"SPLIT_PATHS_BY": "Files",
+		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
+		"WITH_BACKGROUND_EXTRACTION": false
+	},
+	"GASTRIC": {
+		"TYPE": "normal",
+		"FILE_EXTENSIONS": ".dat",
+		"3D": true,
+		"3D_SIZE": [3, 3],
+		"FIRST_NM": 8,
+		"LAST_NM": 100,
+		"WAVE_AREA": 100,
+		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+		"NAME_SPLIT": null,
+		"MASK_DIFF": [".dat", ".mk2"],
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING_TYPE": "median_filter",
+		"SMOOTHING_VALUE": 5,
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_core",
+			"depth": 5,
+			"axis": [],
+			"not_used_labels": []
+		},
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [[255, 0, 64]],
+				"LABEL": "Oesophagus",
+				"COLOR": "red"
+			},
+			"1": {
+				"MASK": [[127, 127, 127]],
+				"LABEL": "Fat",
+				"COLOR": "gray"
+			},
+			"2": {
+				"MASK": [[255, 255, 0]],
+				"LABEL": "Pancreas",
+				"COLOR": "yellow"
+			},
+			"3": {
+				"MASK": [[0, 0, 255]],
+				"LABEL": "Colon",
+				"COLOR": "blue"
+			},
+			"4": {
+				"MASK": [[255, 0, 255]],
+				"LABEL": "Stomach",
+				"COLOR": "magenta"
+			},
+			"5": {
+				"MASK": [[0, 255, 0]],
+				"LABEL": "Liver",
+				"COLOR": "lime"
+			},
+			"6": {
+				"MASK": [[255, 191, 191]],
+				"LABEL": "Gall Bladder",
+				"COLOR": "pink"
+			},
+			"7": {
+				"MASK": [[26, 51, 77]],
+				"LABEL": "Spleen",
+				"COLOR": "midnightblue"
+			},
+			"8": {
+				"MASK": [[191, 127, 0]],
+				"LABEL": "Small Intestine",
+				"COLOR": "chocolate"
+			},
+			"9": {
+				"MASK": [[115, 115, 255]],
+				"LABEL": "Lungs",
+				"COLOR": "mediumslateblue"
+			},
+			"10": {
+				"MASK": [[77, 102, 77]],
+				"LABEL": "Rectum",
+				"COLOR": "darkolivegreen"
+			},
+			"11": {
+				"MASK": [[0, 255, 255]],
+				"LABEL": "Duodenum",
+				"COLOR": "cyan"
+			},
+			"12": {
+				"MASK": [[127, 77, 77]],
+				"LABEL": "Tumor",
+				"COLOR": "saddlebrown"
+			}
+		},
+		"SPLIT_PATHS_BY": "Files",
+		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
+		"WITH_BACKGROUND_EXTRACTION": false
+	},
+	"MAT_BRAIN": {
+		"TYPE": "normal",
+		"FILE_EXTENSIONS": ".mat",
+		"SPECTRUM": "preProcessedImage",
+		"MASK": "gtMap",
+		"3D": true,
+		"3D_SIZE": [3, 3],
+		"OUTPUT_SIGNATURE_X_FEATURES": 128,
+		"LABELS_TO_TRAIN": [1, 2, 3, 4],
+		"NAME_SPLIT": null,
+		"NUMBER_SPLIT": ["Op", "C"],
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING_TYPE": "gaussian_filter",
+		"SMOOTHING_VALUE": 5,
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_core",
+			"depth": 5,
+			"axis": [],
+			"not_used_labels": []
+		},
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [0],
+				"LABEL": "Unlabeled data",
+				"COLOR": "yellow"
+			},
+			"1": {
+				"MASK": [1],
+				"LABEL": "Normal (Healthy)",
+				"COLOR": "blue"
+			},
+			"2": {
+				"MASK": [2],
+				"LABEL": "Tumor",
+				"COLOR": "red"
+			},
+			"3": {
+				"MASK": [3],
+				"LABEL": "Blood vessel",
+				"COLOR": "black"
+			},
+			"4": {
+				"MASK": [4],
+				"LABEL": "Background",
+				"COLOR": "green"
+			}
+		},
+		"SPLIT_PATHS_BY": "List",
+		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": [
+			["Op8C1", "Op8C2"],
+			["12C1", "12C2"],
+			["15C1"],
+			["20C1"]
+		],
+		"WITH_BACKGROUND_EXTRACTION": false
+	},
+	"MAT_COLON": {
+		"TYPE": "normal",
+		"FILE_EXTENSIONS": ".mat",
+		"SPECTRUM": "cube",
+		"MASK": "gtMap",
+		"3D": true,
+		"3D_SIZE": [3, 3],
+		"OUTPUT_SIGNATURE_X_FEATURES": 81,
+		"LABELS_TO_TRAIN": [0, 1],
+		"NAME_SPLIT": null,
+		"NUMBER_SPLIT": ["Cp", null],
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING_TYPE": "median_filter",
+		"SMOOTHING_VALUE": 5,
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_border",
+			"depth": 5,
+			"axis": [],
+			"not_used_labels": []
+		},
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [0],
+				"LABEL": "Normal (Healthy)",
+				"COLOR": "yellow"
+			},
+			"1": {
+				"MASK": [1],
+				"LABEL": "Ill",
+				"COLOR": "blue"
+			}
+		},
+		"SPLIT_PATHS_BY": "Files",
+		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
+		"WITH_BACKGROUND_EXTRACTION": false
+	},
+	"MAT_ESO": {
+		"TYPE": "normal",
+		"FILE_EXTENSIONS": ".mat",
+		"SPECTRUM": "cube",
+		"MASK": "gtMap",
+		"3D": true,
+		"3D_SIZE": [3, 3],
+		"OUTPUT_SIGNATURE_X_FEATURES": 81,
+		"LABELS_TO_TRAIN": [0, 1, 2],
+		"NAME_SPLIT": null,
+		"NUMBER_SPLIT": ["EP", null],
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING_TYPE": "median_filter",
+		"SMOOTHING_VALUE": 5,
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_core",
+			"depth": 5,
+			"axis": [],
+			"not_used_labels": []
+		},
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [0],
+				"LABEL": "Normal (Healthy)",
+				"COLOR": "yellow"
+			},
+			"1": {
+				"MASK": [1],
+				"LABEL": "Ill",
+				"COLOR": "blue"
+			},
+			"2": {
+				"MASK": [2],
+				"LABEL": "not certain",
+				"COLOR": "red"
+			}
+		},
+		"SPLIT_PATHS_BY": "Files",
+		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
+		"WITH_BACKGROUND_EXTRACTION": false
+	}
+}
+

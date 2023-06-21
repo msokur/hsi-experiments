@@ -1,15 +1,6 @@
 import numpy as np
 import datetime
 
-import os
-import inspect
-import sys
-
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-import config
-
 from evaluation.evaluation_base import EvaluationBase
 
 
@@ -41,7 +32,7 @@ class EvaluationMulticlass(EvaluationBase):
     def write_metrics_to_csv(self, writer, metrics, time_string=None):
         csv_row = {}
         for metric_name, metric_value in list(metrics.items())[1:]:
-            for k, v in zip(config.TISSUE_LABELS.values(), metric_value):
+            for k, v in zip(self.labels.values(), metric_value):
                 csv_row[metric_name + '_' + k] = v
         if time_string is None:
             csv_row.update({"Time": datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")})

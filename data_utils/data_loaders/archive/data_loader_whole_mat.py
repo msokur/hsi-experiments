@@ -9,3 +9,11 @@ class DataLoaderWholeMat(DataLoaderWholeBase):
 
     def set_mask_with_labels(self, mask):
         return mask
+
+    @staticmethod
+    def labeled_spectrum_get_from_X_y(X, y):
+        healthy_spectrum = X[y == 0]
+        ill_spectrum = X[y == 1]
+        not_certain_spectrum = X[y == 2]
+
+        return healthy_spectrum, ill_spectrum, not_certain_spectrum

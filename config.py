@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import os
+
 WITHOUT_RANDOMNESS = True
 if WITHOUT_RANDOMNESS:
     os.environ['TF_DETERMINISTIC_OPS'] = '1'
@@ -35,17 +36,19 @@ NORMALIZATION_TYPES = {
     'svn_T': 'svn_T',
     'None': None
 }
-NORMALIZATION_TYPE = NORMALIZATION_TYPES['svn_T']
+NORMALIZATION_TYPE = NORMALIZATION_TYPES['svn']
 
-DATABASES = {   # for data_loader
+DATABASES = {  # for data_loader
     'data_loader_easy': 'colon',
     'data_loader_mat_eso': 'bea_eso',
     'data_loader_mat_brain': 'bea_brain',
     'data_loader_mat_colon': 'bea_colon',
+    'data_loader_hno': 'hno',
     'data_loader_whole_colon': 'colon_whole',
     'data_loader_whole_mat_eso': 'bea_eso_whole',
     'data_loader_whole_mat_brain': 'bea_brain_whole',
-    'data_loader_whole_mat_colon': 'bea_colon_whole'
+    'data_loader_whole_mat_colon': 'bea_colon_whole',
+    'data_loader_whole_hno': 'hno_whole'
 }
 
 SMOOTHING_TYPES = {
@@ -54,7 +57,19 @@ SMOOTHING_TYPES = {
     'None': None
 }
 
-SMOOTHING_TYPE = SMOOTHING_TYPES['None']
+SMOOTHING_TYPE = SMOOTHING_TYPES['median_filter']
+
+BORDER_METHODE = {
+    'detect_border': 'detect_border',
+    'detect_core': 'detect_core'
+}
+BORDERS_CONFIG = {
+    'enable': True,                             # use detect_border or detect_core
+    'methode': BORDER_METHODE['detect_core'],   # select methode
+    'depth': 5,                                 # positive int for the border
+    'axis': [],                                 # empty list means all axis will be recognized, see methode description
+    'not_used_labels': []                       # the methode will be not execute on this labels
+}
 
 CROSS_VALIDATORS = {
     'cv_normal': 'cv_normal',
@@ -78,6 +93,7 @@ RAW_SOURCE_PATH = os.path.join('data_bea_db', database_abbreviation)
 #                              database_abbreviation)
 #RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
 #                            database_abbreviation, 'raw_3d_weighted')
+database_abbreviation = 'hno'
 
 #TEST_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation, database_abbreviation)
 #RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')
@@ -86,6 +102,8 @@ RAW_SOURCE_PATH = os.path.join('data_bea_db', database_abbreviation)
 #RAW_NPZ_PATH = os.path.join('data_3d', 'svn_T')
 #RAW_SOURCE_PATH = 'data_dat'
 #RAW_NPZ_PATH = os.path.join('data_preprocessed', 'EsophagusDatabase', 'raw_3d_weights')
+#RAW_NPZ_PATH = os.path.join('data_3d', '3x3', 'svn', 'median')
+#RAW_SOURCE_PATH = os.path.join('Parotis-Faelle_unsorted', 'data')
 TEST_NPZ_PATH = RAW_NPZ_PATH
 
 SHUFFLED_PATH = os.path.join(RAW_NPZ_PATH, 'shuffled')
@@ -97,6 +115,8 @@ elif 'Eso' in database_abbreviation:
     DATABASE = DATABASES['data_loader_mat_eso']
 elif 'Brain' in database_abbreviation:
     DATABASE = DATABASES['data_loader_mat_brain']
+elif database_abbreviation == 'hno':
+    DATABASE = DATABASES["data_loader_hno"]
 elif database_abbreviation == 'colon_whole':
     DATABASE = DATABASES['data_loader_whole_colon']
 elif database_abbreviation == 'bea_brain_whole':
@@ -105,6 +125,8 @@ elif database_abbreviation == 'bea_eso_whole':
     DATABASE = DATABASES['data_loader_whole_mat_eso']
 elif database_abbreviation == 'bea_colon_whole':
     DATABASE = DATABASES['data_loader_whole_mat_colon']
+elif database_abbreviation == 'hno_whole':
+    DATABASE = DATABASES['data_loader_whole_hno']
 else:
     DATABASE = DATABASES['data_loader_easy']
 
@@ -122,22 +144,22 @@ WITH_BATCH_NORM = False
 WITH_BACKGROUND_EXTRACTION = False
 WITH_PREPROCESS_DURING_SPLITTING = False  # used in __split_arrays in preprocessor.py to run method preprocess()...
 WITH_TUNING = False
-WITH_SMALLER_DATASET = False 
+WITH_SMALLER_DATASET = False
 
-WRITE_CHECKPOINT_EVERY_Xth_STEP = 2  # callbacks and get_best_checkpoint
+WRITE_CHECKPOINT_EVERY_Xth_STEP = 1  # callbacks and get_best_checkpoint
 WRITE_GRADIENTS_EVERY_Xth_BATCH = 50000000000  # callbacks
 # every GRADIENTS_WRITING_STEP batches we write gradients, so not epochs - gradients
 WRITE_IMAGES = False  # callbacks
 WITH_EARLY_STOPPING = True  # callbacks
 
-_3D = True  # data
-_3D_SIZE = [5, 5]  # data
+D3 = True  # data
+D3_SIZE = [3, 3]  # data
 FIRST_NM = 8  # data
 LAST_NM = 100  # data
 SCALER_FILE_EXTENTION = '.scaler'  # data
 SCALER_FILE_NAME = 'scaler'
 WAVE_AREA = 100  # data
-SMOOTHING_VALUE = 5 # preprocessing, sigma for GaussianFilter and window size for MedianFilter
+SMOOTHING_VALUE = 5  # preprocessing, sigma for GaussianFilter and window size for MedianFilter
 
 INCEPTION_FACTOR = 8  # model
 DROPOUT = 0.1  # model
@@ -146,6 +168,8 @@ if 'colon' in DATABASE:
     NUMBER_OF_CLASSES_TO_TRAIN = 2
 if 'brain' in DATABASE:
     NUMBER_OF_CLASSES_TO_TRAIN = 4
+if 'hno' in DATABASE:
+    NUMBER_OF_CLASSES_TO_TRAIN = 8
 LABELS_OF_CLASSES_TO_TRAIN = np.arange(NUMBER_OF_CLASSES_TO_TRAIN)  # data. It's possible that we have 4 classes in
 # data, but want to use only 2 during training. If so we need to specify it here,
 # for example, [1, 2] will mean that we will use only classes with labels 1 and 2.
@@ -155,12 +179,13 @@ USE_ALL_LABELS = False
 
 assert len(LABELS_OF_CLASSES_TO_TRAIN) == NUMBER_OF_CLASSES_TO_TRAIN  # check yourself
 
-BATCH_SIZE = 100  # train
-EPOCHS = 100  # train
+BATCH_SIZE = 500  # train
+EPOCHS = 50  # train
 LEARNING_RATE = 1e-4  # train
 
-SPLIT_FACTOR = 0.9  # train   #for data sets: train\test data percentage
+SPLIT_FACTOR = 0.8  # train   #for data sets: train\test data percentage
 
+CV_CHOOSE_EXCLUDED_VALID_PATIENTS_BY_CLASSES = True # cv
 CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY = True  # cv + preprocessor
 CV_RESTORE_VALID_PATIENTS = False
 CV_RESTORE_VALID_PATIENTS_PATH = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/ExperimentHowManyValidPatExclude'
@@ -169,7 +194,7 @@ CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID = 1  # cv + preprocessor, to create valid
 CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST = 1  # cv, for testing (exactly on this excluded patients we count end evaluation)
 CV_FIRST_SPLIT = 0  # cv, if we need to start not from the first split
 CV_GET_CHECKPOINT_FROM_VALID = True  # cv
-HISTORY_ARGMIN = "val_f1_m"  # cv. through which parameter of history(returned by model.fit() and then saved) choose the
+HISTORY_ARGMIN = "val_f1_score"  #was: "val_f1_m" # cv. through which parameter of history(returned by model.fit() and then saved) choose the
 # best checkpoint in validation data
 
 ADD_TIME = False  # pipeline   #whether to add time to logs paths
@@ -186,8 +211,8 @@ TUNER_EPOCHS = 1
 TUNER_EPOCHS_PER_TRIAL = 1
 TUNER_OBJECTIVE = "val_loss"  # Read about objective:
 # https://keras.io/guides/keras_tuner/getting_started/#specify-the-tuning-objective
-#TUNER_DIRECTORY = "tuner_results"
-#TUNER_PROJECT_NAME = "inception_3d"
+# TUNER_DIRECTORY = "tuner_results"
+# TUNER_PROJECT_NAME = "inception_3d"
 TUNER_ADD_TIME = True
 TUNER_OVERWRITE = True
 TUNER_MODEL = 'KerasTunerModelOnes'  # or KerasTunerModelOnes
@@ -204,7 +229,7 @@ AUGMENTATION = {
 
 if WITH_AUGMENTATION:
     BATCH_SIZE = int(BATCH_SIZE / AUGMENTATION['new_rows_per_sample'])
-    
+
 # ----------------------------DISTRIBUTIONS CHECKING
 Z_TEST = False
 Z_TEST_P_VALUE = 0.05
@@ -215,8 +240,8 @@ KS_TEST_P_VALUE = 0.05
 
 import glob
 
-files_to_copy = ['*.py', 
-                 'data_utils/*.py', 
+files_to_copy = ['*.py',
+                 'data_utils/*.py',
                  'models/*.py',
                  'data_utils/data_loaders/*.py',
                  'scrips/start_cv.job',
@@ -263,6 +288,7 @@ if "clara" in uname.node:
 if "scads" in uname.node:
     MODE = MODE_TYPES['LOCAL_NO_GPU']
 
+
 # ----------------------------PATHS
 
 
@@ -295,14 +321,16 @@ for path_part in MODEL_NAME_PATHS:
 if not RESTORE_MODEL and ADD_TIME:
     MODEL_NAME += datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
 
-# ----------------------------CUSTOM_OBJECTS
-
-CUSTOM_OBJECTS = {'f1_m': tf_metrics.f1_m}
-
 # ----------------------------CROSS_VALIDATION SPLIT
 
 paths = glob.glob(os.path.join(RAW_NPZ_PATH, '*npz'))
-CROSS_VALIDATION_SPLIT = int(len(paths) / CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST)  # int(number_of_all_patients / how_many_exclude_per_cv)
+NUM_OF_PAT = len(paths)
+CROSS_VALIDATION_SPLIT = int(
+    NUM_OF_PAT / CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST)  # int(number_of_all_patients / how_many_exclude_per_cv)
+
+# ----------------------------CUSTOM_OBJECTS
+
+CUSTOM_OBJECTS = {'F1_score': F1_score}
 
 # ----------------------------OUTPUT FEATURES
 OUTPUT_SIGNATURE_X_FEATURES = LAST_NM - FIRST_NM  # train
@@ -310,18 +338,22 @@ if DATABASE == 'bea_eso' or DATABASE == 'bea_colon':
     OUTPUT_SIGNATURE_X_FEATURES = 81
 if DATABASE == 'bea_brain':
     OUTPUT_SIGNATURE_X_FEATURES = 128
-    
+
 # ----------------------------OUTPUT_SIGNATURE
+if D3:
+    shape_ = (None, D3_SIZE[0], D3_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES)
+else:
+    shape_ = (None, OUTPUT_SIGNATURE_X_FEATURES)
+
 if WITH_SAMPLE_WEIGHTS:
     OUTPUT_SIGNATURE = (
-        tf.TensorSpec(shape=(None, _3D_SIZE[0], _3D_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
+        tf.TensorSpec(shape=shape_, dtype=tf.float32),
         tf.TensorSpec(shape=(None,), dtype=tf.float32),
         tf.TensorSpec(shape=(None,), dtype=tf.float32))
 else:
     OUTPUT_SIGNATURE = (
-        tf.TensorSpec(shape=(None, _3D_SIZE[0], _3D_SIZE[1], OUTPUT_SIGNATURE_X_FEATURES), dtype=tf.float32),
+        tf.TensorSpec(shape=shape_, dtype=tf.float32),
         tf.TensorSpec(shape=(None,), dtype=tf.float32))
-
 
 # -------------------PLOT
 TISSUE_LABELS = {0: 'Esophagus', 1: 'Tumor', 2: 'Stomach'}

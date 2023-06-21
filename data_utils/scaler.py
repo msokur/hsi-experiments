@@ -1,4 +1,5 @@
 import abc
+
 import numpy as np
 import os
 from tqdm import tqdm
@@ -6,58 +7,71 @@ from glob import glob
 from sklearn import preprocessing
 import pickle
 
-import config
 from util.compare_distributions import DistributionsChecker
-from data_loaders.data_loader_base import DataLoader
+from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
+
 
 class Scaler:
-    
-    def __init__(self, preprocessed_path, scaler_path=None):
+    def __init__(self, preprocessed_path, scaler_file=None, scaler_path=None, dict_names=None):
         self.preprocessed_path = preprocessed_path
         self.scaler_path = scaler_path
+        self.dict_names = dict_names
+        if self.dict_names is None:
+            self.dict_names = ["X", "y", "indexes_in_datacube"]
         
         if self.scaler_path is not None: 
-            self.scaler = self.restore_scaler(self.scaler_path)
+            self.scaler = Scaler.scaler_restore(self.scaler_path)
         else:
             X = self.get_data_for_fit()
             self.scaler = self.fit(X)
-            self.scaler_save(self.scaler, os.path.join(self.preprocessed_path, config.SCALER_FILE_NAME+config.SCALER_FILE_EXTENTION))
+            if scaler_file is None:
+                scaler_file = "scaler.scaler"
+            self.scaler_save(self.scaler, os.path.join(self.preprocessed_path, scaler_file))
             
     @abc.abstractmethod
     def get_data_for_fit(self):
-        return
+        pass
     
     @abc.abstractmethod
     def fit(self, X):
-        return
+        pass
     
     @abc.abstractmethod
     def transform(self, X):
-        return
+        pass
             
-    def X_y_concatenate(self, _3D=config._3D):
+    def X_y_concatenate(self):
         paths = glob(os.path.join(self.preprocessed_path, '*.npz'))
 
-        X, y, indexes = [], [], []
+        X_s, y_s, indexes_s = self.get_shapes(paths[0])
+        X, y, indexes = np.empty(shape=X_s), np.empty(shape=y_s), np.empty(shape=indexes_s)
         for path in paths:
             data = np.load(path)
-            _X, _y, _i = data['X'], data['y'], data['indexes_in_datacube']
-            
-            if _3D:
-                _X = DistributionsChecker.get_centers(_X)
+            _X, _y, _i = data[self.dict_names[0]], data[self.dict_names[1]], data[self.dict_names[2]]
 
-            X += list(_X)
-            y += list(_y)
-            indexes += list(_i)
+            # check if data 3D
+            if len(np.array(_X).shape) > 2:
+                _X_1d = DistributionsChecker.get_centers(_X)
+            else:
+                _X_1d = _X
 
-        X, y, indexes = np.array(X), np.array(y), np.array(indexes)
+            X = np.concatenate((X, _X_1d), axis=0)
+            y = np.concatenate((y, _y), axis=0)
+            indexes = np.concatenate((indexes, _i), axis=0)
+            del _X
+            del _y
+            del _i
+            del _X_1d
+            del data
 
         return X, y, indexes
 
-    def scaler_save(self, scaler, scaler_path):
+    @staticmethod
+    def scaler_save(scaler, scaler_path):
         pickle.dump(scaler, open(scaler_path, 'wb'))
 
-    def scaler_restore(self, scaler_path):
+    @staticmethod
+    def scaler_restore(scaler_path):
         return pickle.load(open(scaler_path, 'rb'))
 
     def scale_X(self, X):
@@ -86,15 +100,18 @@ class Scaler:
 
         for path in tqdm(paths):
             data = np.load(path)
-            X = data['X']
+            X = data[self.dict_names[0]]
             X = self.scale_X(X)
             data = {n: a for n, a in data.items()}
-            data['X'] = X.copy()
-            np.savez(os.path.join(destination_path, DataLoader.get_name_easy(path)), **data)
+            data[self.dict_names[0]] = X.copy()
+            np.savez(os.path.join(destination_path, DataLoaderDyn().get_name(path)), **data)
+
+    def get_shapes(self, path):
+        datas = np.load(path)
+        X, y, idx = datas[self.dict_names[0]].shape, datas[self.dict_names[1]].shape, datas[self.dict_names[2]].shape
+        return [0, X[-1]], [0] if len(y) == 1 else [0, y[-1]], [0, idx[-1]]
             
-            
-    
-    
+
 class NormalizerScaler(Scaler):
     def __init__(self, *args, **kwargs):
         print('NormalizerScaler is created')

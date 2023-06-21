@@ -1,25 +1,20 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --job-name=multi_AP
+#SBATCH --ntasks-per-node=16
+
+#SBATCH --job-name=r_cv
+
 #SBATCH --partition=clara
-#SBATCH --time=10:00:00
-#SBATCH --mem=16G
+#SBATCH --time=2-00:00:00
+#SBATCH --mem=64G
 ##SBATCH --gres=gpu:v100:2
 #SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=_multi_AP_%j.log
 
-#module load Python
-module load TensorFlow
-#module load matplotlib
-#module load SciPy-bundle/2019.10-fosscuda-2019b-Python-3.7.4
-#module load scikit-learn
-#module load OpenCV
-#module load scikit-image
+#SBATCH --output=output/CV_GASTRIC_3x3_SNV_MEDIAN_MK%j.log
 
-#module load Python/3.9.6-GCCcore-11.2.0
-#module load TensorFlow/2.7.1-foss-2021b-CUDA-11.4.1
-module load matplotlib/3.4.3-foss-2021b
-#module load scikit-learn
+#module load FlexiBLAS/3.0.4-GCC-10.3.0
+module load Python/3.9.5-GCCcore-10.3.0
+#module load CUDA/11.4.1
+module load cuDNN/8.2.2.26-CUDA-11.4.1
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validation.py
+python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/cross_validation.py

@@ -1,0 +1,38 @@
+{
+  "BASE":{
+    "EXECUTION_FLAGS": {
+      "cross_validation": true,
+      "evaluation": true
+    },
+    "FIRST_SPLIT": 0,
+    "HOW_MANY_VALID_EXCLUDE": 1,
+    "CHOOSE_EXCLUDED_VALID": "by_class",
+    "USE_ALL_LABELS": false,
+    "SAVE_PREDICTION": true,
+    "SAVE_CURVES": false
+  },
+  "CV_HNO_NORMAL": {
+    "TYPE": "normal",
+    "NAME": "2022-12-15_TUNER_CV_HNO_3x3_snv_median",
+    "DATABASE_ABBREVIATION": "2022-12-15_TUNER_CV_HNO_3x3_snv_median",
+    "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
+    "RESTORE_VALID_SEQUENCE": "",
+    "GET_CHECKPOINT_FROM_VALID": true
+  },
+  "CV_ESO_NORMAL": {
+    "TYPE": "normal",
+    "NAME": "2023-05-09_CV_ESO_3x3_snv_median",
+    "DATABASE_ABBREVIATION": "2023-05-09_CV_ESO_3x3_snv_median",
+    "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
+    "RESTORE_VALID_SEQUENCE": "",
+    "GET_CHECKPOINT_FROM_VALID": true
+  },
+  "CV_GASTRIC_MK": {
+    "TYPE": "normal",
+    "NAME": "2023-05-10_CV_GASTRIC_3x3_snv_median_mk",
+    "DATABASE_ABBREVIATION": "2023-05-10_CV_GASTRIC_3x3_snv_median_mk",
+    "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
+    "RESTORE_VALID_SEQUENCE": "",
+    "GET_CHECKPOINT_FROM_VALID": true
+  }
+}
