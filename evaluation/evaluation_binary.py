@@ -28,8 +28,6 @@ class EvaluationBinary(EvaluationBase):
         fieldnames = np.insert(fieldnames, dice_index + 1, "F1-score_cancer")
         fieldnames = self.add_additional_column_fieldnames(fieldnames)
 
-        print(fieldnames)
-
         return fieldnames
 
     def write_metrics_to_csv(self, writer, metrics, time_string=None):
@@ -47,14 +45,21 @@ class EvaluationBinary(EvaluationBase):
         self.write_additional_columns(csv_row)
         writer.writerow(csv_row)
 
-    def count_predictions(self, predictions, threshold):
+    def calculate_predictions(self, predictions, threshold):
         return np.array(np.array(predictions) > threshold).astype(np.uint8)
 
 
 if __name__ == '__main__':
+    
+    eval_binary = EvaluationBinary('Colon_MedianFilter')
     config.CV_GET_CHECKPOINT_FROM_VALID = False
     
-    try:
+    eval_binary.evaluate(#training_csv_path='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/Colon_MedianFilter/Colon_MedianFilter_stats_02.02.2022-13_15_36.csv', 
+                                               #npz_folder = os.path.join('/work/users/mi186veva', 'data_bea_db', 'Colon_MedianFilter', 'raw_3d_weighted'),
+                                               checkpoints=[38],
+                                                thresholds=np.round(np.linspace(0.001, 0.3, 10), 4))
+    
+    '''try:
     
         for folder, checkpoint, threshold, scaling_type in zip(['CV_3d_inception', 
                                        'CV_3d_inception_exclude1_all',
@@ -113,4 +118,4 @@ if __name__ == '__main__':
 
         utils.send_tg_message(f'Mariia, ERROR!!!, In evaluation error {e}')
         
-        raise e
+        raise e'''

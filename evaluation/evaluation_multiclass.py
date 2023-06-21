@@ -1,7 +1,15 @@
 import numpy as np
 import datetime
 
+import os
+import inspect
+import sys
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir)
 import config
+
 from evaluation.evaluation_base import EvaluationBase
 
 
@@ -17,17 +25,17 @@ class EvaluationMulticlass(EvaluationBase):
         for idx in self.labels_of_classes_to_train:
             label = self.labels[idx]
             names = []
-            for key in list(metrics_dict.keys())[1:]:  # all evaluation after accuracy
+            for key in list(metrics_dict.keys())[1:]:  # add classnames for all metrics after accuracy
                 names.append(key + '_' + label)
             for key in list(metrics_from_scores_dict.keys()):
                 names.append(key + '_' + label)
             labels[idx] = np.array(names)
-
+            
         fieldnames = ['Time', 'Accuracy']
-        fieldnames = self.add_additional_column_fieldnames(fieldnames)
+        fieldnames = self.add_additional_column_fieldnames(fieldnames).astype(object)
         for m in range(len(metrics_dict) - 1 + len(metrics_from_scores_dict)):
-            fieldnames.extend(labels[:, m])
-
+            fieldnames = np.insert(fieldnames, -1, labels[:, m])
+        
         return fieldnames
 
     def write_metrics_to_csv(self, writer, metrics, time_string=None):
@@ -43,18 +51,14 @@ class EvaluationMulticlass(EvaluationBase):
         self.write_additional_columns(csv_row)
         writer.writerow(csv_row)
 
-    def count_predictions(self, predictions, threshold):
+    def calculate_predictions(self, predictions, threshold):
         return np.argmax(predictions, axis=1)
 
 
 if __name__ == '__main__':
     eval_multiclass = EvaluationMulticlass(config.database_abbreviation)
     config.CV_GET_CHECKPOINT_FROM_VALID = False
-    eval_multiclass.save_predictions_and_metrics(training_csv_path='C:\\Users\\tkachenko\\Desktop\\HSI\\hsi'
-                                                                   '-experiments\\logs\\Esophagus_MedFilter\\'
-                                                                   'Esophagus_MedFilter_stats_02.02.2022-13_32_30.csv',
-                                                 save_predictions=False,
-                                                 npz_folder='C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases'
-                                                            '\\Esophagus_MedFilter\\Esophagus_MedFilter'
-                                                            '\\raw_3d_weighted', checkpoints_raw_list=[38],
-                                                 save_curves=True)
+    
+    eval_multiclass.save_predictions_and_metrics(training_csv_path='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/Esophagus_MedFilter/Esophagus_MedFilter_stats_02.02.2022-13_32_30.csv', 
+                                               npz_folder = config.RAW_NPZ_PATH,
+                                               checkpoints=[38])

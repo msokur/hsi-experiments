@@ -33,7 +33,7 @@ class Metrics:
         }
 
     @staticmethod
-    def count_metrics(metrics_dict, gt, predictions):
+    def calculate_metrics(metrics_dict, gt, predictions):
         metrics = {}
         for name, metric_func in metrics_dict.items():
             metrics[name] = metric_func(gt, predictions)

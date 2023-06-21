@@ -100,8 +100,7 @@ class Predictor:
                          npz_folder,
                          predictions_saving_folder,
                          predictions_npy_filename,
-                         checkpoint=None,
-                         save_roc_auc_curve=False):
+                         checkpoint=None):
         """
             param rows of training_csv_path:
             0 - date
@@ -136,18 +135,8 @@ class Predictor:
                     'size': size
                 })
 
-                if save_roc_auc_curve:
-                    all_predictions_raw += list(predictions)
-                    all_gt += list(gt)
-
         # saving of predictions
         np.save(os.path.join(predictions_saving_folder, predictions_npy_filename), results_dictionary)
-
-        # roc auc part (for all predictions together as one array)
-        if save_roc_auc_curve:
-            metr = Metrics()
-            metr.save_roc_curves(all_gt,
-                                 all_predictions_raw, "All predictions together", predictions_saving_folder)
 
 
 if __name__ == "__main__":
