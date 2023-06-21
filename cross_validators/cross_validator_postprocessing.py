@@ -2,7 +2,10 @@
 Cross-validation with post-processing, which provides serious improvement of performance, excpecially if model classify pixel by pixel.
 Paper about post-processing: https://www.mdpi.com/2072-6694/15/7/2157
 Documentation on wiki: https://git.iccas.de/MaktabiM/hsi-experiments/-/wikis/Post-processing
-After inizialization post-processing starts form evaluation() function
+
+You can start post-processing with postprocessing_for_one_model() funtion in cross_validation.py
+After initialization of CrossValidatorPostProcessing execution goes to CrossValidatorPostProcessing.evaluation() function
+MF - Median Filter
 """
 
 import os
@@ -20,12 +23,14 @@ from data_utils.data_loaders.data_loader_base import DataLoader
 from data_utils.preprocessor import Preprocessor
 from cross_validators.cross_validator_base import CrossValidatorBase
 import config
-from evaluation.validator import Validator
 from provider import get_whole_analog_of_data_loader, get_evaluation
 
 
 class CrossValidatorPostProcessing(CrossValidatorBase):
-    def __init__(self, name, cross_validation_type='algorithm_with_threshold', **kwargs):
+    # the other option for cross_validation_type is 'algorithm_with_threshold', but as pointed in documentation we reccomend to use 'algorithm_plain' 
+    def __init__(self, name, cross_validation_type='algorithm_plain', **kwargs):
+        if cross_validation_type == 'algorithm_with_threshold' and len(config.LABELS_OF_CLASSES_TO_TRAIN) > 2:
+            raise ValueError('Error! AWT (algorithm_with_threshold) could only be used with binary classification. Please use "algorithm_plain" for multiclass classification')
         super().__init__(name)
         self.LABELED_NPZ_FOLDER = config.RAW_NPZ_PATH
         self.cross_validation_type = cross_validation_type
@@ -42,12 +47,11 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
         self.LABELED_CUBES = glob(os.path.join(self.LABELED_NPZ_FOLDER, '*.npz'))
         print('LABELED_CUBES', self.LABELED_CUBES)
 
-        initialize_execution_flags(**kwargs)
+        self.set_configuration(**kwargs)
 
-        print('execution_flags:', self.execution_flags)
+        print('Post-processing configuration:', self.configuration)
 
         search_folder = os.path.join(self.project_folder, 'logs', name)
-        print(search_folder)
         self.training_csv_path = CrossValidatorBase.get_csv(search_folder)
 
         self.saving_folder = os.path.join(self.project_folder, 'test', name)
@@ -63,59 +67,62 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
         self.whole_predictions_filename = 'predictions_whole.npy'
         self.predictions_filename = self.evaluator.predictions_npy_filename
         self.file_with_postprocessed_predictions = 'predictions_postprocessed.npy'
-        self.file_with_postprocessed_predictions_only_for_labeled_samples = 'predictions_postprocessed_only_labeled_samples.npy'
+        self.file_with_postprocessed_predictions_for_labeled_samples = 'predictions_postprocessed_for_labeled_samples.npy'
 
-    def initialize_execution_flags(self, **kwargs):
-        if not kwargs:
-            self.execution_flags = {
+    @staticmethod
+    def blank_configuration():
+        return  {
+                # To apply post-processing first we have to calculate predictions for whole cubes
+                # For this we need to generate whole cubes
+                # by default if self.WHOLE_CUBES_FOLDER is empty than we generate whole cubes, otherwise we don't.
+                # But with generate_whole_cubes it's possible to force generation even if cubes are already generated
                 "generate_whole_cubes": False,
-                # by default if "whole" folder is empty than we generate whole cubes, otherwise we don't. But with generate_whole_cubes it's possible to forse generate
-                "get_predictions_for_whole_cubes": False,
-                # by default if there is no predictions_whole.npy in test/name/cp-0000 than we count predoctions for whole cubes, otherwise - we don't. But with get_predictions_for_whole_cubes it's possible to forse count
-                "save_predictions_and_metrics_on_labeled": {
-                    # for detailed documentation of params in this dictionary see documentation for evaluation/evaluation_base.py/EvaluationBase.save_predictions_and_metrics()
+                # by default if there is no predictions_whole.npy in test/training_name/cp-0000 
+                # than we calculate predictions for whole cubes, otherwise we don't. But with 
+                # calculate_predictions_for_whole_cubes it's possible to force calculation
+                "calculate_predictions_for_whole_cubes": False,
+                "save_predictions_and_evaluate_on_labeled_samples": {
+                    # standard evaluation parameters
+                    # for detailed documentation of params in this section see documentation for
+                    # evaluation/evaluation_base.py/EvaluationBase.save_predictions_and_metrics()
                     "save_predictions": False,
                     "metrics": {
                         'save_metrics': False,
-                        'checkpoints_range': None,
-                        'checkpoints_raw_list': None,
-                        'thresholds_range': None,
-                        'thresholds_raw_list': None,
+                        'checkpoints': None,
+                        'thresholds': None,
                         'save_curves': False
                     }
                 },
-                "check": {  # what thresholds and median filter sizes to check
-                    "median_filters_raw_list": None,    # you can write MF size as list, for example, [5, 10, 15, 20]
-                    "median_filters_range": None,       # or like range [5, 20, 4] (divide space between 5 and 20 in 4 numbers)
-                    "thresholds_raw_list": None,        # the same system for thresholds
-                    "thresholds_range": None
+                "postprocessing": {  # what thresholds and median filter (MF) sizes to check
+                    # if classification is multiclass than specify only MF_sizes (because thresholds are not used)
+                    "MF_sizes": None, # it's better to use odd MF sizes
+                    "thresholds": None, 
                 }
             }
+    
+    
+    def set_configuration(self, **kwargs):
+        if not kwargs:
+            self.configuration = CrossValidatorPostProcessing.blank_configuration()
         else:
-            self.execution_flags = kwargs['execution_flags']
+            self.configuration = kwargs['configuration']
     
     def evaluation(self, **kwargs):    # entry point
 
         self.generate_whole_cubes()
         self.calculate_predictions_on_whole_cubes()
-        self.calculate_predictions_only_on_labeled_samples()
+        self.calculate_predictions_and_metrics_on_labeled_samples()
 
         if self.cross_validation_type == 'algorithm_with_threshold':
-            thresholds_range = self.execution_flags['check']['thresholds_range']
-            thresholds_raw_list = self.execution_flags['check']['thresholds_raw_list']
+            thresholds = self.configuration['postprocessing']['thresholds']
         if self.cross_validation_type == 'algorithm_plain':
-            thresholds_raw_list = [-1]
-            thresholds_range = None
+            thresholds = [-1] # we fill thresholds with -1 to skip thresholding in CrossValidatorPostProcessing.median_filter() function
 
-        self.check_different_MF_sizes_and_thresholds(
-            thresholds_range=thresholds_range,
-            thresholds_raw_list=thresholds_raw_list,
-            median_filters_raw_list=self.execution_flags['check']['median_filters_raw_list'],
-            median_filters_range=self.execution_flags['check']['median_filters_range'])
+        self.postprocessing(thresholds=thresholds, MF_sizes=self.configuration['postprocessing']['MF_sizes'])
 
 
     def generate_whole_cubes(self):
-        if len(self.WHOLE_CUBES) != len(self.LABELED_CUBES) or self.execution_flags['generate_whole_cubes']:
+        if len(self.WHOLE_CUBES) != len(self.LABELED_CUBES) or self.configuration['generate_whole_cubes']:
             print('---------- Cubes generation is started------------')
             execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
             execution_flags['load_data_with_dataloader'] = True
@@ -137,107 +144,59 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
     def calculate_predictions_on_whole_cubes(self):
         predictions_npz_exists = os.path.exists(os.path.join(self.saving_folder_with_checkpoint,
                                                              self.whole_predictions_filename))
-        if not predictions_npz_exists or self.execution_flags['get_predictions_for_whole_cubes']:
+        if not predictions_npz_exists or self.configuration['calculate_predictions_for_whole_cubes']:
             print('---------- Calculation of predictions on whole cubes is started------------')
             config.USE_ALL_LABELS = True
 
-            self.evaluator.save_predictions_and_metrics(
+            self.evaluator.calculate_and_save_predictions(
                 training_csv_path=self.training_csv_path,
-                save_predictions=True,
                 npz_folder=self.WHOLE_CUBES_FOLDER,
-                save_curves=False,
-                predictions_npy_filename=self.whole_predictions_filename,
-                checkpoints_range=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
-                    'checkpoints_range'],
-                checkpoints_raw_list=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
-                    'checkpoints_raw_list']
+                predictions_npy_filename=self.whole_predictions_filename
             )
             config.USE_ALL_LABELS = False
             print('---------- Calculation of predictions on whole cubes is finished ------------')
         else:
             print("!!!---------- We don't calculate predictions for whole cubes ----------!!!")
 
-    def calculate_predictions_only_on_labeled_samples(self):
+    def calculate_predictions_and_metrics_on_labeled_samples(self):
         predictions_exist = os.path.exists(os.path.join(self.saving_folder_with_checkpoint, self.predictions_filename))
 
-        if not predictions_exist or self.execution_flags['save_predictions_and_metrics_on_labeled'][
-            'save_predictions'] or \
-                self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics']['save_metrics']:
+        if not predictions_exist or self.configuration['save_predictions_and_evaluate_on_labeled_samples']['save_predictions']:
             print('---------- Calculation of predictions on labeled samples is started ------------')
-            thresholds_range = self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
-                    'thresholds_range']
-            thresholds_raw_list = self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
-                    'thresholds_raw_list']
-
-            save_predictions = False
-            if not predictions_exist or self.execution_flags['save_predictions_and_metrics_on_labeled'][
-                'save_predictions']:
-                save_predictions = True
-
-            self.evaluator.save_predictions_and_metrics(
-                training_csv_path=self.training_csv_path,
-                npz_folder=self.LABELED_NPZ_FOLDER,
-                predictions_npy_filename=self.predictions_filename,
-
-                checkpoints_range=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
-                    'checkpoints_range'],
-                checkpoints_raw_list=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
-                    'checkpoints_raw_list'],
-                thresholds_range=thresholds_range,
-                thresholds_raw_list=thresholds_raw_list,
-                save_predictions=save_predictions,
-                save_curves=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics']['save_curves']
-            )
+            self.evaluator.calculate_and_save_predictions(training_csv_path=self.training_csv_path,
+                                                        npz_folder=self.LABELED_NPZ_FOLDER,
+                                                        predictions_npy_filename=self.predictions_filename,
+                                                        checkpoints=self.configuration['save_predictions_and_evaluate_on_labeled_samples']['metrics']['checkpoints'])
+        
+                
             print('---------- Calculation of predictions on labeled samples is finished ------------')
         else:
-            print("!!!---------- We don't calculate predictions for labeled samples ----------!!!")
-        return
+            print("!!!---------- We don't calculate predictions on labeled samples ----------!!!")
 
-    @staticmethod
-    def get_MF_sizes_and_thresholds(median_filters_range, median_filters_raw_list, thresholds_range,
-                                          thresholds_raw_list):
-        if median_filters_range is not None and median_filters_raw_list is not None:
-            raise ValueError("Error! Both median_filters_range and median_filters_raw_list are specified. Please "
-                             "specify only one of them")
-        if thresholds_range is not None and thresholds_raw_list is not None:
-            raise ValueError("Error! Both median_filters_range and median_filters_raw_list are specified. Please "
-                             "specify only one of them")
-        if thresholds_range is None and thresholds_raw_list is None:
-            raise ValueError("Error! Both median_filters_range and median_filters_raw_list are not specified. Please "
-                             "specify one of them")
-        median_filters = []
-        if median_filters_range is not None:
-            median_filters = np.round(np.linspace(median_filters_range[0], median_filters_range[1],
-                                                  median_filters_range[2]), 4)
-        if median_filters_raw_list is not None:
-            median_filters = median_filters_raw_list.copy()
+            
+        if self.configuration['save_predictions_and_evaluate_on_labeled_samples']['metrics']['save_metrics']:   
+            print('---------- Calculation of metrics on labeled predictions is started ------------')
+            self.evaluator.evaluate(predictions_npy_filename=self.predictions_filename,
+                                    checkpoints=self.configuration['save_predictions_and_evaluate_on_labeled_samples']['metrics']['checkpoints'],
+                                    thresholds=self.configuration['save_predictions_and_evaluate_on_labeled_samples']['metrics']['thresholds'],
+                                    save_curves=self.configuration['save_predictions_and_evaluate_on_labeled_samples']['metrics']['save_curves']
+                                )
+            print('---------- Calculation of metrics on labeled samples is finished ------------')
+        else:
+            print("!!!---------- We don't calculate metrics for labeled samples ----------!!!")
 
-        thresholds = []
-        if thresholds_range is not None:
-            thresholds = np.round(np.linspace(thresholds_range[0], thresholds_range[1], thresholds_range[2]), 4)
-        if thresholds_raw_list is not None:
-            thresholds = thresholds_raw_list.copy()
-        return median_filters, thresholds
 
-    def check_different_MF_sizes_and_thresholds(self, thresholds_range=None, thresholds_raw_list=None,
-                                                    median_filters_range=None, median_filters_raw_list=None):
-        data = np.load(
-            os.path.join(self.saving_folder_with_checkpoint, self.whole_predictions_filename), allow_pickle=True)
+    def postprocessing(self, thresholds=None, MF_sizes=None):
+        data = np.load(os.path.join(self.saving_folder_with_checkpoint, self.whole_predictions_filename), allow_pickle=True)
 
-        median_filters, thresholds = CrossValidatorPostProcessing.get_MF_sizes_and_thresholds(
-            median_filters_range,
-            median_filters_raw_list,
-            thresholds_range,
-            thresholds_raw_list)
-        print(
-            f'---------- We are starting to check different median filter sizes {median_filters} and thresholds {thresholds} ----------')
+        print(f'---------- We start postprocessing with MF sizes {MF_sizes} and thresholds {thresholds} ----------')
         original_filename = self.evaluator.comparable_characteristics_csvname
         original_metrics_filename = self.evaluator.metrics_filename_base
 
-        for med_filter in median_filters:
+        for mf in MF_sizes:
             for threshold in thresholds:
-                print(f'Check median filter size - {med_filter}, and threshold -{threshold}')
-                folder_name = f"mf_{med_filter}_t_{threshold}"
+                print(f'Postprocessing step: median filter size - {mf}, and threshold - {threshold}')
+                folder_name = f"mf_{mf}_t_{threshold}"
                 folder = os.path.join(self.saving_folder_with_checkpoint, folder_name)
                 if not os.path.exists(folder):
                     os.mkdir(folder)
@@ -245,7 +204,7 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
                 postprocessed_predictions = {}
 
                 for patient in data:
-                    predictions_postprocessed = self.median_filter(patient, threshold, med_filter, folder)
+                    predictions_postprocessed = self.median_filter(patient, threshold, mf, folder)
                     postprocessed_predictions.update({
                         patient['name']: {
                             'predictions': predictions_postprocessed,
@@ -260,50 +219,47 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
                 if self.cross_validation_type == 'algorithm_plain':
                     self.evaluator.comparable_characteristics_csvname = "compare_all_thresholds_postprocessed_AP.csv"
                     
-                self.evaluator.metrics_filename_base += '_postprocessed_' + str(med_filter)
+                self.evaluator.metrics_filename_base += '_postprocessed_' + str(mf)
                 self.evaluator.metrics_filename_base = folder + config.SYSTEM_PATHS_DELIMITER \
                                                        + self.evaluator.metrics_filename_base
-                self.evaluator.additional_columns = {'median': med_filter}
+                self.evaluator.additional_columns = {'median': mf}
 
-                thresholds_raw_list = [threshold]
-                thresholds_range = None
+                thresholds_for_metrics = [threshold]
                 if self.cross_validation_type == 'algorithm_plain':
-                    if self.execution_flags['check']['thresholds_range'] is not None:
-                        thresholds_range = [self.execution_flags['check']['thresholds_range']]
-                    thresholds_raw_list = self.execution_flags['check']['thresholds_raw_list']
-                print('thresholds_raw_list, thresholds_range', thresholds_raw_list, thresholds_range)
+                    thresholds_for_metrics = self.configuration['postprocessing']['thresholds']
 
-                self.evaluator.save_predictions_and_metrics(
-                    training_csv_path=self.training_csv_path,
-                    save_predictions=False,
-                    npz_folder=self.LABELED_NPZ_FOLDER,
+                self.evaluator.evaluate(
                     save_curves=False,
-                    predictions_npy_filename=folder_name + config.SYSTEM_PATHS_DELIMITER + self.file_with_postprocessed_predictions_only_for_labeled_samples,
-                    thresholds_raw_list=thresholds_raw_list,
-                    thresholds_range=thresholds_range,
-                    checkpoints_range=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
-                        'checkpoints_range'],
-                    checkpoints_raw_list=self.execution_flags['save_predictions_and_metrics_on_labeled']['metrics'][
-                        'checkpoints_raw_list']
+                    predictions_npy_filename=folder_name + config.SYSTEM_PATHS_DELIMITER + self.file_with_postprocessed_predictions_for_labeled_samples,
+                    thresholds=thresholds_for_metrics,
+                    checkpoints=self.configuration['save_predictions_and_evaluate_on_labeled_samples']['metrics']['checkpoints']
                 )
 
                 self.evaluator.metrics_filename_base = original_metrics_filename
         self.evaluator.comparable_characteristics_csvname = original_filename
         self.evaluator.additional_columns = {}
 
-        print(f'---------- Checking different median filter sizes and thresholds is finished ----------')
+        print(f'---------- Postprocessing is finished ----------')
 
     def median_filter(self, patient, threshold, median_filter_size, folder):
+        number_of_classes = len(config.LABELS_OF_CLASSES_TO_TRAIN)
 
         size = patient['size']
-        predictions = np.reshape(np.array(patient['predictions'])[:, 0], size)
+        predictions = np.array(patient['predictions'])
+        if number_of_classes > 2:
+            predictions = np.argmax(predictions, axis=1)
+        predictions = np.reshape(predictions, size)
 
         if threshold != -1:
             predictions[predictions >= threshold] = 1
             predictions[predictions < threshold] = 0
 
         predictions_postprocessed = median_filter(predictions, size=median_filter_size)
-        
+                
+        if number_of_classes > 2: # we duplicate postprocessed labels for consistency of evaluation 
+            predictions_postprocessed = np.eye(number_of_classes)[predictions_postprocessed.flatten()]
+            predictions_postprocessed = np.reshape(predictions_postprocessed, list(size) + [number_of_classes])
+                    
         '''postprocessed_predictions.append(np.reshape(predictions_postprocessed, size))
         
         gt = np.reshape(np.array(patient['gt']), size).astype(np.float)
@@ -352,4 +308,87 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
                                'gt': gt,
                                'predictions': predictions})
 
-        np.save(os.path.join(folder, self.file_with_postprocessed_predictions_only_for_labeled_samples), result)
+        np.save(os.path.join(folder, self.file_with_postprocessed_predictions_for_labeled_samples), result)
+        
+# old function for cross_validation.py to test models for post-processing papers        
+def postprocessing_test_all_models():
+    config.CV_GET_CHECKPOINT_FROM_VALID = False
+
+    for model, scaling_type, threshold, checkpoint in zip([  
+        'CV_3d_inception',
+        #'CV_3d_inception_exclude1_all',
+        #'CV_3d_inception_svn_every_third',
+        #'CV_3d_svn_every_third',
+        #'CV_3d_sample_weights_every_third',
+        #'CV_3d_every_third',
+        #'CV_3d_inception_exclude1_every_third',
+    ], [  'l2_norm',
+        #'svn_T', 
+        #'svn_T',
+        #'svn_T', 
+        #'svn_T',
+        #'l2_norm', 
+        #'svn_T'
+    ],
+            [  0.2111,
+                #0.0189, 
+                #0.0456,
+                #0.0367, 
+                #0.45,
+                #0.1556, 
+                #0.0456
+            ],
+            [  36,
+                #16, 
+                #18,
+                #16, 
+                #18,
+                #16, 
+                #16
+            ]):
+
+        config.RAW_NPZ_PATH = os.path.join('/work/users/mi186veva/data_3d', scaling_type)
+        config.NORMALIZATION_TYPE = scaling_type
+
+        if scaling_type == 'svn_T':
+            thresholds_range = [0.00001, threshold, 20]
+        else:
+            thresholds_range = [threshold - (threshold / 2), threshold + (threshold / 2), 20]
+            #thresholds_range = [threshold, 2 * threshold, 20]
+
+        cross_validator = get_cross_validator(
+            model, cross_validation_type='algorithm_with_threshold', configuration={
+                "generate_whole_cubes": False,
+                # by default if "whole" folder is empty than we generate whole cubes, otherwise we don't. But with generate_whole_cubes it's possible to forse generate
+                "calculate_predictions_for_whole_cubes": False,
+                # by default if there is no predictions_whole.npy in test/name/cp-0000 than we count predoctions for whole cubes, otherwise - we don't. But with calculate_predictions_for_whole_cubes it's possible to forse count
+                "save_predictions_and_evaluate_on_labeled_samples": {
+                    # for detailed documentation of params in this dictionary see documentation for evaluation/evaluation_base.py/EvaluationBase.save_predictions_and_metrics()
+                    "save_predictions": False,
+                    "metrics": {
+                        'save_metrics': False,
+                        'checkpoints_range': None,
+                        'checkpoints_raw_list': [checkpoint],
+                        'thresholds_range': None,
+                        'thresholds_raw_list': None,
+                        'save_curves': False
+                    }
+                },
+                "check": {  # what thresholds and median filter sizes to check
+                    "median_filters_raw_list": [5, 25, 51],#[31, 35, 41, 45, 51, 55, 61, 65], #[5, 11, 15, 21, 25, 31, 35, 41, 45, 51, 55, 61],
+                    "median_filters_range": None,
+                    "thresholds_raw_list": None,#[0.1056, 0.2111, 0.3166],
+                    "thresholds_range": thresholds_range
+
+                }
+            })
+        cross_validator.evaluator.checkpoint_basename += scaling_type + '_'
+
+        cross_validator.saving_folder_with_checkpoint = os.path.join(cross_validator.saving_folder,
+                                                                     f'cp-{scaling_type}_{checkpoint:04d}')
+
+        execution_flags = cross_validator.get_execution_flags()
+        execution_flags['cross_validation'] = False
+        cross_validator.pipeline(execution_flags=execution_flags)
+
+        # utils.send_tg_message(f'Mariia, Post-processing for {model} is successfully completed!')
