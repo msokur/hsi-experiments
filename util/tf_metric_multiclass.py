@@ -11,6 +11,7 @@ class F1_score(Metric):
         self.f1 = None
         self.average_methode = None
         self.init_average(average)
+        self.strategy = tf.distribute.get_strategy()
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_pred_max = K.argmax(y_pred, axis=1)
@@ -19,27 +20,36 @@ class F1_score(Metric):
         fp = tf.math.reduce_sum(cm, 0) - tp
         fn = tf.math.reduce_sum(cm, 1) - tp
         tn = tf.math.reduce_sum(cm) - tp - fp - fn
-        self.average_methode(tp, fp, fn, tn)
+        self.wrapp(self.average_methode, tp, fp, fn, tn)
 
     def macro(self, tp, fp, fn, tn):
         f1_s = tp / (tp + 0.5 * (fp + fn) + K.epsilon())
-        self.f1.assign(K.sum(f1_s) / self.num_classes)
+        return K.sum(f1_s) / self.num_classes
 
-    def micro(self, tp, fp, fn, tn):
+    @staticmethod
+    def micro(tp, fp, fn, tn):
         tp_sum = K.sum(tp)
         fp_sum = K.sum(fp)
         fn_sum = K.sum(fn)
         f1_s = tp_sum / (tp_sum + 0.5 * (fp_sum + fn_sum) + K.epsilon())
-        self.f1.assign(f1_s)
+        return f1_s
 
-    def weighted(self, tp, fp, fn, tn):
+    @staticmethod
+    def weighted(tp, fp, fn, tn):
         weights = (tp + fn) / (tp + fn + fp + tn)
         f1_s = tp / (tp + 0.5 * (fp + fn) + K.epsilon())
         f1_s *= weights
-        self.f1.assign(K.sum(f1_s))
+        return K.sum(f1_s)
 
-    def multi(self, tp, fp, fn, tn):
+    @staticmethod
+    def multi(tp, fp, fn, tn):
         f1_s = tp / (tp + 0.5 * (fp + fn) + K.epsilon())
+        return f1_s
+
+    def wrapp(self, average_fn, tp, fp, fn, tn):
+        f1_s = average_fn(tp, fp, fn, tn)
+        if self.strategy is not None:
+            f1_s = f1_s / self.strategy.num_replicas_in_sync
         self.f1.assign(f1_s)
 
     def init_average(self, average):

@@ -1,7 +1,9 @@
 import numpy as np
 import inspect
 from functools import wraps
-from typing import List, Tuple
+from typing import Tuple
+
+ANNOTATIONS_NOT_CHECK = [int, tuple, str, np.ndarray]
 
 
 def check_params(f):
@@ -14,7 +16,9 @@ def check_params(f):
             annotation = signature.parameters[name].annotation
             if annotation is inspect.Signature.empty:
                 continue
-            elif annotation is np.ndarray:
+            elif annotation in ANNOTATIONS_NOT_CHECK:
+                if not isinstance(value, annotation):
+                    raise TypeError(f"Parameter '{name}' is not from the type {annotation}")
                 continue
             annotation(name, value)
         return f(*args, **kwargs)
@@ -22,20 +26,21 @@ def check_params(f):
 
 
 def __list_positive(name, value):
-    if not isinstance(value, list):
-        raise TypeError(f"For parameter {name} only List are allowed")
-    if not (all(isinstance(v, int) and __positive(name, v) for v in value)):
-        __value_error(f"in {name}", "positive integers")
+    if value is not None:
+        if not isinstance(value, list):
+            raise TypeError(f"For parameter {name} only List are allowed")
+        if not (all(isinstance(v, int) and __positive(name, v) for v in value)):
+            __value_error(name, "positive integers")
 
 
 def __positive(name, value):
     if value < 0:
-        __value_error(name, value)
+        __value_error(name, "positive integers")
     return True
 
 
 def __value_error(param: str, typ: str):
-    raise ValueError(f"For parameter {param} only {typ} are allowed!")
+    raise ValueError(f"For parameter '{param}' only {typ} are allowed!")
 
 
 def print_array(array: np.ndarray):
@@ -99,7 +104,7 @@ def detect_core(in_arr: np.ndarray, d: __positive = 1, axis: __list_positive = N
     ...     [False, False,  False,  False,  False]])
     """
     values, new_array, shape = __get_values(in_arr)
-    axis = __get_axis(axis, shape)
+    axis = __get_axis(shape=shape, axis=axis)
     for idx in np.arange(len(values[0])):
         index, slices = __get_idx_slice(values=values, idx=idx, shape=shape, d=d, axis=axis)
         new_array[index] = np.all(in_arr[slices])
@@ -157,12 +162,10 @@ def detect_border(in_arr: np.ndarray, d: __positive = 1, axis: __list_positive =
         ...     [False, False,  False,  False,  False]])
         """
     val, new_array, shape = __get_values(in_arr)
-    axis = __get_axis(axis, shape)
+    axis = __get_axis(shape=shape, axis=axis)
     for idx in np.arange(len(val[0])):
         index, slices = __get_idx_slice(values=val, idx=idx, shape=shape, d=d, axis=axis)
-        if index[0] == 0 or index[0] == shape[0] - 1:
-            new_array[index] = True
-        elif index[1] == 0 or index[1] == shape[1] - 1:
+        if any([index[i] == 0 or index[i] == shape[i] - 1 for i in range(len(index))]):
             new_array[index] = True
         else:
             new_array[index] = np.all(in_arr[slices]) ^ np.any(in_arr[slices])
@@ -178,7 +181,8 @@ def __get_values(array: np.ndarray):
     return values, new_array, shape
 
 
-def __get_axis(axis: List[int], shape: Tuple[int]) -> List[int]:
+@check_params
+def __get_axis(shape: tuple, axis: __list_positive = None) -> list:
     if axis is not None:
         axis = list(set(axis))
     else:
@@ -187,20 +191,23 @@ def __get_axis(axis: List[int], shape: Tuple[int]) -> List[int]:
     return axis
 
 
-def __get_idx_slice(values: np.ndarray, idx: int, shape: Tuple[int], d: int, axis: list) -> Tuple[tuple, tuple]:
+def __get_idx_slice(values: np.ndarray, idx: int, shape: tuple, d: int, axis: list) -> Tuple[tuple, tuple]:
     slices = ()
     index = ()
     for ax in np.arange(len(values)):
         if ax not in axis:
-            slices += ((__get_slice(idx=values[ax][idx], limit=shape[ax], d=0)),)
+            slices += ((__get_slice(idx=int(values[ax][idx]), limit=shape[ax], d=0)),)
         else:
-            slices += ((__get_slice(idx=values[ax][idx], limit=shape[ax], d=d)),)
+            slices += ((__get_slice(idx=int(values[ax][idx]), limit=shape[ax], d=d)),)
         index += (values[ax][idx],)
 
     return index, slices
 
 
-def __get_slice(idx: int, limit: int, d=1) -> slice:
+@check_params
+def __get_slice(idx: int, limit: int, d: __positive = 1) -> slice:
+    if idx >= limit:
+        raise ValueError("Index is not in array!")
     i_start, i_end = idx - d, idx + d + 1
     if i_start < 0:
         i_start = 0

@@ -2,26 +2,26 @@ from util.tf_metric_multiclass import F1_score
 import pytest
 import numpy as np
 
-y_true = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
-y_pred = [[1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [0, 0, 1], [1, 0, 0],
+Y_TRUE = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
+Y_PRED = [[1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [0, 0, 1], [1, 0, 0],
           [1, 0, 0], [0, 1, 0], [0, 1, 0], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 1, 0], [0, 0, 1], [0, 0, 1],
           [0, 0, 1]]
-micro = 0.6190
-macro = 0.5686
-weighted = 0.5947
-multi = [0.8421, 0.3636, 0.5000]
+MICRO = 0.6190
+MACRO = 0.5686
+WEIGHTED = 0.5947
+MULTI = [0.8421, 0.3636, 0.5000]
 
-test_data = [("micro", y_true, y_pred, micro),
-             ("macro", y_true, y_pred, macro),
-             ("weighted", y_true, y_pred, weighted)]
+TEST_DATA = [("micro", Y_TRUE, Y_PRED, MICRO),
+             ("macro", Y_TRUE, Y_PRED, MACRO),
+             ("weighted", Y_TRUE, Y_PRED, WEIGHTED)]
 
-test_data_multi = [("multi", y_true, y_pred, multi)]
+TEST_DATA_MULTI = [("multi", Y_TRUE, Y_PRED, MULTI)]
 
-test_data_merge = [("micro", y_true, y_pred, micro),
-                   ("macro", y_true, y_pred, macro),
-                   ("weighted", y_true, y_pred, weighted)]
+TEST_DATA_MERGE = [("micro", Y_TRUE, Y_PRED, MICRO),
+                   ("macro", Y_TRUE, Y_PRED, MACRO),
+                   ("weighted", Y_TRUE, Y_PRED, WEIGHTED)]
 
-test_data_multi_merge = [("multi", y_true, y_pred, multi)]
+TEST_DATA_MULTI_MERGE = [("multi", Y_TRUE, Y_PRED, MULTI)]
 
 
 @pytest.fixture()
@@ -29,7 +29,7 @@ def num_classes():
     return 3
 
 
-@pytest.mark.parametrize("average,y_true_,y_pred_,result", test_data)
+@pytest.mark.parametrize("average,y_true_,y_pred_,result", TEST_DATA)
 def test_f1_score(num_classes, average, y_true_, y_pred_, result):
     f1_s = F1_score(num_classes=num_classes, average=average)
     assert 0.0 == f1_s.result().numpy()
@@ -41,7 +41,7 @@ def test_f1_score(num_classes, average, y_true_, y_pred_, result):
     assert 0.0 == f1_s.result().numpy()
 
 
-@pytest.mark.parametrize("average,y_true_,y_pred_,result", test_data_multi)
+@pytest.mark.parametrize("average,y_true_,y_pred_,result", TEST_DATA_MULTI)
 def test_multi_f1_score(num_classes, average, y_true_, y_pred_, result):
     f1_s = F1_score(num_classes=num_classes, average=average)
     assert (np.zeros(num_classes, dtype=np.float32) == f1_s.result().numpy()).all()
@@ -53,7 +53,7 @@ def test_multi_f1_score(num_classes, average, y_true_, y_pred_, result):
     assert (np.zeros(num_classes, dtype=np.float32) == f1_s.result().numpy()).all()
 
 
-@pytest.mark.parametrize("average,y_true_,y_pred_,result", test_data_merge)
+@pytest.mark.parametrize("average,y_true_,y_pred_,result", TEST_DATA_MERGE)
 def test_merge_state_f1_score(num_classes, average, y_true_, y_pred_, result):
     f1_s1 = F1_score(num_classes=num_classes, average=average)
     f1_s1.update_state(y_true=y_true_, y_pred=y_pred_)
@@ -69,7 +69,7 @@ def test_merge_state_f1_score(num_classes, average, y_true_, y_pred_, result):
     assert result == pytest.approx(f1_s1.result().numpy(), 0.0001)
 
 
-@pytest.mark.parametrize("average,y_true_,y_pred_,result", test_data_multi_merge)
+@pytest.mark.parametrize("average,y_true_,y_pred_,result", TEST_DATA_MULTI_MERGE)
 def test_multi_merge_state_f1_score(num_classes, average, y_true_, y_pred_, result):
     f1_s1 = F1_score(num_classes=num_classes, average=average)
     f1_s1.update_state(y_true=y_true_, y_pred=y_pred_)
@@ -95,10 +95,10 @@ def test_raise_value_error_for_wrong_average(num_classes):
 
 def test_raise_value_error_merge_state_f1_score(num_classes):
     f1_s1 = F1_score(num_classes=num_classes, average="macro")
-    f1_s1.update_state(y_true=y_true, y_pred=y_pred)
+    f1_s1.update_state(y_true=Y_TRUE, y_pred=Y_PRED)
 
     f1_s2 = F1_score(num_classes=num_classes, average="multi")
-    f1_s2.update_state(y_true=y_true, y_pred=y_pred)
+    f1_s2.update_state(y_true=Y_TRUE, y_pred=Y_PRED)
 
     with pytest.raises(ValueError):
         f1_s1.merge_state([f1_s2])

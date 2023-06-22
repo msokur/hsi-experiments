@@ -51,7 +51,7 @@
       "max_trials": 20,
       "overwrite": true
     },
-    "TUNER_EPOCHS": 1,
+    "TUNER_EPOCHS": 10,
     "MODEL_CHECKPOINT": {
       "monitor": "val_f1_score_weighted",
       "save_best_only": true,
