@@ -13,13 +13,13 @@ test_data = [(y_true, y_pred, 1.0, result10),
 @pytest.mark.parametrize("y_true_,y_pred_, threshold, result", test_data)
 def test_f1_score(y_true_, y_pred_, threshold, result):
     f1_s = F1_score(threshold=threshold)
-    assert 0.0 == f1_s.result().numpy()
+    assert f1_s.result().numpy() == 0.0
 
     f1_s.update_state(y_true=y_true_, y_pred=y_pred_)
-    assert result == pytest.approx(f1_s.result().numpy(), 0.0001)
+    assert pytest.approx(f1_s.result().numpy(), 0.0001) == result
 
     f1_s.reset_state()
-    assert 0.0 == f1_s.result().numpy()
+    assert f1_s.result().numpy() == 0.0
 
 
 @pytest.mark.parametrize("y_true_,y_pred_, threshold, result", test_data)
@@ -35,4 +35,4 @@ def test_merge_state_f1_score(y_true_, y_pred_, threshold, result):
 
     f1_s1.merge_state([f1_s2, f1_s3])
 
-    assert result == pytest.approx(f1_s1.result().numpy(), 0.0001)
+    assert pytest.approx(f1_s1.result().numpy(), 0.0001) == result

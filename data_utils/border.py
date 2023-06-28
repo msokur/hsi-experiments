@@ -118,7 +118,7 @@ def detect_border(in_arr: np.ndarray, d: __positive = 1, axis: __list_positive =
 
         detect_border(in_arr: np.ndarray, d: int, axis: List[int]).
 
-        If no given, the depth has a default value of 1.
+        If no depth given, the default value is 1.
 
         :param in_arr: The input array  where the border should detect.
         :param d: Is the depth from the border. There are only positive integers are allowed.

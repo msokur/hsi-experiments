@@ -32,25 +32,25 @@ def num_classes():
 @pytest.mark.parametrize("average,y_true_,y_pred_,result", TEST_DATA)
 def test_f1_score(num_classes, average, y_true_, y_pred_, result):
     f1_s = F1_score(num_classes=num_classes, average=average)
-    assert 0.0 == f1_s.result().numpy()
+    assert f1_s.result().numpy() == 0.0
 
     f1_s.update_state(y_true=y_true_, y_pred=y_pred_)
-    assert result == pytest.approx(f1_s.result().numpy(), 0.0001)
+    assert pytest.approx(f1_s.result().numpy(), 0.0001) == result
 
     f1_s.reset_state()
-    assert 0.0 == f1_s.result().numpy()
+    assert f1_s.result().numpy() == 0.0
 
 
 @pytest.mark.parametrize("average,y_true_,y_pred_,result", TEST_DATA_MULTI)
 def test_multi_f1_score(num_classes, average, y_true_, y_pred_, result):
     f1_s = F1_score(num_classes=num_classes, average=average)
-    assert (np.zeros(num_classes, dtype=np.float32) == f1_s.result().numpy()).all()
+    assert (f1_s.result().numpy() == np.zeros(num_classes, dtype=np.float32)).all()
 
     f1_s.update_state(y_true=y_true_, y_pred=y_pred_)
-    assert (np.array(result, dtype=np.float32) == np.round(f1_s.result().numpy(), 4)).all()
+    assert (np.round(f1_s.result().numpy(), 4) == np.array(result, dtype=np.float32)).all()
 
     f1_s.reset_state()
-    assert (np.zeros(num_classes, dtype=np.float32) == f1_s.result().numpy()).all()
+    assert (f1_s.result().numpy() == np.zeros(num_classes, dtype=np.float32)).all()
 
 
 @pytest.mark.parametrize("average,y_true_,y_pred_,result", TEST_DATA_MERGE)
@@ -66,7 +66,7 @@ def test_merge_state_f1_score(num_classes, average, y_true_, y_pred_, result):
 
     f1_s1.merge_state([f1_s2, f1_s3])
 
-    assert result == pytest.approx(f1_s1.result().numpy(), 0.0001)
+    assert pytest.approx(f1_s1.result().numpy(), 0.0001) == result
 
 
 @pytest.mark.parametrize("average,y_true_,y_pred_,result", TEST_DATA_MULTI_MERGE)
@@ -82,7 +82,7 @@ def test_multi_merge_state_f1_score(num_classes, average, y_true_, y_pred_, resu
 
     f1_s1.merge_state([f1_s2, f1_s3])
 
-    assert (np.array(result, dtype=np.float32) == np.round(f1_s1.result().numpy(), 4)).all()
+    assert (np.round(f1_s1.result().numpy(), 4) == np.array(result, dtype=np.float32)).all()
 
 
 def test_raise_value_error_for_wrong_average(num_classes):
