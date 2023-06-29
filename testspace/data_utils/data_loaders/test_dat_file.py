@@ -21,7 +21,11 @@ RGBA_MASK_COLOR = {0: [RED[0:3] + [200]],
 COMBINED_MASK_COLOR = {0: [RED[0:3]],
                        1: [GREEN[0:3], BLUE[0:3] + [200]]}
 
-ERROR_MASK_COLOR = {0: [[255, 0]]}
+ERROR1_MASK_COLOR = {0: [[255, 0]]}
+
+ERROR2_MASK_COLOR = {0: [255, 0, 0]}
+
+ERROR3_MASK_COLOR = {0: [[]]}
 
 WARNING_MASK_COLOR = {0: [[255, 0, 0, 200, 100]]}
 
@@ -79,8 +83,12 @@ def GET_MASK_COLOR(typ):
         LOADER_CONFIG["MASK_COLOR"] = RGBA_MASK_COLOR
     elif typ == "COMBINED":
         LOADER_CONFIG["MASK_COLOR"] = COMBINED_MASK_COLOR
-    elif typ == "ERROR":
-        LOADER_CONFIG["MASK_COLOR"] = ERROR_MASK_COLOR
+    elif typ == "ERROR1":
+        LOADER_CONFIG["MASK_COLOR"] = ERROR1_MASK_COLOR
+    elif typ == "ERROR2":
+        LOADER_CONFIG["MASK_COLOR"] = ERROR2_MASK_COLOR
+    elif typ == "ERROR3":
+        LOADER_CONFIG["MASK_COLOR"] = ERROR3_MASK_COLOR
     elif typ == "WARNING":
         LOADER_CONFIG["MASK_COLOR"] = WARNING_MASK_COLOR
     else:
@@ -107,9 +115,20 @@ def test_indexes_get_bool_from_mask(mask, loader, result):
         assert (bool_mask == result_mask).all()
 
 
-def test_indexes_get_bool_from_mask_error(mask):
-    loader = DatFile(loader_conf=GET_MASK_COLOR("ERROR"))
-    with pytest.raises(ValueError, match="Check your configurations in 'MASK_COLOR' for the classification 0!"):
+INDEXES_GET_BOOL_FROM_MASK_DATA_ERROR = [(DatFile(loader_conf=GET_MASK_COLOR("ERROR1")),
+                                          "Check your configurations in 'MASK_COLOR' for the classification 0! "
+                                          "You need a RGB or RGBA value!"),
+                                         (DatFile(loader_conf=GET_MASK_COLOR("ERROR2")),
+                                          "Check your configurations in 'MASK_COLOR' for the classification 0! "
+                                          "Surround your RGB/RGBA value with brackets!"),
+                                         (DatFile(loader_conf=GET_MASK_COLOR("ERROR3")),
+                                          "Check your configurations in 'MASK_COLOR' for the classification 0! "
+                                          "You need a RGB or RGBA value!")]
+
+
+@pytest.mark.parametrize("loader,error", INDEXES_GET_BOOL_FROM_MASK_DATA_ERROR)
+def test_indexes_get_bool_from_mask_error(mask, loader, error):
+    with pytest.raises(ValueError, match=error):
         loader.indexes_get_bool_from_mask(mask=mask)
 
 

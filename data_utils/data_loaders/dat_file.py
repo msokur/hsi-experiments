@@ -52,6 +52,9 @@ class DatFile:
 
         :return: A list with boolean arrays for every classification
 
+        :raises ValueError: When the given values in "MASK_COLOR" are wrong.
+        :raises Warning: When too many valuse for the RGB/RGBA values
+
         Example
         -------
         >>> self.loader["MASK_COLOR"]
@@ -84,8 +87,12 @@ class DatFile:
         for key, value in self.loader["MASK_COLOR"].items():
             sub_mask = np.zeros(mask.shape[:2]).astype(dtype=bool)
             for sub_value in value:
-                if len(sub_value) < 3:
-                    raise ValueError(f"Check your configurations in 'MASK_COLOR' for the classification {key}!")
+                if isinstance(sub_value, int):
+                    raise ValueError(f"Check your configurations in 'MASK_COLOR' for the classification {key}! "
+                                     f"Surround your RGB/RGBA value with brackets!")
+                elif len(sub_value) < 3:
+                    raise ValueError(f"Check your configurations in 'MASK_COLOR' for the classification {key}! "
+                                     f"You need a RGB or RGBA value!")
 
                 rgb = (mask[:, :, 0:3] == sub_value[0:3]).all(axis=-1)
 
