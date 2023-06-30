@@ -88,9 +88,9 @@ class MK2(MK_base):
 
 if __name__ == "__main__":
     import os
-    path = r"E:\ICCAS\Daten"
-    file = "test_marker.mk2"
+    path = r"E:\ICCAS\tools\CreateMarkerFile"
+    file = "test_mask.mk2"
 
     marker = MK2(os.path.join(path, file))
     datas = marker.load()
-    x = 1
+    v = 1
