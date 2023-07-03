@@ -1,0 +1,17 @@
+MarkerArray:
+0 -> Index: 0, Left: 0, Top: 0, Color: 0, Radius: 0, Text: äöüß/\, MeanSpec: None
+
+Marker Classes in:
+-
+
+Marker Legend in:
+String: ä
+String2:
+String3: 
+String4:
+String5:
+String6:
+String7:
+String8:
+String9:
+String10:
