@@ -68,11 +68,11 @@ def test_mk2_marker_in_class(file, start_byte, result, r_end_byte):
 
 
 MK2_LOAD_STRING_DATA = [("test_mask.mk2", 398,
-                         ["Class0", "Class1", "Class0", "Class2", None, None, None, None, None, None]),
+                         ["Class0", "Class1", "Class0", "Class2", "", "", "", "", "", ""]),
                         ("test_marker.mk2", 190,
-                         ["class one", "class two", "class three", None, None, None, None, None, None, None]),
+                         ["class one", "class two", "class three", "", "", "", "", "", "", ""]),
                         ("test_marker2.mk2", 52,
-                         ["ä", None, None, None, None, None, None, None, None, None])]
+                         ["ä", "", "", "", "", "", "", "",  "",  ""])]
 
 
 @pytest.mark.parametrize("file,start_byte,result", MK2_LOAD_STRING_DATA)
