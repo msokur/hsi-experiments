@@ -14,7 +14,7 @@ class EvaluationMulticlass(EvaluationBase):
                           dtype=object)  # len(metrics_dict) - 1, because without accuracy
 
         for idx in self.labels_of_classes_to_train:
-            label = self.labels[idx]
+            label = self.labels_names[idx]
             names = []
             for key in list(metrics_dict.keys())[1:]:  # add classnames for all metrics after accuracy
                 names.append(key + '_' + label)
@@ -32,7 +32,7 @@ class EvaluationMulticlass(EvaluationBase):
     def write_metrics_to_csv(self, writer, metrics, time_string=None):
         csv_row = {}
         for metric_name, metric_value in list(metrics.items())[1:]:
-            for k, v in zip(self.labels.values(), metric_value):
+            for k, v in zip(self.labels_names.values(), metric_value):
                 csv_row[metric_name + '_' + k] = v
         if time_string is None:
             csv_row.update({"Time": datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")})
