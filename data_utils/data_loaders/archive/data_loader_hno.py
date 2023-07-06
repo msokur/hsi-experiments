@@ -2,7 +2,7 @@ import os.path
 
 import numpy as np
 import config
-from data_loader_base import DataLoader
+from data_utils.data_loaders.archive.data_loader_base import DataLoader
 from data_utils.hypercube_data import Cube_Read
 
 
