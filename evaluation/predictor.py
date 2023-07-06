@@ -7,7 +7,8 @@ import os
 import inspect
 
 from configuration import get_config as conf
-from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
+#from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
+from data_utils.data_loaders.archive.data_loader_base import DataLoader
 from evaluation.metrics import Metrics
 from models.model_randomness import set_tf_seed
 
@@ -126,7 +127,7 @@ class Predictor:
 
                 if checkpoint is not None:
                     checkpoint = Predictor.get_checkpoint(checkpoint, model_path)
-                name = DataLoaderDyn().get_name(row[4], delimiter='/')
+                name = DataLoader().get_name(row[4], delimiter='/')
                 print(f'We get checkpoint {checkpoint} for {model_path}')
 
                 predictor = Predictor(checkpoint, MODEL_FOLDER=model_path)

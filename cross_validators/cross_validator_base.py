@@ -8,9 +8,10 @@ import inspect
 
 import utils
 from configuration.get_config import telegram, CV, PATHS, DATALOADER, TRAINER
-import provider_dyn
-from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
-
+#import provider_dyn
+#from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
+import provider
+from data_utils.data_loaders.archive.data_loader_base import DataLoader
 
 class CrossValidatorBase:
     def __init__(self):
