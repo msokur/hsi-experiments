@@ -1,0 +1,20 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=16
+
+#SBATCH --job-name=r_cv
+
+#SBATCH --partition=clara
+#SBATCH --time=2-00:00:00
+#SBATCH --mem=64G
+##SBATCH --gres=gpu:v100:2
+#SBATCH --gres=gpu:rtx2080ti:2
+
+#SBATCH --output=output/CV_GASTRIC_3x3_SNV_MEDIAN_MK%j.log
+
+#module load FlexiBLAS/3.0.4-GCC-10.3.0
+module load Python/3.9.5-GCCcore-10.3.0
+#module load CUDA/11.4.1
+module load cuDNN/8.2.2.26-CUDA-11.4.1
+
+python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/cross_validation.py
