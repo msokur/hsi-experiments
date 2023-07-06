@@ -329,17 +329,17 @@
 		"LABEL_DATA": {
 			"0": {
 				"MASK": [0],
-				"LABEL": "Normal (Healthy)",
+				"LABEL": "Esophagus",
 				"COLOR": "yellow"
 			},
 			"1": {
 				"MASK": [1],
-				"LABEL": "Ill",
+				"LABEL": "Cancer",
 				"COLOR": "blue"
 			},
 			"2": {
 				"MASK": [2],
-				"LABEL": "not certain",
+				"LABEL": "Stomach",
 				"COLOR": "red"
 			}
 		},
