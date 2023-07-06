@@ -33,8 +33,7 @@ class EvaluationBase(Metrics):
         if npz_folder is None:
             self.npz_folder = PATHS["RAW_NPZ_PATH"]
         self.npz_folder = npz_folder
-        self.labels = config.TISSUE_LABELS
-        self.label_color = config.PLOT_COLORS
+        
         self.additional_columns = {}
 
     @abc.abstractmethod
@@ -178,7 +177,7 @@ class EvaluationBase(Metrics):
                     self.write_row_to_comparison_file(cp, threshold, sensitivity_mean, specificity_mean, writer)
 
     def write_total_metrics(self, writer_cp, metrics_all):
-	mean, std, median = {}, {}, {}
+        mean, std, median = {}, {}, {}
         for k, v in metrics_all.items():
             nan_bool = np.isnan(v).all(axis=0)
             if np.any(nan_bool):
@@ -189,13 +188,13 @@ class EvaluationBase(Metrics):
                 median[k] = [np.nanmedian(np.array(v)[:, idx], axis=0) if not nan else float("NaN")
                                              for idx, nan in enumerate(nan_bool)]
             else:
-                 mean[k] = np.nanmean(v, axis=0)
-                 std[k] = np.nanstd(v, axis=0)
-                 median[k] = np.nanmedian(v, axis=0)
+                mean[k] = np.nanmean(v, axis=0)
+                std[k] = np.nanstd(v, axis=0)
+                median[k] = np.nanmedian(v, axis=0)
 
-         self.write_metrics_to_csv(writer_cp, mean, time_string="TOTAL MEAN")
-         self.write_metrics_to_csv(writer_cp, std, time_string="TOTAL STD")
-         self.write_metrics_to_csv(writer_cp, median, time_string="TOTAL MEDIAN")
+        self.write_metrics_to_csv(writer_cp, mean, time_string="TOTAL MEAN")
+        self.write_metrics_to_csv(writer_cp, std, time_string="TOTAL STD")
+        self.write_metrics_to_csv(writer_cp, median, time_string="TOTAL MEDIAN")
         
     def plot_sensitivity_specificity(self, sensitivity_mean, specificity_mean, save_evaluation_folder_with_checkpoint):
         plt.plot(sensitivity_mean, label="sensitivity mean")
@@ -203,7 +202,7 @@ class EvaluationBase(Metrics):
         plt.ylabel("Value")
         plt.xlabel("Labels of Classes")
         plt.legend(loc="lower right")
-	plt.title("Sensitivity and specificity mean by classes")
+        plt.title("Sensitivity and specificity mean by classes")
         plt.savefig(os.path.join(save_evaluation_folder_with_checkpoint,
                                  'thresholds_metrics_curves_mean.png'))
         plt.clf()

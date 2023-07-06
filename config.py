@@ -15,6 +15,7 @@ current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfra
 sys.path.insert(0, os.path.join(current_dir, 'util'))
 sys.path.insert(1, os.path.join(current_dir, 'data_utils'))
 sys.path.insert(1, os.path.join(current_dir, os.path.join('data_utils', 'data_loaders')))
+sys.path.insert(1, os.path.join(current_dir, os.path.join('data_utils', 'archive')))
 sys.path.insert(2, os.path.join(current_dir, 'models'))
 sys.path.insert(3, os.path.join(current_dir, 'trainers'))
 print('paths from config', sys.path)
@@ -93,7 +94,7 @@ RAW_SOURCE_PATH = os.path.join('data_bea_db', database_abbreviation)
 #                              database_abbreviation)
 #RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
 #                            database_abbreviation, 'raw_3d_weighted')
-database_abbreviation = 'hno'
+#database_abbreviation = 'hno'
 
 #TEST_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation, database_abbreviation)
 #RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')
@@ -330,7 +331,8 @@ CROSS_VALIDATION_SPLIT = int(
 
 # ----------------------------CUSTOM_OBJECTS
 
-CUSTOM_OBJECTS = {'F1_score': F1_score}
+#CUSTOM_OBJECTS = {'F1_score': F1_score}
+CUSTOM_OBJECTS = {'f1_m': tf_metrics.f1_m}
 
 # ----------------------------OUTPUT FEATURES
 OUTPUT_SIGNATURE_X_FEATURES = LAST_NM - FIRST_NM  # train

@@ -7,13 +7,9 @@ from configuration.get_config import DATALOADER
 
 
 class Metrics:
-    def __init__(self, labels_of_classes_to_train=None):
-        if labels_of_classes_to_train is None:
-            self.labels_of_classes_to_train = DATALOADER["LABELS_TO_TRAIN"]
-        else:
-            self.labels_of_classes_to_train = labels_of_classes_to_train
-        self.label_color = DATALOADER["PLOT_COLORS"]
-        self.labels = DATALOADER["TISSUE_LABELS"]
+    def __init__(self):
+        self.fill_labels()
+        
         if len(self.labels_of_classes_to_train) == 2:
             print('Metrics binary')
             self.binary = True
@@ -21,6 +17,11 @@ class Metrics:
             print('Metrics not binary')
             self.binary = False
 
+    def fill_labels(self):
+        self.label_color = DATALOADER['PLOT_COLORS']
+        self.labels_names = DATALOADER['TISSUE_LABELS']
+        self.labels_of_classes_to_train = DATALOADER['LABELS']
+            
     def get_metrics_dict(self):
         return {
             'Accuracy': Metrics.accuracy,
@@ -167,7 +168,7 @@ class Metrics:
             for idx in self.labels_of_classes_to_train:
                 plt.plot(fpr[idx], tpr[idx], color=self.label_color[idx], lw=2,
                          label='ROC curve of {0} (area = {1:0.2f})'
-                               ''.format(self.labels[idx], auc_[idx]))
+                               ''.format(self.labels_names[idx], auc_[idx]))
         else:
             plt.plot(fpr, tpr, lw=2, label=f'ROC curve (area = {auc_})')
         plt.plot([0, 1], [0, 1], 'k--', lw=2)
