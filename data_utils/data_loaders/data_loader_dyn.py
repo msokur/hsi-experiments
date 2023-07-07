@@ -41,11 +41,10 @@ class DataLoaderDyn:
             root_path = self.paths["RAW_NPZ_PATH"]
         paths = glob(os.path.join(root_path, "*.npz"))
         number = "NUMBER_SORT" in self.loader.keys()
-        paths = get_sort(paths=paths, number=number, splits=self.loader["NUMBER_SORT"] if number else None)
+        paths = get_sort(paths=paths, number=number, split=self.loader["NUMBER_SORT"] if number else None)
 
         splits = get_splits(typ=self.loader["SPLIT_PATHS_BY"], paths=paths,
-                            values=self.loader["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"],
-                            delimiter=self.paths["SYSTEM_PATHS_DELIMITER"])
+                            values=self.loader["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"])
 
         return paths, splits
 
