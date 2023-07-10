@@ -223,7 +223,7 @@ class DatFile:
 
         class_mask = np.full(shape, -1)
         for idx in range(len(names)):
-            if names[idx] is "":
+            if names[idx] == "":
                 continue
             classification = -1
             for key, value in self.loader["TISSUE_LABELS"].items():
