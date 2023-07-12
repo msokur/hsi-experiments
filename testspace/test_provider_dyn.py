@@ -1,0 +1,176 @@
+import pytest
+import os
+import numpy as np
+
+from provider_dyn import get_trainer, get_data_loader, get_whole_analog_of_data_loader, get_evaluation, get_smoother, \
+    get_scaler, get_pixel_detection, get_cross_validator, get_extension_loader
+
+from trainers.trainer_tuner import TrainerTuner
+from trainers.trainer_easy import TrainerEasy
+from trainers.trainer_easy_several_outputs import TrainerEasySeveralOutputs
+
+from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
+from data_utils.data_loaders.data_loader_whole_dyn import DataLoaderWhole
+
+from evaluation.evaluation_binary import EvaluationBinary
+from evaluation.evaluation_multiclass import EvaluationMulticlass
+
+from data_utils.smoothing import MedianFilter, GaussianFilter
+
+from data_utils.scaler import NormalizerScaler, StandardScaler, StandardScalerTransposed
+
+from data_utils.border import detect_border, detect_core
+
+from cross_validators.cross_validator_normal import CrossValidationNormal
+
+from data_utils.data_loaders.dat_file import DatFile
+from data_utils.data_loaders.mat_file import MatFile
+
+GET_TRAINER_DATA = [("Tuner", "trainer_tuner", TrainerTuner),
+                    ("Easy", "trainer_easy", TrainerEasy),
+                    ("SeveralOutput", "trainer_multiclass", TrainerEasySeveralOutputs)]
+
+
+@pytest.mark.parametrize("typ,model_name,result", GET_TRAINER_DATA)
+def test_get_trainer(typ, model_name, result):
+    trainer = get_trainer(typ=typ, model_name=model_name)
+
+    assert isinstance(trainer, result)
+
+
+def test_get_trainer_error():
+    with pytest.raises(ValueError, match="Error! No corresponding Trainer for test"):
+        get_trainer(typ="test")
+
+
+GET_DATA_LOADER_DATA = [("normal", DataLoaderDyn),
+                        ("whole", DataLoaderWhole)]
+
+
+@pytest.mark.parametrize("typ,result", GET_DATA_LOADER_DATA)
+def test_get_data_loader(typ, result):
+    loader = get_data_loader(typ=typ)
+
+    assert isinstance(loader, result)
+
+
+def test_data_loader_error():
+    with pytest.raises(ValueError, match="Error! No corresponding Data Loader for test"):
+        get_data_loader(typ="test")
+
+
+GET_WHOLE_ANALOG_DATA = [("colon", "colon_whole"),
+                         ("bea_brain", "bea_brain_whole"),
+                         ("bea_eso", "bea_eso_whole"),
+                         ("bea_colon", "bea_colon_whole"),
+                         ("hno", "hno_whole")]
+
+
+@pytest.mark.parametrize("typ,result", GET_WHOLE_ANALOG_DATA)
+def test_get_whole_analog_of_data_loader(typ, result):
+    assert get_whole_analog_of_data_loader(original_database=typ) == result
+
+
+def test_get_whole_analog_of_data_loader_error():
+    with pytest.raises(ValueError, match="We didn't found an analog whole database for test"):
+        get_whole_analog_of_data_loader(original_database="test")
+
+
+GET_EVALUATION_DATA = [([0, 1], "test", EvaluationBinary),
+                       ([0, 1, 2], "test", EvaluationMulticlass)]
+
+
+@pytest.mark.parametrize("labels,name,result", GET_EVALUATION_DATA)
+def test_get_evaluation(labels, name, result):
+    evaluation = get_evaluation(labels=labels, name=name)
+
+    assert isinstance(evaluation, result)
+
+    os.rmdir(path=evaluation.save_evaluation_folder)
+
+
+def test_get_evaluation_error():
+    with pytest.raises(ValueError, match="Error! No corresponding evaluation for labels length < 2"):
+        get_evaluation(labels=[0], name="test")
+
+
+GET_SMOOTHER_DATA = [("median_filter", "/work/folder", 5, MedianFilter),
+                     ("gaussian_filter", "/work/folder2", 2, GaussianFilter)]
+
+
+@pytest.mark.parametrize("typ,path,size,result", GET_SMOOTHER_DATA)
+def test_get_smoother(typ, path, size, result):
+    smoother = get_smoother(typ=typ, path=path, size=size)
+
+    assert isinstance(smoother, result)
+
+
+GET_SCALER_DATA = [("l2_norm", NormalizerScaler),
+                   ("svn", StandardScaler),
+                   ("svn_T", StandardScalerTransposed)]
+
+
+@pytest.fixture
+def scaler_path():
+    os.mkdir(path="test")
+    np.savez(os.path.join("test", "test.npz"),
+             **{"X": [[0, 1, 2]], "y": [0], "indexes_in_datacube": [(0, 0)]})
+    yield
+    if os.path.exists(os.path.join("test", "scaler.scaler")):
+        os.remove(path=os.path.join("test", "scaler.scaler"))
+    os.remove(path=os.path.join("test", "test.npz"))
+    os.rmdir(path="test")
+
+
+@pytest.mark.usefixtures("scaler_path")
+@pytest.mark.parametrize("typ,result", GET_SCALER_DATA)
+def test_get_scaler(typ, result):
+    scaler = get_scaler(typ=typ, preprocessed_path="test")
+
+    assert isinstance(scaler, result)
+
+
+def test_get_scaler_error():
+    with pytest.raises(ValueError, match="Error! No corresponding scaler for test"):
+        get_scaler(typ="test")
+
+
+GET_PIXEL_DETECTION_DATA = [("detect_border", detect_border),
+                            ("detect_core", detect_core)]
+
+
+@pytest.mark.parametrize("typ,result", GET_PIXEL_DETECTION_DATA)
+def test_get_pixel_detection(typ, result):
+    assert get_pixel_detection(typ=typ) == result
+
+
+def test_get_pixel_detection_error():
+    with pytest.raises(ValueError, match="Error! No corresponding pixel detection for test"):
+        get_pixel_detection(typ="test")
+
+
+GET_CROSS_VALIDATION_DATA = [("normal", CrossValidationNormal)]
+
+
+@pytest.mark.parametrize("typ,result", GET_CROSS_VALIDATION_DATA)
+def test_get_cross_validation(typ, result):
+    assert isinstance(get_cross_validator(typ=typ), result)
+
+
+def test_get_cross_validation_error():
+    with pytest.raises(ValueError, match="Error! No corresponding Cross validator for test"):
+        get_cross_validator(typ="test")
+
+
+GET_EXTENSION_LOADER_DATA = [(".dat", DatFile),
+                             (".mat", MatFile)]
+
+
+@pytest.mark.parametrize("typ,result", GET_EXTENSION_LOADER_DATA)
+def test_get_extension_loader(typ, result):
+    assert isinstance(get_extension_loader(typ=typ, loader_conf={}), result)
+
+
+def test_get_extension_loader_error():
+    with pytest.raises(ValueError, match="For file extension test is no implementation!"):
+        get_extension_loader(typ="test")

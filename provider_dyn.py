@@ -1,3 +1,5 @@
+from typing import Union
+
 from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
 from data_utils.data_loaders.data_loader_whole_dyn import DataLoaderWhole
 from data_utils.smoothing import MedianFilter, GaussianFilter
@@ -16,11 +18,11 @@ from data_utils.data_loaders.mat_file import MatFile
 from data_utils import border
 
 
-def get_trainer(typ: str, **kwargs):
+def get_trainer(typ: str, **kwargs) -> Union[TrainerTuner, TrainerEasy, TrainerEasySeveralOutputs]:
     if typ == "Tuner":
         print('TrainerTuner')
         return TrainerTuner(**kwargs)
-    elif type == "Easy":
+    elif typ == "Easy":
         print('TrainerEasy')
         return TrainerEasy(**kwargs)
     elif typ == "SeveralOutput":
@@ -30,7 +32,7 @@ def get_trainer(typ: str, **kwargs):
     value_error("Trainer", typ)
 
 
-def get_data_loader(typ: str, **kwargs):
+def get_data_loader(typ: str, **kwargs) -> Union[DataLoaderDyn, DataLoaderWhole]:
     if typ == "normal":
         return DataLoaderDyn(**kwargs)
     elif typ == "whole":
@@ -39,7 +41,7 @@ def get_data_loader(typ: str, **kwargs):
     value_error("Data Loader", typ)
 
 
-def get_whole_analog_of_data_loader(original_database):
+def get_whole_analog_of_data_loader(original_database: str) -> str:
     analog = ""
     if original_database == 'colon':
         analog = 'colon_whole'
@@ -60,16 +62,19 @@ def get_whole_analog_of_data_loader(original_database):
     return analog
 
 
-def get_evaluation(labels: list, *args, **kwargs):
+def get_evaluation(labels: list, *args, **kwargs) -> Union[EvaluationBinary, EvaluationMulticlass]:
     print('labels', labels)
     if len(labels) == 2:
         print('Get EvaluationBinary')
         return EvaluationBinary(*args, **kwargs)
-    print('Get EvaluationMulticlass')
-    return EvaluationMulticlass(*args, **kwargs)
+    elif len(labels) > 2:
+        print('Get EvaluationMulticlass')
+        return EvaluationMulticlass(*args, **kwargs)
+
+    value_error("evaluation", "labels length < 2")
 
 
-def get_smoother(typ: str, *args, **kwargs):
+def get_smoother(typ: str, *args, **kwargs) -> Union[MedianFilter, GaussianFilter]:
     if typ == "median_filter":
         print("Smooth spectrum with median filter!")
         return MedianFilter(*args, **kwargs)
@@ -79,7 +84,7 @@ def get_smoother(typ: str, *args, **kwargs):
     value_error("smoother", typ)
 
 
-def get_scaler(typ: str, *args, **kwargs):
+def get_scaler(typ: str, *args, **kwargs) -> Union[NormalizerScaler, StandardScaler, StandardScalerTransposed]:
     if typ == 'l2_norm':
         return NormalizerScaler(*args, **kwargs)
     elif typ == 'svn':
@@ -90,7 +95,7 @@ def get_scaler(typ: str, *args, **kwargs):
     value_error("scaler", typ)
 
 
-def get_pixel_detection(typ: str):
+def get_pixel_detection(typ: str) -> Union[border.detect_border, border.detect_core]:
     if typ == "detect_border":
         return border.detect_border
     elif typ == "detect_core":
@@ -98,7 +103,7 @@ def get_pixel_detection(typ: str):
     value_error("pixel detection", typ)
 
 
-def get_cross_validator(typ: str, *args, **kwargs):
+def get_cross_validator(typ: str, *args, **kwargs) -> CrossValidationNormal:
     if typ == "normal":
         return CrossValidationNormal()
     '''elif typ == "spain":
@@ -111,7 +116,7 @@ def get_cross_validator(typ: str, *args, **kwargs):
     value_error("Cross validator", typ)
 
 
-def get_extension_loader(typ: str, **kwargs):
+def get_extension_loader(typ: str, **kwargs) -> Union[DatFile, MatFile]:
     if typ == ".dat":
         return DatFile(**kwargs)
     elif typ == ".mat":

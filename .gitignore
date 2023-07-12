@@ -34,3 +34,4 @@ testingarea
 *.html
 jupyter/*.png
 jupyter/*.jpg
+*.config
