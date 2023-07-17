@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import cv2
+#import cv2
 from data_utils.hypercube_data import Cube_Read
 from data_utils.marker import MK2
 
@@ -64,6 +64,7 @@ class DatFile:
 
     @staticmethod
     def mask_read(mask_path):
+        import cv2
         mask = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)  # read Image with transparency
         # add alpha channel
         if mask.shape[-1] == 3:
