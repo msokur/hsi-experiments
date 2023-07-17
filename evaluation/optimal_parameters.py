@@ -11,12 +11,12 @@ import sys
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
-import config
+from configuration.get_config import CONFIG_PATHS
 
 class OptimalThreshold():
     
     def __init__(self, root_path,
-                         checkpoints_regex='cp-0000'+config.SYSTEM_PATHS_DELIMITER,
+                         checkpoints_regex='cp-0000'+CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"],
                          thresholds_filename='compare_all_thresholds.csv',
                          prints=True):
         self.root_path = root_path
