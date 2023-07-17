@@ -8,59 +8,56 @@ from glob import glob
 from tqdm import tqdm
 from sklearn.feature_extraction import image
 
-import provider_dyn
-from configuration.get_config import DATALOADER, PATHS
+import provider
+from configuration.get_config import CONFIG_DATALOADER, CONFIG_PATHS
 from data_utils.background_detection import detect_background
 from data_utils.data_loaders.path_splits import get_splits
 
 
-class DataLoaderDyn:
+class DataLoader:
     def __init__(self, dict_names=None):
         if dict_names is None:
             dict_names = ["X", "y", "indexes_in_datacube"]
-        self.loader = DATALOADER
-        self.paths = PATHS
-        self.data_reader = provider_dyn.get_extension_loader(typ=self.loader["FILE_EXTENSIONS"],
-                                                             loader_conf=self.loader)
+        self.CONFIG_DATALOADER = CONFIG_DATALOADER
+        self.CONFIG_PATHS = CONFIG_PATHS
+        self.data_reader = provider.get_extension_loader(typ=self.CONFIG_DATALOADER["FILE_EXTENSION"],
+                                                         loader_conf=self.CONFIG_DATALOADER)
         self.dict_names = dict_names
 
-    def get_extension(self):
-        return self.loader["FILE_EXTENSIONS"]
-
     def get_labels(self):
-        return self.loader["LABELS"]
+        return self.CONFIG_DATALOADER["LABELS"]
 
     def get_name(self, path: str, delimiter=None) -> str:
         if delimiter is None:
-            delimiter = self.paths["SYSTEM_PATHS_DELIMITER"]
-        return path.split(delimiter)[-1].split(".")[0].split(self.loader["NAME_SPLIT"])[0]
+            delimiter = self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"]
+        return path.split(delimiter)[-1].split(".")[0].split(self.CONFIG_DATALOADER["NAME_SPLIT"])[0]
 
     def get_paths_and_splits(self, root_path=None):
         if root_path is None:
-            root_path = self.paths["RAW_NPZ_PATH"]
+            root_path = self.CONFIG_PATHS["RAW_NPZ_PATH"]
         paths = glob(os.path.join(root_path, "*.npz"))
         paths = self.data_reader.sort(paths)
 
-        splits = get_splits(typ=self.loader["SPLIT_PATHS_BY"], paths=paths,
-                            values=self.loader["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"],
-                            delimiter=self.paths["SYSTEM_PATHS_DELIMITER"])
+        splits = get_splits(typ=self.CONFIG_DATALOADER["SPLIT_PATHS_BY"], paths=paths,
+                            values=self.CONFIG_DATALOADER["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"],
+                            delimiter=self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
 
         return paths, splits
 
     def smooth(self, spectrum):
-        if self.loader["SMOOTHING_TYPE"] is not None:
-            smoother = provider_dyn.get_smoother(typ=self.loader["SMOOTHING_TYPE"],
-                                                 path="",
-                                                 size=self.loader["SMOOTHING_VALUE"])
+        if self.CONFIG_DATALOADER["SMOOTHING_TYPE"] is not None:
+            smoother = provider.get_smoother(typ=self.CONFIG_DATALOADER["SMOOTHING_TYPE"],
+                                             path="",
+                                             size=self.CONFIG_DATALOADER["SMOOTHING_VALUE"])
             spectrum = smoother.smooth_func(spectrum)
         return spectrum
 
     def pixel_detection(self, masks, conf=None):
         if conf is None:
-            conf = self.loader["BORDER_CONFIG"]
+            conf = self.CONFIG_DATALOADER["BORDER_CONFIG"]
 
         if conf["enable"]:
-            pixel_detect = provider_dyn.get_pixel_detection(conf["methode"])
+            pixel_detect = provider.get_pixel_detection(conf["methode"])
             border_masks = []
             for idx, mask in enumerate(masks):
                 if idx not in conf["not_used_labels"]:
@@ -85,8 +82,8 @@ class DataLoaderDyn:
     @abc.abstractmethod
     def file_read(self, path):
         print(f'Reading {path}')
-        if "MASK_PATH" in self.paths.keys():
-            mask_path = self.paths["MASK_PATH"]
+        if "MASK_PATH" in self.CONFIG_PATHS.keys():
+            mask_path = self.CONFIG_PATHS["MASK_PATH"]
         else:
             mask_path = None
         spectrum, mask = self.file_read_mask_and_spectrum(path=path, mask_path=mask_path)
@@ -96,7 +93,7 @@ class DataLoaderDyn:
         background_mask = self.background_get_mask(spectrum, mask.shape[:2])
         contamination_mask = self.get_contamination_mask(os.path.split(path)[0], mask.shape[:2])
 
-        if self.loader["3D"]:
+        if self.CONFIG_DATALOADER["3D"]:
             spectrum = self.patches3d_get_from_spectrum(spectrum)
 
         indexes = self.data_reader.indexes_get_bool_from_mask(mask)
@@ -119,8 +116,7 @@ class DataLoaderDyn:
     def files_read_and_save_to_npz(self, root_path, destination_path):
         print('----Saving of .npz archives is started----')
 
-        paths = glob(os.path.join(root_path, "*" + self.get_extension()))
-
+        paths = glob(os.path.join(root_path, "*" + self.CONFIG_DATALOADER["FILE_EXTENSION"]))
         with open(os.path.join(destination_path, self.get_labels_filename()), 'wb') as f:
             pickle.dump(self.get_labels(), f, pickle.HIGHEST_PROTOCOL)
 
@@ -132,7 +128,7 @@ class DataLoaderDyn:
 
     def patches3d_get_from_spectrum(self, spectrum):
         spectrum_ = np.array([])
-        size = self.loader["3D_SIZE"]
+        size = self.CONFIG_DATALOADER["3D_SIZE"]
         # Better not to use non even sizes
         pad = [int((s - 1) / 2) for s in size]
         if size[0] % 2 == 1 and size[1] % 2 == 1:
@@ -198,14 +194,14 @@ class DataLoaderDyn:
         return mask
 
     def get_labels_filename(self):
-        return self.loader["LABELS_FILENAME"]
+        return self.CONFIG_DATALOADER["LABELS_FILENAME"]
 
     def get_contamination_filename(self):
-        return self.loader["CONTAMINATION_FILENAME"]
+        return self.CONFIG_DATALOADER["CONTAMINATION_FILENAME"]
 
     def background_get_mask(self, spectrum, shapes):
         background_mask = np.ones(shapes).astype(np.bool)
-        if self.loader["WITH_BACKGROUND_EXTRACTION"]:
+        if self.CONFIG_DATALOADER["WITH_BACKGROUND_EXTRACTION"]:
             background_mask = detect_background(spectrum)
             background_mask = np.reshape(background_mask, shapes)
 
@@ -224,7 +220,7 @@ class DataLoaderDyn:
         data = np.load(npz_path)
         X, y = data['X'], data['y']
 
-        return DataLoaderDyn.labeled_spectrum_get_from_X_y(X, y)
+        return DataLoader.labeled_spectrum_get_from_X_y(X, y)
 
     @staticmethod
     def labeled_spectrum_get_from_X_y(X: np.ndarray, y: np.ndarray) -> dict:
@@ -246,5 +242,5 @@ if __name__ == "__main__":
     database_section = "HNO_Database"
     DATALOADER = read_dataloader_config(file=loader_config, section=loader_section)
     PATHS = read_path_config(file=path_config, system_mode=system_section, database=database_section)
-    dyn = DataLoaderDyn()
+    dyn = DataLoader()
     x = 1

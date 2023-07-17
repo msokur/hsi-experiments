@@ -1,9 +1,9 @@
 import numpy as np
 
-from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
+from data_utils.data_loaders.data_loader import DataLoader
 
 
-class DataLoaderWhole(DataLoaderDyn):
+class DataLoaderWhole(DataLoader):
     def __init__(self, dict_names=None):
         super().__init__(dict_names=dict_names)
         self.dict_names.append("size")
@@ -13,8 +13,8 @@ class DataLoaderWhole(DataLoaderDyn):
             return np.reshape(arr, tuple([arr.shape[0] * arr.shape[1]]) + tuple(arr.shape[2:]))
 
         print(f'Reading {path}')
-        if "MASK_PATH" in self.paths.keys():
-            mask_path = self.paths["MASK_PATH"]
+        if "MASK_PATH" in self.CONFIG_PATHS.keys():
+            mask_path = self.CONFIG_PATHS["MASK_PATH"]
         else:
             mask_path = None
         spectrum, mask = self.file_read_mask_and_spectrum(path, mask_path=mask_path)
@@ -22,11 +22,9 @@ class DataLoaderWhole(DataLoaderDyn):
 
         spectrum = self.smooth(spectrum)
 
-        if self.loader["3D"]:
+        if self.CONFIG_DATALOADER["3D"]:
             spectrum = self.patches3d_get_from_spectrum(spectrum)
 
-        print(spectrum.shape, mask.shape, np.unique(mask))
-        print(DataLoaderWhole.get_all_indexes(mask)[0].shape)
         size = spectrum.shape[:2]
         X = reshape(spectrum)
         y = reshape(mask)
