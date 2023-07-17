@@ -10,9 +10,6 @@ class DataLoaderHNO(DataLoader):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def get_extension(self):
-        return config.FILE_EXTENSIONS['_dat']
-
     def get_labels(self):
         return [0, 1, 2, 3, 4, 5, 6, 7]
 

@@ -35,10 +35,20 @@
     "RESTORE_VALID_SEQUENCE": "",
     "GET_CHECKPOINT_FROM_VALID": true
   },
-  "CV_POSTPROCESSING": {
+  "CV_POSTPROCESSING_Eso": {
     "TYPE": "postprocessing",
+    "POST_PROCESSING_ALGORITHM": "algorithm_plain",
     "NAME": "Esophagus_MedFilter",
     "DATABASE_ABBREVIATION": "Esophagus_MedFilter",
+    "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
+    "RESTORE_VALID_SEQUENCE": "",
+    "GET_CHECKPOINT_FROM_VALID": true
+  },
+  "CV_POSTPROCESSING_Colon": {
+    "TYPE": "postprocessing",
+    "POST_PROCESSING_ALGORITHM": "algorithm_plain",
+    "NAME": "Colon_MedianFilter",
+    "DATABASE_ABBREVIATION": "Colon_MedianFilter",
     "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
     "RESTORE_VALID_SEQUENCE": "",
     "GET_CHECKPOINT_FROM_VALID": true

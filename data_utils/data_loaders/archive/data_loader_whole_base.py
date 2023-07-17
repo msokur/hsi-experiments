@@ -13,9 +13,6 @@ class DataLoaderWholeBase(DataLoader):
         self.class_instance = class_instance
         self.dict_names.append('size')
 
-    def get_extension(self):
-        return self.class_instance.get_extension()
-
     def get_labels(self):
         return self.class_instance.get_labels()
 

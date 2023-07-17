@@ -33,9 +33,6 @@ class DataLoaderMat(DataLoader):
 
         return paths, splits
 
-    def get_extension(self):
-        return config.FILE_EXTENSIONS['_mat']
-
     def get_labels(self):
         return super().get_labels()
 
