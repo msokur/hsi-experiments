@@ -11,6 +11,8 @@ if WITHOUT_RANDOMNESS:
 else:
     os.environ['TF_DETERMINISTIC_OPS'] = '0'
 
+from configuration.meta_configs.Mariia import *
+
 from configuration.configloader_base import read_config
 from configuration.configloader_paths import read_path_config
 from configuration.configloader_trainer import read_trainer_config
@@ -44,54 +46,46 @@ def get_dataloader(file_name: str, section: str) -> dict:
 
 # -------- Data Loader
 loader_config = "DataLoader.json"
-loader_section = "MAT_ESO"
-DATALOADER = get_dataloader(file_name=loader_config, section=loader_section)
+CONFIG_DATALOADER = get_dataloader(file_name=loader_config, section=loader_section)
 
 # --------- Paths
 uname = platform.uname()
 
 if "clara" in uname.node:
-    system_section = "Cluster_Benny"
+    system_section = system_section_cluster
 else:
-    system_section = "Win_Benny"
+    system_section = system_section_local
 
 path_config = "Paths.json"
-database_section = "GASTRIC_Database_mk"
-PATHS = get_paths(file_name=path_config, sys_section=system_section, data_section=database_section)
+CONFIG_PATHS = get_paths(file_name=path_config, sys_section=system_section, data_section=database_section)
 
 # --------- Preprocessing
 prepro_config = "Preprocessor.json"
-prepro_section = "GASTRIC"
-PREPRO = get_config(file_name=prepro_config, section=prepro_section)
+CONFIG_PREPROCESSOR = get_config(file_name=prepro_config, section=prepro_section)
 
 # --------- Cross validation
 cv_config = "Crossvalidation.json"
-cv_section = "CV_POSTPROCESSING"
-CV = get_cv(file_name=cv_config, section=cv_section)
+CONFIG_CV = get_cv(file_name=cv_config, section=cv_section)
 
 # --------- Trainer
 trainer_config = "Trainers.json"
-trainer_section = "HNO"
-TRAINER = get_trainer(file_name=trainer_config, section=trainer_section, d3=DATALOADER["3D"],
-                      classes=DATALOADER["LABELS_TO_TRAIN"])
+CONFIG_TRAINER = get_trainer(file_name=trainer_config, section=trainer_section, d3=CONFIG_DATALOADER["3D"],
+                             classes=CONFIG_DATALOADER["LABELS_TO_TRAIN"])
 
 # ----------- DISTRIBUTIONS CHECKING
 distro_config = "DistributionsCheck.json"
-distro_section = "Default"
-DISTRO = get_config(file_name=distro_config, section=distro_section)
+CONFIG_DISTRIBUTION = get_config(file_name=distro_config, section=distro_section)
 
 # ----------- Augmentation
 aug_config = "Augmentation.json"
-aug_section = "Default"
-AUG = get_config(file_name=aug_config, section=aug_section)
-if AUG["enable"]:
+CONFIG_AUG = get_config(file_name=aug_config, section=aug_section)
+if CONFIG_AUG["enable"]:
     print("Augmentation is enabled!!!")
-    TRAINER["BATCH_SIZE"] = int(TRAINER["BATCH_SIZE"] / AUG[AUG["use"]])
+    CONFIG_TRAINER["BATCH_SIZE"] = int(CONFIG_TRAINER["BATCH_SIZE"] / CONFIG_AUG[CONFIG_AUG["use"]])
 
 
 # -------- Telegram --------
 tg_config = "Telegram.json"
-tg_section = "Benny"
-TG_CONF = get_config(file_name=tg_config, section=tg_section)
-TG_CONF["FILE"] = os.path.join(parent_dir, TG_CONF["FILE"])
-telegram = Telegram(tg_config=TG_CONF, mode=PATHS["MODE"])
+CONFIG_TELEGRAM = get_config(file_name=tg_config, section=tg_section)
+CONFIG_TELEGRAM["FILE"] = os.path.join(parent_dir, CONFIG_TELEGRAM["FILE"])
+telegram = Telegram(tg_config=CONFIG_TELEGRAM, mode=CONFIG_PATHS["MODE"])
