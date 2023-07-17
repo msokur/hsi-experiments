@@ -13,9 +13,9 @@ from configuration import get_config as conf
 
 class Trainer:
     def __init__(self, model_name: str, except_indexes=None, valid_except_indexes=None):
-        self.trainer = conf.TRAINER
-        self.paths = conf.PATHS
-        self.loader = conf.DATALOADER
+        self.CONFIG_TRAINER = conf.CONFIG_TRAINER
+        self.CONFIG_PATHS = conf.CONFIG_PATHS
+        self.CONFIG_DATALOADER = conf.CONFIG_DATALOADER
         if valid_except_indexes is None:
             valid_except_indexes = []
         if except_indexes is None:
@@ -39,15 +39,15 @@ class Trainer:
             pickle.dump(valid_except_indexes, f, pickle.HIGHEST_PROTOCOL)
 
     def logging_and_copying(self):
-        if self.trainer["TYPE"] != "Restore":
+        if self.CONFIG_TRAINER["TYPE"] != "Restore":
             if not os.path.exists(self.log_dir):
                 os.mkdir(self.log_dir)
 
-            copy_files(self.log_dir, self.trainer["FILES_TO_COPY"], self.paths["SYSTEM_PATHS_DELIMITER"])
+            copy_files(self.log_dir, self.CONFIG_TRAINER["FILES_TO_COPY"], self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
 
     def get_datasets(self, for_tuning=False):
         # train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
-        self.batch_path = self.paths["BATCHED_PATH"]
+        self.batch_path = self.CONFIG_PATHS["BATCHED_PATH"]
         if len(self.excepted_indexes) > 0:
             self.batch_path += '_' + self.excepted_indexes[0]
             if for_tuning:
@@ -56,10 +56,10 @@ class Trainer:
             os.mkdir(self.batch_path)
 
         train_generator = generator.DataGenerator("train",
-                                                  self.paths["SHUFFLED_PATH"],
+                                                  self.CONFIG_PATHS["SHUFFLED_PATH"],
                                                   self.batch_path,
-                                                  batch_size=self.trainer["BATCH_SIZE"],
-                                                  split_factor=self.trainer["SPLIT_FACTOR"],
+                                                  batch_size=self.CONFIG_TRAINER["BATCH_SIZE"],
+                                                  split_factor=self.CONFIG_TRAINER["SPLIT_FACTOR"],
                                                   split_flag=True,
                                                   valid_except_indexes=self.valid_except_indexes.copy(),
                                                   except_indexes=self.excepted_indexes.copy(),
@@ -67,10 +67,10 @@ class Trainer:
                                                   log_dir=self.log_dir)
         self.save_valid_except_indexes(train_generator.valid_except_indexes)
         valid_generator = generator.DataGenerator("valid",
-                                                  self.paths["SHUFFLED_PATH"],
+                                                  self.CONFIG_PATHS["SHUFFLED_PATH"],
                                                   self.batch_path,
-                                                  batch_size=self.trainer["BATCH_SIZE"],
-                                                  split_factor=self.trainer["SPLIT_FACTOR"],
+                                                  batch_size=self.CONFIG_TRAINER["BATCH_SIZE"],
+                                                  split_factor=self.CONFIG_TRAINER["SPLIT_FACTOR"],
                                                   split_flag=False,
                                                   except_indexes=self.excepted_indexes,
                                                   valid_except_indexes=train_generator.valid_except_indexes,
@@ -102,24 +102,24 @@ class Trainer:
         return train_dataset, valid_dataset, train_generator, class_weights
 
     def get_callbacks(self):
-        checkpoint_path = os.path.join(self.log_dir, self.paths["CHECKPOINT_PATH"], "cp-{epoch:04d}")
+        checkpoint_path = os.path.join(self.log_dir, self.CONFIG_PATHS["CHECKPOINT_PATH"], "cp-{epoch:04d}")
 
         checkpoints_callback = keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,
-            monitor=self.trainer["MODEL_CHECKPOINT"]["monitor"],
+            monitor=self.CONFIG_TRAINER["MODEL_CHECKPOINT"]["monitor"],
             verbose=1,
-            save_best_only=self.trainer["MODEL_CHECKPOINT"]["save_best_only"],
-            mode=self.trainer["MODEL_CHECKPOINT"]["mode"])
+            save_best_only=self.CONFIG_TRAINER["MODEL_CHECKPOINT"]["save_best_only"],
+            mode=self.CONFIG_TRAINER["MODEL_CHECKPOINT"]["mode"])
 
         callbacks_ = [checkpoints_callback]
-        if self.trainer["EARLY_STOPPING"]["enable"]:
+        if self.CONFIG_TRAINER["EARLY_STOPPING"]["enable"]:
             early_stopping_callback = keras.callbacks.EarlyStopping(
-                monitor=self.trainer["EARLY_STOPPING"]["monitor"],
-                mode=self.trainer["EARLY_STOPPING"]["mode"],
-                min_delta=self.trainer["EARLY_STOPPING"]["min_delta"],
-                patience=self.trainer["EARLY_STOPPING"]["patience"],
+                monitor=self.CONFIG_TRAINER["EARLY_STOPPING"]["monitor"],
+                mode=self.CONFIG_TRAINER["EARLY_STOPPING"]["mode"],
+                min_delta=self.CONFIG_TRAINER["EARLY_STOPPING"]["min_delta"],
+                patience=self.CONFIG_TRAINER["EARLY_STOPPING"]["patience"],
                 verbose=1,
-                restore_best_weights=self.trainer["EARLY_STOPPING"]["restore_best_weights"])
+                restore_best_weights=self.CONFIG_TRAINER["EARLY_STOPPING"]["restore_best_weights"])
 
             callbacks_.append(early_stopping_callback)
 
@@ -135,7 +135,7 @@ class Trainer:
         '''-------DATASET---------'''
 
         train_dataset, valid_dataset, train_generator, class_weights = self.get_datasets(
-            for_tuning=self.trainer["SMALLER_DATASET"])
+            for_tuning=self.CONFIG_TRAINER["SMALLER_DATASET"])
 
         '''-------CALLBACKS---------'''
 
@@ -153,10 +153,10 @@ class Trainer:
             # validation_data=valid_generator,
             x=train_dataset,
             validation_data=valid_dataset,
-            epochs=self.trainer["EPOCHS"],
+            epochs=self.CONFIG_TRAINER["EPOCHS"],
             verbose=2,
             initial_epoch=initial_epoch,
-            batch_size=self.trainer["BATCH_SIZE"],
+            batch_size=self.CONFIG_TRAINER["BATCH_SIZE"],
             callbacks=callbacks_,
             use_multiprocessing=True,
             class_weight=class_weights,
@@ -170,7 +170,7 @@ class Trainer:
 
     def train(self):
         try:
-            if self.paths["MODE"] == 'LOCAL_GPU' or self.paths["MODE"] == 'CLUSTER':
+            if self.CONFIG_PATHS["MODE"] == 'LOCAL_GPU' or self.CONFIG_PATHS["MODE"] == 'CLUSTER':
                 gpus = tf.config.experimental.list_physical_devices('GPU')
                 if gpus:
                     try:
@@ -199,7 +199,7 @@ class Trainer:
         if not os.path.exists(checkpoints_paths):
             os.mkdir(checkpoints_paths)
 
-        if not self.trainer["EARLY_STOPPING"]["enable"]:
+        if not self.CONFIG_TRAINER["EARLY_STOPPING"]["enable"]:
             final_model_save_path = os.path.join(self.log_dir, 'checkpoints', f'cp-{len(history.history["loss"]):04d}')
             if not os.path.exists(final_model_save_path):
                 os.mkdir(final_model_save_path)
@@ -210,13 +210,13 @@ class Trainer:
         return model
 
     def get_output_shape(self):
-        if "OUTPUT_SIGNATURE_X_FEATURES" in self.loader:
-            shape_spec = self.loader["OUTPUT_SIGNATURE_X_FEATURES"]
+        if "OUTPUT_SIGNATURE_X_FEATURES" in self.CONFIG_DATALOADER:
+            shape_spec = self.CONFIG_DATALOADER["OUTPUT_SIGNATURE_X_FEATURES"]
         else:
-            shape_spec = self.loader["LAST_NM"] - self.loader["FIRST_NM"]
+            shape_spec = self.CONFIG_DATALOADER["LAST_NM"] - self.CONFIG_DATALOADER["FIRST_NM"]
 
-        if self.loader["3D"]:
-            output_shape = (self.loader["3D_SIZE"][0], self.loader["3D_SIZE"][1], shape_spec)
+        if self.CONFIG_DATALOADER["3D"]:
+            output_shape = (self.CONFIG_DATALOADER["3D_SIZE"][0], self.CONFIG_DATALOADER["3D_SIZE"][1], shape_spec)
         else:
             output_shape = (shape_spec,)
 
@@ -229,7 +229,7 @@ class Trainer:
             tf.TensorSpec(shape=((None,) + shape), dtype=tf.float32),
             tf.TensorSpec(shape=(None,), dtype=tf.float32))
 
-        if self.trainer["WITH_SAMPLE_WEIGHTS"]:
+        if self.CONFIG_TRAINER["WITH_SAMPLE_WEIGHTS"]:
             output_signature += (tf.TensorSpec(shape=(None,), dtype=tf.float32),)
 
         return output_signature

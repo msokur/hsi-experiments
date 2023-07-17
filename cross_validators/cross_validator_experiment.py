@@ -2,7 +2,7 @@ import os
 import argparse
 import json
 
-import config
+import configuration.get_config as config
 from cross_validators.cross_validator_base import CrossValidatorBase
 
 

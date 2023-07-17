@@ -10,13 +10,13 @@ from configuration.copy_py_files import copy_files
 
 
 class Shuffle:
-    def __init__(self, raw_paths, dict_names: list, prepro_conf: dict, paths_conf: dict, augmented=False):
+    def __init__(self, raw_paths, dict_names: list, preprocessor_conf: dict, paths_conf: dict, augmented=False):
         self.raw_paths = raw_paths
-        self.prepro = prepro_conf
-        self.paths = paths_conf
+        self.CONFIG_PREPROCESSOR = preprocessor_conf
+        self.CONFIG_PATHS = paths_conf
         self.dict_names = dict_names
-        self.piles_number = self.prepro["PILES_NUMBER"]
-        self.shuffle_saving_path = self.paths["SHUFFLED_PATH"]
+        self.piles_number = self.CONFIG_PREPROCESSOR["PILES_NUMBER"]
+        self.shuffle_saving_path = self.CONFIG_PATHS["SHUFFLED_PATH"]
         self.augmented = augmented
 
     def shuffle(self):
@@ -25,8 +25,8 @@ class Shuffle:
             os.mkdir(self.shuffle_saving_path)
 
         copy_files(self.shuffle_saving_path,
-                   self.prepro["FILES_TO_COPY"],
-                   self.paths["SYSTEM_PATHS_DELIMITER"])
+                   self.CONFIG_PREPROCESSOR["FILES_TO_COPY"],
+                   self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
 
         self.__create_piles()
         self.__shuffle_piles()
@@ -54,7 +54,7 @@ class Shuffle:
             for pn in range(self.piles_number):
                 piles[pn] = []
 
-            name = p.split(self.paths["SYSTEM_PATHS_DELIMITER"])[-1].split(".")[0]
+            name = p.split(self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-1].split(".")[0]
             _data = np.load(p)
 
             data = {n: a for n, a in _data.items()}

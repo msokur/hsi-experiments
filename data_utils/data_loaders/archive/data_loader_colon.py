@@ -1,4 +1,5 @@
-import config
+#import config
+from configuration.get_config import config
 from data_utils.data_loaders.archive.data_loader_base import DataLoader
 from data_utils.hypercube_data import Cube_Read
 
@@ -8,14 +9,11 @@ class DataLoaderColon(DataLoader):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def get_extension(self):
-        return config.FILE_EXTENSIONS['_dat']
-
     def get_labels(self):
         return super().get_labels()
 
     def get_name(self, path):
-        return path.split(config.SYSTEM_PATHS_DELIMITER)[-1].split(".")[0].split('SpecCube')[0]
+        return path.split(config.CONFIG_PATHS['SYSTEM_PATHS_DELIMITER'])[-1].split(".")[0].split('SpecCube')[0]
 
     def indexes_get_bool_from_mask(self, mask):
         healthy_indexes = (mask[:, :, 0] == 0) & (mask[:, :, 1] == 0) & (mask[:, :, 2] == 255)  # blue
@@ -42,9 +40,9 @@ class DataLoaderColon(DataLoader):
     @staticmethod
     def spectrum_read_from_dat(dat_path):
         spectrum_data, _ = Cube_Read(dat_path,
-                                     wavearea=config.WAVE_AREA,
-                                     Firstnm=config.FIRST_NM,
-                                     Lastnm=config.LAST_NM).cube_matrix()
+                                     wavearea=config.CONFIG_DATALOADER['WAVE_AREA'],
+                                     Firstnm=config.CONFIG_DATALOADER['FIRST_NM'],
+                                     Lastnm=config.CONFIG_DATALOADER['LAST_NM']).cube_matrix()
         return spectrum_data
 
     @staticmethod

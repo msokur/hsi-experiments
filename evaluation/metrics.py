@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-from configuration.get_config import DATALOADER
+from configuration.get_config import CONFIG_DATALOADER
 
 
 class Metrics:
@@ -18,9 +18,9 @@ class Metrics:
             self.binary = False
 
     def fill_labels(self):
-        self.label_color = DATALOADER['PLOT_COLORS']
-        self.labels_names = DATALOADER['TISSUE_LABELS']
-        self.labels_of_classes_to_train = DATALOADER['LABELS']
+        self.label_color = CONFIG_DATALOADER['PLOT_COLORS']
+        self.labels_names = CONFIG_DATALOADER['TISSUE_LABELS']
+        self.labels_of_classes_to_train = CONFIG_DATALOADER['LABELS']
             
     def get_metrics_dict(self):
         return {

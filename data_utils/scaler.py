@@ -8,8 +8,7 @@ from sklearn import preprocessing
 import pickle
 
 from util.compare_distributions import DistributionsChecker
-#from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
-from data_utils.data_loaders.archive.data_loader_base import DataLoader
+from data_utils.data_loaders.data_loader import DataLoader
 
 
 class Scaler:

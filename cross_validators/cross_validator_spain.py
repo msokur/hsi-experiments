@@ -3,7 +3,7 @@ from tqdm import tqdm
 import csv
 import numpy as np
 
-import config
+import configuration.get_config as config
 from cross_validators.cross_validator_base import CrossValidatorBase
 import utils
 
