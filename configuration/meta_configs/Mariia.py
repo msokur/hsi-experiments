@@ -1,4 +1,4 @@
-loader_section = "MAT_COLON_SPAIN"
+loader_section = "GASTRIC"
 system_section_cluster = "Cluster_Mariia"
 system_section_local = "Win_Mariia"
 database_section = "MAT_COLON_LOCAL"

@@ -22,8 +22,8 @@ class SpectraUtil:
             return self.normalizer, self.standard_transposed_scaler, self.standard
         return self.normalizer, self.standard_transposed_scaler
     
-    def get_full_X_y(self, _3D=False):
-        X, y, _ = self.normalizer.X_y_concatenate(_3D=_3D)
+    def get_full_X_y(self):
+        X, y, _ = self.normalizer.X_y_concatenate()
         return X, y
     
     def get_part_of_X_y(self, X, y, each_Xth_sample=10000):
