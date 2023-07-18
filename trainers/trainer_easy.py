@@ -27,7 +27,7 @@ class TrainerEasy(trainer_base.Trainer):
         '''-------DATASET---------'''
 
         train_dataset, valid_dataset, train_generator, class_weights = self.get_datasets(
-            for_tuning=self.trainer["SMALLER_DATASET"])
+            for_tuning=self.CONFIG_TRAINER["SMALLER_DATASET"])
 
         '''-------TRAINING---------'''
 
@@ -36,10 +36,10 @@ class TrainerEasy(trainer_base.Trainer):
             # validation_data=valid_generator,
             x=train_dataset,
             validation_data=valid_dataset,
-            epochs=self.trainer["EPOCHS"],
+            epochs=self.CONFIG_TRAINER["EPOCHS"],
             verbose=2,
             initial_epoch=initial_epoch,
-            batch_size=self.trainer["BATCH_SIZE"],
+            batch_size=self.CONFIG_TRAINER["BATCH_SIZE"],
             callbacks=self.get_callbacks(),
             use_multiprocessing=True,
             class_weight=class_weights,
@@ -52,7 +52,7 @@ class TrainerEasy(trainer_base.Trainer):
         return model, history
 
     def compile_model(self, model: keras.Model) -> keras.Model:
-        metric_dict = self.trainer["CUSTOM_OBJECTS"]
+        metric_dict = self.CONFIG_TRAINER["CUSTOM_OBJECTS"]
         METRICS = [
             keras.metrics.BinaryAccuracy(name="accuracy"),
         ]
@@ -60,7 +60,7 @@ class TrainerEasy(trainer_base.Trainer):
             METRICS.append(metric_dict[key]["metric"](**metric_dict[key]["args"]))
 
         model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=self.trainer["LEARNING_RATE"]),
+            optimizer=keras.optimizers.Adam(learning_rate=self.CONFIG_TRAINER["LEARNING_RATE"]),
             loss=keras.losses.BinaryCrossentropy(),
             metrics=METRICS,
         )
@@ -78,20 +78,20 @@ class TrainerEasy(trainer_base.Trainer):
         initial_epoch = int(all_checkpoints[-1].split('-')[-1])
 
         model = keras.models.load_model(all_checkpoints[-1],
-                                        custom_objects=self.trainer["CUSTOM_OBJECTS_LOAD"],
+                                        custom_objects=self.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"],
                                         compile=True)
 
         return model, initial_epoch
 
     def get_new_model(self) -> keras.Model:
-        model = self.trainer["MODEL"](shape=self.get_output_shape(), conf=self.trainer["MODEL_CONFIG"],
-                                      num_of_labels=len(self.loader["LABELS_TO_TRAIN"]))
+        model = self.CONFIG_TRAINER["MODEL"](shape=self.get_output_shape(), conf=self.CONFIG_TRAINER["MODEL_CONFIG"],
+                                             num_of_labels=len(self.CONFIG_DATALOADER["LABELS_TO_TRAIN"]))
         model = self.compile_model(model)
         return model
 
     def get_model(self) -> tuple[keras.Model, int]:
         initial_epoch = 0
-        if self.trainer["RESTORE"]:
+        if self.CONFIG_TRAINER["RESTORE"]:
             model, initial_epoch = self.get_restored_model()
         else:
             model = self.get_new_model()

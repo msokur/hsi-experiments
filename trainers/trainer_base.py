@@ -1,7 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
 import os
-from shutil import rmtree
 import numpy as np
 import abc
 import pickle
@@ -139,8 +138,8 @@ class Trainer:
 
                 self.mirrored_strategy = tf.distribute.experimental.CentralStorageStrategy()
                 # self.mirrored_strategy = tf.distribute.MultiWorkerMirroredStrategy()
-            elif self.paths["MODE"] != "WITHOUT_GPU":
-                print(f"ERROR Mode: {self.paths['MODE']} not available! Continue without GPU strategy")
+            elif self.CONFIG_PATHS["MODE"] != "WITHOUT_GPU":
+                print(f"ERROR Mode: {self.CONFIG_PATHS['MODE']} not available! Continue without GPU strategy")
         except Exception as e:
             conf.telegram.send_tg_message(f'ERROR!!!, training {self.log_dir} has finished with error {e}')
             raise e  # TODO REMOVE!!

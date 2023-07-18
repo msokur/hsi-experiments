@@ -6,9 +6,9 @@ import configuration.get_config as config
 from configuration.get_config import telegram
 
 
-    
 def out_of_the_box():
-    cross_validator = provider.get_cross_validator(typ=config.CONFIG_CV["TYPE"], cv_config=config.CONFIG_CV, paths=config.CONFIG_PATHS,
+    cross_validator = provider.get_cross_validator(typ=config.CONFIG_CV["TYPE"], cv_config=config.CONFIG_CV,
+                                                   paths=config.CONFIG_PATHS,
                                                    loader_config=config.CONFIG_DATALOADER)
     # cross validation pipeline consists of 2 parts:
     # (1) cross_validation
@@ -23,7 +23,7 @@ def out_of_the_box():
     # you can pass any parameters from save_predictions_and_metrics() except training_csv_path and npz_folder,
     # because they passed automatically
     cross_validator.pipeline(execution_flags=execution_flags,
-                             # thresholds_range=[[0.0001, 0.001, 20]],    # specify thresholds if classification is binary
+                             # thresholds_range=[[0.0001, 0.001, 20]],  # specify thresholds if classification is binary
                              save_predictions=config.CONFIG_CV["SAVE_PREDICTION"],
                              save_curves=config.CONFIG_CV["SAVE_CURVES"])
 

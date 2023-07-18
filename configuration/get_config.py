@@ -3,15 +3,13 @@ import os
 import sys
 import platform
 
-
-
 WITHOUT_RANDOMNESS = True
 if WITHOUT_RANDOMNESS:
     os.environ['TF_DETERMINISTIC_OPS'] = '1'
 else:
     os.environ['TF_DETERMINISTIC_OPS'] = '0'
 
-from configuration.meta_configs.Mariia import *
+from configuration.meta_configs.Benny import *
 
 from configuration.configloader_base import read_config
 from configuration.configloader_paths import read_path_config
@@ -88,6 +86,7 @@ if CONFIG_AUG["enable"]:
 tg_config = "Telegram.json"
 CONFIG_TELEGRAM = get_config(file_name=tg_config, section=tg_section)
 CONFIG_TELEGRAM["FILE"] = os.path.join(parent_dir, CONFIG_TELEGRAM["FILE"])
+telegram = None
 if CONFIG_TELEGRAM["SENDING"]:
     from utils import Telegram
     telegram = Telegram(tg_config=CONFIG_TELEGRAM, mode=CONFIG_PATHS["MODE"])

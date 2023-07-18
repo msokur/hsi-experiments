@@ -11,6 +11,7 @@ from configuration.get_config import telegram, CONFIG_CV, CONFIG_PATHS, CONFIG_D
 import provider
 from data_utils.data_loaders.data_loader import DataLoader
 
+
 class CrossValidatorBase:
     def __init__(self):
         self.CONFIG_CV = CONFIG_CV

@@ -2,15 +2,15 @@ import pytest
 import os
 import numpy as np
 
-from provider_dyn import get_trainer, get_data_loader, get_whole_analog_of_data_loader, get_evaluation, get_smoother, \
+from provider import get_trainer, get_data_loader, get_whole_analog_of_data_loader, get_evaluation, get_smoother, \
     get_scaler, get_pixel_detection, get_cross_validator, get_extension_loader
 
 from trainers.trainer_tuner import TrainerTuner
 from trainers.trainer_easy import TrainerEasy
 from trainers.trainer_easy_several_outputs import TrainerEasySeveralOutputs
 
-from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
-from data_utils.data_loaders.data_loader_whole_dyn import DataLoaderWhole
+from data_utils.data_loaders.data_loader import DataLoader
+from data_utils.data_loaders.data_loader_whole import DataLoaderWhole
 
 from evaluation.evaluation_binary import EvaluationBinary
 from evaluation.evaluation_multiclass import EvaluationMulticlass
@@ -43,7 +43,7 @@ def test_get_trainer_error():
         get_trainer(typ="test")
 
 
-GET_DATA_LOADER_DATA = [("normal", DataLoaderDyn),
+GET_DATA_LOADER_DATA = [("normal", DataLoader),
                         ("whole", DataLoaderWhole)]
 
 
@@ -76,13 +76,13 @@ def test_get_whole_analog_of_data_loader_error():
         get_whole_analog_of_data_loader(original_database="test")
 
 
-GET_EVALUATION_DATA = [([0, 1], "test", EvaluationBinary),
-                       ([0, 1, 2], "test", EvaluationMulticlass)]
+GET_EVALUATION_DATA = [([0, 1], EvaluationBinary),
+                       ([0, 1, 2], EvaluationMulticlass)]
 
 
-@pytest.mark.parametrize("labels,name,result", GET_EVALUATION_DATA)
-def test_get_evaluation(labels, name, result):
-    evaluation = get_evaluation(labels=labels, name=name)
+@pytest.mark.parametrize("labels,result", GET_EVALUATION_DATA)
+def test_get_evaluation(labels, result):
+    evaluation = get_evaluation(labels=labels)
 
     assert isinstance(evaluation, result)
 
