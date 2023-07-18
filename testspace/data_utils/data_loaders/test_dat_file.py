@@ -66,9 +66,9 @@ PNG_IMG_2 = np.array([[RED, BLACK, BLACK],
                       [BLACK, GREEN, BLACK],
                       [BLACK, BLACK, BLUE]])
 
-JPG_IMG = np.array([[[93, 76, 20, 255], [255, 255, 199, 255], [247, 255, 255, 255]],
-                    [[255, 255, 200, 255], [166, 149, 93, 255], [247, 255, 255, 255]],
-                    [[249, 255, 253, 255], [251, 255, 255, 255], [0, 3, 255, 255]]])
+JPG_IMG = np.array([[[104, 75, 0, 255], [255, 255, 196, 255], [255, 255, 209, 255]],
+                    [[255, 255, 197, 255], [151, 148, 139, 255], [242, 252, 255, 255]],
+                    [[255, 255, 207, 255], [245, 251, 255, 255], [5, 13, 184, 255]]])
 
 MK2_RESULT_MASK = np.array([[NO_ANNO, NO_ANNO, NO_ANNO, NO_ANNO, NO_ANNO, GREEN, NO_ANNO, NO_ANNO],
                             [NO_ANNO, NO_ANNO, NO_ANNO, NO_ANNO, GREEN, GREEN, GREEN, NO_ANNO],

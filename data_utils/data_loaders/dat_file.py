@@ -1,10 +1,8 @@
 import os
 from typing import Tuple, List
-import cv2
 import numpy as np
 import warnings
 from data_utils.hypercube_data import Cube_Read
-from data_utils.marker import MK2
 
 
 class DatFile:
@@ -24,7 +22,7 @@ class DatFile:
 
         MASK_COLOR: {0: 'Class0', 1: 'Class1'}
 
-        MASK_DIFF -> list with differece between the file name from the .dat file and the mask file.
+        MASK_DIFF -> list with difference between the file name from the .dat file and the mask file.
 
         MASK_DIFF: ['.dat', '.png']
 
@@ -57,7 +55,7 @@ class DatFile:
 
         Example
         -------
-        >>> self.loader["MASK_COLOR"]
+        >>> self.CONFIG_DATALOADER["MASK_COLOR"]
         dict( 0: [[255, 0, 0]],
         ...   1: [[0, 255, 0]],
         ...   2: [[0, 0, 255]])
@@ -70,7 +68,7 @@ class DatFile:
         ...   [[False, False], [True, True], [False, False]],
         ...   [[False, False], [False, False], [True, True]])
 
-        >>> self.loader["MASK_COLOR"]
+        >>> self.CONFIG_DATALOADER["MASK_COLOR"]
         dict( 0: [[255, 0, 0, 200]],
         ...   1: [[0, 255, 0, 200]],
         ...   2: [[0, 0, 255, 200]])
@@ -111,12 +109,12 @@ class DatFile:
 
         :param mask: The input array with the RGB/RGBA color.
 
-        :return: Return an array with the keys from MASK_COLOR for every RGB/RGBA color. Fields with  a RGB/RGBA
+        :return: Return an array with the keys from MASK_COLOR for every RGB/RGBA color. Fields with  an RGB/RGBA
             color not in MASK_COLOR get a -1.
 
         Example
         -------
-        >>> self.loader["MASK_COLOR"]
+        >>> self.CONFIG_DATALOADER["MASK_COLOR"]
         dict( 0: [[255, 0, 0]],
         ...   1: [[0, 255, 0]],
         ...   2: [[0, 0, 255], [0, 255, 255]])
@@ -192,21 +190,22 @@ class DatFile:
         :raise ValueError: For file not found or not supported image format.
 
         """
-        mask = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)  # read Image with transparency
-        if mask is None:
+        from PIL import Image
+
+        try:
+            img = Image.open(mask_path)
+        except FileNotFoundError:
             raise ValueError("Mask file not found. Check your configurations!")
-        elif mask_path.split(".")[-1].lower() not in ["png", "jpg", "jpeg", "jpe"]:
+
+        if img.format not in ["PNG", "JPG", "JPEG", "JPE"]:
             raise ValueError("Mask format not supported! "
                              "Only '.png', '.jpeg', '.jpg' or '.jpe' are supported.")
         # add alpha channel
-        if mask.shape[-1] == 3:
-            mask = cv2.cvtColor(mask, cv2.COLOR_BGR2BGRA)
+        if img.mode != "RGBA":
+            img = img.convert("RGBA")
             warnings.warn("Better use '.png' format. Alpha channel added.")
 
-        # [..., -2::-1] - BGR to RGB, [..., -1:] - only transparency, '-1' - concatenate along last axis
-        mask = np.r_["-1", mask[..., -2::-1], mask[..., -1:]]
-
-        return mask
+        return np.reshape(img.getdata(), newshape=img.size + (4,))
 
     def mk2_mask(self, mask_path: str, shape: tuple) -> np.ndarray:
         """ Loads Marker from .mk2 file and returns an annotation mask
@@ -218,6 +217,8 @@ class DatFile:
 
         :return: Returns a 3D array with the RGBA color for every pixel.
         """
+        from data_utils.marker import MK2
+
         mk_loader = MK2(mask_path)
         names, leftx, topx, radiusx, indexx = mk_loader.load()
 
@@ -237,7 +238,7 @@ class DatFile:
 
             x_ = np.arange(left - radius - 1, left + radius + 1, dtype=int)
             y_ = np.arange(top - radius - 1, top + radius + 1, dtype=int)
-            # alle Pixel aus dem Kreis
+            # all pixel from circle
             x, y = np.where((x_[:, np.newaxis] - left) ** 2 + (y_ - top) ** 2 <= radius ** 2)
             for x_c, y_c in zip(x_[x], y_[y]):
                 class_mask[y_c, x_c] = classification
@@ -258,21 +259,8 @@ class DatFile:
 
 
 if __name__ == "__main__":
-    from configuration.get_config import DATALOADER
-    from glob import glob
-    import cv2
-    from tqdm import tqdm
+    main_path = r""
 
-    main_path = r"E:\ICCAS\Gastric\General"
-    mk2_path = r"annotation\mk_files"
-    dat_paths_ = glob(os.path.join(main_path, "*.dat"))
+    mask_ = DatFile.mask_read(main_path)
 
-    dat_loader = DatFile(DATALOADER)
-
-    for p in tqdm(dat_paths_):
-        name_ = p.split("\\")[-1].split(".dat")[0]
-
-        spec, mask_ = dat_loader.file_read_mask_and_spectrum(p, os.path.join(main_path, mk2_path))
-        bool_mask = dat_loader.indexes_get_bool_from_mask(mask_)
-        cv2.imwrite(os.path.join(main_path, mk2_path, "png", name_ + ".png"),
-                    np.r_["-1", mask_[..., -2::-1], mask_[..., -1:]])
+    v = 1
