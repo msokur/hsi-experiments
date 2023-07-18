@@ -38,7 +38,7 @@ class DatFile:
 
         :param loader_conf: Dictionary with configuration parameter
         """
-        self.loader = loader_conf
+        self.CONFIG_DATALOADER = loader_conf
 
     def indexes_get_bool_from_mask(self, mask: np.ndarray) -> List[np.ndarray]:
         """ Create for every classification a boolean array
@@ -84,7 +84,7 @@ class DatFile:
         ...   [[False, False], [False, False], [True, False]])
         """
         indexes = []
-        for key, value in self.loader["MASK_COLOR"].items():
+        for key, value in self.CONFIG_DATALOADER["MASK_COLOR"].items():
             sub_mask = np.zeros(mask.shape[:2]).astype(dtype=bool)
             for sub_value in value:
                 if isinstance(sub_value, int):
@@ -131,7 +131,7 @@ class DatFile:
         """
         result_mask = np.zeros(mask.shape[:2]) - 1
         indexes = self.indexes_get_bool_from_mask(mask)
-        for sub_mask, key in zip(indexes, self.loader["MASK_COLOR"].keys()):
+        for sub_mask, key in zip(indexes, self.CONFIG_DATALOADER["MASK_COLOR"].keys()):
             result_mask[sub_mask] = key
 
         return result_mask
@@ -150,7 +150,7 @@ class DatFile:
         spectrum = self.spectrum_read_from_dat(path)
 
         path_parts = os.path.split(path)
-        name = path_parts[1].split(self.loader["MASK_DIFF"][0])[0] + self.loader["MASK_DIFF"][1]
+        name = path_parts[1].split(self.CONFIG_DATALOADER["MASK_DIFF"][0])[0] + self.CONFIG_DATALOADER["MASK_DIFF"][1]
 
         if mask_path is None:
             mask_path = os.path.join(path_parts[0], name)
@@ -172,9 +172,9 @@ class DatFile:
         :return: Numpy array with the spectrum
         """
         spectrum_data, _ = Cube_Read(dat_path,
-                                     wavearea=self.loader["WAVE_AREA"],
-                                     Firstnm=self.loader["FIRST_NM"],
-                                     Lastnm=self.loader["LAST_NM"]).cube_matrix()
+                                     wavearea=self.CONFIG_DATALOADER["WAVE_AREA"],
+                                     Firstnm=self.CONFIG_DATALOADER["FIRST_NM"],
+                                     Lastnm=self.CONFIG_DATALOADER["LAST_NM"]).cube_matrix()
 
         return spectrum_data
 
@@ -226,7 +226,7 @@ class DatFile:
             if names[idx] == "":
                 continue
             classification = -1
-            for key, value in self.loader["TISSUE_LABELS"].items():
+            for key, value in self.CONFIG_DATALOADER["TISSUE_LABELS"].items():
                 if names[idx].lower().replace(" ", "") == value.lower().replace(" ", ""):
                     classification = key
                     break
@@ -247,7 +247,7 @@ class DatFile:
 
         for uni_class in uni_classes:
             if uni_class != -1:
-                color = self.loader["MASK_COLOR"][uni_class][0].copy()
+                color = self.CONFIG_DATALOADER["MASK_COLOR"][uni_class][0].copy()
                 if len(color) == 3:
                     color.append(255)
                 else:
@@ -260,6 +260,7 @@ class DatFile:
 if __name__ == "__main__":
     from configuration.get_config import DATALOADER
     from glob import glob
+    import cv2
     from tqdm import tqdm
 
     main_path = r"E:\ICCAS\Gastric\General"

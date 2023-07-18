@@ -2,16 +2,13 @@ import os.path
 
 import numpy as np
 import config
-from data_loader_base import DataLoader
+from data_utils.data_loaders.archive.data_loader_base import DataLoader
 from data_utils.hypercube_data import Cube_Read
 
 
 class DataLoaderHNO(DataLoader):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-    def get_extension(self):
-        return config.FILE_EXTENSIONS['_dat']
 
     def get_labels(self):
         return [0, 1, 2, 3, 4, 5, 6, 7]

@@ -7,7 +7,8 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 sys.path.insert(1, os.path.join(parentdir, 'utils'))
 
-import config
+#import config
+import configuration.get_config as conf
 import utils
 import provider
 from data_utils.data_loaders.archive.data_loader_base import DataLoader
@@ -75,7 +76,7 @@ class Preprocessor:
             for pn in range(self.piles_number):
                 piles[pn] = []
 
-            name = p.split(config.SYSTEM_PATHS_DELIMITER)[-1].split(".")[0]
+            name = p.split(conf.CONFIG_PATHS['SYSTEM_PATHS_DELIMITER'])[-1].split(".")[0]
             _data = np.load(p)
 
             data = {n: a for n, a in _data.items()}
@@ -253,7 +254,7 @@ class Preprocessor:
 
             # ------------ get only needed classes--------------
             indexes = np.zeros(data['y'].shape).astype(bool)
-            for label in config.LABELS_OF_CLASSES_TO_TRAIN:
+            for label in conf.CONFIG_DATALOADER['LABELS_TO_TRAIN']:
                 indexes = indexes | (data['y'] == label)
 
             indexes = np.flatnonzero(indexes)
@@ -319,7 +320,7 @@ class Preprocessor:
 
         quantities = np.array(quantities)
 
-        sum_ = np.sum(quantities[:, config.LABELS_OF_CLASSES_TO_TRAIN])
+        sum_ = np.sum(quantities[:, conf.CONFIG_DATALOADER['LABELS_TO_TRAIN']])
         with np.errstate(divide='ignore', invalid='ignore'):
             weights = sum_ / quantities
 

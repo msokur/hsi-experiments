@@ -6,7 +6,7 @@ import scipy.io as sio
 
 class MatFile:
     def __init__(self, loader_conf: dict):
-        self.loader = loader_conf
+        self.CONFIG_DATALOADER = loader_conf
 
     def indexes_get_bool_from_mask(self, mask: np.ndarray) -> List[np.ndarray]:
         """ Create for every classification a boolean array
@@ -18,7 +18,7 @@ class MatFile:
         :raises ValueError: When the given values in "MASK_COLOR" are wrong.
         """
         indexes = []
-        for key, value in self.loader["MASK_COLOR"].items():
+        for key, value in self.CONFIG_DATALOADER["MASK_COLOR"].items():
             if isinstance(value, int):
                 raise ValueError(f"Check your configurations for classification {key}! "
                                  f"Surround your value with brackets!")
@@ -40,7 +40,7 @@ class MatFile:
         """
         result_mask = mask.copy()
         indexes = self.indexes_get_bool_from_mask(mask)
-        for sub_mask, key in zip(indexes, self.loader["MASK_COLOR"].keys()):
+        for sub_mask, key in zip(indexes, self.CONFIG_DATALOADER["MASK_COLOR"].keys()):
             result_mask[sub_mask] = key
 
         return result_mask
@@ -60,6 +60,6 @@ class MatFile:
         :return: Tuple with a numpy array for the spectrum and a numpy array for the annotation mask.
         """
         data = sio.loadmat(path)
-        spectrum, mask = data[self.loader["SPECTRUM"]], data[self.loader["MASK"]]
+        spectrum, mask = data[self.CONFIG_DATALOADER["SPECTRUM"]], data[self.CONFIG_DATALOADER["MASK"]]
 
         return spectrum, mask

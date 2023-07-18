@@ -4,7 +4,7 @@ import os
 import scipy.io
 
 import config
-from data_loader_mat import DataLoaderMat
+from data_utils.data_loaders.archive.data_loader_mat import DataLoaderMat
 
 
 class DataLoaderMatBrain(DataLoaderMat):

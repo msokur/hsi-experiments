@@ -5,7 +5,7 @@ import os
 import numpy as np
 
 import config
-from data_loader_base import DataLoader
+from data_utils.data_loaders.archive.data_loader_base import DataLoader
 
 
 # for Esophagus
@@ -32,9 +32,6 @@ class DataLoaderMat(DataLoader):
         splits = np.array_split(range(len(paths)), config.CROSS_VALIDATION_SPLIT)
 
         return paths, splits
-
-    def get_extension(self):
-        return config.FILE_EXTENSIONS['_mat']
 
     def get_labels(self):
         return super().get_labels()

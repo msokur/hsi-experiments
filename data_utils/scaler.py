@@ -8,7 +8,7 @@ from sklearn import preprocessing
 import pickle
 
 from util.compare_distributions import DistributionsChecker
-from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
+from data_utils.data_loaders.data_loader import DataLoader
 
 
 class Scaler:
@@ -104,7 +104,7 @@ class Scaler:
             X = self.scale_X(X)
             data = {n: a for n, a in data.items()}
             data[self.dict_names[0]] = X.copy()
-            np.savez(os.path.join(destination_path, DataLoaderDyn().get_name(path)), **data)
+            np.savez(os.path.join(destination_path, DataLoader().get_name(path)), **data)
 
     def get_shapes(self, path):
         datas = np.load(path)
@@ -114,6 +114,7 @@ class Scaler:
 
 class NormalizerScaler(Scaler):
     def __init__(self, *args, **kwargs):
+        print('NormalizerScaler is created')
         super().__init__(*args, **kwargs)
         
     def get_data_for_fit(self):
@@ -128,6 +129,7 @@ class NormalizerScaler(Scaler):
 
 class StandardScaler(Scaler):
     def __init__(self, *args, **kwargs):
+        print('StandardScaler is created')
         super().__init__(*args, **kwargs)
         
     def get_data_for_fit(self):

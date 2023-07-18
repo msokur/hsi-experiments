@@ -1,7 +1,7 @@
 import numpy as np
 
-from data_loader_whole_base import DataLoaderWholeBase
-from data_loader_colon import DataLoaderColon
+from data_utils.data_loaders.archive.data_loader_whole_base import DataLoaderWholeBase
+from data_utils.data_loaders.archive.data_loader_colon import DataLoaderColon
 
 
 class DataLoaderWholeColon(DataLoaderWholeBase):

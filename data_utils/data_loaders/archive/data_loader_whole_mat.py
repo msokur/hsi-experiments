@@ -1,6 +1,6 @@
 import numpy as np
 
-from data_loader_whole_base import DataLoaderWholeBase
+from data_utils.data_loaders.archive.data_loader_whole_base import DataLoaderWholeBase
 
 
 class DataLoaderWholeMat(DataLoaderWholeBase):

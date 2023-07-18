@@ -15,13 +15,11 @@ current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfra
 sys.path.insert(0, os.path.join(current_dir, 'util'))
 sys.path.insert(1, os.path.join(current_dir, 'data_utils'))
 sys.path.insert(1, os.path.join(current_dir, os.path.join('data_utils', 'data_loaders')))
+sys.path.insert(1, os.path.join(current_dir, os.path.join('data_utils', 'archive')))
 sys.path.insert(2, os.path.join(current_dir, 'models'))
 sys.path.insert(3, os.path.join(current_dir, 'trainers'))
 print('paths from config', sys.path)
-
-
-# import util.tf_metrics as tf_metrics
-from util.tf_metric_multiclass import F1_score
+import tf_metrics
 
 
 # ----------------------------------------------------------------------------------------------------------
@@ -81,19 +79,22 @@ CROSS_VALIDATORS = {
     'cv_experiment': 'cv_experiment'
 }
 
-CROSS_VALIDATOR = CROSS_VALIDATORS['cv_normal']
+CROSS_VALIDATOR = CROSS_VALIDATORS['cv_postprocessing']
 
 # ----------------------------------------------------------------------------------------------------------
-#database_abbreviation = 'Esophagus_MedFilter'
-database_abbreviation = 'Colon_MedianFilter'
+database_abbreviation = 'Esophagus_MedFilter'
+#database_abbreviation = 'CV_3d_inception'
+#database_abbreviation = 'Colon_MedianFilter'
 
 RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')
+RAW_SOURCE_PATH = os.path.join('data_bea_db', database_abbreviation)
+#RAW_NPZ_PATH = os.path.join('data_3d', 'l2_norm')
 
-RAW_SOURCE_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
-                              database_abbreviation)
-RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
-                            database_abbreviation, 'raw_3d_weighted')
-database_abbreviation = 'hno'
+#RAW_SOURCE_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
+#                              database_abbreviation)
+#RAW_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation,
+#                            database_abbreviation, 'raw_3d_weighted')
+#database_abbreviation = 'hno'
 
 #TEST_NPZ_PATH = os.path.join('C:\\Users\\tkachenko\\Desktop\\HSI\\bea\\databases', database_abbreviation, database_abbreviation)
 #RAW_NPZ_PATH = os.path.join('data_bea_db', database_abbreviation, 'raw_3d_weighted')
@@ -186,7 +187,7 @@ LEARNING_RATE = 1e-4  # train
 SPLIT_FACTOR = 0.8  # train   #for data sets: train\test data percentage
 
 CV_CHOOSE_EXCLUDED_VALID_PATIENTS_BY_CLASSES = True # cv
-CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY = False  # cv + preprocessor
+CV_CHOOSE_EXCLUDED_VALID_PATIENTS_RANDOMLY = True  # cv + preprocessor
 CV_RESTORE_VALID_PATIENTS = False
 CV_RESTORE_VALID_PATIENTS_PATH = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/ExperimentHowManyValidPatExclude'
 CV_RESTORE_VALID_PATIENTS_SEQUENCE = ''#[['_C', -1], ['_', 0]]
@@ -194,7 +195,7 @@ CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID = 1  # cv + preprocessor, to create valid
 CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST = 1  # cv, for testing (exactly on this excluded patients we count end evaluation)
 CV_FIRST_SPLIT = 0  # cv, if we need to start not from the first split
 CV_GET_CHECKPOINT_FROM_VALID = True  # cv
-HISTORY_ARGMIN = "val_f1_score"  # cv. through which parameter of history(returned by model.fit() and then saved) choose the
+HISTORY_ARGMIN = "val_f1_score"  #was: "val_f1_m" # cv. through which parameter of history(returned by model.fit() and then saved) choose the
 # best checkpoint in validation data
 
 ADD_TIME = False  # pipeline   #whether to add time to logs paths
@@ -297,20 +298,18 @@ def get_model_name(MODEL_NAME_PATHS, model_name='3d'):
 
 
 if MODE == 'CLUSTER':
-    prefix = r'/work/users/bn322dcei/'
-
-    # MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs', 'debug_combi']
-    MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs']
-else:
-    # prefix = r'/media/huber/One Touch/ICCAS/HNO'
-    prefix = r'E:\ICCAS\HNO'
-    MODEL_NAME_PATHS = ['logs']
+    prefix = r'/work/users/mi186veva/'
 
     RAW_NPZ_PATH = os.path.join(prefix, RAW_NPZ_PATH)
     RAW_SOURCE_PATH = os.path.join(prefix, RAW_SOURCE_PATH)
     SHUFFLED_PATH = os.path.join(prefix, SHUFFLED_PATH)
     BATCHED_PATH = os.path.join(prefix, BATCHED_PATH)
     TEST_NPZ_PATH = os.path.join(prefix, TEST_NPZ_PATH)
+
+    # MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs', 'debug_combi']
+    MODEL_NAME_PATHS = ['/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs']
+else:
+    MODEL_NAME_PATHS = ['logs']
 
 MODEL_NAME = get_model_name(MODEL_NAME_PATHS)
 
@@ -332,7 +331,8 @@ CROSS_VALIDATION_SPLIT = int(
 
 # ----------------------------CUSTOM_OBJECTS
 
-CUSTOM_OBJECTS = {'F1_score': F1_score}
+#CUSTOM_OBJECTS = {'F1_score': F1_score}
+CUSTOM_OBJECTS = {'f1_m': tf_metrics.f1_m}
 
 # ----------------------------OUTPUT FEATURES
 OUTPUT_SIGNATURE_X_FEATURES = LAST_NM - FIRST_NM  # train
@@ -358,8 +358,6 @@ else:
         tf.TensorSpec(shape=(None,), dtype=tf.float32))
 
 # -------------------PLOT
-TISSUE_LABELS = {0: 'Nerve', 1: 'Tumor', 2: 'Parotis', 3: 'Subcutaneous_Tissue', 4: 'Muscle', 5: 'Vein',
-                 6: 'Cartilage', 7: 'Not_Certain'}
-PLOT_COLORS = {0: 'yellow', 1: 'blue', 2: 'red', 3: 'white', 4: 'green',
-               5: 'grey', 6: 'black', 7: 'cornflowerblue'}
+TISSUE_LABELS = {0: 'Esophagus', 1: 'Tumor', 2: 'Stomach'}
+PLOT_COLORS = {0: 'yellow', 1: 'blue', 2: 'red'}
 

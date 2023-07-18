@@ -7,17 +7,16 @@ import csv
 import inspect
 
 import utils
-from configuration.get_config import telegram, CV, PATHS, DATALOADER, TRAINER
-import provider_dyn
-from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
-
+from configuration.get_config import telegram, CONFIG_CV, CONFIG_PATHS, CONFIG_DATALOADER, CONFIG_TRAINER
+import provider
+from data_utils.data_loaders.data_loader import DataLoader
 
 class CrossValidatorBase:
     def __init__(self):
-        self.cv = CV
-        self.paths = PATHS
-        self.loader = DATALOADER
-        self.trainer = TRAINER
+        self.CONFIG_CV = CONFIG_CV
+        self.CONFIG_PATHS = CONFIG_PATHS
+        self.CONFIG_DATALOADER = CONFIG_DATALOADER
+        self.CONFIG_TRAINER = CONFIG_TRAINER
 
         current_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         project_folder = os.path.dirname(current_folder)
@@ -35,11 +34,11 @@ class CrossValidatorBase:
             execution_flags = CrossValidatorBase.get_execution_flags()
 
         if execution_flags['cross_validation']:
-            self.cross_validation(self.cv["NAME"])
+            self.cross_validation(self.CONFIG_CV["NAME"])
         if execution_flags['evaluation']:
             self.evaluation(**kwargs)
 
-        telegram.send_tg_message(f'operations in cross_validation.py for {self.cv["NAME"]} '
+        telegram.send_tg_message(f'operations in cross_validation.py for {self.CONFIG_CV["NAME"]} '
                                  f'are successfully completed!')
 
     @abc.abstractmethod
@@ -49,19 +48,19 @@ class CrossValidatorBase:
     def cross_validation_step(self, model_name, except_names=None):
         if except_names is None:
             except_names = []
-        trainer = provider_dyn.get_trainer(typ=self.trainer["TYPE"], model_name=model_name, except_indexes=except_names)
+        trainer = provider.get_trainer(typ=self.CONFIG_TRAINER["TYPE"], model_name=model_name, except_indexes=except_names)
         trainer.train()
 
     def cross_validation(self, root_folder_name: str, csv_filename=None):
-        self.paths["MODEL_NAME_PATHS"].append(root_folder_name)
+        self.CONFIG_PATHS["MODEL_NAME_PATHS"].append(root_folder_name)
 
-        root_folder = os.path.join(*self.paths["MODEL_NAME_PATHS"])
-        model_name_prefix = self.get_model_name(self.paths["MODEL_NAME_PATHS"])
+        root_folder = os.path.join(*self.CONFIG_PATHS["MODEL_NAME_PATHS"])
+        self.CONFIG_PATHS["MODEL_NAME_PATHS"] = self.get_model_name(self.CONFIG_PATHS["MODEL_NAME_PATHS"])
 
         if not os.path.exists(root_folder):
             os.makedirs(root_folder)
 
-        data_loader = provider_dyn.get_data_loader(typ=self.loader["TYPE"])
+        data_loader = provider.get_data_loader(typ=self.CONFIG_DATALOADER["TYPE"])
         paths, splits = data_loader.get_paths_and_splits()
 
         date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
@@ -69,8 +68,8 @@ class CrossValidatorBase:
         if csv_filename is None:
             csv_filename = os.path.join(root_folder, root_folder_name + "_stats" + date_ + ".csv")
 
-        for indexes in splits[self.cv["FIRST_SPLIT"]:]:
-            model_name = model_name_prefix
+        for indexes in splits[self.CONFIG_CV["FIRST_SPLIT"]:]:
+            model_name = self.CONFIG_PATHS["MODEL_NAME_PATHS"]
             if len(indexes) > 1:
                 for i in indexes:
                     model_name += "_" + str(i)
@@ -83,7 +82,7 @@ class CrossValidatorBase:
                 print(f"In files {paths_patch} are no needed labels for training!")
                 continue
 
-            self.cross_validation_step(model_name, except_names=[DataLoaderDyn().get_name(p) for p in paths_patch])
+            self.cross_validation_step(model_name, except_names=[DataLoader().get_name(p) for p in paths_patch])
 
             for i, path_ in enumerate(paths_patch):
                 sensitivity, specificity = 0, 0
@@ -103,7 +102,7 @@ class CrossValidatorBase:
         checkpoints_folders = glob(os.path.join(folder, 'cp-*'))
         checkpoints_folders = sorted(checkpoints_folders)
 
-        return int(checkpoints_folders[0].split(self.paths["SYSTEM_PATHS_DELIMITER"])[-1].split('-')[-1])
+        return int(checkpoints_folders[0].split(self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-1].split('-')[-1])
 
     def check_data_label(self, paths) -> bool:
         label_not_to_train = True
@@ -115,7 +114,7 @@ class CrossValidatorBase:
     def check_label(self, path: str) -> bool:
         data = np.load(path)
         unique_y = np.unique(data["y"])
-        intersect = np.intersect1d(unique_y, self.loader["LABELS_TO_TRAIN"])
+        intersect = np.intersect1d(unique_y, self.CONFIG_DATALOADER["LABELS_TO_TRAIN"])
 
         return True if intersect.__len__() == 0 else False
 
@@ -133,7 +132,6 @@ class CrossValidatorBase:
     @staticmethod
     def get_history(search_folder):
         history_paths = utils.glob_multiple_file_types(search_folder, '.*.npy', '*.npy')
-        # print(history_paths)
         if len(history_paths) == 0:
             print('Error! No history files were found!')
             # raise ValueError('Error! No history files were found!')
@@ -145,7 +143,7 @@ class CrossValidatorBase:
 
         history_path = history_paths[0]
         history = np.load(history_path, allow_pickle=True)
-        # print(history)
+
         if len(history.shape) == 0:
             history = history.item()
         return history, history_path

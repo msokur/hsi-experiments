@@ -1,8 +1,8 @@
 import abc
 import numpy as np
 
-from data_loader_base import DataLoader
-from data_loader_colon import DataLoaderColon
+from data_utils.data_loaders.archive.data_loader_base import DataLoader
+from data_utils.data_loaders.archive.data_loader_colon import DataLoaderColon
 
 
 class DataLoaderWholeBase(DataLoader):
@@ -12,9 +12,6 @@ class DataLoaderWholeBase(DataLoader):
 
         self.class_instance = class_instance
         self.dict_names.append('size')
-
-    def get_extension(self):
-        return self.class_instance.get_extension()
 
     def get_labels(self):
         return self.class_instance.get_labels()
@@ -52,8 +49,9 @@ class DataLoaderWholeBase(DataLoader):
         #indexes_np = DataLoader.indexes_get_np_from_bool_indexes(*indexes)
 
         #values = self.X_y_concatenate_from_spectrum(spectra, indexes_np)
+        
         print(spectrum.shape, mask.shape, np.unique(mask))
-        print(DataLoaderWholeBase.get_all_indexes(mask)[0].shape)
+        #print(DataLoaderWholeBase.get_all_indexes(mask)[0].shape)
         size = spectrum.shape[:2]
         X = reshape(spectrum)
         y = reshape(mask)

@@ -7,8 +7,7 @@ import os
 import inspect
 
 from configuration import get_config as conf
-from data_utils.data_loaders.data_loader_dyn import DataLoaderDyn
-from evaluation.metrics import Metrics
+from data_utils.data_loaders.data_loader import DataLoader
 from models.model_randomness import set_tf_seed
 
 tf.random.set_seed(1)
@@ -22,12 +21,12 @@ class Predictor:
     """
 
     def __init__(self, CHECKPOINT, LOGS_PATH="", MODEL_NAME="", MODEL_FOLDER="",
-                 custom_objects=conf.TRAINER["CUSTOM_OBJECTS_LOAD"]):
+                 custom_objects=conf.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"]):
 
         if MODEL_NAME != '':
             self.MODEL_NAME = MODEL_NAME
         else:
-            self.MODEL_NAME = MODEL_FOLDER.split(conf.PATHS["SYSTEM_PATHS_DELIMITER"])[-1]  # here can be problem
+            self.MODEL_NAME = MODEL_FOLDER.split(conf.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-1]  # here can be problem
 
         if MODEL_FOLDER == '':
             MODEL_FOLDER = os.path.join(LOGS_PATH, self.MODEL_NAME)
@@ -53,12 +52,12 @@ class Predictor:
 
         # get only needed samples
         indexes = np.zeros(gt.shape).astype(bool)
-        if not conf.CV["USE_ALL_LABELS"]:
-            for label in conf.DATALOADER["LABELS_TO_TRAIN"]:
+        if not conf.CONFIG_CV["USE_ALL_LABELS"]:
+            for label in conf.CONFIG_DATALOADER["LABELS_TO_TRAIN"]:
                 indexes = indexes | (gt == label)
         else:
             indexes = np.ones(gt.shape).astype(bool)
-        if conf.DATALOADER["WITH_BACKGROUND_EXTRACTION"]:
+        if conf.CONFIG_DATALOADER["WITH_BACKGROUND_EXTRACTION"]:
             gt = gt[indexes & data["bg_mask"]]
             spectrum = spectrum[indexes & data["bg_mask"]]
 
@@ -74,9 +73,9 @@ class Predictor:
         current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         parent_dir = os.path.dirname(current_dir)
         if parent_dir not in model_path:
-            model_path = os.path.join(conf.PATHS["MODEL_NAME_PATHS"][0],
-                                      model_path.split(conf.PATHS["MODEL_NAME_PATHS"][0])[-1][1:])
-            if conf.PATHS["SYSTEM_PATHS_DELIMITER"] == "\\":
+            model_path = os.path.join(conf.CONFIG_PATHS["MODEL_NAME_PATHS"][0],
+                                      model_path.split(conf.CONFIG_PATHS["MODEL_NAME_PATHS"][0])[-1][1:])
+            if conf.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"] == "\\":
                 model_path = model_path.replace("/", "\\")
 
             model_path = os.path.join(parent_dir, model_path)
@@ -85,17 +84,17 @@ class Predictor:
     @staticmethod
     def get_best_checkpoint_from_csv(model_path):
         checkpoints_paths = sorted(glob(os.path.join(model_path,
-                                                     conf.PATHS["CHECKPOINT_PATH"], "*"
-                                                     + conf.PATHS["SYSTEM_PATHS_DELIMITER"])))
+                                                     conf.CONFIG_PATHS["CHECKPOINT_PATH"], "*"
+                                                     + conf.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])))
         best_checkpoint_path = checkpoints_paths[-1]
-        return best_checkpoint_path.split(conf.PATHS["SYSTEM_PATHS_DELIMITER"])[-2]
+        return best_checkpoint_path.split(conf.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-2]
 
     @staticmethod
     def get_checkpoint(checkpoint, model_path):
         if checkpoint is None:
-            checkpoint = f"cp-{conf.TRAINER['EPOCHS']:04d}"
+            checkpoint = f"cp-{conf.CONFIG_TRAINER['EPOCHS']:04d}"
 
-        if conf.CV["GET_CHECKPOINT_FROM_VALID"]:
+        if conf.CONFIG_CV["GET_CHECKPOINT_FROM_VALID"]:
             return Predictor.get_best_checkpoint_from_csv(model_path)
         else:
             return checkpoint
@@ -105,8 +104,7 @@ class Predictor:
                          npz_folder,
                          predictions_saving_folder,
                          predictions_npy_filename,
-                         checkpoint=None,
-                         save_roc_auc_curve=False):
+                         checkpoint=None):
         """
             param rows of training_csv_path:
             0 - date
@@ -129,7 +127,7 @@ class Predictor:
 
                 if checkpoint is not None:
                     checkpoint = Predictor.get_checkpoint(checkpoint, model_path)
-                name = DataLoaderDyn().get_name(row[4], delimiter='/')
+                name = DataLoader().get_name(row[4], delimiter='/')
                 print(f'We get checkpoint {checkpoint} for {model_path}')
 
                 predictor = Predictor(checkpoint, MODEL_FOLDER=model_path)
@@ -142,18 +140,8 @@ class Predictor:
                     'size': size
                 })
 
-                if save_roc_auc_curve:
-                    all_predictions_raw += list(predictions)
-                    all_gt += list(gt)
-
         # saving of predictions
         np.save(os.path.join(predictions_saving_folder, predictions_npy_filename), results_dictionary)
-
-        # roc auc part (for all predictions together as one array)
-        if save_roc_auc_curve:
-            metr = Metrics()
-            metr.save_roc_curves(all_gt,
-                                 all_predictions_raw, "All predictions together", predictions_saving_folder)
 
 
 if __name__ == "__main__":

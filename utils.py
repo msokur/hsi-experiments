@@ -16,6 +16,7 @@ class Telegram:
             if self.mode == "CLUSTER":
                 message = "CLUSTER " + message
             try:
+                message = f"{self.tg['USER']}, " + message
                 telegram_send.send(messages=[message], conf=self.tg["FILE"])
             except Exception as e:
                 print("Some problems with telegram! Messages could not be delivered")

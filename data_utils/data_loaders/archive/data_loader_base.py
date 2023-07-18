@@ -10,22 +10,28 @@ import pickle
 from scipy.ndimage import gaussian_filter, median_filter
 import pandas as pd
 
-import config
+#import config
+import configuration.get_config as conf
 from data_utils.background_detection import detect_background
 import data_utils.border as border
+from data_utils.data_loaders.path_splits import get_splits
+
+print('DATALOADER', conf.CONFIG_DATALOADER)
+print('PATHS', conf.CONFIG_PATHS)
+print('PREPRO', conf.PREPRO)
+print('CV', conf.CONFIG_CV)
+print('TRAINER', conf.CONFIG_TRAINER)
+print('DISTRO', conf.CONFIG_DISTRIBUTION)
+print('TG_CONF', conf.CONFIG_TELEGRAM)
 
 
 class DataLoader:
-    def __init__(self, dict_names=None, _3d=config.D3, _3d_size=config.D3_SIZE):
+    def __init__(self, dict_names=None, _3d=conf.CONFIG_DATALOADER['3D'], _3d_size=conf.CONFIG_DATALOADER['3D']):
         if dict_names is None:
             dict_names = ['X', 'y', 'indexes_in_datacube']
         self.dict_names = dict_names
         self._3d = _3d
         self._3d_size = _3d_size
-    
-    @abc.abstractmethod
-    def get_extension(self):
-        pass
 
     @abc.abstractmethod
     def get_labels(self):
@@ -43,25 +49,30 @@ class DataLoader:
     def get_name(self, path):
         pass
     
-    def get_paths_and_splits(self, root_path=config.RAW_NPZ_PATH):
+    def get_paths_and_splits(self, root_path=conf.CONFIG_PATHS['RAW_NPZ_PATH']):
         paths = glob(os.path.join(root_path, '*.npz'))
         paths = sorted(paths)
 
-        splits = np.array_split(range(len(paths)), config.CROSS_VALIDATION_SPLIT)
+        splits = get_splits(typ=conf.CONFIG_DATALOADER["SPLIT_PATHS_BY"], paths=paths,
+                            values=conf.CONFIG_DATALOADER["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"],
+                            delimiter=conf.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
+        #splits = np.array_split(range(len(paths)), config.CROSS_VALIDATION_SPLIT)
         
         return paths, splits
     
     @staticmethod
     def smooth(spectrum):
-        if config.SMOOTHING_TYPE is not None:
-            if config.SMOOTHING_TYPE == 'median_filter':
-                spectrum = median_filter(spectrum, size=config.SMOOTHING_VALUE)
-            if config.SMOOTHING_TYPE == 'gaussian_filter':
-                spectrum = gaussian_filter(spectrum, sigma=config.SMOOTHING_VALUE)
+        smoothing_type = conf.CONFIG_DATALOADER['SMOOTHING_TYPE']
+        smoothing_value = conf.CONFIG_DATALOADER['SMOOTHING_VALUE']
+        if smoothing_type is not None:
+            if smoothing_type == 'median_filter':
+                spectrum = median_filter(spectrum, size=smoothing_value)
+            if smoothing_type == 'gaussian_filter':
+                spectrum = gaussian_filter(spectrum, sigma=smoothing_value)
         return spectrum
 
     @staticmethod
-    def remove_border(masks, conf=config.BORDERS_CONFIG):
+    def remove_border(masks, conf=conf.CONFIG_DATALOADER['BORDER_CONFIG']):
         if conf['enable']:
             border_masks = []
             for idx, mask in enumerate(masks):
@@ -113,7 +124,7 @@ class DataLoader:
     def files_read_and_save_to_npz(self, root_path, destination_path):
         print('----Saving of .npz archives is started----')
 
-        paths = glob(os.path.join(root_path, "*" + self.get_extension()))
+        paths = glob(os.path.join(root_path, "*" + conf.CONFIG_DATALOADER['FILE_EXTENSION']))
 
         with open(os.path.join(destination_path, DataLoader.get_labels_filename()), 'wb') as f:
             pickle.dump(self.get_labels(), f, pickle.HIGHEST_PROTOCOL)
@@ -198,7 +209,7 @@ class DataLoader:
         return 'contamination.csv'
 
     @staticmethod
-    def get_name_easy(path, delimiter=config.SYSTEM_PATHS_DELIMITER):
+    def get_name_easy(path, delimiter=conf.CONFIG_PATHS['SYSTEM_PATHS_DELIMITER']):
         return path.split(delimiter)[-1].split(".")[0].split('SpecCube')[0]  # Comments, look at this code:
     # f = 'fff'
     # f.split('v')
@@ -228,7 +239,7 @@ class DataLoader:
     @staticmethod
     def background_get_mask(spectrum, shapes):
         background_mask = np.ones(shapes).astype(np.bool)
-        if config.WITH_BACKGROUND_EXTRACTION:
+        if conf.CONFIG_DATALOADER['WITH_BACKGROUND_EXTRACTION']:
             background_mask = detect_background(spectrum)
             background_mask = np.reshape(background_mask, shapes)
 

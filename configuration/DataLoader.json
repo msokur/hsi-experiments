@@ -1,7 +1,7 @@
 {
 	"HNO": {
 		"TYPE": "normal",
-		"FILE_EXTENSIONS": ".dat",
+		"FILE_EXTENSION": ".dat",
 		"3D": true,
 		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,
@@ -69,7 +69,7 @@
 	},
 	"ESO": {
 		"TYPE": "normal",
-		"FILE_EXTENSIONS": ".dat",
+		"FILE_EXTENSION": ".dat",
 		"3D": true,
 		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,
@@ -117,7 +117,7 @@
 	},
 	"GASTRIC": {
 		"TYPE": "normal",
-		"FILE_EXTENSIONS": ".dat",
+		"FILE_EXTENSION": ".dat",
 		"3D": true,
 		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,
@@ -211,7 +211,7 @@
 	},
 	"MAT_BRAIN": {
 		"TYPE": "normal",
-		"FILE_EXTENSIONS": ".mat",
+		"FILE_EXTENSION": ".mat",
 		"SPECTRUM": "preProcessedImage",
 		"MASK": "gtMap",
 		"3D": true,
@@ -269,7 +269,7 @@
 	},
 	"MAT_COLON": {
 		"TYPE": "normal",
-		"FILE_EXTENSIONS": ".mat",
+		"FILE_EXTENSION": ".mat",
 		"SPECTRUM": "cube",
 		"MASK": "gtMap",
 		"3D": true,
@@ -307,18 +307,18 @@
 	},
 	"MAT_ESO": {
 		"TYPE": "normal",
-		"FILE_EXTENSIONS": ".mat",
+		"FILE_EXTENSION": ".mat",
 		"SPECTRUM": "cube",
 		"MASK": "gtMap",
 		"3D": true,
-		"3D_SIZE": [3, 3],
+		"3D_SIZE": [5, 5],
 		"OUTPUT_SIGNATURE_X_FEATURES": 81,
 		"LABELS_TO_TRAIN": [0, 1, 2],
 		"NAME_SPLIT": null,
 		"NUMBER_SORT": ["EP", null],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": "median_filter",
+		"SMOOTHING_TYPE": null,
 		"SMOOTHING_VALUE": 5,
 		"BORDER_CONFIG": {
 			"enable": false,
@@ -329,7 +329,51 @@
 		},
 		"LABEL_DATA": {
 			"0": {
-				"MASK": [0],
+
+				"MASK": [2],
+				"LABEL": "Esophagus",
+				"COLOR": "yellow"
+			},
+			"1": {
+				"MASK": [1],
+				"LABEL": "Cancer",
+				"COLOR": "blue"
+			},
+			"2": {
+				"MASK": [3],
+				"LABEL": "Stomach",
+				"COLOR": "red"
+			}
+		},
+		"SPLIT_PATHS_BY": "Files",
+		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
+		"WITH_BACKGROUND_EXTRACTION": false
+	},
+	"MAT_COLON_SPAIN": {
+		"TYPE": "normal",
+		"FILE_EXTENSION": ".mat",
+		"SPECTRUM": "cube",
+		"MASK": "gtMap",
+		"3D": true,
+		"3D_SIZE": [5, 5],
+		"OUTPUT_SIGNATURE_X_FEATURES": 81,
+		"LABELS_TO_TRAIN": [0, 1],
+		"NAME_SPLIT": null,
+		"NUMBER_SPLIT": ["CP", null],
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING_TYPE": null,
+		"SMOOTHING_VALUE": 5,
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_border",
+			"depth": 5,
+			"axis": [],
+			"not_used_labels": []
+		},
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [2],
 				"LABEL": "Normal (Healthy)",
 				"COLOR": "yellow"
 			},
@@ -337,11 +381,6 @@
 				"MASK": [1],
 				"LABEL": "Ill",
 				"COLOR": "blue"
-			},
-			"2": {
-				"MASK": [2],
-				"LABEL": "not certain",
-				"COLOR": "red"
 			}
 		},
 		"SPLIT_PATHS_BY": "Files",

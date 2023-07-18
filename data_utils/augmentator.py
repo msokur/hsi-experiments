@@ -62,15 +62,15 @@ from configuration import get_config as conf
 
 
 def augment_one(row, row_range=None,
-                percent=conf.AUG['percent'],
-                aug_range=conf.AUG['range'],
-                new_rows_per_sample=conf.AUG['new_rows_per_sample']):
+                percent=conf.CONFIG_AUG['percent'],
+                aug_range=conf.CONFIG_AUG['range'],
+                new_rows_per_sample=conf.CONFIG_AUG['new_rows_per_sample']):
     # print(percent, aug_range, range(new_rows_per_sample))
     if row_range is None:
-        if "LAST_NM" in conf.DATALOADER.keys() and "FIRST_NM" in conf.DATALOADER.keys():
-            row_range = [0, conf.DATALOADER["LAST_NM"] - conf.DATALOADER["FIRST_NM"]]
-        elif "OUTPUT_SIGNATURE_X_FEATURES" in conf.DATALOADER.keys():
-            row_range = [0, conf.DATALOADER["OUTPUT_SIGNATURE_X_FEATURES"]]
+        if "LAST_NM" in conf.CONFIG_DATALOADER.keys() and "FIRST_NM" in conf.CONFIG_DATALOADER.keys():
+            row_range = [0, conf.CONFIG_DATALOADER["LAST_NM"] - conf.CONFIG_DATALOADER["FIRST_NM"]]
+        elif "OUTPUT_SIGNATURE_X_FEATURES" in conf.CONFIG_DATALOADER.keys():
+            row_range = [0, conf.CONFIG_DATALOADER["OUTPUT_SIGNATURE_X_FEATURES"]]
         else:
             raise ValueError("No spectrum size in Dataloader config!")
     row = np.array(row)
@@ -91,9 +91,9 @@ def augment_one(row, row_range=None,
     return result
 
 
-def augment_all(data, percent=conf.AUG['percent'],
-                aug_range=conf.AUG['range'],
-                new_rows_per_sample=conf.AUG['new_rows_per_sample']):
+def augment_all(data, percent=conf.CONFIG_AUG['percent'],
+                aug_range=conf.CONFIG_AUG['range'],
+                new_rows_per_sample=conf.CONFIG_AUG['new_rows_per_sample']):
     print('cpu count', os.cpu_count())
 
     start = time.time()

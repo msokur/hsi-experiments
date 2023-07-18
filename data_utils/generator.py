@@ -6,7 +6,7 @@ from tensorflow import keras
 import pickle
 
 from data_utils.batch_split import BatchSplit
-from configuration.get_config import PATHS, CV, TRAINER, DATALOADER, PREPRO
+from configuration.get_config import CONFIG_PATHS, CONFIG_CV, CONFIG_TRAINER, CONFIG_DATALOADER, CONFIG_PREPROCESSOR
 from util.compare_distributions import DistributionsChecker
 
 
@@ -49,7 +49,8 @@ class DataGenerator(keras.utils.Sequence):
         self.valid_except_indexes = self.get_valid_except_names()
         self.index = 0
 
-        self.batch_split = BatchSplit(labels_to_train=DATALOADER["LABELS_TO_TRAIN"], dict_names=PREPRO["DICT_NAMES"],
+        self.batch_split = BatchSplit(labels_to_train=CONFIG_DATALOADER["LABELS_TO_TRAIN"],
+                                      dict_names=CONFIG_PREPROCESSOR["DICT_NAMES"],
                                       batch_size=self.batch_size)
 
         print("--------------------PARAMS----------------------")
@@ -69,7 +70,7 @@ class DataGenerator(keras.utils.Sequence):
         data = np.load(self.batches_npz_path[index])
         X, y = data["X"], data["y"]
 
-        if TRAINER["WITH_SAMPLE_WEIGHTS"] and "weights" in data.keys():
+        if CONFIG_TRAINER["WITH_SAMPLE_WEIGHTS"] and "weights" in data.keys():
             return X, y, data["weights"]
 
         return X, y.astype(np.float)
@@ -109,35 +110,37 @@ class DataGenerator(keras.utils.Sequence):
 
     def get_valid_except_names(self):
         if len(self.valid_except_indexes) == 0:
-            if CV["CHOOSE_EXCLUDED_VALID"] == "restore":
+            if CONFIG_CV["CHOOSE_EXCLUDED_VALID"] == "restore":
                 print("Restore names of patients that will be used for validation dataset")
-                restore_paths = glob.glob(os.path.join(CV["RESTORE_VALID_PATH"], f"*{PATHS['SYSTEM_PATHS_DELIMITER']}"))
+                restore_paths = glob.glob(os.path.join(CONFIG_CV["RESTORE_VALID_PATH"],
+                                                       f"*{CONFIG_PATHS['SYSTEM_PATHS_DELIMITER']}"))
                 restore_path = restore_paths[np.flatnonzero(
-                    np.core.defchararray.find(restore_paths, CV["RESTORE_VALID_SEQUENCE"]) != -1)[0]]
+                    np.core.defchararray.find(restore_paths, CONFIG_CV["RESTORE_VALID_SEQUENCE"]) != -1)[0]]
 
-                log_name = self.log_dir.split(PATHS["SYSTEM_PATHS_DELIMITER"])[-1]
+                log_name = self.log_dir.split(CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-1]
                 log_index = log_name.split("_")[1]  # can be problems
 
-                restore_log_paths = glob.glob(os.path.join(restore_path, f"*{PATHS['SYSTEM_PATHS_DELIMITER']}"))
+                restore_log_paths = glob.glob(os.path.join(restore_path, f"*{CONFIG_PATHS['SYSTEM_PATHS_DELIMITER']}"))
                 restore_log_path = restore_log_paths[
                     np.flatnonzero(np.core.defchararray.find(restore_log_paths, "3d_" + str(log_index) + "_") != -1)[0]]
 
                 valid_except_indexes = pickle.load(
                     open(os.path.join(restore_log_path, "valid.valid_except_names"), "rb"))
                 print(
-                    f"We restore {valid_except_indexes} from {restore_log_path} with {CV['RESTORE_VALID_SEQUENCE']}")
+                    f"We restore {valid_except_indexes} from {restore_log_path} "
+                    f"with {CONFIG_CV['RESTORE_VALID_SEQUENCE']}")
                 return valid_except_indexes
 
             raw_paths = glob.glob(os.path.join(self.raw_npz_path, '*.npz'))
-            raw_paths_names = [r.split(PATHS["SYSTEM_PATHS_DELIMITER"])[-1].split('.')[0] for r in raw_paths]
+            raw_paths_names = [r.split(CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-1].split('.')[0] for r in raw_paths]
 
             print('Getting new validation patients')
-            if CV["CHOOSE_EXCLUDED_VALID"] == "randomly":
+            if CONFIG_CV["CHOOSE_EXCLUDED_VALID"] == "randomly":
                 return DataGenerator.get_random_choice(paths=raw_paths_names,
                                                        excepts=self.except_indexes,
-                                                       size=CV["HOW_MANY_VALID_EXCLUDE"])
+                                                       size=CONFIG_CV["HOW_MANY_VALID_EXCLUDE"])
 
-            elif CV["CHOOSE_EXCLUDED_VALID"] == "by_class":
+            elif CONFIG_CV["CHOOSE_EXCLUDED_VALID"] == "by_class":
                 return DataGenerator.choose_path(paths=raw_paths,
                                                  paths_names=raw_paths_names,
                                                  excepts=self.except_indexes)
@@ -155,8 +158,8 @@ class DataGenerator(keras.utils.Sequence):
         data = np.load(paths[path_idx])
         unique_classes = np.unique(data['y'])
         con_classes = np.concatenate((classes, unique_classes))
-        con_unique_classes = np.intersect1d(con_classes, DATALOADER["LABELS_TO_TRAIN"])
-        if len(con_unique_classes) >= len(DATALOADER["LABELS_TO_TRAIN"]):
+        con_unique_classes = np.intersect1d(con_classes, CONFIG_DATALOADER["LABELS_TO_TRAIN"])
+        if len(con_unique_classes) >= len(CONFIG_DATALOADER["LABELS_TO_TRAIN"]):
             return valid
         elif len(con_unique_classes) - len(classes) >= 1:
             return np.concatenate((valid, DataGenerator.choose_path(paths,
@@ -177,7 +180,7 @@ class DataGenerator(keras.utils.Sequence):
 
     def get_class_weights(self, labels=None):
         if labels is None:
-            labels = DATALOADER["LABELS_TO_TRAIN"]
+            labels = CONFIG_DATALOADER["LABELS_TO_TRAIN"]
         labels = np.array(labels)
         sums = np.zeros(labels.shape)
 
@@ -192,7 +195,7 @@ class DataGenerator(keras.utils.Sequence):
         weights = {}
         for i, l in enumerate(labels):
             with np.errstate(divide="ignore", invalid="ignore"):
-                weights[l] = (1 / sums[i]) * total / len(DATALOADER["LABELS_TO_TRAIN"])
+                weights[l] = (1 / sums[i]) * total / len(CONFIG_DATALOADER["LABELS_TO_TRAIN"])
             if weights[l] == np.inf:
                 weights[l] = 0.0
 

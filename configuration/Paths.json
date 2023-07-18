@@ -13,6 +13,16 @@
     "PREFIX": "E:\\ICCAS\\Gastric",
     "MODEL_NAME_PATHS": ["logs"]
   },
+  "Cluster_Mariia": {
+    "MODE": "CLUSTER",
+    "PREFIX": "/work/users/mi186veva",
+    "MODEL_NAME_PATHS": ["/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs"]
+  },
+  "Win_Mariia": {
+    "MODE": "LOCAL_NO_GPU",
+    "PREFIX": "C:\\Users\\tkachenko\\Desktop\\HSI\\archive\\bea\\databases",
+    "MODEL_NAME_PATHS": ["C:\\Users\\tkachenko\\Desktop\\HSI\\for_merging\\hsi-experiments\\logs"]
+  },
   "HNO_Database": {
     "1.CONCAT_WITH_PREFIX": {
       "RAW_NPZ_PATH": ["data_3d", "hno", "3x3", "svn", "median"],
@@ -68,6 +78,42 @@
       "RAW_NPZ_PATH": ["data_3d", "mat_brain", "3x3", "svn", "gauss"],
       "RAW_SOURCE_PATH": ["DatabaseBrainSNV"],
       "TEST_NPZ_PATH": ["data_3d", "mat_brain", "3x3", "svn", "gauss"]
+    },
+    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+      "SHUFFLED_PATH": ["shuffled"],
+      "BATCHED_PATH": ["batch_sized"]
+    } 
+  },
+    "MAT_ESO": {
+    "DATABASE_ABBREVIATION": ["Esophagus_MedFilter"],
+    "1.CONCAT_WITH_PREFIX": {
+      "RAW_NPZ_PATH": ["data_bea_db", "Esophagus_MedFilter", "raw_3d_weighted"],
+      "RAW_SOURCE_PATH": ["data_bea_db", "Esophagus_MedFilter"],
+      "TEST_NPZ_PATH": ["data_bea_db", "Esophagus_MedFilter", "raw_3d_weighted"]
+    },
+    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+      "SHUFFLED_PATH": ["shuffled"],
+      "BATCHED_PATH": ["batch_sized"]
+    } 
+  },
+  "MAT_ESO_LOCAL": {
+    "DATABASE_ABBREVIATION": ["Esophagus_MedFilter"],
+    "1.CONCAT_WITH_PREFIX": {
+      "RAW_NPZ_PATH": ["Esophagus_MedFilter", "raw_3d_weighted"],
+      "RAW_SOURCE_PATH": ["Esophagus_MedFilter"],
+      "TEST_NPZ_PATH": ["data_bea_db", "raw_3d_weighted"]
+    },
+    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+      "SHUFFLED_PATH": ["shuffled"],
+      "BATCHED_PATH": ["batch_sized"]
+    }
+  },
+  "MAT_COLON_LOCAL": {
+    "DATABASE_ABBREVIATION": ["Colon_MedianFilter"],
+    "1.CONCAT_WITH_PREFIX": {
+      "RAW_NPZ_PATH": ["Colon_MedianFilter", "raw_3d_weighted"],
+      "RAW_SOURCE_PATH": ["Colon_MedianFilter"],
+      "TEST_NPZ_PATH": ["data_bea_db", "raw_3d_weighted"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
       "SHUFFLED_PATH": ["shuffled"],
