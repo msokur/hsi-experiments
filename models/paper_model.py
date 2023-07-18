@@ -42,10 +42,7 @@ class PaperModelBase:
 
     def get_1D_block(self, net, conv_round):
         for r in conv_round:
-            if net.shape[-2] == 1:
-                break
-            if net.shape[-2] == 2:
-                net = self.get_conv1d(net=net, name=f"1D_{r}", kernel_size=2, strides=1)
+            if net.shape[-2] < 6:
                 break
             else:
                 net = self.get_conv1d(net=net, name=f"1D_{r}")
@@ -56,7 +53,7 @@ class PaperModelBase:
         net = keras.layers.Conv1D(filters=35, kernel_size=kernel_size, padding='valid', activation='relu',
                                   kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
                                   name=f"{name}_1")(net)
-        net = keras.layers.Conv1D(filters=35, kernel_size=kernel_size if net.shape[-2] > 1 else 1, strides=strides,
+        net = keras.layers.Conv1D(filters=35, kernel_size=kernel_size, strides=strides,
                                   padding='valid', activation='relu',
                                   kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
                                   name=f"{name}_2")(net)
@@ -87,21 +84,20 @@ class PaperModel3D(PaperModelBase):
         net = tf.expand_dims(input_, axis=-1)
 
         for r in conv_round:
-            if net.shape[-3] == 2:
-                net = self.get_conv3d(net=net, name=f"3D_{r}", kernel_size=2, strides=1)
+            if net.shape[-2] < 6:
                 break
             else:
                 net = self.get_conv3d(net=net, name=f"3D_{r}")
 
-        net = tf.keras.layers.Reshape((net.shape[-2], net.shape[-1]))(net)
+        net = tf.keras.layers.Reshape((net.shape[-4] * net.shape[-3] * net.shape[-2], net.shape[-1]))(net)
 
         return self.paper_model_base(input_=input_, net=net, conv_round=conv_round)
 
-    def get_conv3d(self, net, name, kernel_size=3, strides=2):
+    def get_conv3d(self, net, name, kernel_size=3, stride=2):
         net = keras.layers.Conv3D(filters=20, kernel_size=kernel_size, padding='valid', activation='relu',
                                   kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
                                   name=f"{name}_1")(net)
-        net = keras.layers.Conv3D(filters=20, kernel_size=(1, 1, kernel_size), strides=(1, 1, strides), padding='valid',
+        net = keras.layers.Conv3D(filters=20, kernel_size=(1, 1, kernel_size), strides=(1, 1, stride), padding='valid',
                                   activation='relu', kernel_initializer=self.kernel_initializer,
                                   bias_initializer=self.bias_initializer,
                                   name=f"{name}_2")(net)
@@ -113,11 +109,11 @@ if __name__ == "__main__":
     import os
 
     os.environ['TF_DETERMINISTIC_OPS'] = '1'
-    shape_ = (92,)
+    shape_ = (3, 3, 92,)
     conf_ = {
         "DROPOUT": 0.1
     }
     labels = 3
-    model1 = PaperModel1D()
+    model1 = PaperModel3D()
     model_ = model1.get_model(shape=shape_, conf=conf_, num_of_labels=labels)
     model_.summary()

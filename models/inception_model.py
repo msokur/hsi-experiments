@@ -37,23 +37,26 @@ class InceptionModelBase:
         input_ = tf.expand_dims(input_, axis=-1)
 
         branches = []
-        for filter_, kernel_size in zip(FILTERS, KERNEL_SIZE):
+        for idx, filter_, kernel_size in zip(range(len(FILTERS)), FILTERS, KERNEL_SIZE):
             if isinstance(filter_, int):
-                branch = self.get_conv_layer(filters=factor * filter_, kernel_size=kernel_size, net=input_)
+                branch = self.get_conv_layer(filters=factor * filter_, kernel_size=kernel_size, net=input_,
+                                             name=f"CONV_{idx}")
 
                 if with_batch_norm:
                     branch = self.get_batch_norm(branch)
             else:
                 branch = input_
-                for filter_sub, kernel_size_sub in zip(filter_, kernel_size):
-                    branch = self.get_conv_layer(filters=factor * filter_sub, kernel_size=kernel_size_sub, net=branch)
+                for sub_idx, filter_sub, kernel_size_sub in zip(range(len(FILTERS)), filter_, kernel_size):
+                    branch = self.get_conv_layer(filters=factor * filter_sub, kernel_size=kernel_size_sub, net=branch,
+                                                 name=f"CONV_{idx}.{sub_idx}")
 
                     if with_batch_norm:
                         branch = self.get_batch_norm(branch)
             branches.append(branch)
 
         branch = self.get_max_pooling_layer(input_=input_)
-        branch = self.get_conv_layer(filters=factor * FILTERS_LAST, kernel_size=KERNEL_SIZE_LAST, net=branch)
+        branch = self.get_conv_layer(filters=factor * FILTERS_LAST, kernel_size=KERNEL_SIZE_LAST, net=branch,
+                                     name="CONV_MAX")
 
         if with_batch_norm:
             branch = self.get_batch_norm(branch)
@@ -83,7 +86,7 @@ class InceptionModelBase:
         return model
 
     @abc.abstractmethod
-    def get_conv_layer(self, filters, kernel_size, net):
+    def get_conv_layer(self, filters, kernel_size, net, name):
         pass
 
     @abc.abstractmethod
@@ -98,20 +101,22 @@ class InceptionModelBase:
 
 
 class InceptionModel3D(InceptionModelBase):
-    def get_conv_layer(self, filters, kernel_size, net):
+    def get_conv_layer(self, filters, kernel_size, net, name):
         return tf.keras.layers.Conv3D(filters=filters, kernel_size=kernel_size, padding="same", activation='relu',
                                       kernel_initializer=self.kernel_initializer,
-                                      bias_initializer=self.bias_initializer)(net)
+                                      bias_initializer=self.bias_initializer,
+                                      name=name)(net)
 
     def get_max_pooling_layer(self, input_):
         return tf.keras.layers.MaxPooling3D(pool_size=POOL_SIZE, strides=POOL_STRIDES, padding="same")(input_)
 
 
 class InceptionModel1D(InceptionModelBase):
-    def get_conv_layer(self, filters, kernel_size, net):
+    def get_conv_layer(self, filters, kernel_size, net, name):
         return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, padding="same", activation='relu',
                                       kernel_initializer=self.kernel_initializer,
-                                      bias_initializer=self.bias_initializer)(net)
+                                      bias_initializer=self.bias_initializer,
+                                      name=name)(net)
 
     def get_max_pooling_layer(self, input_):
         return tf.keras.layers.MaxPooling1D(pool_size=POOL_SIZE, strides=POOL_STRIDES, padding="same")(input_)
@@ -123,7 +128,7 @@ if __name__ == "__main__":
     os.environ['TF_DETERMINISTIC_OPS'] = '1'
     shape_ = (3, 3, 92)
     conf_ = {
-        "WITH_BATCH_NORM": False,
+        "WITH_BATCH_NORM": True,
         "INCEPTION_FACTOR": 8,
         "DROPOUT": 0.1
     }
