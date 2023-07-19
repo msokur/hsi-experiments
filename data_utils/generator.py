@@ -138,7 +138,7 @@ class DataGenerator(keras.utils.Sequence):
             if CONFIG_CV["CHOOSE_EXCLUDED_VALID"] == "randomly":
                 return DataGenerator.get_random_choice(paths=raw_paths_names,
                                                        excepts=self.except_indexes,
-                                                       size=CONFIG_CV["HOW_MANY_VALID_EXCLUDE"])
+                                                       size=CONFIG_CV["HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID"])
 
             elif CONFIG_CV["CHOOSE_EXCLUDED_VALID"] == "by_class":
                 return DataGenerator.choose_path(paths=raw_paths,

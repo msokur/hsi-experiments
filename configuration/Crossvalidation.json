@@ -5,7 +5,7 @@
       "evaluation": true
     },
     "FIRST_SPLIT": 0,
-    "HOW_MANY_VALID_EXCLUDE": 1,
+    "HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID": 1,
     "CHOOSE_EXCLUDED_VALID": "by_class",
     "USE_ALL_LABELS": false,
     "SAVE_PREDICTION": true,
