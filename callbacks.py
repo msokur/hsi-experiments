@@ -1,14 +1,11 @@
 import tensorflow as tf
 # import cv2
 # import data_loader
-import config
+from archive import config
 import numpy as np
-from tqdm import tqdm
 import os
-import math
 import glob
 import datetime
-import test
 from sklearn import preprocessing
 
 

@@ -6,10 +6,9 @@ import inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
-sys.path.insert(2, os.path.join(currentdir, 'data_utils')) 
+sys.path.insert(2, os.path.join(currentdir, 'data_utils'))
 
-
-import config
+from archive import config
 
 from data_utils.hypercube_data import *
 import numpy as np

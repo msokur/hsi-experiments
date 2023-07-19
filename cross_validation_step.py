@@ -1,6 +1,6 @@
 import argparse
 
-import config
+from archive import config
 from provider import get_trainer
 import utils
 

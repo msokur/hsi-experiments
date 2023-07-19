@@ -1,5 +1,5 @@
 import tensorflow as tf
-import config
+from archive import config
 from tensorflow.keras import activations
 from models.archive.model_3d import get_dropout, get_inizializers
 

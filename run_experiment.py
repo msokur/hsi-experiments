@@ -6,7 +6,7 @@ import numpy as np
 from glob import glob
 import matplotlib.pyplot as plt
 
-import config
+from archive import config
 from evaluation.validator import Validator
 
 
@@ -23,7 +23,7 @@ class Experiment:
         self.combinations = list(itertools.product(*config_for_experiment.values()))
 
         prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
-        test_root_path = os.path.join(prefix, 'test')
+        test_root_path = os.path.join(prefix, 'metrics')
         test_path = os.path.join(test_root_path, name)
         if not os.path.exists(test_path):
             os.mkdir(test_path)

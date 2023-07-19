@@ -1,7 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
-import config
-from tensorflow.keras import activations
+from archive import config
 
 
 def get_dropout(net, dropout_value=config.DROPOUT):

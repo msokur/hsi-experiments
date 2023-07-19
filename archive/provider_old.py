@@ -1,4 +1,4 @@
-import config
+from archive import config
 
 from data_utils.data_loaders.archive.data_loader_colon import DataLoaderColon
 from data_utils.data_loaders.archive.data_loader_mat import DataLoaderMat
