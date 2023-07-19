@@ -37,8 +37,8 @@ class DataLoader:
         if root_path is None:
             root_path = self.CONFIG_PATHS["RAW_NPZ_PATH"]
         paths = glob(os.path.join(root_path, "*.npz"))
-        number = "NUMBER_SORT" in self.loader.keys()
-        paths = get_sort(paths=paths, number=number, split=self.loader["NUMBER_SORT"] if number else None)
+        number = "NUMBER_SORT" in self.CONFIG_DATALOADER.keys()
+        paths = get_sort(paths=paths, number=number, split=self.CONFIG_DATALOADER["NUMBER_SORT"] if number else None)
 
         splits = get_splits(typ=self.CONFIG_DATALOADER["SPLIT_PATHS_BY"], paths=paths,
                             values=self.CONFIG_DATALOADER["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"])

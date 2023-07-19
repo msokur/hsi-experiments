@@ -10,7 +10,6 @@ current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfra
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
-from configuration.get_config import telegram, CONFIG_PATHS, CONFIG_PREPROCESSOR, CONFIG_DATALOADER, CONFIG_AUG
 import provider
 from configuration.copy_py_files import copy_files
 from data_utils.shuffle import Shuffle
@@ -24,10 +23,12 @@ Link: https://blog.janestreet.com/how-to-shuffle-a-big-dataset/
 
 
 class Preprocessor:
-    def __init__(self):
-        self.CONFIG_PREPROCESSOR = CONFIG_PREPROCESSOR
-        self.CONFIG_PATHS = CONFIG_PATHS
-        self.CONFIG_DATALOADER = CONFIG_DATALOADER
+    def __init__(self, config_preprocessor: dict, config_paths: dict, config_dataloader: dict,
+                 config_augmentation: dict):
+        self.CONFIG_PREPROCESSOR = config_preprocessor
+        self.CONFIG_PATHS = config_paths
+        self.CONFIG_DATALOADER = config_dataloader
+        self.CONFIG_AUG = config_augmentation
         self.dataloader = provider.get_data_loader(typ=self.CONFIG_DATALOADER["TYPE"],
                                                    dict_names=[self.CONFIG_PREPROCESSOR["DICT_NAMES"][0],
                                                                self.CONFIG_PREPROCESSOR["DICT_NAMES"][1],
@@ -153,13 +154,15 @@ class Preprocessor:
             paths = glob.glob(os.path.join(preprocessed_path, '*.npz'))
             shuffle = Shuffle(raw_paths=paths,
                               dict_names=self.dict_names,
-                              prepro_conf=self.CONFIG_PREPROCESSOR,
+                              preprocessor_conf=self.CONFIG_PREPROCESSOR,
                               paths_conf=self.CONFIG_PATHS,
-                              augmented=CONFIG_AUG["enable"])
+                              augmented=self.CONFIG_AUG["enable"])
             shuffle.shuffle()
 
 
 if __name__ == '__main__':
+    from configuration.get_config import telegram, CONFIG_PATHS, CONFIG_PREPROCESSOR, CONFIG_DATALOADER, CONFIG_AUG
+
     execution_flags_ = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
     execution_flags_['load_data_with_dataloader'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["LOAD_DATA_WITH_DATALOADER"]
     execution_flags_['add_sample_weights'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["ADD_SAMPLE_WEIGHTS"]
@@ -167,12 +170,15 @@ if __name__ == '__main__':
     execution_flags_['shuffle'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["SHUFFLE"]
 
     try:
-        preprocessor = Preprocessor()
+        preprocessor = Preprocessor(config_preprocessor=CONFIG_PREPROCESSOR, config_paths=CONFIG_PATHS,
+                                    config_dataloader=CONFIG_DATALOADER, config_augmentation=CONFIG_AUG)
         preprocessor.pipeline(execution_flags=execution_flags_)
 
-        telegram.send_tg_message("Operations in preprocessor.py are successfully completed!")
+        if telegram is not None:
+            telegram.send_tg_message("Operations in preprocessor.py are successfully completed!")
 
     except Exception as e:
-        telegram.send_tg_message(f"ERROR! in Preprocessor {e}")
+        if telegram is not None:
+            telegram.send_tg_message(f"ERROR! in Preprocessor {e}")
 
         raise e

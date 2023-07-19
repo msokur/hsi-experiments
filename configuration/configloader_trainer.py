@@ -1,7 +1,3 @@
-
-from tensorflow.keras.optimizers import Adadelta, Adagrad, Adam, Adamax, Ftrl, Nadam, RMSprop, SGD
-from tensorflow.keras.activations import relu, tanh, selu, exponential, elu
-
 from util import tf_metric_multiclass, tf_metrics_binary
 from models.inception_model import InceptionModel1D, InceptionModel3D
 from models.paper_model import PaperModel1D, PaperModel3D
@@ -23,21 +19,6 @@ MODELS_1D = {
     "paper_model": PaperModel1D().get_model,
     "inception_model": InceptionModel1D().get_model
 }
-
-OPTIMIZER = {"adadelta": Adadelta,
-             "adagrad": Adagrad,
-             "adam": Adam,
-             "adamax": Adamax,
-             "ftrl": Ftrl,
-             "nadam": Nadam,
-             "rms": RMSprop,
-             "sgd": SGD
-             }
-ACTIVATION = {"relu": relu,
-              "tanh": tanh,
-              "selu": selu,
-              "exponential": exponential,
-              "elu": elu}
 
 
 def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dict:
@@ -72,9 +53,9 @@ def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dic
         trainer["TUNER"] = get_tuner(tuner=trainer["TUNER"], file=file, section=section)
 
         trainer["MODEL_CONFIG"]["OPTIMIZER"] = get_new_dict(load_list=trainer["MODEL_CONFIG"]["OPTIMIZER"],
-                                                            available=OPTIMIZER, name="Optimizer")
+                                                            name="Optimizer")
         trainer["MODEL_CONFIG"]["ACTIVATION"] = get_new_dict(load_list=trainer["MODEL_CONFIG"]["ACTIVATION"],
-                                                             available=ACTIVATION, name="Activation")
+                                                             name="Activation")
 
     return trainer
 
@@ -92,7 +73,3 @@ def get_trainer(d3: bool, typ: str):
             return TUNER_MODEL_1D
         else:
             return MODELS_1D
-
-
-
-
