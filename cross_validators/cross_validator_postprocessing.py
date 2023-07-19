@@ -59,7 +59,7 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
         search_folder = os.path.join(self.project_folder, 'logs', CONFIG_CV['NAME'])
         self.training_csv_path = CrossValidatorBase.get_csv(search_folder)
 
-        self.saving_folder = os.path.join(self.project_folder, 'test', CONFIG_CV['NAME'])
+        self.saving_folder = os.path.join(self.project_folder, 'metrics', CONFIG_CV['NAME'])
         if not os.path.exists(self.saving_folder):
             os.mkdir(self.saving_folder)
 
@@ -82,7 +82,7 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
             # by default if self.WHOLE_CUBES_FOLDER is emptier than we generate whole cubes, otherwise we don't.
             # But with generate_whole_cubes it's possible to force generation even if cubes are already generated
             "generate_whole_cubes": False,
-            # by default if there is no predictions_whole.npy in test/training_name/cp-0000
+            # by default if there is no predictions_whole.npy in metrics/training_name/cp-0000
             # than we calculate predictions for whole cubes, otherwise we don't. But with
             # calculate_predictions_for_whole_cubes it's possible to force calculation
             "calculate_predictions_for_whole_cubes": False,
@@ -368,7 +368,7 @@ def postprocessing_test_all_models():
                 "generate_whole_cubes": False,
                 # by default if "whole" folder is empty than we generate whole cubes, otherwise we don't. But with generate_whole_cubes it's possible to forse generate
                 "calculate_predictions_for_whole_cubes": False,
-                # by default if there is no predictions_whole.npy in test/name/cp-0000 than we count predoctions for whole cubes, otherwise - we don't. But with calculate_predictions_for_whole_cubes it's possible to force count
+                # by default if there is no predictions_whole.npy in metrics/name/cp-0000 than we count predoctions for whole cubes, otherwise - we don't. But with calculate_predictions_for_whole_cubes it's possible to force count
                 "save_predictions_and_evaluate_on_labeled_samples": {
                     # for detailed documentation of params in this dictionary see documentation for evaluation/evaluation_base.py/EvaluationBase.save_predictions_and_metrics()
                     "save_predictions": False,

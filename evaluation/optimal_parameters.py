@@ -150,4 +150,4 @@ class OptimalCheckpoint(OptimalThreshold):
     
 if __name__ == '__main__':
     reader = MetricsCsvReader()
-    reader.read_metrics('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test/Esophagus_MedFilter/cp-0038/metrics_by_threshold_None.csv', names=['Sensitivity', 'Specificity'])
+    reader.read_metrics('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/metrics/Esophagus_MedFilter/cp-0038/metrics_by_threshold_None.csv', names=['Sensitivity', 'Specificity'])
