@@ -88,8 +88,7 @@
     "DATABASE_ABBREVIATION": ["Esophagus_MedFilter"],
     "1.CONCAT_WITH_PREFIX": {
       "RAW_NPZ_PATH": ["data_bea_db", "Esophagus_MedFilter", "raw_3d_weighted"],
-      "RAW_SOURCE_PATH": ["data_bea_db", "Esophagus_MedFilter"],
-      "TEST_NPZ_PATH": ["data_bea_db", "Esophagus_MedFilter", "raw_3d_weighted"]
+      "RAW_SOURCE_PATH": ["data_bea_db", "Esophagus_MedFilter"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
       "SHUFFLED_PATH": ["shuffled"],
@@ -100,8 +99,7 @@
     "DATABASE_ABBREVIATION": ["Esophagus_MedFilter"],
     "1.CONCAT_WITH_PREFIX": {
       "RAW_NPZ_PATH": ["Esophagus_MedFilter", "raw_3d_weighted"],
-      "RAW_SOURCE_PATH": ["Esophagus_MedFilter"],
-      "TEST_NPZ_PATH": ["data_bea_db", "raw_3d_weighted"]
+      "RAW_SOURCE_PATH": ["Esophagus_MedFilter"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
       "SHUFFLED_PATH": ["shuffled"],
@@ -112,8 +110,7 @@
     "DATABASE_ABBREVIATION": ["Colon_MedianFilter"],
     "1.CONCAT_WITH_PREFIX": {
       "RAW_NPZ_PATH": ["Colon_MedianFilter", "raw_3d_weighted"],
-      "RAW_SOURCE_PATH": ["Colon_MedianFilter"],
-      "TEST_NPZ_PATH": ["data_bea_db", "raw_3d_weighted"]
+      "RAW_SOURCE_PATH": ["Colon_MedianFilter"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
       "SHUFFLED_PATH": ["shuffled"],
