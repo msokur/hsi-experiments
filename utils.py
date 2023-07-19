@@ -1,4 +1,3 @@
-import telegram_send
 import itertools as it
 import os
 import glob
@@ -16,6 +15,7 @@ class Telegram:
             if self.mode == "CLUSTER":
                 message = "CLUSTER " + message
             try:
+                import telegram_send
                 message = f"{self.tg['USER']}, " + message
                 telegram_send.send(messages=[message], conf=self.tg["FILE"])
             except Exception as e:
