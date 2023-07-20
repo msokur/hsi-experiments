@@ -1,0 +1,21 @@
+{
+  "TEST": {
+    "EXECUTION_FLAGS": {
+      "LOAD_DATA_WITH_DATALOADER": true,
+      "ADD_SAMPLE_WEIGHTS": true,
+      "SCALE": true,
+      "SHUFFLE": true
+    },
+    "DICT_NAMES": [
+      "NAME_1",
+      "NAME_2",
+      "NAME_3"
+    ],
+    "PILES_NUMBER": 100,
+    "WEIGHT_FILENAME": "weights.weights",
+    "FILES_TO_COPY": ["test_file.py"],
+    "NORMALIZATION_TYPE": "svn",
+    "SCALER_FILE": "scaler.scaler",
+    "SCALER_PATH": "scaler_path"
+  }
+}

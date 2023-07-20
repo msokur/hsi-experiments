@@ -22,24 +22,24 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
 
-def get_config(file_name: str, section: str) -> dict:
-    return read_config(file=os.path.join(current_dir, file_name), section=section)
+def get_config(file_name: str, section: str, main_dir: str = current_dir) -> dict:
+    return read_config(file=os.path.join(main_dir, file_name), section=section)
 
 
-def get_paths(file_name: str, sys_section: str, data_section: str) -> dict:
-    return read_path_config(file=os.path.join(current_dir, file_name), system_mode=sys_section, database=data_section)
+def get_paths(file_name: str, sys_section: str, data_section: str, main_dir: str = current_dir) -> dict:
+    return read_path_config(file=os.path.join(main_dir, file_name), system_mode=sys_section, database=data_section)
 
 
-def get_trainer(file_name: str, section: str, d3: bool, classes: list) -> dict:
-    return read_trainer_config(file=os.path.join(current_dir, file_name), section=section, d3=d3, classes=classes)
+def get_trainer(file_name: str, section: str, d3: bool, classes: list, main_dir: str = current_dir) -> dict:
+    return read_trainer_config(file=os.path.join(main_dir, file_name), section=section, d3=d3, classes=classes)
 
 
-def get_cv(file_name: str, section: str) -> dict:
-    return read_cv_config(file=os.path.join(current_dir, file_name), section=section)
+def get_cv(file_name: str, base_section: str, section: str, main_dir: str = current_dir) -> dict:
+    return read_cv_config(file=os.path.join(main_dir, file_name), base_section=base_section, section=section)
 
 
-def get_dataloader(file_name: str, section: str) -> dict:
-    return read_dataloader_config(file=os.path.join(current_dir, file_name), section=section)
+def get_dataloader(file_name: str, section: str, main_dir: str = current_dir) -> dict:
+    return read_dataloader_config(file=os.path.join(main_dir, file_name), section=section)
 
 
 # -------- Data Loader
@@ -63,7 +63,7 @@ CONFIG_PREPROCESSOR = get_config(file_name=prepro_config, section=prepro_section
 
 # --------- Cross validation
 cv_config = "Crossvalidation.json"
-CONFIG_CV = get_cv(file_name=cv_config, section=cv_section)
+CONFIG_CV = get_cv(file_name=cv_config, base_section="BASE", section=cv_section)
 
 # --------- Trainer
 trainer_config = "Trainers.json"
@@ -81,7 +81,6 @@ if CONFIG_AUG["enable"]:
     print("Augmentation is enabled!!!")
     CONFIG_TRAINER["BATCH_SIZE"] = int(CONFIG_TRAINER["BATCH_SIZE"] / CONFIG_AUG[CONFIG_AUG["use"]])
 
-
 # -------- Telegram --------
 tg_config = "Telegram.json"
 CONFIG_TELEGRAM = get_config(file_name=tg_config, section=tg_section)
@@ -89,4 +88,5 @@ CONFIG_TELEGRAM["FILE"] = os.path.join(parent_dir, CONFIG_TELEGRAM["FILE"])
 telegram = None
 if CONFIG_TELEGRAM["SENDING"]:
     from utils import Telegram
+
     telegram = Telegram(tg_config=CONFIG_TELEGRAM, mode=CONFIG_PATHS["MODE"])

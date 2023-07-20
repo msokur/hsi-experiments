@@ -1,0 +1,25 @@
+{
+  "BASE_PATH": {
+    "CHECKPOINT_PATH": "checkpoints",
+    "MODEL_PATH": "model"
+  },
+  "SYSTEM": {
+    "MODE": "WITH_GPU",
+    "PREFIX": "/work/users/xyz",
+    "MODEL_NAME_PATHS": ["/home/sc.uni-leipzig.de/xyz/hsi-experiments-BA/logs"]
+  },
+  "DATABASE": {
+    "1.CONCAT_WITH_PREFIX": {
+      "RAW_NPZ_PATH": ["data_3d", "gastric", "3x3"],
+      "RAW_SOURCE_PATH": ["Gastric"],
+      "TEST_NPZ_PATH": ["data_3d", "hno", "3x3"]
+    },
+    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+      "SHUFFLED_PATH": ["shuffled"],
+      "BATCHED_PATH": ["batch_sized"]
+    },
+    "3.CONCAT_WITH_RAW_SOURCE_PATH": {
+      "MASK_PATH": ["annotation"]
+    }
+  }
+}

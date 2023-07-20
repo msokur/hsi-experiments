@@ -1,0 +1,22 @@
+{
+  "BASE":{
+    "EXECUTION_FLAGS": {
+      "cross_validation": true,
+      "evaluation": true
+    },
+    "FIRST_SPLIT": 0,
+    "HOW_MANY_VALID_EXCLUDE": 1,
+    "CHOOSE_EXCLUDED_VALID": "by_class",
+    "USE_ALL_LABELS": false,
+    "SAVE_PREDICTION": true,
+    "SAVE_CURVES": false
+  },
+  "CV": {
+    "TYPE": "normal",
+    "NAME": "CV_NAME",
+    "DATABASE_ABBREVIATION": "DATABASE_NAME",
+    "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/xyz/hsi-experiments-BA/logs/Experiment",
+    "RESTORE_VALID_SEQUENCE": "",
+    "GET_CHECKPOINT_FROM_VALID": true
+  }
+}
