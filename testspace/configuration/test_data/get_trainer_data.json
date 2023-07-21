@@ -1,0 +1,43 @@
+{
+  "TRAINER": {
+    "TYPE":  "Tuner",
+    "RESTORE": false,
+    "FILES_TO_COPY": [["*.py"]],
+    "WITH_SAMPLE_WEIGHTS": false,
+    "MODEL": "paper_model",
+    "MODEL_PARAMS": "model_param",
+    "LEARNING_RATE": 1e-4,
+    "CUSTOM_OBJECTS": {
+      "F1_score": [{"name":  "f1_score_weighted", "average": "weighted"}]
+    },
+    "BATCH_SIZE": 500,
+    "SPLIT_FACTOR": 0.8,
+    "EPOCHS": 50,
+    "SMALLER_DATASET": false,
+    "TUNER": "BayesianOptimization",
+    "TUNER_PARAMS": {
+      "objective": {"name": "f1_score_weighted", "direction":  "max"},
+      "max_trials": 20,
+      "overwrite": true
+    },
+    "TUNER_EPOCHS": 10,
+    "MODEL_CHECKPOINT": {
+      "monitor": "val_f1_score_weighted",
+      "save_best_only": true,
+      "mode": "max"
+    },
+    "EARLY_STOPPING": {
+      "enable": true,
+      "monitor": "val_f1_score_weighted",
+      "mode": "max",
+      "min_delta": 0,
+      "patience": 5,
+      "restore_best_weights": true
+    }
+  },
+  "model_param": {
+    "DROPOUT": 0.1,
+    "ACTIVATION": ["relu", "tanh", "selu", "exponential", "elu"],
+    "OPTIMIZER": ["adadelta", "adagrad", "adam", "adamax", "ftrl", "nadam", "rms" ,"sgd"]
+  }
+}
