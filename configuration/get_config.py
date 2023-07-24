@@ -90,3 +90,7 @@ if CONFIG_TELEGRAM["SENDING"]:
     from utils import Telegram
 
     telegram = Telegram(tg_config=CONFIG_TELEGRAM, mode=CONFIG_PATHS["MODE"])
+
+
+if __name__ == "__main__":
+    x = 1

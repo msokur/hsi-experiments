@@ -31,7 +31,7 @@ def get_database_paths(path_dict: dict, to_prefix: dict) -> dict:
                 temp = set_prefix(prefix=path_dict_[prefix], database=values)
                 path_dict_ = concat_dict(path_dict_, temp)
             else:
-                raise ValueError(f"Check the order form your Database paths, prefix: {prefix} not found!")
+                raise ValueError(f"Check the order form your Database paths, prefix: '{prefix}' not found!")
         else:
             path_dict_[key] = os.path.join(*values)
 
