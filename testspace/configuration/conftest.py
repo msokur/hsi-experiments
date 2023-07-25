@@ -2,7 +2,14 @@ import os
 
 import pytest
 
+import keras_tuner as kt
+from models.kt_inception_model import InceptionTunerModel3D, InceptionTunerModel1D
+from models.kt_paper_model import PaperTunerModel3D, PaperTunerModel1D
+from tensorflow.keras.optimizers import Adadelta, Adagrad, Adam, Adamax, Ftrl, Nadam, RMSprop, SGD
+from tensorflow.keras.activations import relu, tanh, selu, exponential, elu
 
+
+# --- pytest fixtures for the paths to load test data ---
 @pytest.fixture
 def configuration_dir(main_dir: str) -> str:
     return os.path.join(main_dir, "configuration")
@@ -14,20 +21,170 @@ def data_dir(configuration_dir: str) -> str:
 
 
 @pytest.fixture
-def config_data_dir(data_dir: str) -> str:
-    return os.path.join(data_dir, "get_config_data.json")
+def config_data_name() -> str:
+    return "get_config_data.json"
 
 
 @pytest.fixture
-def paths_data_dir(data_dir: str) -> str:
-    return os.path.join(data_dir, "get_paths_data.json")
+def config_data_dir(data_dir: str, config_data_name: str) -> str:
+    return os.path.join(data_dir, config_data_name)
 
 
 @pytest.fixture
-def dataloader_data_dir(data_dir: str) -> str:
-    return os.path.join(data_dir, "get_dataloader_data.json")
+def paths_data_name() -> str:
+    return "get_paths_data.json"
 
 
 @pytest.fixture
-def paths_data_dir(data_dir: str) -> str:
-    return os.path.join(data_dir, "get_paths_data.json")
+def paths_data_dir(data_dir: str, paths_data_name: str) -> str:
+    return os.path.join(data_dir, paths_data_name)
+
+
+@pytest.fixture
+def dataloader_data_name() -> str:
+    return "get_dataloader_data.json"
+
+
+@pytest.fixture
+def dataloader_data_dir(data_dir: str, dataloader_data_name: str) -> str:
+    return os.path.join(data_dir, dataloader_data_name)
+
+
+@pytest.fixture
+def cv_data_name() -> str:
+    return "get_cv_data.json"
+
+
+@pytest.fixture
+def cv_data_dir(data_dir: str, cv_data_name: str) -> str:
+    return os.path.join(data_dir, cv_data_name)
+
+
+# --- shared results ---
+# result for base config data
+@pytest.fixture
+def base_config_result() -> dict:
+    return {"EXECUTION_FLAGS": {"LOAD_DATA_WITH_DATALOADER": True,
+                                "ADD_SAMPLE_WEIGHTS": True,
+                                "SCALE": True,
+                                "SHUFFLE": True},
+            "DICT_NAMES": ["NAME_1", "NAME_2", "NAME_3"],
+            "PILES_NUMBER": 100,
+            "WEIGHT_FILENAME": "weights.weights",
+            "FILES_TO_COPY": ["test_file.py"],
+            "NORMALIZATION_TYPE": "svn",
+            "SCALER_FILE": "scaler.scaler",
+            "SCALER_PATH": "scaler_path"}
+
+
+# result for dataloader config data
+@pytest.fixture
+def dataloader_result() -> dict:
+    return {"TYPE": "normal",
+            "FILE_EXTENSION": ".dat",
+            "3D": True,
+            "3D_SIZE": [3, 3],
+            "FIRST_NM": 8,
+            "LAST_NM": 100,
+            "WAVE_AREA": 100,
+            "LABELS_TO_TRAIN": [0, 1],
+            "NAME_SPLIT": "_SpecCube",
+            "MASK_DIFF": ["_SpecCube.dat", ".png"],
+            "LABELS_FILENAME": "labels.labels",
+            "CONTAMINATION_FILENAME": "contamination.csv",
+            "SMOOTHING_TYPE": "median_filter",
+            "SMOOTHING_VALUE": 5,
+            "BORDER_CONFIG": {"enable": False,
+                              "methode": "detect_core",
+                              "depth": 5,
+                              "axis": [],
+                              "not_used_labels": []},
+            "SPLIT_PATHS_BY": "Files",
+            "CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
+            "WITH_BACKGROUND_EXTRACTION": False,
+            "MASK_COLOR": {0: [[255, 255, 0]], 1: [[0, 0, 255]], 2: [[255, 0, 0]]},
+            "TISSUE_LABELS": {0: "Nerve", 1: "Tumor", 2: "Parotis"},
+            "PLOT_COLORS": {0: "yellow", 1: "blue", 2: "red"},
+            "LABELS": [0, 1, 2]}
+
+
+# result for cross validation config data
+@pytest.fixture
+def cv_result() -> dict:
+    return {"EXECUTION_FLAGS": {"cross_validation": True,
+                                "evaluation": True},
+            "FIRST_SPLIT": 0,
+            "HOW_MANY_VALID_EXCLUDE": 1,
+            "CHOOSE_EXCLUDED_VALID": "by_class",
+            "USE_ALL_LABELS": False,
+            "SAVE_PREDICTION": True,
+            "SAVE_CURVES": False,
+            "TYPE": "normal",
+            "NAME": "CV_NAME",
+            "DATABASE_ABBREVIATION": "DATABASE_NAME",
+            "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/xyz/hsi-experiments-BA/logs/Experiment",
+            "RESTORE_VALID_SEQUENCE": "",
+            "GET_CHECKPOINT_FROM_VALID": True}
+
+
+# results for path config data
+@pytest.fixture
+def path_prefix() -> str:
+    return "/work/users/xyz"
+
+
+@pytest.fixture
+def path_result(sys_slash: str, path_prefix: str):
+    return {"CHECKPOINT_PATH": "checkpoints",
+            "MODEL_PATH": "model",
+            "MODE": "WITH_GPU",
+            "PREFIX": path_prefix,
+            "MODEL_NAME_PATHS": ["/home/sc.uni-leipzig.de/xyz/hsi-experiments-BA/logs"],
+            "RAW_NPZ_PATH": f"{path_prefix}{sys_slash}data_3d{sys_slash}gastric{sys_slash}3x3",
+            "RAW_SOURCE_PATH": f"{path_prefix}{sys_slash}Gastric",
+            "TEST_NPZ_PATH": f"{path_prefix}{sys_slash}data_3d{sys_slash}hno{sys_slash}3x3",
+            "SHUFFLED_PATH": f"{path_prefix}{sys_slash}data_3d{sys_slash}gastric{sys_slash}3x3{sys_slash}shuffled",
+            "BATCHED_PATH": f"{path_prefix}{sys_slash}data_3d{sys_slash}gastric{sys_slash}3x3{sys_slash}batch_sized",
+            "MASK_PATH": f"{path_prefix}{sys_slash}Gastric{sys_slash}annotation",
+            "SYSTEM_PATHS_DELIMITER": sys_slash}
+
+
+# results tuner data
+@pytest.fixture
+def activation() -> dict:
+    return {"relu": relu,
+            "tanh": tanh,
+            "selu": selu,
+            "exponential": exponential,
+            "elu": elu}
+
+
+@pytest.fixture
+def optimizer() -> dict:
+    return {"adadelta": Adadelta,
+            "adagrad": Adagrad,
+            "adam": Adam,
+            "adamax": Adamax,
+            "ftrl": Ftrl,
+            "nadam": Nadam,
+            "rms": RMSprop,
+            "sgd": SGD}
+
+
+@pytest.fixture
+def tuner():
+    return {"RandomSearch": kt.RandomSearch,
+            "BayesianOptimization": kt.BayesianOptimization,
+            "Hyperband": kt.Hyperband}
+
+
+@pytest.fixture
+def tuner_model_1d():
+    return {"paper_model": PaperTunerModel1D,
+            "inception_model": InceptionTunerModel1D}
+
+
+@pytest.fixture
+def tuner_model_3d():
+    return {"paper_model": PaperTunerModel3D,
+            "inception_model": InceptionTunerModel3D}

@@ -40,7 +40,7 @@ def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dic
     trainer["CUSTOM_OBJECTS"] = obj_dict
     trainer["CUSTOM_OBJECTS_LOAD"] = obj_load_dict
 
-    model = get_trainer(d3=d3, typ=trainer["TYPE"])
+    model = get_model(d3=d3, typ=trainer["TYPE"])
 
     if trainer["MODEL"] in model:
         trainer["MODEL_CONFIG"] = read_config(file=file, section=trainer["MODEL_PARAMS"])
@@ -60,7 +60,7 @@ def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dic
     return trainer
 
 
-def get_trainer(d3: bool, typ: str):
+def get_model(d3: bool, typ: str):
     if d3:
         if typ == "Tuner":
             from configuration.configloader_tuner import TUNER_MODEL_3D

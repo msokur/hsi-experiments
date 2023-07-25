@@ -40,19 +40,5 @@ def test_convert_key_to_int_error():
         convert_key_to_int(str_dict=CONVERT_KEY_TO_INT_ERROR_DATA)
 
 
-GET_CONFIG_DATA = {"EXECUTION_FLAGS": {"LOAD_DATA_WITH_DATALOADER": True,
-                                       "ADD_SAMPLE_WEIGHTS": True,
-                                       "SCALE": True,
-                                       "SHUFFLE": True},
-                   "DICT_NAMES": ["NAME_1", "NAME_2", "NAME_3"],
-                   "PILES_NUMBER": 100,
-                   "WEIGHT_FILENAME": "weights.weights",
-                   "FILES_TO_COPY": ["test_file.py"],
-                   "NORMALIZATION_TYPE": "svn",
-                   "SCALER_FILE": "scaler.scaler",
-                   "SCALER_PATH": "scaler_path"
-                   }
-
-
-def test_read_config(config_data_dir):
-    assert read_config(file=config_data_dir, section="TEST") == GET_CONFIG_DATA
+def test_read_config(config_data_dir: str, base_config_result):
+    assert read_config(file=config_data_dir, section="TEST") == base_config_result

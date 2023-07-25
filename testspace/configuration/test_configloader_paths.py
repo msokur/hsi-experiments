@@ -4,20 +4,6 @@ from configuration.configloader_paths import set_prefix, get_database_paths, rea
 
 
 @pytest.fixture
-def path_prefix() -> str:
-    return "/work/users/xyz"
-
-
-@pytest.fixture
-def base_path_data(path_prefix: str) -> dict:
-    return {"CHECKPOINT_PATH": "checkpoints",
-            "MODEL_PATH": "model",
-            "MODE": "WITH_GPU",
-            "PREFIX": path_prefix,
-            "MODEL_NAME_PATHS": ["/home/sc.uni-leipzig.de/xyz/hsi-experiments-BA/logs"]}
-
-
-@pytest.fixture
 def prefix_data() -> dict:
     return {"1.CONCAT_WITH_PREFIX": {"RAW_NPZ_PATH": ["data_3d", "gastric", "3x3"],
                                      "RAW_SOURCE_PATH": ["Gastric"],
@@ -28,31 +14,32 @@ def prefix_data() -> dict:
 
 
 @pytest.fixture
-def concat_prefix_result(sys_slash: str, path_prefix: str):
-    return {"RAW_NPZ_PATH": f"{path_prefix}{sys_slash}data_3d{sys_slash}gastric{sys_slash}3x3",
-            "RAW_SOURCE_PATH": f"{path_prefix}{sys_slash}Gastric",
-            "TEST_NPZ_PATH": f"{path_prefix}{sys_slash}data_3d{sys_slash}hno{sys_slash}3x3"}
+def get_database_result(path_result: dict) -> dict:
+    return pop_from_dict(data=path_result, keys_to_pop=["SYSTEM_PATHS_DELIMITER"])
 
 
 @pytest.fixture
-def get_database_result(base_path_data: dict, sys_slash: str, path_prefix: str, concat_prefix_result) -> dict:
-    result = base_path_data.copy()
-    result.update(concat_prefix_result)
-    result.update({"SHUFFLED_PATH": f"{concat_prefix_result['RAW_NPZ_PATH']}{sys_slash}shuffled",
-                   "BATCHED_PATH": f"{concat_prefix_result['RAW_NPZ_PATH']}{sys_slash}batch_sized",
-                   "MASK_PATH": f"{concat_prefix_result['RAW_SOURCE_PATH']}{sys_slash}annotation"})
-    return result
+def concat_prefix_result(get_database_result: dict) -> dict:
+    return pop_from_dict(data=get_database_result, keys_to_pop=["SHUFFLED_PATH", "BATCHED_PATH", "MASK_PATH",
+                                                                "MODEL_NAME_PATHS", "PREFIX", "MODE", "MODEL_PATH",
+                                                                "CHECKPOINT_PATH"])
 
 
 @pytest.fixture
-def read_path_result(sys_slash: str, get_database_result: dict) -> dict:
-    result = get_database_result.copy()
-    result.update({"SYSTEM_PATHS_DELIMITER": sys_slash})
+def base_path_data(get_database_result: dict) -> dict:
+    return pop_from_dict(data=get_database_result, keys_to_pop=["RAW_NPZ_PATH", "RAW_SOURCE_PATH", "TEST_NPZ_PATH",
+                                                                "SHUFFLED_PATH", "BATCHED_PATH", "MASK_PATH",])
+
+
+def pop_from_dict(data: dict, keys_to_pop: list) -> dict:
+    result = data.copy()
+    list(map(result.pop, keys_to_pop))
     return result
 
 
-def test_read_path_config(paths_data_dir: str, read_path_result: dict):
-    assert read_path_config(file=paths_data_dir, system_mode="SYSTEM", database="DATABASE") == read_path_result
+def test_read_path_config(paths_data_dir: str, path_result: dict):
+    print(path_result)
+    assert read_path_config(file=paths_data_dir, system_mode="SYSTEM", database="DATABASE") == path_result
 
 
 def test_get_database_paths(base_path_data: dict, prefix_data: dict, get_database_result: dict):
