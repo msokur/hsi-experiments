@@ -8,6 +8,10 @@ from models.kt_paper_model import PaperTunerModel3D, PaperTunerModel1D
 from tensorflow.keras.optimizers import Adadelta, Adagrad, Adam, Adamax, Ftrl, Nadam, RMSprop, SGD
 from tensorflow.keras.activations import relu, tanh, selu, exponential, elu
 
+from models.paper_model import PaperModel1D, PaperModel3D
+from models.inception_model import InceptionModel1D, InceptionModel3D
+from util import tf_metric_multiclass, tf_metrics_binary
+
 
 # --- pytest fixtures for the paths to load test data ---
 @pytest.fixture
@@ -58,6 +62,16 @@ def cv_data_name() -> str:
 @pytest.fixture
 def cv_data_dir(data_dir: str, cv_data_name: str) -> str:
     return os.path.join(data_dir, cv_data_name)
+
+
+@pytest.fixture
+def trainer_data_name() -> str:
+    return "get_trainer_data.json"
+
+
+@pytest.fixture
+def trainer_data_dir(data_dir: str, trainer_data_name: str) -> str:
+    return os.path.join(data_dir, trainer_data_name)
 
 
 # --- shared results ---
@@ -172,19 +186,74 @@ def optimizer() -> dict:
 
 
 @pytest.fixture
-def tuner():
+def tuner() -> dict:
     return {"RandomSearch": kt.RandomSearch,
             "BayesianOptimization": kt.BayesianOptimization,
             "Hyperband": kt.Hyperband}
 
 
 @pytest.fixture
-def tuner_model_1d():
-    return {"paper_model": PaperTunerModel1D,
-            "inception_model": InceptionTunerModel1D}
+def model_tuner() -> dict:
+    return {"1D": {"paper_model": PaperTunerModel1D,
+                   "inception_model": InceptionTunerModel1D},
+            "3D": {"paper_model": PaperTunerModel3D,
+                   "inception_model": InceptionTunerModel3D}}
+
+
+# result trainer data
+@pytest.fixture
+def model_normal() -> dict:
+    return {"1D": {"paper_model": PaperModel1D().get_model,
+                   "inception_model": InceptionModel1D.get_model},
+            "3D": {"paper_model": PaperModel3D.get_model,
+                   "inception_model": InceptionModel3D.get_model}}
 
 
 @pytest.fixture
-def tuner_model_3d():
-    return {"paper_model": PaperTunerModel3D,
-            "inception_model": InceptionTunerModel3D}
+def metric() -> dict:
+    return {"binary": {"F1_score": tf_metrics_binary.F1_score},
+            "multi": {"F1_score": tf_metric_multiclass.F1_score}}
+
+
+@pytest.fixture
+def trainer_normal_base() -> dict:
+    return {"TYPE": "SeveralOutput",
+            "RESTORE": False,
+            "FILES_TO_COPY": [["*.py"]],
+            "WITH_SAMPLE_WEIGHTS": False,
+            "MODEL": "",
+            "MODEL_CONFIG": {"DROPOUT": 0.1},
+            "MODEL_PARAMS": "model_param_2",
+            "LEARNING_RATE": 1e-4,
+            "CUSTOM_OBJECTS": {0: {"metric": "",
+                                   "args": {"name": "f1_score_weighted", "average": "weighted"}}},
+            "CUSTOM_OBJECTS_LOAD": {},
+            "BATCH_SIZE": 500,
+            "SPLIT_FACTOR": 0.8,
+            "EPOCHS": 50,
+            "SMALLER_DATASET": False,
+            "MODEL_CHECKPOINT": {"monitor": "val_f1_score_weighted",
+                                 "save_best_only": True,
+                                 "mode": "max"},
+            "EARLY_STOPPING": {"enable": True,
+                               "monitor": "val_f1_score_weighted",
+                               "mode": "max",
+                               "min_delta": 0,
+                               "patience": 5,
+                               "restore_best_weights": True}}
+
+
+@pytest.fixture
+def trainer_tuner_base(trainer_normal_base: dict, activation: dict, optimizer: dict, tuner: dict) -> dict:
+    base_tuner = trainer_normal_base.copy()
+    base_tuner["TYPE"] = "Tuner"
+    base_tuner["MODEL_CONFIG"] = {"DROPOUT": 0.1, "OPTIMIZER": optimizer, "ACTIVATION": activation}
+    base_tuner["MODEL_PARAMS"] = "model_param_1"
+    base_tuner.update({"TUNER": tuner["BayesianOptimization"],
+                       "TUNER_PARAMS": {
+                           "objective": {"name": "f1_score_weighted", "direction": "max"},
+                           "max_trials": 20,
+                           "overwrite": True
+                       },
+                       "TUNER_EPOCHS": 10})
+    return base_tuner

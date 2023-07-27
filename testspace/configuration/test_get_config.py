@@ -1,5 +1,7 @@
 import os
 
+import pytest
+
 from configuration.get_config import get_config, get_paths, get_trainer, get_cv, get_dataloader
 
 
@@ -16,8 +18,27 @@ def test_get_paths(paths_data_name: str, data_dir: str, path_result: dict):
                      main_dir=data_dir) == path_result
 
 
-def test_get_trainer():
-    assert False
+@pytest.fixture
+def get_trainer_result(trainer_normal_base: dict, model_normal: dict, metric: dict) -> dict:
+    result = trainer_normal_base.copy()
+    result["MODEL"] = model_normal["3D"]["paper_model"]
+    result["CUSTOM_OBJECTS"][0]["metric"] = metric["multi"]["F1_score"]
+    result["CUSTOM_OBJECTS_LOAD"].update({"F1_score": metric["multi"]["F1_score"]})
+    return result
+
+
+def test_get_trainer_without_model(trainer_data_name: str, data_dir: str, get_trainer_result: dict):
+    trainer = get_trainer(file_name=trainer_data_name, section="NORMAL", d3=True, classes=[0, 1, 2], main_dir=data_dir)
+    trainer.pop("MODEL")
+    get_trainer_result.pop("MODEL")
+    assert trainer == get_trainer_result
+
+
+def test_get_trainer_with_model(trainer_data_name: str, data_dir: str, get_trainer_result: dict):
+    trainer = get_trainer(file_name=trainer_data_name, section="NORMAL", d3=True, classes=[0, 1, 2], main_dir=data_dir)
+    trainer_model = trainer.pop("MODEL")
+    result_model = get_trainer_result.pop("MODEL")
+    assert trainer_model.__code__.co_code == result_model.__code__.co_code
 
 
 def test_get_cv(cv_data_name: str, data_dir: str, cv_result):
