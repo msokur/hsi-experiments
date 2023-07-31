@@ -1,9 +1,5 @@
 import pytest
 import os
-import inspect
-
-current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parent_dir = os.path.dirname(current_dir)
 
 import numpy as np
 from data_utils.data_loaders.dat_file import DatFile
@@ -161,8 +157,8 @@ MASK_READ_PNG_DATA = [("test_mask.png", PNG_IMG_1),
 
 
 @pytest.mark.parametrize("img_name,result", MASK_READ_PNG_DATA)
-def test_mask_read_png(img_name, result):
-    path = os.path.join(parent_dir, "data_loaders", "test_data", "dat_file", img_name)
+def test_mask_read_png(dat_data_dir: str, img_name, result):
+    path = os.path.join(dat_data_dir, img_name)
     assert (DatFile.mask_read(mask_path=path) == result).all()
 
 
@@ -172,8 +168,8 @@ MASK_READ_JPG_DATA = [("test_mask.jpg", JPG_IMG),
 
 
 @pytest.mark.parametrize("img_name,result", MASK_READ_JPG_DATA)
-def test_mask_read_jpg(img_name, result):
-    path = os.path.join(parent_dir, "data_loaders", "test_data", "dat_file", img_name)
+def test_mask_read_jpg(dat_data_dir: str, img_name, result):
+    path = os.path.join(dat_data_dir, img_name)
     with pytest.warns(UserWarning, match="Better use '.png' format. Alpha channel added."):
         img = DatFile.mask_read(mask_path=path)
 
@@ -189,8 +185,8 @@ MASK_READ_ERROR_DATA = [("test_mask.bmp", FORMAT_ERROR),
 
 
 @pytest.mark.parametrize("img_name,error_msg", MASK_READ_ERROR_DATA)
-def test_mask_read_error(img_name, error_msg):
-    path = os.path.join(parent_dir, "data_loaders", "test_data", "dat_file", img_name)
+def test_mask_read_error(dat_data_dir: str, img_name, error_msg):
+    path = os.path.join(dat_data_dir, img_name)
     with pytest.raises(ValueError, match=error_msg):
         DatFile.mask_read(mask_path=path)
 
@@ -200,8 +196,8 @@ MK2_MASK_DATA = [(DatFile(loader_conf=GET_MASK_COLOR("RGB")), MK2_RESULT_MASK),
 
 
 @pytest.mark.parametrize("loader,result", MK2_MASK_DATA)
-def test_mk2_mask(loader, result):
-    mask = loader.mk2_mask(mask_path=os.path.join(parent_dir, "data_loaders", "test_data", "dat_file", "test_mask.mk2"),
+def test_mk2_mask(dat_data_dir: str, loader, result):
+    mask = loader.mk2_mask(mask_path=os.path.join(dat_data_dir, "test_mask.mk2"),
                            shape=(8, 8))
     print(mask)
     assert (mask == result).all()

@@ -1,10 +1,6 @@
 import pytest
 import numpy as np
 import os
-import inspect
-
-current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parent_dir = os.path.dirname(current_dir)
 
 from data_utils.data_loaders.mat_file import MatFile
 
@@ -101,10 +97,9 @@ def test_set_mask_with_label(mask, loader, result):
     assert (loader.set_mask_with_label(mask) == result).all()
 
 
-def test_file_read_mask_and_spectrum():
+def test_file_read_mask_and_spectrum(mat_data_dir: str):
     loader = MatFile(loader_conf=LOADER_CONFIG)
-    spec, mask = loader.file_read_mask_and_spectrum(os.path.join(parent_dir, "data_loaders",
-                                                                 "test_data", "mat_file", "test_data.mat"))
+    spec, mask = loader.file_read_mask_and_spectrum(os.path.join(mat_data_dir, "test_data.mat"))
 
     assert (spec == np.full(shape=(3, 3, 10), fill_value=np.arange(start=0, stop=10, step=1))).all()
 

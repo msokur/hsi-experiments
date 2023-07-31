@@ -1,6 +1,6 @@
 import pytest
 
-from configuration.configloader_base import concat_dict, convert_key_to_int, read_config
+from configuration.configloader_base import concat_dict, convert_key_to_int, get_key_list, read_config
 
 DICT_1_DATA = {"MASK_COLOR": {"0": [[255, 0, 0]],
                               "1": [[0, 255, 0]],
@@ -38,6 +38,15 @@ CONVERT_KEY_TO_INT_ERROR_DATA = {"0": "zero",
 def test_convert_key_to_int_error():
     with pytest.raises(ValueError):
         convert_key_to_int(str_dict=CONVERT_KEY_TO_INT_ERROR_DATA)
+
+
+GET_KEY_LIST_DATA = [({0: "value_0", 1: "value_1"}, [0, 1]),
+                     ({"zero": "value_zero", "one": "value_one"}, ["zero", "one"])]
+
+
+@pytest.mark.parametrize("data,result", GET_KEY_LIST_DATA)
+def test_get_key_list(data: dict, result: list):
+    assert get_key_list(dict_data=data) == result
 
 
 def test_read_config(config_data_dir: str, base_config_result):

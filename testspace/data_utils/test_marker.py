@@ -1,10 +1,6 @@
 import pytest
 import os
 import numpy as np
-import inspect
-
-current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parent_dir = os.path.dirname(current_dir)
 
 from data_utils.marker import MK2
 
@@ -39,8 +35,8 @@ MK2_LOAD_MARKER_DATA = [("test_mask.mk2",
 
 
 @pytest.mark.parametrize("file,r_idx,r_left,r_top,r_color,r_radius,r_text,r_spec,r_end_byte", MK2_LOAD_MARKER_DATA)
-def test_mk2_load_maker(file, r_idx, r_left, r_top, r_color, r_radius, r_text, r_spec, r_end_byte):
-    loader = MK2(file_path=os.path.join(parent_dir, "data_utils", "data_loaders", "test_data", "dat_file", file))
+def test_mk2_load_maker(dat_data_dir: str, file, r_idx, r_left, r_top, r_color, r_radius, r_text, r_spec, r_end_byte):
+    loader = MK2(file_path=os.path.join(dat_data_dir, file))
     idx, left, top, color, radius, text, spec, end_byte = loader.load_marker()
 
     assert [x == y if not np.isnan(x) else True for x, y in zip(idx, r_idx)]
@@ -59,8 +55,8 @@ MK2_MARKER_IN_CLASS_DATA = [("test_mask.mk2", 394, [], 398),
 
 
 @pytest.mark.parametrize("file,start_byte,result,r_end_byte", MK2_MARKER_IN_CLASS_DATA)
-def test_mk2_marker_in_class(file, start_byte, result, r_end_byte):
-    loader = MK2(file_path=os.path.join(parent_dir, "data_utils", "data_loaders", "test_data", "dat_file", file))
+def test_mk2_marker_in_class(dat_data_dir: str, file, start_byte, result, r_end_byte):
+    loader = MK2(file_path=os.path.join(dat_data_dir, file))
     in_class, end_byte = loader.marker_in_class(start_byte=start_byte)
 
     assert in_class == result
@@ -76,8 +72,8 @@ MK2_LOAD_STRING_DATA = [("test_mask.mk2", 398,
 
 
 @pytest.mark.parametrize("file,start_byte,result", MK2_LOAD_STRING_DATA)
-def test_mk2_load_string(file, start_byte, result):
-    loader = MK2(file_path=os.path.join(parent_dir, "data_utils", "data_loaders", "test_data", "dat_file", file))
+def test_mk2_load_string(dat_data_dir: str, file, start_byte, result):
+    loader = MK2(file_path=os.path.join(dat_data_dir, file))
     names = loader.load_string(start_byte=start_byte)
 
     assert names == result
