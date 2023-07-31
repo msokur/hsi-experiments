@@ -6,6 +6,8 @@ from keras import layers
 
 from models.model_randomness import set_tf_seed
 
+from configuration.keys import TunerModelKeys as TMK
+
 
 class KtModelBase(kt.HyperModel):
     def __init__(self, shape: tuple, conf: dict, num_of_labels: int, custom_metrics=None, name=None, tunable=True):
@@ -59,12 +61,12 @@ class KtModelBase(kt.HyperModel):
         pass
 
     def get_activations(self, name):
-        return self.hp.Choice(self.wrap_name(name, "activation"), [key for key in self.config["ACTIVATION"].keys()])
+        return self.hp.Choice(self.wrap_name(name, "activation"), [key for key in self.config[TMK.ACTIVATION].keys()])
 
     def get_optimizer(self):
-        optimizer = self.hp.Choice("optimizer", [key for key in self.config["OPTIMIZER"].keys()])
-        lr = self.hp.Float("lr", **self.config["LEARNING_RATE"])
-        return self.config["OPTIMIZER"][optimizer](learning_rate=lr)
+        optimizer = self.hp.Choice("optimizer", [key for key in self.config[TMK.OPTIMIZER].keys()])
+        lr = self.hp.Float("lr", **self.config[TMK.LEARNING_RATE])
+        return self.config[TMK.OPTIMIZER][optimizer](learning_rate=lr)
 
     def wrap_layer(self, layer, name):
         order_activation_batch_norm = self.hp.Choice(self.wrap_name(name, "mode"), ['without_batch_norm',
@@ -84,7 +86,7 @@ class KtModelBase(kt.HyperModel):
             layer = layers.BatchNormalization(name=batch_name)(layer)
 
         if self.hp.Boolean(self.wrap_name(name, "dr")):
-            layer = layers.Dropout(self.hp.Float(self.wrap_name(name, "dr_val"), **self.config["DROPOUT"]),
+            layer = layers.Dropout(self.hp.Float(self.wrap_name(name, "dr_val"), **self.config[TMK.DROPOUT]),
                                    name=dropout_name)(layer)
 
         return layer

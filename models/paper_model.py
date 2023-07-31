@@ -5,6 +5,8 @@ import tensorflow.keras as keras
 
 from models.model_randomness import get_dropout, get_initializers, set_tf_seed
 
+from configuration.keys import ModelKeys as MK
+
 
 class PaperModelBase:
     def __init__(self):
@@ -22,7 +24,7 @@ class PaperModelBase:
 
         net = tf.keras.layers.Flatten()(net)
 
-        net = get_dropout(net=net, dropout_value=self.conf["DROPOUT"])
+        net = get_dropout(net=net, dropout_value=self.conf[MK.DROPOUT])
 
         activation = 'sigmoid'
         number = 1

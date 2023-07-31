@@ -4,10 +4,11 @@ import provider
 import utils
 import configuration.get_config as config
 from configuration.get_config import telegram
+from configuration.keys import CrossValidationKeys as CVK
 
 
 def out_of_the_box():
-    cross_validator = provider.get_cross_validator(typ=config.CONFIG_CV["TYPE"], cv_config=config.CONFIG_CV,
+    cross_validator = provider.get_cross_validator(typ=config.CONFIG_CV[CVK.TYPE], cv_config=config.CONFIG_CV,
                                                    paths=config.CONFIG_PATHS,
                                                    loader_config=config.CONFIG_DATALOADER)
     # cross validation pipeline consists of 2 parts:
@@ -15,7 +16,7 @@ def out_of_the_box():
     # (2) evaluation
     # By default both these parts are executed (True)
     # With execution_flags it's possible not to execute 'cross_validation' or 'evaluation' with False
-    execution_flags = config.CONFIG_CV["EXECUTION_FLAGS"]
+    execution_flags = config.CONFIG_CV[CVK.EXECUTION_FLAGS]
 
     # After execution_flags we pass parameters for evaluation
     # To see all possible parameters, their meaning and possible combinations refer to comments in
@@ -24,14 +25,14 @@ def out_of_the_box():
     # because they passed automatically
     cross_validator.pipeline(execution_flags=execution_flags,
                              # thresholds_range=[[0.0001, 0.001, 20]],  # specify thresholds if classification is binary
-                             save_predictions=config.CONFIG_CV["SAVE_PREDICTION"],
-                             save_curves=config.CONFIG_CV["SAVE_CURVES"])
+                             save_predictions=config.CONFIG_CV[CVK.SAVE_PREDICTION],
+                             save_curves=config.CONFIG_CV[CVK.SAVE_CURVES])
 
 
 def postprocessing_for_one_model():
     # Full documentation about post-processing: https://git.iccas.de/MaktabiM/hsi-experiments/-/wikis/Post-processing
     cross_validator = provider.get_cross_validator(# please refer to comments in cross_validators/cross_validator_postprocessing.py/CrossValidatorPostProcessing.blank_configuration() for detailed description of configuration params
-                                          typ=config.CONFIG_CV["TYPE"],
+                                          typ=config.CONFIG_CV[CVK.TYPE],
                                           configuration={
                                                 "generate_whole_cubes": False,
                                                 "calculate_predictions_for_whole_cubes": False,

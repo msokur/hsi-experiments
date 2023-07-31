@@ -2,11 +2,13 @@ import numpy as np
 
 from data_utils.prediction_to_image.prediction_to_image_base import PredictionToImage_base
 
+from configuration.keys import DataLoaderKeys as DLK
+
 
 class PredictionToImage_npz(PredictionToImage_base):
     def get_spectrum(self, path: str):
         X, y, idx = self.load_npz(path=path)
-        mask = np.isin(y, self.load_conf["LABELS_TO_TRAIN"])
+        mask = np.isin(y, self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
 
         return X[mask], idx[mask]
 
@@ -19,7 +21,7 @@ class PredictionToImage_npz(PredictionToImage_base):
     def whole_mask(self, class_list: list, indexes: list) -> np.ndarray:
         class_mask = np.full(self.image_size, -1)
         for idx, class_label in zip(indexes, class_list):
-            if class_label not in self.load_conf["LABELS_TO_TRAIN"]:
+            if class_label not in self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]:
                 continue
 
             class_mask[idx[0]][idx[1]] = class_label
@@ -37,7 +39,7 @@ class PredictionToImage_npz(PredictionToImage_base):
 
 if __name__ == '__main__':
     import os
-    from configuration.get_config import DATALOADER, TRAINER
+    from configuration.get_config import CONFIG_DATALOADER, CONFIG_TRAINER
 
     os.environ['TF_DETERMINISTIC_OPS'] = '1'
 
@@ -47,7 +49,7 @@ if __name__ == '__main__':
     image_path = os.path.join(main_path, "raw_data", "2019_04_30_15_34_56_SpecCube.png")
     # masks_png = test_png.annotation_mask(image_path)
 
-    test_npz = PredictionToImage_npz(load_conf=DATALOADER, model_conf=TRAINER)
+    test_npz = PredictionToImage_npz(dataloader_conf=CONFIG_DATALOADER, model_conf=CONFIG_TRAINER)
     npz_path = os.path.join(main_path, "raw_data", "2019_04_30_15_34_56_.npz")
     dat_path = r"E:\ICCAS\ESO\EsophagusCancer\2019_04_30_15_34_56_SpecCube.dat"
     anno_masks = test_npz.get_annotation_mask(npz_path)

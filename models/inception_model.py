@@ -5,6 +5,8 @@ from tensorflow.keras import activations
 
 from models.model_randomness import get_dropout, get_initializers, set_tf_seed
 
+from configuration.keys import ModelKeys as MK
+
 FILTERS = [4, [6, 8], [1, 2]]
 FILTERS_LAST = 2
 KERNEL_SIZE = [1, [1, 3], [1, 5]]
@@ -28,8 +30,8 @@ class InceptionModelBase:
             shape=shape, name="title"
         )
 
-        net = self.inception_block(input_=input_, factor=conf["INCEPTION_FACTOR"],
-                                   with_batch_norm=conf["WITH_BATCH_NORM"])
+        net = self.inception_block(input_=input_, factor=conf[MK.INCEPTION_FACTOR],
+                                   with_batch_norm=conf[MK.WITH_BATCH_NORM])
 
         return self.inception_base(input_=input_, net=net)
 

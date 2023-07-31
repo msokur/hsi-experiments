@@ -10,6 +10,7 @@ from sklearn.feature_extraction import image
 
 import provider
 from configuration.get_config import CONFIG_DATALOADER, CONFIG_PATHS
+from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK
 from data_utils.background_detection import detect_background
 from data_utils.data_loaders.path_splits import get_splits
 from data_utils.data_loaders.path_sort import get_sort
@@ -21,54 +22,54 @@ class DataLoader:
             dict_names = ["X", "y", "indexes_in_datacube"]
         self.CONFIG_DATALOADER = CONFIG_DATALOADER
         self.CONFIG_PATHS = CONFIG_PATHS
-        self.data_reader = provider.get_extension_loader(typ=self.CONFIG_DATALOADER["FILE_EXTENSION"],
-                                                         loader_conf=self.CONFIG_DATALOADER)
+        self.data_reader = provider.get_extension_loader(typ=self.CONFIG_DATALOADER[DLK.FILE_EXTENSION],
+                                                         dataloader_config=self.CONFIG_DATALOADER)
         self.dict_names = dict_names
 
     def get_labels(self):
-        return self.CONFIG_DATALOADER["LABELS"]
+        return self.CONFIG_DATALOADER[DLK.LABELS]
 
     def get_name(self, path: str, delimiter=None) -> str:
         if delimiter is None:
-            delimiter = self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"]
-        return path.split(delimiter)[-1].split(".")[0].split(self.CONFIG_DATALOADER["NAME_SPLIT"])[0]
+            delimiter = self.CONFIG_PATHS[PK.SYS_DELIMITER]
+        return path.split(delimiter)[-1].split(".")[0].split(self.CONFIG_DATALOADER[DLK.NAME_SPLIT])[0]
 
     def get_paths_and_splits(self, root_path=None):
         if root_path is None:
-            root_path = self.CONFIG_PATHS["RAW_NPZ_PATH"]
+            root_path = self.CONFIG_PATHS[PK.RAW_NPZ_PATH]
         paths = glob(os.path.join(root_path, "*.npz"))
-        number = "NUMBER_SORT" in self.CONFIG_DATALOADER.keys()
-        paths = get_sort(paths=paths, number=number, split=self.CONFIG_DATALOADER["NUMBER_SORT"] if number else None)
+        number = DLK.NUMBER_SORT in self.CONFIG_DATALOADER.keys()
+        paths = get_sort(paths=paths, number=number, split=self.CONFIG_DATALOADER[DLK.NUMBER_SORT] if number else None)
 
-        splits = get_splits(typ=self.CONFIG_DATALOADER["SPLIT_PATHS_BY"], paths=paths,
-                            values=self.CONFIG_DATALOADER["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"])
+        splits = get_splits(typ=self.CONFIG_DATALOADER[DLK.SPLIT_PATHS_BY], paths=paths,
+                            values=self.CONFIG_DATALOADER[DLK.PATIENTS_EXCLUDE_FOR_TEST])
 
         return paths, splits
 
     def smooth(self, spectrum):
-        if self.CONFIG_DATALOADER["SMOOTHING_TYPE"] is not None:
-            smoother = provider.get_smoother(typ=self.CONFIG_DATALOADER["SMOOTHING_TYPE"],
+        if self.CONFIG_DATALOADER[DLK.SMOOTHING_TYPE] is not None:
+            smoother = provider.get_smoother(typ=self.CONFIG_DATALOADER[DLK.SMOOTHING_TYPE],
                                              path="",
-                                             size=self.CONFIG_DATALOADER["SMOOTHING_VALUE"])
+                                             size=self.CONFIG_DATALOADER[DLK.SMOOTHING_VALUE])
             spectrum = smoother.smooth_func(spectrum)
         return spectrum
 
     def pixel_detection(self, masks, conf=None):
         if conf is None:
-            conf = self.CONFIG_DATALOADER["BORDER_CONFIG"]
+            conf = self.CONFIG_DATALOADER[DLK.BORDER_CONFIG]
 
-        if conf["enable"]:
-            pixel_detect = provider.get_pixel_detection(conf["methode"])
+        if conf[DLK.BC_ENABLE]:
+            pixel_detect = provider.get_pixel_detection(conf[DLK.BC_METHODE])
             border_masks = []
             for idx, mask in enumerate(masks):
-                if idx not in conf["not_used_labels"]:
-                    if len(conf["axis"]) == 0:
+                if idx not in conf[DLK.BC_NOT_USED_LABELS]:
+                    if len(conf[DLK.BC_AXIS]) == 0:
                         border_mask = pixel_detect(in_arr=masks[idx],
-                                                   d=conf["depth"])
+                                                   d=conf[DLK.BC_DEPTH])
                     else:
                         border_mask = pixel_detect(in_arr=masks[idx],
-                                                   d=conf["depth"],
-                                                   axis=conf["axis"])
+                                                   d=conf[DLK.BC_DEPTH],
+                                                   axis=conf[DLK.BC_AXIS])
                     border_masks.append(border_mask)
                 else:
                     border_masks.append(masks[idx])
@@ -83,8 +84,8 @@ class DataLoader:
     @abc.abstractmethod
     def file_read(self, path):
         print(f'Reading {path}')
-        if "MASK_PATH" in self.CONFIG_PATHS.keys():
-            mask_path = self.CONFIG_PATHS["MASK_PATH"]
+        if PK.MASK_PATH in self.CONFIG_PATHS.keys():
+            mask_path = self.CONFIG_PATHS[PK.MASK_PATH]
         else:
             mask_path = None
         spectrum, mask = self.file_read_mask_and_spectrum(path=path, mask_path=mask_path)
@@ -94,7 +95,7 @@ class DataLoader:
         background_mask = self.background_get_mask(spectrum, mask.shape[:2])
         contamination_mask = self.get_contamination_mask(os.path.split(path)[0], mask.shape[:2])
 
-        if self.CONFIG_DATALOADER["3D"]:
+        if self.CONFIG_DATALOADER[DLK.D3]:
             spectrum = self.patches3d_get_from_spectrum(spectrum)
 
         indexes = self.data_reader.indexes_get_bool_from_mask(mask)
@@ -117,7 +118,7 @@ class DataLoader:
     def files_read_and_save_to_npz(self, root_path, destination_path):
         print('----Saving of .npz archives is started----')
 
-        paths = glob(os.path.join(root_path, "*" + self.CONFIG_DATALOADER["FILE_EXTENSION"]))
+        paths = glob(os.path.join(root_path, "*" + self.CONFIG_DATALOADER[DLK.FILE_EXTENSION]))
         with open(os.path.join(destination_path, self.get_labels_filename()), 'wb') as f:
             pickle.dump(self.get_labels(), f, pickle.HIGHEST_PROTOCOL)
 
@@ -129,7 +130,7 @@ class DataLoader:
 
     def patches3d_get_from_spectrum(self, spectrum):
         spectrum_ = np.array([])
-        size = self.CONFIG_DATALOADER["3D_SIZE"]
+        size = self.CONFIG_DATALOADER[DLK.D3_SIZE]
         # Better not to use non even sizes
         pad = [int((s - 1) / 2) for s in size]
         if size[0] % 2 == 1 and size[1] % 2 == 1:
@@ -195,14 +196,14 @@ class DataLoader:
         return mask
 
     def get_labels_filename(self):
-        return self.CONFIG_DATALOADER["LABELS_FILENAME"]
+        return self.CONFIG_DATALOADER[DLK.LABELS_FILENAME]
 
     def get_contamination_filename(self):
-        return self.CONFIG_DATALOADER["CONTAMINATION_FILENAME"]
+        return self.CONFIG_DATALOADER[DLK.CONTAMINATION_FILENAME]
 
     def background_get_mask(self, spectrum, shapes):
         background_mask = np.ones(shapes).astype(np.bool)
-        if self.CONFIG_DATALOADER["WITH_BACKGROUND_EXTRACTION"]:
+        if self.CONFIG_DATALOADER[DLK.WITH_BACKGROUND_EXTRACTION]:
             background_mask = detect_background(spectrum)
             background_mask = np.reshape(background_mask, shapes)
 
@@ -219,7 +220,7 @@ class DataLoader:
     @staticmethod
     def labeled_spectrum_get_from_npz(npz_path: str) -> dict:
         data = np.load(npz_path)
-        X, y = data['X'], data['y']
+        X, y = data["X"], data["y"]
 
         return DataLoader.labeled_spectrum_get_from_X_y(X, y)
 

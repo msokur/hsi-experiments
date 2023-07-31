@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+
 class MetricsCsvReader:
     def fill_result(self, result, name, stacked_metrics):
         result[name] = {}

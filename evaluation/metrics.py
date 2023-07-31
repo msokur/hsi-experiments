@@ -4,11 +4,14 @@ import matplotlib.pyplot as plt
 import os
 
 from configuration.get_config import CONFIG_DATALOADER
+from configuration.keys import DataLoaderKeys as DLK
 
 
 class Metrics:
     def __init__(self):
-        self.fill_labels()
+        self.label_color = CONFIG_DATALOADER[DLK.PLOT_COLORS]
+        self.labels_names = CONFIG_DATALOADER[DLK.TISSUE_LABELS]
+        self.labels_of_classes_to_train = CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]
         
         if len(self.labels_of_classes_to_train) == 2:
             print('Metrics binary')
@@ -16,11 +19,6 @@ class Metrics:
         else:
             print('Metrics not binary')
             self.binary = False
-
-    def fill_labels(self):
-        self.label_color = CONFIG_DATALOADER['PLOT_COLORS']
-        self.labels_names = CONFIG_DATALOADER['TISSUE_LABELS']
-        self.labels_of_classes_to_train = CONFIG_DATALOADER['LABELS']
             
     def get_metrics_dict(self):
         return {

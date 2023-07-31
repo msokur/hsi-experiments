@@ -1,17 +1,19 @@
 from configuration.configloader_base import read_config, convert_key_to_int, get_key_list
 
-SET_PARAMS = {"MASK": "MASK_COLOR", "LABEL": "TISSUE_LABELS", "COLOR": "PLOT_COLORS"}
+from configuration.keys import DataLoaderKeys as DLK
+
+SET_PARAMS = {DLK.LD_MASK: DLK.MASK_COLOR, DLK.LD_LABEL: DLK.TISSUE_LABELS, DLK.LD_COLOR: DLK.PLOT_COLORS}
 
 
 def read_dataloader_config(file: str, section: str):
     dataloader = read_config(file=file, section=section)
-    dataloader["LABEL_DATA"] = convert_key_to_int(str_dict=dataloader["LABEL_DATA"])
-    dataloader["LABELS"] = get_key_list(dataloader["LABEL_DATA"])
-    label_data_split = split_label_data(label_data=dataloader["LABEL_DATA"])
+    dataloader[DLK.LABEL_DATA] = convert_key_to_int(str_dict=dataloader[DLK.LABEL_DATA])
+    dataloader[DLK.LABELS] = get_key_list(dataloader[DLK.LABEL_DATA])
+    label_data_split = split_label_data(label_data=dataloader[DLK.LABEL_DATA])
     dataloader = set_parameter(configuration=dataloader, params=label_data_split, replace_dict=SET_PARAMS,
-                               origin_label="LABEL_DATA")
+                               origin_label=DLK.LABEL_DATA)
 
-    dataloader.pop("LABEL_DATA")
+    dataloader.pop(DLK.LABEL_DATA)
 
     return dataloader
 

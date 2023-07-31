@@ -7,6 +7,7 @@ import os
 import inspect
 
 from configuration import get_config as conf
+from configuration.keys import PathKeys as PK, TrainerKeys as TK, CrossValidationKeys as CVK, DataLoaderKeys as DLK
 from data_utils.data_loaders.data_loader import DataLoader
 from models.model_randomness import set_tf_seed
 
@@ -21,12 +22,12 @@ class Predictor:
     """
 
     def __init__(self, CHECKPOINT, LOGS_PATH="", MODEL_NAME="", MODEL_FOLDER="",
-                 custom_objects=conf.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"]):
+                 custom_objects=conf.CONFIG_TRAINER[TK.CUSTOM_OBJECTS_LOAD]):
 
         if MODEL_NAME != '':
             self.MODEL_NAME = MODEL_NAME
         else:
-            self.MODEL_NAME = MODEL_FOLDER.split(conf.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-1]  # here can be problem
+            self.MODEL_NAME = MODEL_FOLDER.split(conf.CONFIG_PATHS[PK.SYS_DELIMITER])[-1]  # here can be problem
 
         if MODEL_FOLDER == '':
             MODEL_FOLDER = os.path.join(LOGS_PATH, self.MODEL_NAME)
@@ -52,12 +53,12 @@ class Predictor:
 
         # get only needed samples
         indexes = np.zeros(gt.shape).astype(bool)
-        if not conf.CONFIG_CV["USE_ALL_LABELS"]:
-            for label in conf.CONFIG_DATALOADER["LABELS_TO_TRAIN"]:
+        if not conf.CONFIG_CV[CVK.USE_ALL_LABELS]:
+            for label in conf.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]:
                 indexes = indexes | (gt == label)
         else:
             indexes = np.ones(gt.shape).astype(bool)
-        if conf.CONFIG_DATALOADER["WITH_BACKGROUND_EXTRACTION"]:
+        if conf.CONFIG_DATALOADER[DLK.WITH_BACKGROUND_EXTRACTION]:
             gt = gt[indexes & data["bg_mask"]]
             spectrum = spectrum[indexes & data["bg_mask"]]
 
@@ -73,9 +74,9 @@ class Predictor:
         current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         parent_dir = os.path.dirname(current_dir)
         if parent_dir not in model_path:
-            model_path = os.path.join(conf.CONFIG_PATHS["MODEL_NAME_PATHS"][0],
-                                      model_path.split(conf.CONFIG_PATHS["MODEL_NAME_PATHS"][0])[-1][1:])
-            if conf.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"] == "\\":
+            model_path = os.path.join(conf.CONFIG_PATHS[PK.MODEL_NAME_PATHS][0],
+                                      model_path.split(conf.CONFIG_PATHS[PK.MODEL_NAME_PATHS][0])[-1][1:])
+            if conf.CONFIG_PATHS[PK.SYS_DELIMITER] == "\\":
                 model_path = model_path.replace("/", "\\")
 
             model_path = os.path.join(parent_dir, model_path)
@@ -84,17 +85,17 @@ class Predictor:
     @staticmethod
     def get_best_checkpoint_from_csv(model_path):
         checkpoints_paths = sorted(glob(os.path.join(model_path,
-                                                     conf.CONFIG_PATHS["CHECKPOINT_PATH"], "*"
-                                                     + conf.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])))
+                                                     conf.CONFIG_PATHS[PK.CHECKPOINT_PATH], "*"
+                                                     + conf.CONFIG_PATHS[PK.MODEL_NAME_PATHS])))
         best_checkpoint_path = checkpoints_paths[-1]
-        return best_checkpoint_path.split(conf.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-2]
+        return best_checkpoint_path.split(conf.CONFIG_PATHS[PK.MODEL_NAME_PATHS])[-2]
 
     @staticmethod
     def get_checkpoint(checkpoint, model_path):
         if checkpoint is None:
-            checkpoint = f"cp-{conf.CONFIG_TRAINER['EPOCHS']:04d}"
+            checkpoint = f"cp-{conf.CONFIG_TRAINER[TK.EPOCHS]:04d}"
 
-        if conf.CONFIG_CV["GET_CHECKPOINT_FROM_VALID"]:
+        if conf.CONFIG_CV[CVK.GET_CHECKPOINT_FROM_VALID]:
             return Predictor.get_best_checkpoint_from_csv(model_path)
         else:
             return checkpoint

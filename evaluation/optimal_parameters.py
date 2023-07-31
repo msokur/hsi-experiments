@@ -1,4 +1,4 @@
-#import cross_calidation
+# import cross_calidation
 import glob
 import csv
 import os
@@ -10,15 +10,17 @@ import inspect
 import sys
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir) 
-from configuration.get_config import CONFIG_PATHS
+sys.path.insert(0, parentdir)
 
-class OptimalThreshold():
-    
+from configuration.get_config import CONFIG_PATHS
+from configuration.keys import PathKeys as PK
+
+
+class OptimalThreshold:
     def __init__(self, root_path,
-                         checkpoints_regex='cp-0000'+CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"],
-                         thresholds_filename='compare_all_thresholds.csv',
-                         prints=True):
+                 checkpoints_regex='cp-0000' + CONFIG_PATHS[PK.SYS_DELIMITER],
+                 thresholds_filename='compare_all_thresholds.csv',
+                 prints=True):
         self.root_path = root_path
         self.checkpoints_regex = checkpoints_regex
         self.thresholds_filename = thresholds_filename
@@ -31,7 +33,8 @@ class OptimalThreshold():
         spec_column_index = np.where(header == "specificity_mean")[0][0]
         threshold_column_index = np.where(header == "threshold")[0][0]
         if self.prints:
-            print("sens_column_index, spec_column_index, threshold_column_index", sens_column_index, spec_column_index, threshold_column_index)
+            print("sens_column_index, spec_column_index, threshold_column_index", sens_column_index, spec_column_index,
+                  threshold_column_index)
         return sens_column_index, spec_column_index, threshold_column_index
 
     def get_data(self, checkpoint_folder):
@@ -76,42 +79,43 @@ class OptimalThreshold():
 
         thr, sens, spec = self.get_thresholds_sens_spec(data, sensitivity_column, specificity_column, threshold_column)
 
-        #sort data for case if threshold are not sorted
+        # sort data for case if threshold are not sorted
         sorted_arrays = list(zip(list(thr), list(sens), list(spec)))
-        sorted_arrays = sorted(sorted_arrays) #by default it sorts by the first column
+        sorted_arrays = sorted(sorted_arrays)  # by default it sorts by the first column
         sorted_arrays = np.array(sorted_arrays)
         thr = sorted_arrays[:, 0]
         sens = sorted_arrays[:, 1]
         spec = sorted_arrays[:, 2]
 
-        #print data
-        #print('Sensitivities', sens)
-        #print('Specificities', spec)
+        # print data
+        # print('Sensitivities', sens)
+        # print('Specificities', spec)
 
-        #print intermediate computations
-        #print(np.sign(sens - spec))
+        # print intermediate computations
+        # print(np.sign(sens - spec))
         diff = np.diff(np.sign(sens - spec))
-        #print(diff)
-        #print(np.argmin(diff))
+        # print(diff)
+        # print(np.argmin(diff))
 
         if len(diff[diff == -2]) == 0:
             print(f'~~~~~~~~~~~~~~~~You need to add new thresholds starts from {checkpoint_folder}~~~~~~~~~~~~~~')
 
-        #get and print results
+        # get and print results
         idx = np.argmin(diff).flatten() + 1
 
         if self.prints:
             print(f'optimal index and threshold for {checkpoint_folder}: ', idx, thr[idx])
             print(f'optimal sensitivity and specificity for {checkpoint_folder}: ', sens[idx], spec[idx])
-            print(f'Mean value of optimal sensitivity and specificity for {checkpoint_folder}: ', np.mean([sens[idx], spec[idx]]))
+            print(f'Mean value of optimal sensitivity and specificity for {checkpoint_folder}: ',
+                  np.mean([sens[idx], spec[idx]]))
 
         return thr[idx], sens[idx], spec[idx], np.mean([sens[idx], spec[idx]]), idx
-    
-    
+
+
 class OptimalCheckpoint(OptimalThreshold):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
     def find_optimal_checkpoint(self):
 
         checkpoints = glob.glob(os.path.join(self.root_path, self.checkpoints_regex))
@@ -131,23 +135,24 @@ class OptimalCheckpoint(OptimalThreshold):
             optimal_spec.append(spec)
             thresholds.append(threshold)
             means.append(mean)
-        
-        
+
         optimal_idx = np.nanargmax(means)
         optimal_checkpoint = checkpoints[optimal_idx]
         optimal_threshold = thresholds[optimal_idx]
 
         if self.prints:
-            print(f'optimal index: {optimal_idx}, optimal checkpoint: {optimal_checkpoint}, optimal_threshold: {optimal_threshold}')
+            print(
+                f'optimal index: {optimal_idx}, optimal checkpoint: {optimal_checkpoint}, optimal_threshold: {optimal_threshold}')
             print('Means:', means)
             print('------------------------------------------------------')
-        
-        return optimal_checkpoint, optimal_threshold, thresholds, means, optimal_sens[optimal_idx], optimal_spec[optimal_idx]
-    
-          
-            
 
-    
+        return optimal_checkpoint, optimal_threshold, thresholds, means, optimal_sens[optimal_idx], optimal_spec[
+            optimal_idx]
+
+
 if __name__ == '__main__':
+    from evaluation.metrics_csvreader import MetricsCsvReader
     reader = MetricsCsvReader()
-    reader.read_metrics('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test/Esophagus_MedFilter/cp-0038/metrics_by_threshold_None.csv', names=['Sensitivity', 'Specificity'])
+    reader.read_metrics(
+        '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test/Esophagus_MedFilter/cp-0038/metrics_by_threshold_None.csv',
+        names=['Sensitivity', 'Specificity'])

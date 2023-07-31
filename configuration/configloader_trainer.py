@@ -7,6 +7,8 @@ from models.paper_model import PaperModel1D, PaperModel3D
 
 from configuration.configloader_base import read_config
 
+from configuration.keys import TrainerKeys as TK
+
 CUSTOM_OBJECTS_MULTI = {"F1_score": tf_metric_multiclass.F1_score}
 
 CUSTOM_OBJECTS_BINARY = {"F1_score": tf_metrics_binary.F1_score}
@@ -21,25 +23,25 @@ MODELS_1D = {"paper_model": PaperModel1D().get_model,
 def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dict:
     trainer = read_config(file=file, section=section)
 
-    trainer["CUSTOM_OBJECTS"], trainer["CUSTOM_OBJECTS_LOAD"] = get_metric_objects(metrics=trainer["CUSTOM_OBJECTS"],
-                                                                                   multiclass=len(classes) > 2)
+    trainer[TK.CUSTOM_OBJECTS], trainer[TK.CUSTOM_OBJECTS_LOAD] = get_metric_objects(metrics=trainer[TK.CUSTOM_OBJECTS],
+                                                                                     multiclass=len(classes) > 2)
 
-    model = get_model(d3=d3, typ=trainer["TYPE"])
+    model = get_model(d3=d3, typ=trainer[TK.TYPE])
 
-    if trainer["MODEL"] in model:
-        trainer["MODEL_CONFIG"] = read_config(file=file, section=trainer["MODEL_PARAMS"])
-        trainer["MODEL"] = model[trainer["MODEL"]]
+    if trainer[TK.MODEL] in model:
+        trainer[TK.MODEL_CONFIG] = read_config(file=file, section=trainer[TK.MODEL_PARAMS])
+        trainer[TK.MODEL] = model[trainer[TK.MODEL]]
     else:
-        raise ValueError(f"Model '{trainer['MODEL']}', not implemented!")
+        raise ValueError(f"Model '{trainer[TK.MODEL]}', not implemented!")
 
-    if trainer["TYPE"] == "Tuner":
+    if trainer[TK.TYPE] == "Tuner":
         from configuration.configloader_tuner import get_tuner, get_new_dict
-        trainer["TUNER"] = get_tuner(tuner=trainer["TUNER"], file=file, section=section)
+        trainer[TK.TUNER] = get_tuner(tuner=trainer[TK.TUNER], file=file, section=section)
 
-        trainer["MODEL_CONFIG"]["OPTIMIZER"] = get_new_dict(load_list=trainer["MODEL_CONFIG"]["OPTIMIZER"],
-                                                            name="Optimizer")
-        trainer["MODEL_CONFIG"]["ACTIVATION"] = get_new_dict(load_list=trainer["MODEL_CONFIG"]["ACTIVATION"],
-                                                             name="Activation")
+        trainer[TK.MODEL_CONFIG]["OPTIMIZER"] = get_new_dict(load_list=trainer[TK.MODEL_CONFIG][TK.TUNER_OPTIMIZER],
+                                                             name="Optimizer")
+        trainer[TK.MODEL_CONFIG]["ACTIVATION"] = get_new_dict(load_list=trainer[TK.MODEL_CONFIG][TK.TUNER_ACTIVATION],
+                                                              name="Activation")
 
     return trainer
 

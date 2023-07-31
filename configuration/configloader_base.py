@@ -1,7 +1,9 @@
 import json
 
+from configuration.keys import DataLoaderKeys as DLK
 
-CONVERT_KEY = ["MASK_COLOR", "TISSUE_LABELS", "PLOT_COLORS"]
+
+CONVERT_KEY = [DLK.MASK_COLOR, DLK.TISSUE_LABELS, DLK.PLOT_COLORS]
 
 
 def concat_dict(dict1: dict, dict2: dict) -> dict:

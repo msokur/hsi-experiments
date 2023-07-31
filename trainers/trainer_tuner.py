@@ -7,6 +7,7 @@ import os
 
 from trainers.trainer_base import Trainer
 import pickle
+from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
 
 
 class TrainerTuner(Trainer):
@@ -25,7 +26,7 @@ class TrainerTuner(Trainer):
         '''-------DATASET---------'''
 
         train_dataset, valid_dataset, _, class_weights = self.get_datasets(
-            for_tuning=self.CONFIG_TRAINER["SMALLER_DATASET"])
+            for_tuning=self.CONFIG_TRAINER[TK.SMALLER_DATASET])
 
         '''-------TRAINING---------'''
 
@@ -34,8 +35,8 @@ class TrainerTuner(Trainer):
                                  x=train_dataset,
                                  validation_data=valid_dataset,
                                  verbose=2,
-                                 epochs=self.CONFIG_TRAINER["EPOCHS"],
-                                 batch_size=self.CONFIG_TRAINER["BATCH_SIZE"],
+                                 epochs=self.CONFIG_TRAINER[TK.EPOCHS],
+                                 batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
                                  callbacks=self.get_callbacks(),
                                  use_multiprocessing=True,
                                  class_weight=class_weights,
@@ -75,7 +76,7 @@ class TrainerTuner(Trainer):
             pickle.dump(kwargs, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def get_params(self):
-        params_obj = self.CONFIG_TRAINER["TUNER_PARAMS"].copy()
+        params_obj = self.CONFIG_TRAINER[TK.TUNER_PARAMS].copy()
         params_obj["directory"] = self.tuner_dir
         params_obj["objective"] = kt.Objective(**params_obj["objective"])
 
@@ -87,7 +88,7 @@ class TrainerTuner(Trainer):
         self.valid_except_indexes = train_generator.valid_except_indexes
 
         tuner.search(x=train_dataset_t,
-                     epochs=self.CONFIG_TRAINER["TUNER_EPOCHS"],
+                     epochs=self.CONFIG_TRAINER[TK.TUNER_EPOCHS],
                      validation_data=valid_dataset_t,
                      class_weight=class_weights_t,
                      callbacks=[keras.callbacks.TensorBoard(self.tuner_dir)])
@@ -102,20 +103,20 @@ class TrainerTuner(Trainer):
         return best_hp, best_model
 
     def get_tuner(self, mirrored_strategy=None) -> tuple[kt.HyperModel, kt.Tuner]:
-        if self.CONFIG_TRAINER["RESTORE"]:
+        if self.CONFIG_TRAINER[TK.RESTORE]:
             base_model, params = self.restore_tuner()
         else:
             base_model = self.get_model()
             params = self.get_params()
             TrainerTuner.save_tuner_params(base_model, **params)
 
-        return base_model, self.CONFIG_TRAINER["TUNER"](base_model, **params, distribution_strategy=mirrored_strategy)
+        return base_model, self.CONFIG_TRAINER[TK.TUNER](base_model, **params, distribution_strategy=mirrored_strategy)
 
     def get_model(self) -> kt.HyperModel:
-        base_model = self.CONFIG_TRAINER["MODEL"](shape=self.get_output_shape(),
-                                                  conf=self.CONFIG_TRAINER["MODEL_CONFIG"],
-                                                  num_of_labels=len(self.CONFIG_DATALOADER["LABELS_TO_TRAIN"]),
-                                                  custom_metrics=self.CONFIG_TRAINER["CUSTOM_OBJECTS"])
+        base_model = self.CONFIG_TRAINER[TK.MODEL](shape=self.get_output_shape(),
+                                                   conf=self.CONFIG_TRAINER[TK.MODEL_CONFIG],
+                                                   num_of_labels=len(self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]),
+                                                   custom_metrics=self.CONFIG_TRAINER[TK.CUSTOM_OBJECTS])
 
         return base_model
 

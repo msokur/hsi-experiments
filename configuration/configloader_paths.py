@@ -3,8 +3,10 @@ import platform
 
 from configuration.configloader_base import read_config, concat_dict
 
+from configuration.keys import PathKeys as PK
 
-CONCAT_KEY = "CONCAT_WITH_"
+
+CONCAT_KEY = PK.CONCAT_WITH
 
 
 def read_path_config(file: str, system_mode: str, database: str) -> dict:
@@ -15,9 +17,9 @@ def read_path_config(file: str, system_mode: str, database: str) -> dict:
     path_dict = concat_dict(data_system, data_base)
     path_dict = get_database_paths(path_dict=path_dict, to_prefix=data_database)
     if platform.system() == 'Windows':
-        path_dict["SYSTEM_PATHS_DELIMITER"] = "\\"
+        path_dict[PK.SYS_DELIMITER] = "\\"
     else:
-        path_dict["SYSTEM_PATHS_DELIMITER"] = "/"
+        path_dict[PK.SYS_DELIMITER] = "/"
 
     return path_dict
 

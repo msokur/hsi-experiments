@@ -168,7 +168,7 @@ GET_EXTENSION_LOADER_DATA = [(".dat", DatFile),
 
 @pytest.mark.parametrize("typ,result", GET_EXTENSION_LOADER_DATA)
 def test_get_extension_loader(typ, result):
-    assert isinstance(get_extension_loader(typ=typ, loader_conf={}), result)
+    assert isinstance(get_extension_loader(typ=typ, dataloader_config={}), result)
 
 
 def test_get_extension_loader_error():

@@ -2,6 +2,8 @@ import numpy as np
 
 from data_utils.data_loaders.data_loader import DataLoader
 
+from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK
+
 
 class DataLoaderWhole(DataLoader):
     def __init__(self, dict_names=None):
@@ -13,8 +15,8 @@ class DataLoaderWhole(DataLoader):
             return np.reshape(arr, tuple([arr.shape[0] * arr.shape[1]]) + tuple(arr.shape[2:]))
 
         print(f'Reading {path}')
-        if "MASK_PATH" in self.CONFIG_PATHS.keys():
-            mask_path = self.CONFIG_PATHS["MASK_PATH"]
+        if PK.MASK_PATH in self.CONFIG_PATHS.keys():
+            mask_path = self.CONFIG_PATHS[PK.MASK_PATH]
         else:
             mask_path = None
         spectrum, mask = self.file_read_mask_and_spectrum(path, mask_path=mask_path)
@@ -22,7 +24,7 @@ class DataLoaderWhole(DataLoader):
 
         spectrum = self.smooth(spectrum)
 
-        if self.CONFIG_DATALOADER["3D"]:
+        if self.CONFIG_DATALOADER[DLK.D3]:
             spectrum = self.patches3d_get_from_spectrum(spectrum)
 
         size = spectrum.shape[:2]

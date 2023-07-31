@@ -11,6 +11,8 @@ from configuration.get_config import telegram, CONFIG_CV, CONFIG_PATHS, CONFIG_D
 import provider
 from data_utils.data_loaders.data_loader import DataLoader
 
+from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, TrainerKeys as TK
+
 
 class CrossValidatorBase:
     def __init__(self):
@@ -26,17 +28,17 @@ class CrossValidatorBase:
     @staticmethod
     def get_execution_flags():
         return {
-            "cross_validation": True,
-            "evaluation": True
+            CVK.EF_CROSS_VALIDATION: True,
+            CVK.EF_EVALUATION: True
         }
 
     def pipeline(self, execution_flags=None, **kwargs):
         if execution_flags is None:
             execution_flags = CrossValidatorBase.get_execution_flags()
 
-        if execution_flags['cross_validation']:
-            self.cross_validation(self.CONFIG_CV["NAME"])
-        if execution_flags['evaluation']:
+        if execution_flags[CVK.EF_CROSS_VALIDATION]:
+            self.cross_validation(self.CONFIG_CV[CVK.NAME])
+        if execution_flags[CVK.EF_EVALUATION]:
             self.evaluation(**kwargs)
 
         telegram.send_tg_message(f'operations in cross_validation.py for {self.CONFIG_CV["NAME"]} '
@@ -49,19 +51,20 @@ class CrossValidatorBase:
     def cross_validation_step(self, model_name, except_names=None):
         if except_names is None:
             except_names = []
-        trainer = provider.get_trainer(typ=self.CONFIG_TRAINER["TYPE"], model_name=model_name, except_indexes=except_names)
+        trainer = provider.get_trainer(typ=self.CONFIG_TRAINER[CVK.TYPE], model_name=model_name,
+                                       except_indexes=except_names)
         trainer.train()
 
     def cross_validation(self, root_folder_name: str, csv_filename=None):
-        self.CONFIG_PATHS["MODEL_NAME_PATHS"].append(root_folder_name)
+        self.CONFIG_PATHS[PK.MODEL_NAME_PATHS].append(root_folder_name)
 
-        root_folder = os.path.join(*self.CONFIG_PATHS["MODEL_NAME_PATHS"])
-        self.CONFIG_PATHS["MODEL_NAME_PATHS"] = self.get_model_name(self.CONFIG_PATHS["MODEL_NAME_PATHS"])
+        root_folder = os.path.join(*self.CONFIG_PATHS[PK.MODEL_NAME_PATHS])
+        self.CONFIG_PATHS[PK.MODEL_NAME_PATHS] = self.get_model_name(self.CONFIG_PATHS[PK.MODEL_NAME_PATHS])
 
         if not os.path.exists(root_folder):
             os.makedirs(root_folder)
 
-        data_loader = provider.get_data_loader(typ=self.CONFIG_DATALOADER["TYPE"])
+        data_loader = provider.get_data_loader(typ=self.CONFIG_DATALOADER[DLK.TYPE])
         paths, splits = data_loader.get_paths_and_splits()
 
         date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
@@ -69,8 +72,8 @@ class CrossValidatorBase:
         if csv_filename is None:
             csv_filename = os.path.join(root_folder, root_folder_name + "_stats" + date_ + ".csv")
 
-        for indexes in splits[self.CONFIG_CV["FIRST_SPLIT"]:]:
-            model_name = self.CONFIG_PATHS["MODEL_NAME_PATHS"]
+        for indexes in splits[self.CONFIG_CV[CVK.FIRST_SPLIT]:]:
+            model_name = self.CONFIG_PATHS[PK.MODEL_NAME_PATHS]
             if len(indexes) > 1:
                 for i in indexes:
                     model_name += "_" + str(i)
@@ -103,7 +106,7 @@ class CrossValidatorBase:
         checkpoints_folders = glob(os.path.join(folder, 'cp-*'))
         checkpoints_folders = sorted(checkpoints_folders)
 
-        return int(checkpoints_folders[0].split(self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-1].split('-')[-1])
+        return int(checkpoints_folders[0].split(self.CONFIG_PATHS[PK.SYS_DELIMITER])[-1].split('-')[-1])
 
     def check_data_label(self, paths) -> bool:
         label_not_to_train = True
@@ -115,7 +118,7 @@ class CrossValidatorBase:
     def check_label(self, path: str) -> bool:
         data = np.load(path)
         unique_y = np.unique(data["y"])
-        intersect = np.intersect1d(unique_y, self.CONFIG_DATALOADER["LABELS_TO_TRAIN"])
+        intersect = np.intersect1d(unique_y, self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
 
         return True if intersect.__len__() == 0 else False
 

@@ -3,10 +3,12 @@ from typing import List, Tuple
 import numpy as np
 import scipy.io as sio
 
+from configuration.keys import DataLoaderKeys as DLK
+
 
 class MatFile:
-    def __init__(self, loader_conf: dict):
-        self.CONFIG_DATALOADER = loader_conf
+    def __init__(self, dataloader_config: dict):
+        self.CONFIG_DATALOADER = dataloader_config
 
     def indexes_get_bool_from_mask(self, mask: np.ndarray) -> List[np.ndarray]:
         """ Create for every classification a boolean array
@@ -18,7 +20,7 @@ class MatFile:
         :raises ValueError: When the given values in "MASK_COLOR" are wrong.
         """
         indexes = []
-        for key, value in self.CONFIG_DATALOADER["MASK_COLOR"].items():
+        for key, value in self.CONFIG_DATALOADER[DLK.MASK_COLOR].items():
             if isinstance(value, int):
                 raise ValueError(f"Check your configurations for classification {key}! "
                                  f"Surround your value with brackets!")
@@ -40,7 +42,7 @@ class MatFile:
         """
         result_mask = mask.copy()
         indexes = self.indexes_get_bool_from_mask(mask)
-        for sub_mask, key in zip(indexes, self.CONFIG_DATALOADER["MASK_COLOR"].keys()):
+        for sub_mask, key in zip(indexes, self.CONFIG_DATALOADER[DLK.MASK_COLOR].keys()):
             result_mask[sub_mask] = key
 
         return result_mask
@@ -60,6 +62,6 @@ class MatFile:
         :return: Tuple with a numpy array for the spectrum and a numpy array for the annotation mask.
         """
         data = sio.loadmat(path)
-        spectrum, mask = data[self.CONFIG_DATALOADER["SPECTRUM"]], data[self.CONFIG_DATALOADER["MASK"]]
+        spectrum, mask = data[self.CONFIG_DATALOADER[DLK.SPECTRUM]], data[self.CONFIG_DATALOADER[DLK.MASK]]
 
         return spectrum, mask

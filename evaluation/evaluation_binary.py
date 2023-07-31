@@ -39,7 +39,7 @@ class EvaluationBinary(EvaluationBase):
 if __name__ == '__main__':
     
     eval_binary = EvaluationBinary('Colon_MedianFilter')
-    config.CV_GET_CHECKPOINT_FROM_VALID = False
+    # config.CV_GET_CHECKPOINT_FROM_VALID = False
     
     eval_binary.evaluate(#training_csv_path='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/Colon_MedianFilter/Colon_MedianFilter_stats_02.02.2022-13_15_36.csv', 
                                                #npz_folder = os.path.join('/work/users/mi186veva', 'data_bea_db', 'Colon_MedianFilter', 'raw_3d_weighted'),

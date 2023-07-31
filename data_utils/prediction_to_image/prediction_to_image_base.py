@@ -7,11 +7,13 @@ from matplotlib import colors as mcolor, pyplot as plt
 from models.model_randomness import set_tf_seed
 from data_utils.hypercube_data import cube
 
+from configuration.keys import DataLoaderKeys as DLK, TrainerKeys as TK
+
 
 class PredictionToImage_base:
-    def __init__(self, load_conf: dict, model_conf: dict, image_size=(480, 640)):
-        self.load_conf = load_conf
-        self.model_conf = model_conf
+    def __init__(self, dataloader_conf: dict, model_conf: dict, image_size=(480, 640)):
+        self.CONFIG_DATALOADER = dataloader_conf
+        self.CONFIG_MODEL = model_conf
         self.image_size = image_size
 
     def get_diff_mask(self, annotation_mask: np.ndarray, prediction_mask: np.ndarray) -> np.ndarray:
@@ -22,7 +24,7 @@ class PredictionToImage_base:
 
     def get_prediction_mask(self, spectrum_path: str, model_path: str) -> np.ndarray:
         spectrum, indexes = self.get_spectrum(path=spectrum_path)
-        model = self.load_model(model_path=model_path, custom_objects=self.model_conf["CUSTOM_OBJECTS_LOAD"])
+        model = self.load_model(model_path=model_path, custom_objects=self.CONFIG_MODEL[TK.CUSTOM_OBJECTS_LOAD])
         predict = model.predict(spectrum)
         predict_max = np.argmax(predict, axis=-1)
         predict_mask = np.full(self.image_size, -1)
@@ -33,17 +35,17 @@ class PredictionToImage_base:
 
     def check_classes(self, predict_mask: np.ndarray) -> np.ndarray:
         correct_mask = np.copy(predict_mask)
-        if len(self.load_conf["MASK_COLOR"]) != len(self.load_conf["LABELS_TO_TRAIN"]):
-            key_range = range(sorted(self.load_conf["MASK_COLOR"].keys())[-1])
+        if len(self.CONFIG_DATALOADER[DLK.MASK_COLOR]) != len(self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]):
+            key_range = range(sorted(self.CONFIG_DATALOADER[DLK.MASK_COLOR].keys())[-1])
             for label in key_range:
-                if label not in self.load_conf["LABELS_TO_TRAIN"]:
+                if label not in self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]:
                     correct_mask[correct_mask >= label] = correct_mask[correct_mask >= label] + 1
 
         return correct_mask
 
     def mask_to_rgba(self, mask: np.ndarray, mask_alpha=1.0) -> np.ndarray:
         img = np.zeros((self.image_size + (4,)))
-        for label, color in self.load_conf["PLOT_COLORS"].items():
+        for label, color in self.CONFIG_DATALOADER[DLK.PLOT_COLORS].items():
             rgba = (mcolor.to_rgb(color) + (mask_alpha,))
             rgba = np.array(rgba) * 255
             img[mask == label] = rgba
@@ -54,8 +56,8 @@ class PredictionToImage_base:
                              predict_mask: np.ndarray, diff_mask: np.ndarray, mask_alpha=0.75):
         masks_rgba = self.masks_to_rgba(masks=[annotation_mask, predict_mask, diff_mask])
 
-        cube_ = cube(background_path, self.load_conf["WAVE_AREA"], self.load_conf["FIRST_NM"],
-                     self.load_conf["LAST_NM"])
+        cube_ = cube(background_path, self.CONFIG_DATALOADER[DLK.WAVE_AREA], self.CONFIG_DATALOADER[DLK.FIRST_NM],
+                     self.CONFIG_DATALOADER[DLK.LAST_NM])
         cube_img = cube_.get_rgb_cube()
         cube_img_rgb = cube_img * 255
         o_shape = cube_img_rgb.shape
@@ -87,9 +89,9 @@ class PredictionToImage_base:
 
         col_labels = ("Color", "Class", "Label")
         cell_colors, cell_text = [], []
-        for label_num in sorted(self.load_conf["LABELS_TO_TRAIN"]):
-            cell_colors.append([self.load_conf["PLOT_COLORS"][label_num], "w", "w"])
-            cell_text.append(["", f"{label_num}", self.load_conf["TISSUE_LABELS"][label_num]])
+        for label_num in sorted(self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]):
+            cell_colors.append([self.CONFIG_DATALOADER[DLK.PLOT_COLORS][label_num], "w", "w"])
+            cell_text.append(["", f"{label_num}", self.CONFIG_DATALOADER[DLK.TISSUE_LABELS][label_num]])
 
         ax = fig.add_subplot(gs[-1, 0:2])
         ax.table(cellText=cell_text, cellColours=cell_colors, colLabels=col_labels, cellLoc="center",

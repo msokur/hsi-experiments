@@ -1,7 +1,4 @@
-from enum import Enum
-
-
-class PathKeys(Enum):
+class PathKeys:
     CHECKPOINT_PATH = "CHECKPOINT_PATH"
     MODEL_PATH = "MODEL_PATH"
     MODE = "MODE"
@@ -14,9 +11,10 @@ class PathKeys(Enum):
     BATCHED_PATH = "BATCHED_PATH"
     MASK_PATH = "MASK_PATH"
     CONCAT_WITH = "CONCAT_WITH_"
+    SYS_DELIMITER = "SYSTEM_PATHS_DELIMITER"
 
 
-class CrossValidationKeys(Enum):
+class CrossValidationKeys:
     EXECUTION_FLAGS = "EXECUTION_FLAGS"
     EF_CROSS_VALIDATION = "cross_validation"
     EF_EVALUATION = "evaluation"
@@ -34,7 +32,7 @@ class CrossValidationKeys(Enum):
     GET_CHECKPOINT_FROM_VALID = "GET_CHECKPOINT_FROM_VALID"
 
 
-class PreprocessorKeys(Enum):
+class PreprocessorKeys:
     EXECUTION_FLAGS = "EXECUTION_FLAGS"
     EF_LOAD_DATA_WITH_DATALOADER = "LOAD_DATA_WITH_DATALOADER"
     EF_ADD_SAMPLE_WEIGHTS = "ADD_SAMPLE_WEIGHTS"
@@ -48,9 +46,9 @@ class PreprocessorKeys(Enum):
     SCALER_PATH = "SCALER_PATH"
 
 
-class DataLoaderKeys(Enum):
+class DataLoaderKeys:
     TYPE = "TYPE"
-    FILE_EXTENSION = "FILE_EXTENSIONS"
+    FILE_EXTENSION = "FILE_EXTENSION"
     SPECTRUM = "SPECTRUM"
     MASK = "MASK"
     D3 = "3D"
@@ -86,7 +84,7 @@ class DataLoaderKeys(Enum):
     LABELS = "LABELS"
 
 
-class TrainerKeys(Enum):
+class TrainerKeys:
     TYPE = "TYPE"
     RESTORE = "RESTORE"
     WITH_SAMPLE_WEIGHTS = "WITH_SAMPLE_WEIGHTS"
@@ -109,24 +107,29 @@ class TrainerKeys(Enum):
     TUNER_ACTIVATION = "ACTIVATION"
 
 
-class ModelKeys(Enum):
+class ModelKeys:
     DROPOUT = "DROPOUT"
     WITH_BATCH_NORM = "WITH_BATCH_NORM"
     INCEPTION_FACTOR = "INCEPTION_FACTOR"
 
 
-class TunerModelKeys(Enum):
+class TunerModelKeys:
     CONV_1D_FILTERS = "CONV_1D_FILTERS"
     CONV_3D_FILTERS = "CONV_3D_FILTERS"
+    NUM_BLOCK = "NUM_BLOCK"
     NUM_DENSE = "NUM_DENSE"
     DENSE_UNITS = "DENSE_UNITS"
+    NUM_BRANCHES = "NUM_BRANCHES"
+    BLOCK_FILTERS = "BLOCK_FILTERS"
+    BLOCK_KERNEL_SIZE = "BLOCK_KERNEL_SIZE"
     LEARNING_RATE = "LEARNING_RATE"
     DROPOUT = "DROPOUT"
     ACTIVATION = "ACTIVATION"
     OPTIMIZER = "OPTIMIZER"
+    WITH_ONES = "WITH_ONES"
 
 
-class AugKeys(Enum):
+class AugKeys:
     ENABLE = "enable"
     PERCENT = "percent"
     RANGE = "range"
@@ -134,13 +137,13 @@ class AugKeys(Enum):
     USE = "use"
 
 
-class TelegramKeys(Enum):
+class TelegramKeys:
     USER = "USER"
     FILE = "FILE"
     SENDING = "SENDING"
 
 
-class DistroCheckKeys(Enum):
+class DistroCheckKeys:
     PRINTS = "PRINTS"
     Z_TEST = "Z_TEST"
     Z_TEST_P_VALUE = "Z_TEST_P_VALUE"

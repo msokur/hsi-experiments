@@ -7,6 +7,7 @@ import matplotlib.pylab as plt
 import abc
 
 from configuration.get_config import CONFIG_PATHS, CONFIG_CV
+from configuration.keys import PathKeys as PK, CrossValidationKeys as CVK
 from evaluation.metrics import Metrics
 from evaluation.predictor import Predictor
 
@@ -15,7 +16,7 @@ class EvaluationBase(Metrics):
 
     def __init__(self, npz_folder=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        name = CONFIG_CV['NAME']
+        name = CONFIG_CV[CVK.NAME]
 
         current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         parent_dir = os.path.dirname(current_dir)
@@ -32,7 +33,7 @@ class EvaluationBase(Metrics):
 
         self.name = name
         if npz_folder is None:
-            self.npz_folder = CONFIG_PATHS["RAW_NPZ_PATH"]
+            self.npz_folder = CONFIG_PATHS[PK.RAW_NPZ_PATH]
         self.npz_folder = npz_folder
         
         self.additional_columns = {}
@@ -64,12 +65,12 @@ class EvaluationBase(Metrics):
     @staticmethod
     def check_checkpoints_for_evaluation(checkpoints):
         print(f'checkpoints: {checkpoints}')
-        if CONFIG_CV["GET_CHECKPOINT_FROM_VALID"] and (checkpoints is not None):
+        if CONFIG_CV[CVK.GET_CHECKPOINT_FROM_VALID] and (checkpoints is not None):
             raise ValueError("Error! config.CV_GET_CHECKPOINT_FROM_VALID is True (it means that the last checkpoint "
                              "will be taken for each patient from EarlyStopping) and checkpoints are "
                              "specified. Please don't specify checkpoints or set "
                              "CV_GET_CHECKPOINT_FROM_VALID to False")
-        if CONFIG_CV["GET_CHECKPOINT_FROM_VALID"]:
+        if CONFIG_CV[CVK.GET_CHECKPOINT_FROM_VALID]:
             return [0]
 
         return checkpoints

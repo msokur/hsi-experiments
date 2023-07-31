@@ -14,6 +14,8 @@ import provider
 from configuration.copy_py_files import copy_files
 from data_utils.shuffle import Shuffle
 
+from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK, PreprocessorKeys as PPK, AugKeys as AK
+
 '''
 Preprocessor contains opportunity of
 1. Two step shuffling for big datasets
@@ -29,19 +31,19 @@ class Preprocessor:
         self.CONFIG_PATHS = config_paths
         self.CONFIG_DATALOADER = config_dataloader
         self.CONFIG_AUG = config_augmentation
-        self.dataloader = provider.get_data_loader(typ=self.CONFIG_DATALOADER["TYPE"],
-                                                   dict_names=[self.CONFIG_PREPROCESSOR["DICT_NAMES"][0],
-                                                               self.CONFIG_PREPROCESSOR["DICT_NAMES"][1],
-                                                               self.CONFIG_PREPROCESSOR["DICT_NAMES"][4]])
+        self.dataloader = provider.get_data_loader(typ=self.CONFIG_DATALOADER[DLK.TYPE],
+                                                   dict_names=[self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][0],
+                                                               self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1],
+                                                               self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][4]])
         self.valid_archives_saving_path = None
         self.archives_of_batch_size_saving_path = None
         self.batch_size = None
-        self.load_name_for_name = self.CONFIG_PREPROCESSOR["DICT_NAMES"][2]
-        self.load_name_for_X = self.CONFIG_PREPROCESSOR["DICT_NAMES"][0]
-        self.load_name_for_y = self.CONFIG_PREPROCESSOR["DICT_NAMES"][1]
-        self.dict_names = self.CONFIG_PREPROCESSOR["DICT_NAMES"]
-        self.piles_number = self.CONFIG_PREPROCESSOR["PILES_NUMBER"]
-        self.weights_filename = self.CONFIG_PREPROCESSOR["WEIGHT_FILENAME"]
+        self.load_name_for_name = self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][2]
+        self.load_name_for_X = self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][0]
+        self.load_name_for_y = self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1]
+        self.dict_names = self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES]
+        self.piles_number = self.CONFIG_PREPROCESSOR[PPK.PILES_NUMBER]
+        self.weights_filename = self.CONFIG_PREPROCESSOR[PPK.WEIGHT_FILENAME]
 
     def weights_get_from_file(self, root_path):
         weights_path = os.path.join(root_path, self.weights_filename)
@@ -70,7 +72,7 @@ class Preprocessor:
 
         quantities = np.array(quantities)
 
-        sum_ = np.sum(quantities[:, self.CONFIG_DATALOADER["LABELS"]])
+        sum_ = np.sum(quantities[:, self.CONFIG_DATALOADER[DLK.LABELS]])
         with np.errstate(divide='ignore', invalid='ignore'):
             weights = sum_ / quantities
 
@@ -116,9 +118,9 @@ class Preprocessor:
             execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
 
         if root_path is None:
-            root_path = self.CONFIG_PATHS["RAW_SOURCE_PATH"]
+            root_path = self.CONFIG_PATHS[PK.RAW_NPZ_PATH]
         if preprocessed_path is None:
-            preprocessed_path = self.CONFIG_PATHS["RAW_NPZ_PATH"]
+            preprocessed_path = self.CONFIG_PATHS[PK.RAW_NPZ_PATH]
 
         if not os.path.exists(preprocessed_path):
             os.makedirs(preprocessed_path)
@@ -128,7 +130,7 @@ class Preprocessor:
 
         copy_files(preprocessed_path,
                    self.CONFIG_PREPROCESSOR["FILES_TO_COPY"],
-                   self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
+                   self.CONFIG_PATHS[PK.SYS_DELIMITER])
 
         # ---------Data reading part--------------
         if execution_flags['load_data_with_dataloader']:
@@ -140,13 +142,13 @@ class Preprocessor:
             self.weightedData_save(preprocessed_path, weights)
 
         # ----------scaler part ------------------
-        if execution_flags['scale'] and self.CONFIG_PREPROCESSOR["NORMALIZATION_TYPE"] is not None:
-            print('SCALER TYPE', self.CONFIG_PREPROCESSOR["NORMALIZATION_TYPE"])
-            scaler = provider.get_scaler(typ=self.CONFIG_PREPROCESSOR["NORMALIZATION_TYPE"],
+        if execution_flags['scale'] and self.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE] is not None:
+            print('SCALER TYPE', self.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE])
+            scaler = provider.get_scaler(typ=self.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE],
                                          preprocessed_path=preprocessed_path,
-                                         scaler_file=self.CONFIG_PREPROCESSOR["SCALER_FILE"],
-                                         scaler_path=self.CONFIG_PREPROCESSOR["SCALER_PATH"],
-                                         dict_names=[self.CONFIG_PREPROCESSOR["DICT_NAMES"][x] for x in [0, 1, 4]])
+                                         scaler_file=self.CONFIG_PREPROCESSOR[PPK.SCALER_FILE],
+                                         scaler_path=self.CONFIG_PREPROCESSOR[PPK.SCALER_PATH],
+                                         dict_names=[self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][x] for x in [0, 1, 4]])
             scaler.iterate_over_archives_and_save_scaled_X(preprocessed_path, preprocessed_path)
 
         # ----------shuffle part------------------
@@ -156,7 +158,7 @@ class Preprocessor:
                               dict_names=self.dict_names,
                               preprocessor_conf=self.CONFIG_PREPROCESSOR,
                               paths_conf=self.CONFIG_PATHS,
-                              augmented=self.CONFIG_AUG["enable"])
+                              augmented=self.CONFIG_AUG[AK.ENABLE])
             shuffle.shuffle()
 
 

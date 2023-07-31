@@ -103,9 +103,9 @@ def mask():
                      [[0, 0, 0, 0], [0, 0, 255, 255], [0, 0, 255, 128]]])
 
 
-INDEXES_GET_BOOL_FROM_MASK_DATA = [(DatFile(loader_conf=GET_MASK_COLOR("RGB")), RGB_RESULT_BOOL_MASK),
-                                   (DatFile(loader_conf=GET_MASK_COLOR("RGBA")), RGBA_RESULT_BOOL_MASK),
-                                   (DatFile(loader_conf=GET_MASK_COLOR("COMBINED")), COMBINED_RESULT_BOOL_MASK)]
+INDEXES_GET_BOOL_FROM_MASK_DATA = [(DatFile(dataloader_config=GET_MASK_COLOR("RGB")), RGB_RESULT_BOOL_MASK),
+                                   (DatFile(dataloader_config=GET_MASK_COLOR("RGBA")), RGBA_RESULT_BOOL_MASK),
+                                   (DatFile(dataloader_config=GET_MASK_COLOR("COMBINED")), COMBINED_RESULT_BOOL_MASK)]
 
 
 @pytest.mark.parametrize("loader,result", INDEXES_GET_BOOL_FROM_MASK_DATA)
@@ -115,13 +115,13 @@ def test_indexes_get_bool_from_mask(mask, loader, result):
         assert (bool_mask == result_mask).all()
 
 
-INDEXES_GET_BOOL_FROM_MASK_DATA_ERROR = [(DatFile(loader_conf=GET_MASK_COLOR("ERROR1")),
+INDEXES_GET_BOOL_FROM_MASK_DATA_ERROR = [(DatFile(dataloader_config=GET_MASK_COLOR("ERROR1")),
                                           "Check your configurations in 'MASK_COLOR' for the classification 0! "
                                           "You need a RGB or RGBA value!"),
-                                         (DatFile(loader_conf=GET_MASK_COLOR("ERROR2")),
+                                         (DatFile(dataloader_config=GET_MASK_COLOR("ERROR2")),
                                           "Check your configurations in 'MASK_COLOR' for the classification 0! "
                                           "Surround your RGB/RGBA value with brackets!"),
-                                         (DatFile(loader_conf=GET_MASK_COLOR("ERROR3")),
+                                         (DatFile(dataloader_config=GET_MASK_COLOR("ERROR3")),
                                           "Check your configurations in 'MASK_COLOR' for the classification 0! "
                                           "You need a RGB or RGBA value!")]
 
@@ -133,7 +133,7 @@ def test_indexes_get_bool_from_mask_error(mask, loader, error):
 
 
 def test_indexes_get_bool_from_mask_warning(mask):
-    loader = DatFile(loader_conf=GET_MASK_COLOR("WARNING"))
+    loader = DatFile(dataloader_config=GET_MASK_COLOR("WARNING"))
     with pytest.warns(UserWarning, match="To many values in 'MASK_COLOR' for the classification 0! "
                                          "Only the first four will be used."):
         bool_masks = loader.indexes_get_bool_from_mask(mask=mask)
@@ -141,9 +141,9 @@ def test_indexes_get_bool_from_mask_warning(mask):
     assert (bool_masks[0] == RGBA_RESULT_BOOL_MASK[0]).all()
 
 
-SET_MASK_WITH_LABEL_DATA = [(DatFile(loader_conf=GET_MASK_COLOR("RGB")), RGB_RESULT_INDEX_MASK),
-                            (DatFile(loader_conf=GET_MASK_COLOR("RGBA")), RGBA_RESULT_INDEX_MASK),
-                            (DatFile(loader_conf=GET_MASK_COLOR("COMBINED")), COMBINED_RESULT_INDEX_MASK)]
+SET_MASK_WITH_LABEL_DATA = [(DatFile(dataloader_config=GET_MASK_COLOR("RGB")), RGB_RESULT_INDEX_MASK),
+                            (DatFile(dataloader_config=GET_MASK_COLOR("RGBA")), RGBA_RESULT_INDEX_MASK),
+                            (DatFile(dataloader_config=GET_MASK_COLOR("COMBINED")), COMBINED_RESULT_INDEX_MASK)]
 
 
 @pytest.mark.parametrize("loader,result", SET_MASK_WITH_LABEL_DATA)
@@ -191,8 +191,8 @@ def test_mask_read_error(dat_data_dir: str, img_name, error_msg):
         DatFile.mask_read(mask_path=path)
 
 
-MK2_MASK_DATA = [(DatFile(loader_conf=GET_MASK_COLOR("RGB")), MK2_RESULT_MASK),
-                 (DatFile(loader_conf=GET_MASK_COLOR("RGBA")), MK2_RESULT_MASK)]
+MK2_MASK_DATA = [(DatFile(dataloader_config=GET_MASK_COLOR("RGB")), MK2_RESULT_MASK),
+                 (DatFile(dataloader_config=GET_MASK_COLOR("RGBA")), MK2_RESULT_MASK)]
 
 
 @pytest.mark.parametrize("loader,result", MK2_MASK_DATA)

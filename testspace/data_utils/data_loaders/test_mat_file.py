@@ -61,9 +61,9 @@ def mask():
                      [0, 0, 2]])
 
 
-INDEX_GET_BOOL_FROM_MASK_DATA = [(MatFile(loader_conf=GET_MASK_COLOR("NORMAL")), RESULT_BOOL_MASK),
-                                 (MatFile(loader_conf=GET_MASK_COLOR("NORMAL2")), RESULT_BOOL_MASK2),
-                                 (MatFile(loader_conf=GET_MASK_COLOR("COMBINED")), RESULT_COMBINED_BOOL_MASK)]
+INDEX_GET_BOOL_FROM_MASK_DATA = [(MatFile(dataloader_config=GET_MASK_COLOR("NORMAL")), RESULT_BOOL_MASK),
+                                 (MatFile(dataloader_config=GET_MASK_COLOR("NORMAL2")), RESULT_BOOL_MASK2),
+                                 (MatFile(dataloader_config=GET_MASK_COLOR("COMBINED")), RESULT_COMBINED_BOOL_MASK)]
 
 
 @pytest.mark.parametrize("loader,result", INDEX_GET_BOOL_FROM_MASK_DATA)
@@ -73,10 +73,10 @@ def test_indexes_get_bool_from_mask(mask, loader, result):
         assert (bool_mask == result_mask).all()
 
 
-INDEX_GET_BOOL_FROM_MASK_DATA_ERROR = [(MatFile(loader_conf=GET_MASK_COLOR("ERROR1")),
+INDEX_GET_BOOL_FROM_MASK_DATA_ERROR = [(MatFile(dataloader_config=GET_MASK_COLOR("ERROR1")),
                                         "Check your configurations for classification 0! "
                                         "Surround your value with brackets!"),
-                                       (MatFile(loader_conf=GET_MASK_COLOR("ERROR2")),
+                                       (MatFile(dataloader_config=GET_MASK_COLOR("ERROR2")),
                                         "Check your configurations for classification 0! "
                                         "No annotation value is given!")]
 
@@ -87,9 +87,9 @@ def test_indexes_get_bool_from_mask_error(mask, loader, error):
         loader.indexes_get_bool_from_mask(mask=mask)
 
 
-SET_MASK_WITH_LABEL_DATA = [(MatFile(loader_conf=GET_MASK_COLOR("NORMAL")), RESULT_LABEL_MASK),
-                            (MatFile(loader_conf=GET_MASK_COLOR("NORMAL2")), RESULT_LABEL_MASK2),
-                            (MatFile(loader_conf=GET_MASK_COLOR("COMBINED")), RESULT_COMBINED_LABEL_MASK)]
+SET_MASK_WITH_LABEL_DATA = [(MatFile(dataloader_config=GET_MASK_COLOR("NORMAL")), RESULT_LABEL_MASK),
+                            (MatFile(dataloader_config=GET_MASK_COLOR("NORMAL2")), RESULT_LABEL_MASK2),
+                            (MatFile(dataloader_config=GET_MASK_COLOR("COMBINED")), RESULT_COMBINED_LABEL_MASK)]
 
 
 @pytest.mark.parametrize("loader,result", SET_MASK_WITH_LABEL_DATA)
@@ -98,7 +98,7 @@ def test_set_mask_with_label(mask, loader, result):
 
 
 def test_file_read_mask_and_spectrum(mat_data_dir: str):
-    loader = MatFile(loader_conf=LOADER_CONFIG)
+    loader = MatFile(dataloader_config=LOADER_CONFIG)
     spec, mask = loader.file_read_mask_and_spectrum(os.path.join(mat_data_dir, "test_data.mat"))
 
     assert (spec == np.full(shape=(3, 3, 10), fill_value=np.arange(start=0, stop=10, step=1))).all()
