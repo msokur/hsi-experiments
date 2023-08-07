@@ -390,7 +390,7 @@ class Preprocessor:
         # ---------Data reading part--------------
         if execution_flags['load_data_with_dataloader']:
             dataLoader = provider.get_data_loader()
-            dataLoader.files_read_and_save_to_npz(root_path, preprocessed_path)
+            dataLoader.files_read_and_save_to_archive(root_path, preprocessed_path)
 
         # ----------weights part------------------
         if execution_flags['add_sample_weights']:

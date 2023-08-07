@@ -8,8 +8,8 @@ import inspect
 
 from configuration import get_config as conf
 from configuration.keys import PathKeys as PK, TrainerKeys as TK, CrossValidationKeys as CVK, DataLoaderKeys as DLK
-from data_utils.data_loaders.data_loader import DataLoader
 from models.model_randomness import set_tf_seed
+from provider import get_data_loader
 
 tf.random.set_seed(1)
 
@@ -118,7 +118,8 @@ class Predictor:
 
         all_predictions_raw, all_gt = [], []
         results_dictionary = []
-
+        data_loader = get_data_loader(typ=conf.CONFIG_DATALOADER[DLK.TYPE], config_dataloader=conf.CONFIG_DATALOADER,
+                                      config_paths=conf.CONFIG_PATHS)
         with open(training_csv_path, newline='') as csvfile:
             report_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
             for row in tqdm(report_reader):
@@ -128,7 +129,7 @@ class Predictor:
 
                 if checkpoint is not None:
                     checkpoint = Predictor.get_checkpoint(checkpoint, model_path)
-                name = DataLoader().get_name(row[4], delimiter='/')
+                name = data_loader.get_name_func(row[4], delimiter='/')
                 print(f'We get checkpoint {checkpoint} for {model_path}')
 
                 predictor = Predictor(checkpoint, MODEL_FOLDER=model_path)

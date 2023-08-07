@@ -20,11 +20,11 @@ def get_trainer(typ: str, **kwargs):
 
 
 def get_data_loader(typ: str, **kwargs):
-    from data_utils.data_loaders.data_loader import DataLoader
+    from data_utils.data_loaders.data_loader_npz import DataLoaderNPZ
     from data_utils.data_loaders.data_loader_whole import DataLoaderWhole
     
     if typ == "normal":
-        return DataLoader(**kwargs)
+        return DataLoaderNPZ(**kwargs)
     elif typ == "whole":
         return DataLoaderWhole(**kwargs)
 

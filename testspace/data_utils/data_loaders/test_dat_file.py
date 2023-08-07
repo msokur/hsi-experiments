@@ -32,7 +32,7 @@ WARNING_MASK_COLOR = {0: [[255, 0, 0, 200, 100]]}
 LOADER_CONFIG = {"TISSUE_LABELS": {0: "Class0",
                                    1: "Class1",
                                    2: "Class2"},
-                 "MASK_DIFF": ["", ""],
+                 "MASK_DIFF": ["dat.dat", "mask.png"],
                  "WAVE_AREA": 100,
                  "FIRST_NM": 8,
                  "LAST_NM": 100}
@@ -150,6 +150,30 @@ SET_MASK_WITH_LABEL_DATA = [(DatFile(dataloader_config=GET_MASK_COLOR("RGB")), R
 def test_set_mask_with_label(mask, loader, result):
     print(loader.set_mask_with_label(mask=mask))
     assert (loader.set_mask_with_label(mask=mask) == result).all()
+
+
+SPECTRUM_RESULT_4_5_92 = np.full(shape=(4, 5, LOADER_CONFIG["LAST_NM"] - LOADER_CONFIG["FIRST_NM"]),
+                                 fill_value=np.arange(start=0.009, stop=0.1, step=0.001, dtype=np.float32))
+
+
+@pytest.fixture
+def dat_path(dat_data_dir: str) -> str:
+    return os.path.join(dat_data_dir, "test_dat.dat")
+
+
+def test_file_read_mask_and_spectrum_only_spectrum(dat_path: str):
+    spectrum, _ = DatFile(dataloader_config=LOADER_CONFIG).file_read_mask_and_spectrum(dat_path)
+    assert np.allclose(spectrum, SPECTRUM_RESULT_4_5_92)
+
+
+def test_file_read_mask_and_spectrum_only_mask(dat_path: str):
+    _, mask = DatFile(dataloader_config=LOADER_CONFIG).file_read_mask_and_spectrum(dat_path)
+    assert (mask == PNG_IMG_1).all()
+
+
+def test_spectrum_read_from_dat(dat_path: str):
+    cube = DatFile(dataloader_config=LOADER_CONFIG).spectrum_read_from_dat(dat_path=dat_path)
+    assert np.allclose(cube, SPECTRUM_RESULT_4_5_92)
 
 
 MASK_READ_PNG_DATA = [("test_mask.png", PNG_IMG_1),

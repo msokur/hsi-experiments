@@ -1,4 +1,5 @@
 import abc
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -9,19 +10,21 @@ from tqdm import tqdm
 from sklearn.feature_extraction import image
 
 import provider
-from configuration.get_config import CONFIG_DATALOADER, CONFIG_PATHS
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK
+from configuration.parameter import (
+    DICT_X, DICT_y, DICT_IDX
+)
 from data_utils.background_detection import detect_background
 from data_utils.data_loaders.path_splits import get_splits
 from data_utils.data_loaders.path_sort import get_sort
 
 
 class DataLoader:
-    def __init__(self, dict_names=None):
+    def __init__(self, config_dataloader: dict, config_paths: dict, dict_names=None):
         if dict_names is None:
-            dict_names = ["X", "y", "indexes_in_datacube"]
-        self.CONFIG_DATALOADER = CONFIG_DATALOADER
-        self.CONFIG_PATHS = CONFIG_PATHS
+            dict_names = [DICT_X, DICT_y, DICT_IDX]
+        self.CONFIG_DATALOADER = config_dataloader
+        self.CONFIG_PATHS = config_paths
         self.data_reader = provider.get_extension_loader(typ=self.CONFIG_DATALOADER[DLK.FILE_EXTENSION],
                                                          dataloader_config=self.CONFIG_DATALOADER)
         self.dict_names = dict_names
@@ -29,15 +32,19 @@ class DataLoader:
     def get_labels(self):
         return self.CONFIG_DATALOADER[DLK.LABELS]
 
+    @abc.abstractmethod
     def get_name(self, path: str, delimiter=None) -> str:
-        if delimiter is None:
-            delimiter = self.CONFIG_PATHS[PK.SYS_DELIMITER]
-        return path.split(delimiter)[-1].split(".")[0].split(self.CONFIG_DATALOADER[DLK.NAME_SPLIT])[0]
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def get_paths(root_path) -> List[str]:
+        pass
 
     def get_paths_and_splits(self, root_path=None):
         if root_path is None:
             root_path = self.CONFIG_PATHS[PK.RAW_NPZ_PATH]
-        paths = glob(os.path.join(root_path, "*.npz"))
+        paths = self.get_paths(root_path=root_path)
         number = DLK.NUMBER_SORT in self.CONFIG_DATALOADER.keys()
         paths = get_sort(paths=paths, number=number, split=self.CONFIG_DATALOADER[DLK.NUMBER_SORT] if number else None)
 
@@ -115,18 +122,19 @@ class DataLoader:
 
         return values
 
-    def files_read_and_save_to_npz(self, root_path, destination_path):
-        print('----Saving of .npz archives is started----')
+    def files_read_and_save_to_archive(self, root_path, destination_path):
+        print('----Saving of archives is started----')
 
         paths = glob(os.path.join(root_path, "*" + self.CONFIG_DATALOADER[DLK.FILE_EXTENSION]))
         with open(os.path.join(destination_path, self.get_labels_filename()), 'wb') as f:
             pickle.dump(self.get_labels(), f, pickle.HIGHEST_PROTOCOL)
 
         for path in tqdm(paths):
+            name = self.get_name(path)
             values = self.file_read(path)
-            self.X_y_dict_save_to_npz(path, destination_path, values)
+            self.X_y_dict_save_to_archive(destination_path, values, name)
 
-        print('----Saving of .npz archives is over----')
+        print('----Saving of archives is over----')
 
     def patches3d_get_from_spectrum(self, spectrum):
         spectrum_ = np.array([])
@@ -157,9 +165,9 @@ class DataLoader:
 
         return tissue_indexes
 
-    def X_y_dict_save_to_npz(self, path, destination_path, values):
-        name = self.get_name(path)
-        np.savez(os.path.join(destination_path, name), **{n: a for n, a in values.items()})
+    @abc.abstractmethod
+    def X_y_dict_save_to_archive(self, destination_path: str, values: dict, name: str) -> None:
+        pass
 
     def X_y_concatenate_from_spectrum(self, spectra, indexes, labels=None):
         X, y, indexes_in_datacube = [], [], []
@@ -217,12 +225,9 @@ class DataLoader:
 
         return indexes_np
 
-    @staticmethod
-    def labeled_spectrum_get_from_npz(npz_path: str) -> dict:
-        data = np.load(npz_path)
-        X, y = data["X"], data["y"]
-
-        return DataLoader.labeled_spectrum_get_from_X_y(X, y)
+    @abc.abstractmethod
+    def labeled_spectrum_get_from_archive(self, path: str) -> dict:
+        pass
 
     @staticmethod
     def labeled_spectrum_get_from_X_y(X: np.ndarray, y: np.ndarray) -> dict:
@@ -244,5 +249,5 @@ if __name__ == "__main__":
     database_section = "HNO_Database"
     DATALOADER = read_dataloader_config(file=loader_config, section=loader_section)
     PATHS = read_path_config(file=path_config, system_mode=system_section, database=database_section)
-    dyn = DataLoader()
+    # dyn = DataLoader()
     x = 1

@@ -2,7 +2,7 @@ import os
 from typing import Tuple, List
 import numpy as np
 import warnings
-from data_utils.hypercube_data import Cube_Read
+from data_utils.hypercube_data import HyperCube
 
 from configuration.keys import DataLoaderKeys as DLK
 
@@ -171,10 +171,8 @@ class DatFile:
 
         :return: Numpy array with the spectrum
         """
-        spectrum_data, _ = Cube_Read(dat_path,
-                                     wavearea=self.CONFIG_DATALOADER[DLK.WAVE_AREA],
-                                     Firstnm=self.CONFIG_DATALOADER[DLK.FIRST_NM],
-                                     Lastnm=self.CONFIG_DATALOADER[DLK.LAST_NM]).cube_matrix()
+        spectrum_data = HyperCube(address=dat_path).cube_matrix(first_nm=self.CONFIG_DATALOADER[DLK.FIRST_NM],
+                                                                last_nm=self.CONFIG_DATALOADER[DLK.LAST_NM])
 
         return spectrum_data
 

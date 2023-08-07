@@ -9,7 +9,6 @@ import inspect
 import utils
 from configuration.get_config import telegram, CONFIG_CV, CONFIG_PATHS, CONFIG_DATALOADER, CONFIG_TRAINER
 import provider
-from data_utils.data_loaders.data_loader import DataLoader
 
 from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, TrainerKeys as TK
 
@@ -64,7 +63,8 @@ class CrossValidatorBase:
         if not os.path.exists(root_folder):
             os.makedirs(root_folder)
 
-        data_loader = provider.get_data_loader(typ=self.CONFIG_DATALOADER[DLK.TYPE])
+        data_loader = provider.get_data_loader(typ=self.CONFIG_DATALOADER[DLK.TYPE],
+                                               config_dataloader=CONFIG_DATALOADER, config_paths=CONFIG_PATHS)
         paths, splits = data_loader.get_paths_and_splits()
 
         date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
@@ -78,7 +78,7 @@ class CrossValidatorBase:
                 for i in indexes:
                     model_name += "_" + str(i)
             else:
-                model_name += "_" + str(indexes[0]) + "_" + data_loader.get_name(np.array(paths)[indexes][0])
+                model_name += "_" + str(indexes[0]) + "_" + data_loader.get_name_func(np.array(paths)[indexes][0])
 
             paths_patch = np.array(paths)[indexes]
 
@@ -86,7 +86,7 @@ class CrossValidatorBase:
                 print(f"In files {paths_patch} are no needed labels for training!")
                 continue
 
-            self.cross_validation_step(model_name, except_names=[DataLoader().get_name(p) for p in paths_patch])
+            self.cross_validation_step(model_name, except_names=[data_loader.get_name_func(p) for p in paths_patch])
 
             for i, path_ in enumerate(paths_patch):
                 sensitivity, specificity = 0, 0

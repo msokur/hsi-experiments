@@ -59,8 +59,13 @@ def test_get_sort(paths, number_split, splits, result):
     assert get_sort(paths=paths, number=number_split, split=splits) == result
 
 
-def test_get_number():
-    assert get_number(elem=NUMBER_PATHS_1[0], split=NUMBER_SPLITS_1) == 4
+GET_NUMBER_DATA = [(NUMBER_PATHS_1[0], NUMBER_SPLITS_1, 4),
+                   ("C:\\folder1\\folder2\\test.zarr/1cube", [None, "cube"], 1)]
+
+
+@pytest.mark.parametrize("elem,split,result", GET_NUMBER_DATA)
+def test_get_number(elem, split, result):
+    assert get_number(elem=elem, split=split) == result
 
 
 GET_NUMBER_ERROR_DATA = [(NUMBER_PATHS_1[0], ["data", "ube"], ValueError,

@@ -23,7 +23,7 @@ class DataLoaderWholeBase(DataLoader):
         return self.class_instance.file_read_mask_and_spectrum(path)
 
     def get_name(self, path):
-        return self.class_instance.get_name(path)
+        return self.class_instance.get_name_func(path)
 
     def file_read(self, path):
         def reshape(arr):

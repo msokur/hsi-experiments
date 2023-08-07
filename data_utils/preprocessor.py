@@ -32,6 +32,8 @@ class Preprocessor:
         self.CONFIG_DATALOADER = config_dataloader
         self.CONFIG_AUG = config_augmentation
         self.dataloader = provider.get_data_loader(typ=self.CONFIG_DATALOADER[DLK.TYPE],
+                                                   config_dataloader=self.CONFIG_DATALOADER,
+                                                   config_paths=self.CONFIG_PATHS,
                                                    dict_names=[self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][0],
                                                                self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1],
                                                                self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][4]])
@@ -89,7 +91,7 @@ class Preprocessor:
 
         return weights
 
-    def weightedData_save(self, root_path, weights):
+    def weighted_data_save(self, root_path, weights):
         paths = glob.glob(os.path.join(root_path, "*.npz"))
         for i, path in tqdm(enumerate(paths)):
             data = np.load(path)
@@ -134,12 +136,12 @@ class Preprocessor:
 
         # ---------Data reading part--------------
         if execution_flags['load_data_with_dataloader']:
-            self.dataloader.files_read_and_save_to_npz(root_path, preprocessed_path)
+            self.dataloader.files_read_and_save_to_archive(root_path, preprocessed_path)
 
         # ----------weights part------------------
         if execution_flags['add_sample_weights']:
             weights = self.weights_get_or_save(preprocessed_path)
-            self.weightedData_save(preprocessed_path, weights)
+            self.weighted_data_save(preprocessed_path, weights)
 
         # ----------scaler part ------------------
         if execution_flags['scale'] and self.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE] is not None:

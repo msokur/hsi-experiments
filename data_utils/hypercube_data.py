@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -150,3 +152,26 @@ class cube(object):
         imgplot = plt.imshow(np.flipud(rgb_cube))  # ((out * 255).astype(np.uint8))
         plt.show()
         return imgplot
+
+
+class HyperCube(object):
+    def __init__(self, address: str):
+        self.address = address
+        self.hyper_cube, self.size = self.load_cube()
+
+    def load_cube(self) -> Tuple[np.ndarray, tuple]:
+        # fist three values are the size
+        size = np.fromfile(file=self.address, dtype=">i4", count=3)
+        # read spectrum, offset -> 3 x 4 byte integer
+        data = np.fromfile(file=self.address, dtype=">f4", offset=12)
+
+        spectrum = data.reshape(size)
+        # eliminate negative values
+        spectrum[spectrum < 0.00001] = 0.00001
+        # eliminate huge values (assume 10 looking at the graphs)
+        spectrum[spectrum > 10] = 10
+
+        return np.rot90(spectrum), (size[1], size[0], size[2])
+
+    def cube_matrix(self, first_nm: int, last_nm: int) -> np.ndarray:
+        return self.hyper_cube[..., first_nm:last_nm + 1]

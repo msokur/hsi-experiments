@@ -19,11 +19,10 @@ from scipy.ndimage import median_filter
 from tqdm import tqdm
 import csv
 
-from data_utils.data_loaders.data_loader import DataLoader
 from data_utils.preprocessor import Preprocessor
 from cross_validators.cross_validator_base import CrossValidatorBase
 from configuration.get_config import CONFIG_CV, CONFIG_DATALOADER, CONFIG_PATHS
-from provider import get_whole_analog_of_data_loader, get_evaluation
+from provider import get_whole_analog_of_data_loader, get_evaluation, get_data_loader
 
 
 class CrossValidatorPostProcessing(CrossValidatorBase):
@@ -291,13 +290,14 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
         postprocessed_predictions = np.load(os.path.join(folder,
                                                          self.file_with_postprocessed_predictions),
                                             allow_pickle=True).item()
-
+        data_loader = get_data_loader(typ=CONFIG_DATALOADER["TYPE"], config_dataloader=CONFIG_DATALOADER,
+                                      config_paths=CONFIG_PATHS)
         result = []
 
         with open(self.training_csv_path, newline='') as csvfile:
             report_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
             for row in tqdm(report_reader):
-                name = DataLoader().get_name(row[4], delimiter='/')
+                name = data_loader.get_name_func(row[4], delimiter='/')
                 data = np.load(os.path.join(CONFIG_PATHS["RAW_NPZ_PATH"], name + '.npz'))
                 indexes_in_datacube = data['indexes_in_datacube']
                 predictions = postprocessed_predictions[name]['predictions']

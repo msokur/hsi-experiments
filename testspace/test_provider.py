@@ -49,7 +49,7 @@ GET_DATA_LOADER_DATA = [("normal", DataLoader),
 
 @pytest.mark.parametrize("typ,result", GET_DATA_LOADER_DATA)
 def test_get_data_loader(typ, result):
-    loader = get_data_loader(typ=typ)
+    loader = get_data_loader(typ=typ, config_dataloader={"FILE_EXTENSION": ".dat"}, config_paths={})
 
     assert isinstance(loader, result)
 
