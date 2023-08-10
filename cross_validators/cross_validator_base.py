@@ -78,7 +78,7 @@ class CrossValidatorBase:
                 for i in indexes:
                     model_name += "_" + str(i)
             else:
-                model_name += "_" + str(indexes[0]) + "_" + data_loader.get_name_func(np.array(paths)[indexes][0])
+                model_name += "_" + str(indexes[0]) + "_" + data_loader.get_name(np.array(paths)[indexes][0])
 
             paths_patch = np.array(paths)[indexes]
 
@@ -86,7 +86,7 @@ class CrossValidatorBase:
                 print(f"In files {paths_patch} are no needed labels for training!")
                 continue
 
-            self.cross_validation_step(model_name, except_names=[data_loader.get_name_func(p) for p in paths_patch])
+            self.cross_validation_step(model_name, except_names=[data_loader.get_name(p) for p in paths_patch])
 
             for i, path_ in enumerate(paths_patch):
                 sensitivity, specificity = 0, 0

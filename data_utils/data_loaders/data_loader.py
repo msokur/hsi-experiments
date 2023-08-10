@@ -32,8 +32,13 @@ class DataLoader:
     def get_labels(self):
         return self.CONFIG_DATALOADER[DLK.LABELS]
 
+    def get_cube_name(self, path: str, delimiter=None) -> str:
+        if delimiter is None:
+            delimiter = self.CONFIG_PATHS[PK.SYS_DELIMITER]
+        return path.split(delimiter)[-1].split(".")[0].split(self.CONFIG_DATALOADER[DLK.NAME_SPLIT])[0]
+
     @abc.abstractmethod
-    def get_name(self, path: str, delimiter=None) -> str:
+    def get_name(self, path: str) -> str:
         pass
 
     @staticmethod
@@ -130,7 +135,7 @@ class DataLoader:
             pickle.dump(self.get_labels(), f, pickle.HIGHEST_PROTOCOL)
 
         for path in tqdm(paths):
-            name = self.get_name(path)
+            name = self.get_cube_name(path)
             values = self.file_read(path)
             self.X_y_dict_save_to_archive(destination_path, values, name)
 

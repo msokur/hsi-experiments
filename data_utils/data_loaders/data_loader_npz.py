@@ -12,10 +12,8 @@ class DataLoaderNPZ(DataLoader):
     def __init__(self, config_dataloader: dict, config_paths: dict, dict_names=None):
         super().__init__(config_dataloader=config_dataloader, config_paths=config_paths, dict_names=dict_names)
 
-    def get_name(self, path: str, delimiter=None) -> str:
-        if delimiter is None:
-            delimiter = self.CONFIG_PATHS[PK.SYS_DELIMITER]
-        return path.split(delimiter)[-1].split(".")[0].split(self.CONFIG_DATALOADER[DLK.NAME_SPLIT])[0]
+    def get_name(self, path: str) -> str:
+        return os.path.split(path)[-1].split(".npz")[0]
 
     @staticmethod
     def get_paths(root_path) -> List[str]:

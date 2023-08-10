@@ -87,7 +87,6 @@ def get_scaler(typ: str, *args, **kwargs):
     if typ == 'l2_norm':
         return NormalizerScaler(*args, **kwargs)
     elif typ == 'svn':
-        print('StandardScaler')
         return StandardScaler(*args, **kwargs)
     elif typ == 'svn_T':
         return StandardScalerTransposed(*args, **kwargs)
@@ -133,6 +132,17 @@ def get_extension_loader(typ: str, **kwargs):
         return MatFile(**kwargs)
     else:
         raise ValueError(f"For file extension {typ} is no implementation!")
+
+
+def get_weight_calculation(typ: str, **kwargs):
+    from data_utils.weights import WeightsNPZ, WeightsZARR
+
+    if typ == "zarr":
+        return WeightsZARR(**kwargs)
+    elif type == "npz":
+        return WeightsNPZ(**kwargs)
+    else:
+        value_error("Weight calculation", typ)
 
 
 def value_error(modul: str, typ: str):

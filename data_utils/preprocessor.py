@@ -1,10 +1,7 @@
 import sys
 import inspect
 import os
-import numpy as np
 import glob
-from tqdm import tqdm
-import pickle
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
@@ -47,65 +44,6 @@ class Preprocessor:
         self.piles_number = self.CONFIG_PREPROCESSOR[PPK.PILES_NUMBER]
         self.weights_filename = self.CONFIG_PREPROCESSOR[PPK.WEIGHT_FILENAME]
 
-    def weights_get_from_file(self, root_path):
-        weights_path = os.path.join(root_path, self.weights_filename)
-        if os.path.isfile(weights_path):
-            weights = pickle.load(open(weights_path, 'rb'))
-            return weights['weights']
-        else:
-            raise ValueError("No .weights file was found in the directory, check given path")
-
-    def weights_get_or_save(self, root_path):
-        weights_path = os.path.join(root_path, self.weights_filename)
-
-        paths = glob.glob(os.path.join(root_path, '*.npz'))
-        y_unique = pickle.load(open(os.path.join(root_path, self.dataloader.get_labels_filename()), 'rb'))
-
-        quantities = []
-        for path in tqdm(paths):
-            data = np.load(path)
-            X, y = data['X'], data['y']
-
-            quantity = []
-            for y_u in y_unique:
-                quantity.append(X[y == y_u].shape[0])
-
-            quantities.append(quantity)
-
-        quantities = np.array(quantities)
-
-        sum_ = np.sum(quantities[:, self.CONFIG_DATALOADER[DLK.LABELS]])
-        with np.errstate(divide='ignore', invalid='ignore'):
-            weights = sum_ / quantities
-
-        weights[np.isinf(weights)] = 0
-
-        data = {
-            'weights': weights,
-            'sum': sum_,
-            'quantities': quantities
-        }
-
-        with open(weights_path, 'wb') as f:
-            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
-
-        return weights
-
-    def weighted_data_save(self, root_path, weights):
-        paths = glob.glob(os.path.join(root_path, "*.npz"))
-        for i, path in tqdm(enumerate(paths)):
-            data = np.load(path)
-            X, y = data["X"], data["y"]
-            weights_ = np.zeros(y.shape)
-
-            for j in np.unique(y):
-                weights_[y == j] = weights[i, j]
-
-            data_ = {n: a for n, a in data.items()}
-            data_["weights"] = weights_
-
-            np.savez(os.path.join(root_path, self.dataloader.get_name(path)), **data_)
-
     @staticmethod
     def get_execution_flags_for_pipeline_with_all_true():
         return {
@@ -140,8 +78,12 @@ class Preprocessor:
 
         # ----------weights part------------------
         if execution_flags['add_sample_weights']:
-            weights = self.weights_get_or_save(preprocessed_path)
-            self.weighted_data_save(preprocessed_path, weights)
+            weight_calc = provider.get_weight_calculation(typ="npz", filename=self.weights_filename,
+                                                          label_file=self.dataloader.get_labels_filename(),
+                                                          y_dict_name=self.load_name_for_y,
+                                                          weight_dict_name=self.dict_names[-1])
+            weights = weight_calc.weights_get_or_save(preprocessed_path)
+            weight_calc.weighted_data_save(preprocessed_path, weights)
 
         # ----------scaler part ------------------
         if execution_flags['scale'] and self.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE] is not None:

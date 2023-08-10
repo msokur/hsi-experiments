@@ -23,5 +23,25 @@ def npz_data_dir(data_dir: str) -> str:
 
 
 @pytest.fixture
+def npz_1d_data_dir(npz_data_dir: str) -> str:
+    return os.path.join(npz_data_dir, "1d")
+
+
+@pytest.fixture
+def npz_3d_data_dir(npz_data_dir: str) -> str:
+    return os.path.join(npz_data_dir, "3d")
+
+
+@pytest.fixture
 def zarr_data_dir(data_dir: str) -> str:
     return os.path.join(data_dir, "zarr_file")
+
+
+@pytest.fixture
+def zarr_1d_data_dir(zarr_data_dir: str) -> str:
+    return os.path.join(zarr_data_dir, "1d")
+
+
+@pytest.fixture
+def zarr_3d_data_dir(zarr_data_dir: str) -> str:
+    return os.path.join(zarr_data_dir, "3d")
