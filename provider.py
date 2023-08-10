@@ -131,18 +131,18 @@ def get_extension_loader(typ: str, **kwargs):
     elif typ == ".mat":
         return MatFile(**kwargs)
     else:
-        raise ValueError(f"For file extension {typ} is no implementation!")
+        value_error(modul="file extension", typ=typ)
 
 
-def get_weight_calculation(typ: str, **kwargs):
-    from data_utils.weights import WeightsNPZ, WeightsZARR
+def get_data_archive(typ: str, **kwargs):
+    from data_utils.data_archive import DataArchiveNPZ, DataArchiveZARR
 
-    if typ == "zarr":
-        return WeightsZARR(**kwargs)
-    elif type == "npz":
-        return WeightsNPZ(**kwargs)
+    if typ == "npz":
+        return DataArchiveNPZ(**kwargs)
+    elif typ == "zarr":
+        return DataArchiveZARR(**kwargs)
     else:
-        value_error("Weight calculation", typ)
+        value_error(modul="data archive", typ=typ)
 
 
 def value_error(modul: str, typ: str):

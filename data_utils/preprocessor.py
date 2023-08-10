@@ -10,6 +10,7 @@ sys.path.insert(0, parent_dir)
 import provider
 from configuration.copy_py_files import copy_files
 from data_utils.shuffle import Shuffle
+from data_utils.weights import Weights
 
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK, PreprocessorKeys as PPK, AugKeys as AK
 
@@ -78,10 +79,10 @@ class Preprocessor:
 
         # ----------weights part------------------
         if execution_flags['add_sample_weights']:
-            weight_calc = provider.get_weight_calculation(typ="npz", filename=self.weights_filename,
-                                                          label_file=self.dataloader.get_labels_filename(),
-                                                          y_dict_name=self.load_name_for_y,
-                                                          weight_dict_name=self.dict_names[-1])
+            weight_calc = Weights(filename=self.weights_filename,
+                                  label_file=self.dataloader.get_labels_filename(),
+                                  y_dict_name=self.load_name_for_y,
+                                  weight_dict_name=self.dict_names[-1])
             weights = weight_calc.weights_get_or_save(preprocessed_path)
             weight_calc.weighted_data_save(preprocessed_path, weights)
 

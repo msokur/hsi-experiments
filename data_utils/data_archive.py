@@ -97,5 +97,5 @@ class DataArchiveZARR(DataArchive):
             pat.array(name=k, data=v, chunks=self.chunks)
 
     def save_data(self, save_path: str, data_name: str, data: np.ndarray) -> None:
-        data = zarr.open_group(store=save_path, mode="a")
-        data.array(name=data_name, data=data, chunks=self.chunks, overwrite=True)
+        root = zarr.open_group(store=save_path, mode="a")
+        root.array(name=data_name, data=data, chunks=self.chunks, overwrite=True)

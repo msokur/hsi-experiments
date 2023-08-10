@@ -9,6 +9,8 @@ from glob import glob
 import numpy as np
 import zarr
 
+from data_utils.data_archive import DataArchive
+
 from configuration.parameter import (
     DICT_y, DICT_WEIGHT,
     ZARR_PAT_DATA, PAT_CHUNKS
@@ -16,9 +18,10 @@ from configuration.parameter import (
 
 
 class Weights:
-    def __init__(self, filename: str, labels: list = None, label_file: str = None, y_dict_name: str = None,
-                 weight_dict_name: str = None):
+    def __init__(self, filename: str, data_archive: DataArchive, labels: list = None, label_file: str = None,
+                 y_dict_name: str = None, weight_dict_name: str = None):
         self.filename = filename
+        self.data_archive = data_archive
         if labels is not None:
             self.labels = labels
         elif label_file is not None:
@@ -91,50 +94,12 @@ class Weights:
 
             self.save_data(path=path, weights=weights_)
 
-    @staticmethod
-    @abc.abstractmethod
-    def get_paths(root_path: str) -> List[str]:
-        pass
+    def get_paths(self, root_path: str) -> List[str]:
+        return self.data_archive.get_paths(archive_path=root_path)
 
-    @abc.abstractmethod
     def get_y(self, path: str) -> np.ndarray:
-        pass
+        return self.data_archive.get_data(data_path=path, data_name=self.y_dict_name)[...]
 
     @abc.abstractmethod
     def save_data(self, path: str, weights: np.ndarray):
-        pass
-
-
-class WeightsNPZ(Weights):
-    @staticmethod
-    def get_paths(root_path: str) -> List[str]:
-        return glob(os.path.join(root_path, '*.npz'))
-
-    def get_y(self, path: str) -> np.ndarray:
-        self.data = np.load(path)
-        return self.data[self.y_dict_name]
-
-    def save_data(self, path: str, weights: np.ndarray):
-        data_ = {n: a for n, a in self.data.items()}
-        data_[self.weight_dict_name] = weights
-
-        np.savez(path, **data_)
-
-
-class WeightsZARR(Weights):
-    @staticmethod
-    def get_paths(root_path: str) -> List[str]:
-        paths = []
-        zarr_path = os.path.join(root_path, ZARR_PAT_DATA)
-        data = zarr.open_group(store=zarr_path)
-        for group in data.group_keys():
-            paths.append(os.path.abspath(zarr_path) + f"/{data[group].path}")
-
-        return paths
-
-    def get_y(self, path: str) -> np.ndarray:
-        self.data = zarr.open_group(store=path, mode="a")
-        return self.data[self.y_dict_name][...]
-
-    def save_data(self, path: str, weights: np.ndarray):
-        self.data.array(name=self.weight_dict_name, data=weights, chunks=PAT_CHUNKS, overwrite=True)
+        self.data_archive.save_data(save_path=path, data_name=self.weight_dict_name, data=weights)

@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 from provider import get_trainer, get_data_loader, get_whole_analog_of_data_loader, get_evaluation, get_smoother, \
-    get_scaler, get_pixel_detection, get_cross_validator, get_extension_loader
+    get_scaler, get_pixel_detection, get_cross_validator, get_extension_loader, get_data_archive
 
 from trainers.trainer_tuner import TrainerTuner
 from trainers.trainer_easy import TrainerEasy
@@ -20,6 +20,8 @@ from data_utils.smoothing import MedianFilter, GaussianFilter
 from data_utils.scaler import NormalizerScaler, StandardScaler, StandardScalerTransposed
 
 from data_utils.border import detect_border, detect_core
+
+from data_utils.data_archive import DataArchiveZARR, DataArchiveNPZ
 
 from cross_validators.cross_validator_normal import CrossValidationNormal
 
@@ -112,20 +114,23 @@ GET_SCALER_DATA = [("l2_norm", NormalizerScaler),
 
 @pytest.fixture
 def scaler_path():
-    os.mkdir(path="test")
-    np.savez(os.path.join("test", "test.npz"),
+    path = "scaler_test"
+    if not os.path.exists(path):
+        os.mkdir(path=path)
+    np.savez(os.path.join(path, "test.npz"),
              **{"X": [[0, 1, 2]], "y": [0], "indexes_in_datacube": [(0, 0)]})
     yield
-    if os.path.exists(os.path.join("test", "scaler.scaler")):
-        os.remove(path=os.path.join("test", "scaler.scaler"))
-    os.remove(path=os.path.join("test", "test.npz"))
-    os.rmdir(path="test")
+    if os.path.exists(os.path.join(path, "scaler.scaler")):
+        os.remove(path=os.path.join(path, "scaler.scaler"))
+    os.remove(path=os.path.join(path, "test.npz"))
+    os.rmdir(path=path)
 
 
 @pytest.mark.usefixtures("scaler_path")
 @pytest.mark.parametrize("typ,result", GET_SCALER_DATA)
 def test_get_scaler(typ, result):
-    scaler = get_scaler(typ=typ, preprocessed_path="test")
+    path = "scaler_test"
+    scaler = get_scaler(typ=typ, preprocessed_path=path, data_archive=DataArchiveNPZ(archive_path=path))
 
     assert isinstance(scaler, result)
 
@@ -172,5 +177,19 @@ def test_get_extension_loader(typ, result):
 
 
 def test_get_extension_loader_error():
-    with pytest.raises(ValueError, match="For file extension test is no implementation!"):
+    with pytest.raises(ValueError, match="Error! No corresponding file extension for test"):
         get_extension_loader(typ="test")
+
+
+GET_DATA_ARCHIVE = [("npz", DataArchiveNPZ, {"archive_path": ""}),
+                    ("zarr", DataArchiveZARR, {"archive_path": "", "archive_name": "", "chunks": (10,)})]
+
+
+@pytest.mark.parametrize("typ,archive,param", GET_DATA_ARCHIVE)
+def test_get_data_archive(typ: str, archive, param: dict):
+    assert isinstance(get_data_archive(typ=typ, **param), archive)
+
+
+def test_get_data_archive_error():
+    with pytest.raises(ValueError, match="Error! No corresponding data archive for test"):
+        get_data_archive(typ="test")
