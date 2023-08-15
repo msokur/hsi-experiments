@@ -15,6 +15,11 @@ class DataArchive:
     def get_paths(self, archive_path: str) -> List[str]:
         pass
 
+    @staticmethod
+    @abc.abstractmethod
+    def get_name(path: str) -> str:
+        pass
+
     @abc.abstractmethod
     def all_data_generator(self):
         pass
@@ -35,10 +40,19 @@ class DataArchive:
     def save_data(self, save_path: str, data_name: str, data: np.ndarray) -> None:
         pass
 
+    @abc.abstractmethod
+    def shuffle_archive(self, dict_names: List[str], piles_number: int, shuffle_saving_path: str, augmented: bool,
+                        files_to_copy: list):
+        pass
+
 
 class DataArchiveNPZ(DataArchive):
     def get_paths(self, archive_path: str) -> List[str]:
         return glob(os.path.join(archive_path, "*.npz"))
+
+    @staticmethod
+    def get_name(path: str) -> str:
+        return os.path.split(path)[-1].split(".npz")[0]
 
     def all_data_generator(self):
         paths = self.get_paths(archive_path=self.archive_path)
@@ -62,6 +76,15 @@ class DataArchiveNPZ(DataArchive):
         main_path, name = os.path.split(p=save_path)
         self.save_group(save_path=main_path, group_name=name, datas=datas)
 
+    def shuffle_archive(self, dict_names: List[str], piles_number: int, shuffle_saving_path: str, augmented: bool,
+                        files_to_copy: list):
+        from data_utils.shuffle import Shuffle
+
+        paths = self.get_paths(archive_path=self.archive_path)
+        sh = Shuffle(raw_paths=paths, dict_names=dict_names, piles_number=piles_number,
+                     shuffle_saving_path=shuffle_saving_path, augmented=augmented, files_to_copy=files_to_copy)
+        sh.shuffle()
+
 
 class DataArchiveZARR(DataArchive):
     def __init__(self, archive_path: str, archive_name: str, chunks: tuple):
@@ -77,6 +100,10 @@ class DataArchiveZARR(DataArchive):
             paths.append(os.path.abspath(zarr_path) + f"/{data[group].path}")
 
         return paths
+
+    @staticmethod
+    def get_name(path: str) -> str:
+        return os.path.split(path)[-1]
 
     def all_data_generator(self):
         paths = self.get_paths(archive_path=self.archive_path)
@@ -99,3 +126,12 @@ class DataArchiveZARR(DataArchive):
     def save_data(self, save_path: str, data_name: str, data: np.ndarray) -> None:
         root = zarr.open_group(store=save_path, mode="a")
         root.array(name=data_name, data=data, chunks=self.chunks, overwrite=True)
+
+    def shuffle_archive(self, dict_names: List[str], piles_number: int, shuffle_saving_path: str, augmented: bool,
+                        files_to_copy: list):
+        from data_utils.shuffle_zarr import ShuffleZarr
+
+        paths = self.get_paths(archive_path=self.archive_path)
+        sh = ShuffleZarr(raw_paths=paths, shuffle_saving_path=shuffle_saving_path, piles_number=piles_number,
+                         files_to_copy=files_to_copy)
+        sh.shuffle()

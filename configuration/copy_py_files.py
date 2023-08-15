@@ -7,7 +7,7 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 
 
-def copy_files(path: str, files_to_copy: list, sys_path_delimiter: str):
+def copy_files(path: str, files_to_copy: list):
     files = []
     for file in files_to_copy:
         files += glob(os.path.join(parentdir, *file))
@@ -18,4 +18,4 @@ def copy_files(path: str, files_to_copy: list, sys_path_delimiter: str):
 
     for file in files:
         if os.path.exists(file):
-            copyfile(file, os.path.join(path_, file.split(sys_path_delimiter)[-1]))
+            copyfile(file, os.path.join(path_, os.path.split(file)[-1]))

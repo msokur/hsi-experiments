@@ -39,7 +39,7 @@ class Trainer:
             if not os.path.exists(self.log_dir):
                 os.mkdir(self.log_dir)
 
-            copy_files(self.log_dir, self.CONFIG_TRAINER["FILES_TO_COPY"], self.CONFIG_PATHS[PK.SYS_DELIMITER])
+            copy_files(self.log_dir, self.CONFIG_TRAINER["FILES_TO_COPY"])
 
     def get_datasets(self, for_tuning=False):
         # train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)

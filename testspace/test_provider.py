@@ -192,4 +192,4 @@ def test_get_data_archive(typ: str, archive, param: dict):
 
 def test_get_data_archive_error():
     with pytest.raises(ValueError, match="Error! No corresponding data archive for test"):
-        get_data_archive(typ="test")
+        get_data_archive(typ="test", archive_path="")

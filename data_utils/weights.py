@@ -4,16 +4,13 @@ import pickle
 from typing import List
 
 from tqdm import tqdm
-from glob import glob
 
 import numpy as np
-import zarr
 
 from data_utils.data_archive import DataArchive
 
 from configuration.parameter import (
     DICT_y, DICT_WEIGHT,
-    ZARR_PAT_DATA, PAT_CHUNKS
 )
 
 

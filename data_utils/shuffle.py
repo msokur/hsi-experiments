@@ -8,27 +8,23 @@ from tqdm import tqdm
 
 from configuration.copy_py_files import copy_files
 
-from configuration.keys import PathKeys as PK, PreprocessorKeys as PPK
-
 
 class Shuffle:
-    def __init__(self, raw_paths, dict_names: list, preprocessor_conf: dict, paths_conf: dict, augmented=False):
+    def __init__(self, raw_paths, dict_names: list, piles_number: int, shuffle_saving_path: str, augmented=False,
+                 files_to_copy: list = None):
         self.raw_paths = raw_paths
-        self.CONFIG_PREPROCESSOR = preprocessor_conf
-        self.CONFIG_PATHS = paths_conf
         self.dict_names = dict_names
-        self.piles_number = self.CONFIG_PREPROCESSOR[PPK.PILES_NUMBER]
-        self.shuffle_saving_path = self.CONFIG_PATHS[PK.SHUFFLED_PATH]
+        self.piles_number = piles_number
+        self.shuffle_saving_path = shuffle_saving_path
         self.augmented = augmented
+        self.files_to_copy = files_to_copy
 
     def shuffle(self):
         print('--------Shuffling started--------')
         if not os.path.exists(self.shuffle_saving_path):
             os.mkdir(self.shuffle_saving_path)
 
-        copy_files(self.shuffle_saving_path,
-                   self.CONFIG_PREPROCESSOR["FILES_TO_COPY"],
-                   self.CONFIG_PATHS[PK.SYS_DELIMITER])
+        copy_files(self.shuffle_saving_path, self.files_to_copy)
 
         self.__create_piles()
         self.__shuffle_piles()
@@ -56,7 +52,7 @@ class Shuffle:
             for pn in range(self.piles_number):
                 piles[pn] = []
 
-            name = p.split(self.CONFIG_PATHS[PK.SYS_DELIMITER])[-1].split(".")[0]
+            name = os.path.split(p)[-1].split(".")[0]
             _data = np.load(p)
 
             data = {n: a for n, a in _data.items()}

@@ -13,6 +13,9 @@ from data_utils.shuffle import Shuffle
 from data_utils.weights import Weights
 
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK, PreprocessorKeys as PPK, AugKeys as AK
+from configuration.parameter import (
+    ZARR_PAT_GROUP, PAT_CHUNKS, D3_PAT_CHUNKS
+)
 
 '''
 Preprocessor contains opportunity of
@@ -66,12 +69,14 @@ class Preprocessor:
         if not os.path.exists(preprocessed_path):
             os.makedirs(preprocessed_path)
 
+        data_archive = provider.get_data_archive(typ="npz", archive_path=preprocessed_path, archive_name=ZARR_PAT_GROUP,
+                                                 chunks=D3_PAT_CHUNKS if self.CONFIG_DATALOADER[DLK.D3] else PAT_CHUNKS)
+
         print('ROOT PATH', root_path)
         print('PREPROCESSED PATH', preprocessed_path)
 
         copy_files(preprocessed_path,
-                   self.CONFIG_PREPROCESSOR["FILES_TO_COPY"],
-                   self.CONFIG_PATHS[PK.SYS_DELIMITER])
+                   self.CONFIG_PREPROCESSOR["FILES_TO_COPY"])
 
         # ---------Data reading part--------------
         if execution_flags['load_data_with_dataloader']:
@@ -80,6 +85,7 @@ class Preprocessor:
         # ----------weights part------------------
         if execution_flags['add_sample_weights']:
             weight_calc = Weights(filename=self.weights_filename,
+                                  data_archive=data_archive,
                                   label_file=self.dataloader.get_labels_filename(),
                                   y_dict_name=self.load_name_for_y,
                                   weight_dict_name=self.dict_names[-1])
@@ -90,6 +96,7 @@ class Preprocessor:
         if execution_flags['scale'] and self.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE] is not None:
             print('SCALER TYPE', self.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE])
             scaler = provider.get_scaler(typ=self.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE],
+                                         data_archive=data_archive,
                                          preprocessed_path=preprocessed_path,
                                          scaler_file=self.CONFIG_PREPROCESSOR[PPK.SCALER_FILE],
                                          scaler_path=self.CONFIG_PREPROCESSOR[PPK.SCALER_PATH],
@@ -98,13 +105,11 @@ class Preprocessor:
 
         # ----------shuffle part------------------
         if execution_flags['shuffle']:
-            paths = glob.glob(os.path.join(preprocessed_path, '*.npz'))
-            shuffle = Shuffle(raw_paths=paths,
-                              dict_names=self.dict_names,
-                              preprocessor_conf=self.CONFIG_PREPROCESSOR,
-                              paths_conf=self.CONFIG_PATHS,
-                              augmented=self.CONFIG_AUG[AK.ENABLE])
-            shuffle.shuffle()
+            data_archive.shuffle_archive(dict_names=self.dict_names,
+                                         piles_number=self.CONFIG_PREPROCESSOR[PPK.PILES_NUMBER],
+                                         shuffle_saving_path=self.CONFIG_PATHS[PK.SHUFFLED_PATH],
+                                         augmented=self.CONFIG_AUG[AK.ENABLE],
+                                         files_to_copy=self.CONFIG_PREPROCESSOR["FILES_TO_COPY"])
 
 
 if __name__ == '__main__':

@@ -4,10 +4,8 @@ from typing import Tuple
 import numpy as np
 import os
 from tqdm import tqdm
-from glob import glob
 from sklearn import preprocessing
 import pickle
-import math
 
 from util.compare_distributions import DistributionsChecker
 from data_utils.data_archive import DataArchive
@@ -163,7 +161,7 @@ class SNV(Scaler):
         features = 0
         shape = (0, 0)
         for data in tqdm(self.data_archive.all_data_generator()):
-            shape = data["X"].shape
+            shape = data[self.dict_names[0]].shape
             features = shape[-1]
             samples += shape[0]
 
@@ -173,10 +171,9 @@ class SNV(Scaler):
         mean_ = np.zeros(shape=features)
         for data in tqdm(self.data_archive.all_data_generator()):
             if len(shape) > 2:
-                center = math.floor(shape[1] / 2)
-                X = data["X"][:, center, center, ...]
+                X = DistributionsChecker.get_centers(data=data[self.dict_names[0]])
             else:
-                X = data["X"][...]
+                X = data[self.dict_names[0]][...]
 
             mean_ += X.sum(axis=0)
 
@@ -186,10 +183,9 @@ class SNV(Scaler):
         var_ = np.zeros(shape=features)
         for data in tqdm(self.data_archive.all_data_generator()):
             if len(shape) > 2:
-                center = math.floor(shape[1] / 2)
-                X = data["X"][:, center, center, ...]
+                X = DistributionsChecker.get_centers(data=data[self.dict_names[0]])
             else:
-                X = data["X"][...]
+                X = data[self.dict_names[0]][...]
             var_ += np.sum(a=(X - mean) ** 2, axis=0)
 
         return var_ / samples

@@ -6,7 +6,7 @@ import zarr
 
 from data_utils.data_loaders.data_loader import DataLoader
 from configuration.parameter import (
-    ZARR_PAT_DATA,
+    ZARR_PAT_GROUP,
     PAT_CHUNKS, D3_PAT_CHUNKS,
 )
 
@@ -21,7 +21,7 @@ class DataLoaderZARR(DataLoader):
     @staticmethod
     def get_paths(root_path) -> List[str]:
         paths = []
-        zarr_path = os.path.join(root_path, ZARR_PAT_DATA)
+        zarr_path = os.path.join(root_path, ZARR_PAT_GROUP)
         data = zarr.open_group(store=zarr_path)
         for group in data.group_keys():
             paths.append(os.path.abspath(zarr_path) + f"/{data[group].path}")
@@ -38,7 +38,7 @@ class DataLoaderZARR(DataLoader):
         return super().labeled_spectrum_get_from_X_y(X=X, y=y)
 
     def X_y_dict_save_to_archive(self, destination_path: str, values: Dict[str, np.ndarray], name: str):
-        root = zarr.open_group(store=os.path.join(destination_path, ZARR_PAT_DATA), mode="a")
+        root = zarr.open_group(store=os.path.join(destination_path, ZARR_PAT_GROUP), mode="a")
         pat = root.create_group(name=name, overwrite=True)
         for k, v in values.items():
             arr_len = len(v.shape)
