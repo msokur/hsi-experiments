@@ -1,7 +1,6 @@
 import sys
 import inspect
 import os
-import glob
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
@@ -9,12 +8,12 @@ sys.path.insert(0, parent_dir)
 
 import provider
 from configuration.copy_py_files import copy_files
-from data_utils.shuffle import Shuffle
 from data_utils.weights import Weights
+from data_utils.shuffle import Shuffle
 
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK, PreprocessorKeys as PPK, AugKeys as AK
 from configuration.parameter import (
-    ZARR_PAT_GROUP, PAT_CHUNKS, D3_PAT_CHUNKS
+    ZARR_PAT_ARCHIVE, PAT_CHUNKS, D3_PAT_CHUNKS
 )
 
 '''
@@ -69,7 +68,8 @@ class Preprocessor:
         if not os.path.exists(preprocessed_path):
             os.makedirs(preprocessed_path)
 
-        data_archive = provider.get_data_archive(typ="npz", archive_path=preprocessed_path, archive_name=ZARR_PAT_GROUP,
+        data_archive = provider.get_data_archive(typ="npz", archive_path=preprocessed_path,
+                                                 archive_name=ZARR_PAT_ARCHIVE,
                                                  chunks=D3_PAT_CHUNKS if self.CONFIG_DATALOADER[DLK.D3] else PAT_CHUNKS)
 
         print('ROOT PATH', root_path)
@@ -105,11 +105,12 @@ class Preprocessor:
 
         # ----------shuffle part------------------
         if execution_flags['shuffle']:
-            data_archive.shuffle_archive(dict_names=self.dict_names,
-                                         piles_number=self.CONFIG_PREPROCESSOR[PPK.PILES_NUMBER],
-                                         shuffle_saving_path=self.CONFIG_PATHS[PK.SHUFFLED_PATH],
-                                         augmented=self.CONFIG_AUG[AK.ENABLE],
-                                         files_to_copy=self.CONFIG_PREPROCESSOR["FILES_TO_COPY"])
+            shuffle = Shuffle(data_archive=data_archive, raw_path=preprocessed_path, dict_names=self.dict_names,
+                              piles_number=self.CONFIG_PREPROCESSOR[PPK.PILES_NUMBER],
+                              shuffle_saving_path=self.CONFIG_PATHS[PK.SHUFFLED_PATH],
+                              augmented=self.CONFIG_AUG[AK.ENABLE],
+                              files_to_copy=self.CONFIG_PREPROCESSOR["FILES_TO_COPY"])
+            shuffle.shuffle()
 
 
 if __name__ == '__main__':

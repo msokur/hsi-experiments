@@ -33,16 +33,11 @@ class DataArchive:
         pass
 
     @abc.abstractmethod
-    def save_group(self, save_path: str, group_name: str, datas: Dict[str, np.ndarray]) -> None:
+    def save_group(self, save_path: str, archive_name: str, group_name: str, datas: Dict[str, np.ndarray]) -> None:
         pass
 
     @abc.abstractmethod
     def save_data(self, save_path: str, data_name: str, data: np.ndarray) -> None:
-        pass
-
-    @abc.abstractmethod
-    def shuffle_archive(self, dict_names: List[str], piles_number: int, shuffle_saving_path: str, augmented: bool,
-                        files_to_copy: list):
         pass
 
 
@@ -66,7 +61,7 @@ class DataArchiveNPZ(DataArchive):
         data = np.load(file=data_path)
         return data[data_name]
 
-    def save_group(self, save_path: str, group_name: str, datas: Dict[str, np.ndarray]) -> None:
+    def save_group(self, save_path: str, archive_name: str, group_name: str, datas: Dict[str, np.ndarray]) -> None:
         np.savez(file=os.path.join(save_path, group_name), **datas)
 
     def save_data(self, save_path: str, data_name: str, data: np.ndarray) -> None:
@@ -74,16 +69,7 @@ class DataArchiveNPZ(DataArchive):
         datas = {k: v for k, v in npz_data.items()}
         datas[data_name] = data
         main_path, name = os.path.split(p=save_path)
-        self.save_group(save_path=main_path, group_name=name, datas=datas)
-
-    def shuffle_archive(self, dict_names: List[str], piles_number: int, shuffle_saving_path: str, augmented: bool,
-                        files_to_copy: list):
-        from data_utils.shuffle import Shuffle
-
-        paths = self.get_paths(archive_path=self.archive_path)
-        sh = Shuffle(raw_paths=paths, dict_names=dict_names, piles_number=piles_number,
-                     shuffle_saving_path=shuffle_saving_path, augmented=augmented, files_to_copy=files_to_copy)
-        sh.shuffle()
+        self.save_group(save_path=main_path, archive_name="", group_name=name, datas=datas)
 
 
 class DataArchiveZARR(DataArchive):
@@ -117,8 +103,8 @@ class DataArchiveZARR(DataArchive):
         data = zarr.open_group(store=data_path, mode="r")
         return data[data_name]
 
-    def save_group(self, save_path: str, group_name: str, datas: Dict[str, np.ndarray]) -> None:
-        root = zarr.open_group(store=os.path.join(save_path, self.archive_name), mode="a")
+    def save_group(self, save_path: str, archive_name: str, group_name: str, datas: Dict[str, np.ndarray]) -> None:
+        root = zarr.open_group(store=os.path.join(save_path, archive_name), mode="a")
         pat = root.create_group(name=group_name, overwrite=True)
         for k, v in datas.items():
             pat.array(name=k, data=v, chunks=self.chunks)
@@ -126,12 +112,3 @@ class DataArchiveZARR(DataArchive):
     def save_data(self, save_path: str, data_name: str, data: np.ndarray) -> None:
         root = zarr.open_group(store=save_path, mode="a")
         root.array(name=data_name, data=data, chunks=self.chunks, overwrite=True)
-
-    def shuffle_archive(self, dict_names: List[str], piles_number: int, shuffle_saving_path: str, augmented: bool,
-                        files_to_copy: list):
-        from data_utils.shuffle_zarr import ShuffleZarr
-
-        paths = self.get_paths(archive_path=self.archive_path)
-        sh = ShuffleZarr(raw_paths=paths, shuffle_saving_path=shuffle_saving_path, piles_number=piles_number,
-                         files_to_copy=files_to_copy)
-        sh.shuffle()

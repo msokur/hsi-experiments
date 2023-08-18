@@ -107,9 +107,9 @@ class Scaler:
 
             datas = {n: a for n, a in data.items()}
             datas[self.dict_names[0]] = X.copy()
-            self.data_archive.save_group(save_path=destination_path,
-                                         group_name=os.path.split(os.path.abspath(data))[-1],
-                                         datas=datas)
+            self.data_archive.save_data(save_path=os.path.abspath(data),
+                                        data_name=self.dict_names[0],
+                                        data=X)
 
     def get_shapes(self, path):
         datas = self.data_archive.get_datas(data_path=path)
