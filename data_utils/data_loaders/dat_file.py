@@ -34,10 +34,10 @@ class DatFile:
 
     def file_read_mask_and_spectrum(self, path, mask_path=None):
         spectrum = self.spectrum_read_from_dat(path)
-
+        
         path_parts = os.path.split(path)
         name = path_parts[1].split(self.CONFIG_DATALOADER["MASK_DIFF"][0])[0] + self.CONFIG_DATALOADER["MASK_DIFF"][1]
-
+        
         if mask_path is None:
             mask_path = os.path.join(path_parts[0], name)
         else:
@@ -69,6 +69,7 @@ class DatFile:
         # add alpha channel
         if mask.shape[-1] == 3:
             mask = cv2.cvtColor(mask, cv2.COLOR_BGR2BGRA)
+            
 
         # [..., -2::-1] - BGR to RGB, [..., -1:] - only transparency, '-1' - concatenate along last axis
         mask = np.r_["-1", mask[..., -2::-1], mask[..., -1:]]

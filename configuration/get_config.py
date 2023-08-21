@@ -88,6 +88,5 @@ if CONFIG_AUG["enable"]:
 tg_config = "Telegram.json"
 CONFIG_TELEGRAM = get_config(file_name=tg_config, section=tg_section)
 CONFIG_TELEGRAM["FILE"] = os.path.join(parent_dir, CONFIG_TELEGRAM["FILE"])
-if CONFIG_TELEGRAM["SENDING"]:
-    from utils import Telegram
-    telegram = Telegram(tg_config=CONFIG_TELEGRAM, mode=CONFIG_PATHS["MODE"])
+from utils import Telegram
+telegram = Telegram(tg_config=CONFIG_TELEGRAM, mode=CONFIG_PATHS["MODE"])

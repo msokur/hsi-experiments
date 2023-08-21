@@ -7,6 +7,6 @@
     "Mariia": {
         "USER": "Mariia",
         "FILE": "tg.config",
-        "SENDING" : false
+        "SENDING" : true
     }
 }

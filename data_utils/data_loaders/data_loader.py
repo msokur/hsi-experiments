@@ -35,6 +35,7 @@ class DataLoader:
     def get_paths_and_splits(self, root_path=None):
         if root_path is None:
             root_path = self.CONFIG_PATHS["RAW_NPZ_PATH"]
+        
         paths = glob(os.path.join(root_path, "*.npz"))
         paths = self.data_reader.sort(paths)
 

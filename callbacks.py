@@ -1,7 +1,7 @@
 import tensorflow as tf
 # import cv2
 # import data_loader
-import config
+#import config
 import numpy as np
 from tqdm import tqdm
 import os
@@ -172,7 +172,7 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
 
         print('{0}, epoch {1} is ended'.format(datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"), epoch + 1))
 
-        with self._writers['train'].as_default():
+        '''with self._writers['train'].as_default():
             if epoch % config.WRITE_CHECKPOINT_EVERY_Xth_STEP == 0:
                 if config.WRITE_IMAGES:
                     gt_image = self.gt_image
@@ -188,7 +188,7 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
 
         # self.__write_valid_scalar('epoch_specificity', logs['val_tn'] / (logs['val_tn'] + logs['val_fp']), epoch)
 
-        '''if self.are_excepted and epoch % config.CHECKPOINT_WRITING_STEP == 0:
+        if self.are_excepted and epoch % config.CHECKPOINT_WRITING_STEP == 0:
             for name, exc, gt in zip(self.except_indexes, self.excepted_spectrums, self.excepted_gt):
                 #predictions = self.model.predict(exc[:, :-1])
                 predictions = self.model.predict(exc[::20])

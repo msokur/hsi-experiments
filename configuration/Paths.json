@@ -119,5 +119,17 @@
       "SHUFFLED_PATH": ["shuffled"],
       "BATCHED_PATH": ["batch_sized"]
     }
+  },
+    "COLON": {
+    "DATABASE_ABBREVIATION": ["Colon"],
+    "1.CONCAT_WITH_PREFIX": {
+      "RAW_NPZ_PATH": ["data_3d", "norm_3x3"],
+      "RAW_SOURCE_PATH": ["data_dat"],
+      "TEST_NPZ_PATH": ["data_bea_db", "Esophagus_MedFilter", "raw_3d_weighted"]
+    },
+    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+      "SHUFFLED_PATH": ["shuffled"],
+      "BATCHED_PATH": ["batch_sized"]
+    } 
   }
 }

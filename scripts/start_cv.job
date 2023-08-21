@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --job-name=merge
+#SBATCH --job-name=ram_gpu4
 #SBATCH --partition=clara
 #SBATCH --time=10:00:00
-#SBATCH --mem=16G
+#SBATCH --mem=24G
 ##SBATCH --gres=gpu:v100:2
-##SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=_after_merging_%j.log
+#SBATCH --gres=gpu:rtx2080ti:4
+#SBATCH --output=outputs/_repair_cv_gpu4_RAM_%j.log
 
 #module load Python
 #module load matplotlib
@@ -19,8 +19,9 @@
 #module load OpenCV
 
 
-module load TensorFlow
+module load TensorFlow/2.9.1-foss-2022a-CUDA-11.7.0
 module load scikit-learn
 module load matplotlib/3.5.2-foss-2022a
+module load OpenCV
 
 python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validation.py
