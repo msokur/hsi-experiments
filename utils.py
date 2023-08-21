@@ -1,4 +1,4 @@
-import telegram_send
+
 import itertools as it
 import os
 import glob
@@ -13,6 +13,7 @@ class Telegram:
 
     def send_tg_message(self, message):
         if self.tg["SENDING"]:
+            import telegram_send
             if self.mode == "CLUSTER":
                 message = "CLUSTER " + message
             try:

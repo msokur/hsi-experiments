@@ -2,14 +2,14 @@
 
 
 def get_trainer(typ: str, **kwargs):
-    from trainers.trainer_tuner import TrainerTuner
     from trainers.trainer_easy import TrainerEasy
     from trainers.trainer_easy_several_outputs import TrainerEasySeveralOutputs
 
     if typ == "Tuner":
         print('TrainerTuner')
+        from trainers.trainer_tuner import TrainerTuner
         return TrainerTuner(**kwargs)
-    elif type == "Easy":
+    elif typ == "Easy":
         print('TrainerEasy')
         return TrainerEasy(**kwargs)
     elif typ == "SeveralOutput":
