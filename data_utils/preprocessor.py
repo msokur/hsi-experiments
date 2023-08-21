@@ -5,6 +5,7 @@ import numpy as np
 import glob
 from tqdm import tqdm
 import pickle
+import psutil
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
@@ -111,6 +112,8 @@ class Preprocessor:
         }
 
     def pipeline(self, root_path=None, preprocessed_path=None, execution_flags=None):
+        process = psutil.Process(os.getpid())
+        
         if execution_flags is None:
             execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
 
@@ -128,15 +131,21 @@ class Preprocessor:
         copy_files(preprocessed_path,
                    self.CONFIG_PREPROCESSOR["FILES_TO_COPY"],
                    self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
+        
+        print('-------------------------------------------------Memory, preprocessor 0', process.memory_info().rss)
 
         # ---------Data reading part--------------
         if execution_flags['load_data_with_dataloader']:
             self.dataloader.files_read_and_save_to_npz(root_path, preprocessed_path)
+            
+        print('-------------------------------------------------Memory, preprocessor 1', process.memory_info().rss)
 
         # ----------weights part------------------
         if execution_flags['add_sample_weights']:
             weights = self.weights_get_or_save(preprocessed_path)
             self.weightedData_save(preprocessed_path, weights)
+        
+        print('-------------------------------------------------Memory, preprocessor 2', process.memory_info().rss)
 
         # ----------scaler part ------------------
         if execution_flags['scale'] and self.CONFIG_PREPROCESSOR["NORMALIZATION_TYPE"] is not None:
@@ -148,15 +157,19 @@ class Preprocessor:
                                          dict_names=[self.CONFIG_PREPROCESSOR["DICT_NAMES"][x] for x in [0, 1, 4]])
             scaler.iterate_over_archives_and_save_scaled_X(preprocessed_path, preprocessed_path)
 
+        print('-------------------------------------------------Memory, preprocessor 3', process.memory_info().rss)
+        
         # ----------shuffle part------------------
         if execution_flags['shuffle']:
             paths = glob.glob(os.path.join(preprocessed_path, '*.npz'))
             shuffle = Shuffle(raw_paths=paths,
                               dict_names=self.dict_names,
-                              prepro_conf=self.CONFIG_PREPROCESSOR,
+                              preprocessor_conf=self.CONFIG_PREPROCESSOR,
                               paths_conf=self.CONFIG_PATHS,
                               augmented=CONFIG_AUG["enable"])
             shuffle.shuffle()
+        
+        print('-------------------------------------------------Memory, preprocessor 4', process.memory_info().rss)
 
 
 if __name__ == '__main__':

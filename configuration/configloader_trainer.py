@@ -1,30 +1,20 @@
-
-from tensorflow.keras.optimizers import Adadelta, Adagrad, Adam, Adamax, Ftrl, Nadam, RMSprop, SGD
-from tensorflow.keras.activations import relu, tanh, selu, exponential, elu
-
-from util import tf_metric_multiclass, tf_metrics_binary
-from models.inception_model import InceptionModel1D, InceptionModel3D
-from models.paper_model import PaperModel1D, PaperModel3D
-
 from configuration.configloader_base import read_config
 
 
-CUSTOM_OBJECTS_MULTI = {
-    "F1_score": tf_metric_multiclass.F1_score
-}
-CUSTOM_OBJECTS_BINARY = {
-    "F1_score": tf_metrics_binary.F1_score
-}
-MODELS_3D = {
-    "paper_model": PaperModel3D().get_model,
-    "inception_model": InceptionModel3D().get_model
-}
-MODELS_1D = {
-    "paper_model": PaperModel1D().get_model,
-    "inception_model": InceptionModel1D().get_model
-}
-
-OPTIMIZER = {"adadelta": Adadelta,
+def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dict:
+    from util import tf_metric_multiclass, tf_metrics_binary
+    
+    from tensorflow.keras.optimizers import Adadelta, Adagrad, Adam, Adamax, Ftrl, Nadam, RMSprop, SGD
+    from tensorflow.keras.activations import relu, tanh, selu, exponential, elu
+    
+    CUSTOM_OBJECTS_MULTI = {
+        "F1_score": tf_metric_multiclass.F1_score
+    }
+    CUSTOM_OBJECTS_BINARY = {
+        "F1_score": tf_metrics_binary.F1_score
+    }
+    
+    OPTIMIZER = {"adadelta": Adadelta,
              "adagrad": Adagrad,
              "adam": Adam,
              "adamax": Adamax,
@@ -33,14 +23,13 @@ OPTIMIZER = {"adadelta": Adadelta,
              "rms": RMSprop,
              "sgd": SGD
              }
-ACTIVATION = {"relu": relu,
+    ACTIVATION = {"relu": relu,
               "tanh": tanh,
               "selu": selu,
               "exponential": exponential,
               "elu": elu}
 
 
-def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dict:
     trainer = read_config(file=file, section=section)
     if len(classes) > 2:
         custom_objects = CUSTOM_OBJECTS_MULTI
@@ -80,6 +69,18 @@ def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dic
 
 
 def get_trainer(d3: bool, typ: str):
+    from models.inception_model import InceptionModel1D, InceptionModel3D
+    from models.paper_model import PaperModel1D, PaperModel3D
+
+    MODELS_3D = {
+        "paper_model": PaperModel3D().get_model,
+        "inception_model": InceptionModel3D().get_model
+    }
+    MODELS_1D = {
+        "paper_model": PaperModel1D().get_model,
+        "inception_model": InceptionModel1D().get_model
+    }
+    
     if d3:
         if typ == "Tuner":
             from configuration.configloader_tuner import TUNER_MODEL_3D

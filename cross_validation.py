@@ -8,8 +8,7 @@ from configuration.get_config import telegram
 
     
 def out_of_the_box():
-    cross_validator = provider.get_cross_validator(typ=config.CONFIG_CV["TYPE"], cv_config=config.CONFIG_CV, paths=config.CONFIG_PATHS,
-                                                   loader_config=config.CONFIG_DATALOADER)
+    cross_validator = provider.get_cross_validator(typ=config.CONFIG_CV["TYPE"])
     # cross validation pipeline consists of 2 parts:
     # (1) cross_validation
     # (2) evaluation
@@ -23,7 +22,7 @@ def out_of_the_box():
     # you can pass any parameters from save_predictions_and_metrics() except training_csv_path and npz_folder,
     # because they passed automatically
     cross_validator.pipeline(execution_flags=execution_flags,
-                             # thresholds_range=[[0.0001, 0.001, 20]],    # specify thresholds if classification is binary
+                             thresholds_range=[[0.0001, 0.001, 20]],    # specify thresholds if classification is binary
                              save_predictions=config.CONFIG_CV["SAVE_PREDICTION"],
                              save_curves=config.CONFIG_CV["SAVE_CURVES"])
 
@@ -40,7 +39,7 @@ def postprocessing_for_one_model():
                                                     "metrics": {
                                                         'save_metrics': False,
                                                         'checkpoints': None,
-                                                        'thresholds': np.round(np.linspace(0.0001, 0.001, 5), 4),
+                                                        'thresholds': None, #np.round(np.linspace(0.0001, 0.001, 5), 4),
                                                         'save_curves': False
                                                     }
                                                 },
@@ -59,8 +58,8 @@ def postprocessing_for_one_model():
 if __name__ == '__main__':
     from datetime import date
     try:
-        #out_of_the_box()        
-        postprocessing_for_one_model()
+        out_of_the_box()        
+        #postprocessing_for_one_model()
 
         telegram.send_tg_message('Operations in cross_validation.py are successfully completed!')
                

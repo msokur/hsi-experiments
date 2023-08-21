@@ -1,18 +1,25 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=prepro
+#SBATCH --job-name=7_prepro
 #SBATCH --partition=clara
 #SBATCH --time=40:00:00
-#SBATCH --mem=100G
+#SBATCH --mem=36G
 ##SBATCH --gres=gpu:v100:2
-##SBATCH --gres=gpu:rtx2080ti:2
+##SBATCH --gres=gpu:rtx2080ti:8
 
-#SBATCH --output=output/PrePro_GASTRIC_3x3_SNV_MEDIAN_MK%j.log
+#SBATCH --output=outputs/preprocessor_7х7_%j.log
 
 #module load FlexiBLAS/3.0.4-GCC-10.3.0
-module load Python/3.9.5-GCCcore-10.3.0
-module load CUDA/11.4.1
+#module load Python
+#module load CUDA/11.4.1
+
+module load Python/3.10.4-GCCcore-11.3.0
+module load TensorFlow/2.9.1-foss-2022a
+module load scikit-learn
+module load matplotlib/3.5.2-foss-2022a
+module load OpenCV
 
 
-python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/data_utils/preprocessor_dyn.py
+
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/data_utils/preprocessor.py

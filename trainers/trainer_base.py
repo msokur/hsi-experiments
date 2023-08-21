@@ -5,10 +5,12 @@ from shutil import rmtree
 import numpy as np
 import abc
 import pickle
+import psutil
 
 import data_utils.generator as generator
 from configuration.copy_py_files import copy_files
 from configuration import get_config as conf
+from callbacks import CustomTensorboardCallback
 
 
 class Trainer:
@@ -16,6 +18,8 @@ class Trainer:
         self.CONFIG_TRAINER = conf.CONFIG_TRAINER
         self.CONFIG_PATHS = conf.CONFIG_PATHS
         self.CONFIG_DATALOADER = conf.CONFIG_DATALOADER
+        self.CONFIG_CV = conf.CONFIG_CV
+        
         if valid_except_indexes is None:
             valid_except_indexes = []
         if except_indexes is None:
@@ -54,13 +58,17 @@ class Trainer:
                 self.batch_path += "tune"
         if not os.path.exists(self.batch_path):
             os.mkdir(self.batch_path)
-
+            
+        split_train=True
+        if self.CONFIG_CV["MODE"] == 'DEBUG':
+            split_train=False
+            
         train_generator = generator.DataGenerator("train",
                                                   self.CONFIG_PATHS["SHUFFLED_PATH"],
                                                   self.batch_path,
                                                   batch_size=self.CONFIG_TRAINER["BATCH_SIZE"],
                                                   split_factor=self.CONFIG_TRAINER["SPLIT_FACTOR"],
-                                                  split_flag=True,
+                                                  split_flag=split_train,
                                                   valid_except_indexes=self.valid_except_indexes.copy(),
                                                   except_indexes=self.excepted_indexes.copy(),
                                                   for_tuning=for_tuning,
@@ -78,7 +86,7 @@ class Trainer:
                                                   log_dir=self.log_dir)
 
         class_weights = train_generator.get_class_weights()
-        print(class_weights)
+        print('Class weights:', class_weights)
 
         def gen_train_generator():
             for i in range(train_generator.len):
@@ -103,6 +111,7 @@ class Trainer:
 
     def get_callbacks(self):
         checkpoint_path = os.path.join(self.log_dir, self.CONFIG_PATHS["CHECKPOINT_PATH"], "cp-{epoch:04d}")
+        
 
         checkpoints_callback = keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,
@@ -110,8 +119,13 @@ class Trainer:
             verbose=1,
             save_best_only=self.CONFIG_TRAINER["MODEL_CHECKPOINT"]["save_best_only"],
             mode=self.CONFIG_TRAINER["MODEL_CHECKPOINT"]["mode"])
-
+        
         callbacks_ = [checkpoints_callback]
+        
+        if self.CONFIG_CV["MODE"] == 'DEBUG':
+            custom_callback = CustomTensorboardCallback(process=psutil.Process(os.getpid()))
+            callbacks_.append(custom_callback)
+            
         if self.CONFIG_TRAINER["EARLY_STOPPING"]["enable"]:
             early_stopping_callback = keras.callbacks.EarlyStopping(
                 monitor=self.CONFIG_TRAINER["EARLY_STOPPING"]["monitor"],
@@ -163,8 +177,9 @@ class Trainer:
             workers=int(os.cpu_count()))
 
         self.save_history(history)
-
-        rmtree(self.batch_path)
+        
+        if self.CONFIG_CV["MODE"] == 'RUN':
+            rmtree(self.batch_path)
 
         return model, history
 

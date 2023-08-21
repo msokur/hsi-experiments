@@ -4,18 +4,22 @@ import tensorflow as tf
 
 
 class F1_score(Metric):
-    def __init__(self, name="f1_score", threshold=1.0, **kwargs):
+    def __init__(self, name="f1_score", threshold=0.5, **kwargs):
         super().__init__(name=name, **kwargs)
         self.threshold = threshold
         self.f1 = self.add_weight("f1", initializer="zeros")
 
     @tf.autograph.experimental.do_not_convert
     def update_state(self, y_true, y_pred, sample_weight=None):
-        y_pred_threshold = K.greater_equal(K.cast(y_pred, dtype=tf.float32), self.threshold)
-        cm = tf.math.confusion_matrix(y_true, y_pred_threshold, dtype=tf.float32)
-        tp = cm[1][1]
-        fp = cm[0][1]
-        fn = cm[1][0]
+        #y_pred_threshold = K.greater_equal(K.cast(y_pred, dtype=tf.float32), self.threshold)
+        #cm = tf.math.confusion_matrix(y_true, y_pred_threshold, dtype=tf.float32)
+        
+        #tp = cm[1][1]
+        #fp = cm[0][1]
+        #fn = cm[1][0]
+        tp = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+        fp = K.sum(K.round(K.clip(y_pred - y_true, 0, 1)))
+        fn = K.sum(K.round(K.clip(y_true - y_true, 0, 1)))
         self.f1.assign(tp / (tp + 0.5 * (fp + fn) + K.epsilon()))
 
     def result(self):
