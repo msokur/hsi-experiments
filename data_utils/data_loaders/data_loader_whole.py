@@ -1,13 +1,15 @@
 import numpy as np
 
-from data_utils.data_loaders.data_loader_npz import DataLoaderNPZ
+from data_utils.data_loaders.data_loader import DataLoader
+from data_utils.data_archive import DataArchive
 
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK
 
 
-class DataLoaderWhole(DataLoaderNPZ):
-    def __init__(self, config_dataloader: dict, config_paths: dict, dict_names=None):
-        super().__init__(config_dataloader=config_dataloader, config_paths=config_paths, dict_names=dict_names)
+class DataLoaderWhole(DataLoader):
+    def __init__(self, data_archive: DataArchive, config_dataloader: dict, config_paths: dict, dict_names=None):
+        super().__init__(data_archive=data_archive, config_dataloader=config_dataloader, config_paths=config_paths,
+                         dict_names=dict_names)
         self.dict_names.append("size")
 
     def file_read(self, path):

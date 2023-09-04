@@ -51,7 +51,8 @@ GET_DATA_LOADER_DATA = [("normal", DataLoader),
 
 @pytest.mark.parametrize("typ,result", GET_DATA_LOADER_DATA)
 def test_get_data_loader(typ, result):
-    loader = get_data_loader(typ=typ, config_dataloader={"FILE_EXTENSION": ".dat"}, config_paths={})
+    loader = get_data_loader(typ=typ, data_archive=DataArchiveNPZ(archive_path=""),
+                             config_dataloader={"FILE_EXTENSION": ".dat"}, config_paths={})
 
     assert isinstance(loader, result)
 
@@ -182,7 +183,7 @@ def test_get_extension_loader_error():
 
 
 GET_DATA_ARCHIVE = [("npz", DataArchiveNPZ, {"archive_path": ""}),
-                    ("zarr", DataArchiveZARR, {"archive_path": "", "archive_name": "", "chunks": (10,)})]
+                    ("zarr", DataArchiveZARR, {"archive_path": "", "archive_name": ""})]
 
 
 @pytest.mark.parametrize("typ,archive,param", GET_DATA_ARCHIVE)

@@ -10,9 +10,11 @@ from tqdm import tqdm
 from sklearn.feature_extraction import image
 
 import provider
+from data_utils.data_archive import DataArchive
+
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK
 from configuration.parameter import (
-    DICT_X, DICT_y, DICT_IDX
+    ZARR_PAT_ARCHIVE, DICT_X, DICT_y, DICT_IDX
 )
 from data_utils.background_detection import detect_background
 from data_utils.data_loaders.path_splits import get_splits
@@ -20,9 +22,10 @@ from data_utils.data_loaders.path_sort import get_sort
 
 
 class DataLoader:
-    def __init__(self, config_dataloader: dict, config_paths: dict, dict_names=None):
+    def __init__(self, data_archive: DataArchive, config_dataloader: dict, config_paths: dict, dict_names=None):
         if dict_names is None:
             dict_names = [DICT_X, DICT_y, DICT_IDX]
+        self.data_archive = data_archive
         self.CONFIG_DATALOADER = config_dataloader
         self.CONFIG_PATHS = config_paths
         self.data_reader = provider.get_extension_loader(typ=self.CONFIG_DATALOADER[DLK.FILE_EXTENSION],
@@ -37,14 +40,11 @@ class DataLoader:
             delimiter = self.CONFIG_PATHS[PK.SYS_DELIMITER]
         return path.split(delimiter)[-1].split(".")[0].split(self.CONFIG_DATALOADER[DLK.NAME_SPLIT])[0]
 
-    @abc.abstractmethod
     def get_name(self, path: str) -> str:
-        pass
+        return self.data_archive.get_name(path=path)
 
-    @staticmethod
-    @abc.abstractmethod
-    def get_paths(root_path) -> List[str]:
-        pass
+    def get_paths(self, root_path) -> List[str]:
+        return self.data_archive.get_paths(archive_path=root_path)
 
     def get_paths_and_splits(self, root_path=None):
         if root_path is None:
@@ -170,9 +170,9 @@ class DataLoader:
 
         return tissue_indexes
 
-    @abc.abstractmethod
     def X_y_dict_save_to_archive(self, destination_path: str, values: dict, name: str) -> None:
-        pass
+        self.data_archive.save_group(save_path=destination_path, archive_name=ZARR_PAT_ARCHIVE, group_name=name,
+                                     datas=values)
 
     def X_y_concatenate_from_spectrum(self, spectra, indexes, labels=None):
         X, y, indexes_in_datacube = [], [], []
@@ -230,9 +230,11 @@ class DataLoader:
 
         return indexes_np
 
-    @abc.abstractmethod
     def labeled_spectrum_get_from_archive(self, path: str) -> dict:
-        pass
+        data = self.data_archive.get_datas(data_path=path)
+        X, y = data[self.dict_names[0]], data[self.dict_names[1]]
+
+        return self.labeled_spectrum_get_from_X_y(X=X, y=y)
 
     @staticmethod
     def labeled_spectrum_get_from_X_y(X: np.ndarray, y: np.ndarray) -> dict:

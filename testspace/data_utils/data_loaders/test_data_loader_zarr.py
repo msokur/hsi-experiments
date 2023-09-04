@@ -4,7 +4,8 @@ import zarr
 from shutil import rmtree
 import numpy as np
 
-from data_utils.data_loaders.data_loader_zarr import DataLoaderZARR
+from data_utils.data_loaders.data_loader import DataLoader
+from data_utils.data_archive import DataArchiveZARR
 
 ARR_DATA_1 = {"X": np.array([[0, 1], [2, 3], [4, 5]]), "y": np.array([0, 1, 2]),
               "indexes_in_datacube": np.array([(0, 0), (1, 1), (2, 2)])}
@@ -31,13 +32,19 @@ def zarr_test_dir(zarr_data_dir: str) -> str:
 
 
 @pytest.fixture
-def zarr_path(zarr_test_dir: str) -> str:
-    return os.path.join(zarr_test_dir, "patients_data.zarr")
+def zarr_test_name() -> str:
+    return "patients_data.zarr"
 
 
 @pytest.fixture
-def dataloader() -> DataLoaderZARR:
-    return DataLoaderZARR(config_dataloader={"FILE_EXTENSION": ".dat"}, config_paths={})
+def zarr_path(zarr_test_dir: str, zarr_test_name: str) -> str:
+    return os.path.join(zarr_test_dir, zarr_test_name)
+
+
+@pytest.fixture
+def dataloader(zarr_data_dir: str, zarr_test_name: str) -> DataLoader:
+    data_archive = DataArchiveZARR(archive_path=zarr_data_dir, archive_name=zarr_test_name)
+    return DataLoader(data_archive=data_archive, config_dataloader={"FILE_EXTENSION": ".dat"}, config_paths={})
 
 
 def test_get_name(zarr_path: str, dataloader):

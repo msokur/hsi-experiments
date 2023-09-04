@@ -6,6 +6,10 @@ import zarr
 import os
 from glob import glob
 
+from configuration.parameter import (
+    PAT_CHUNKS, D3_PAT_CHUNKS,
+)
+
 
 class DataArchive:
     def __init__(self, archive_path: str):
@@ -73,10 +77,9 @@ class DataArchiveNPZ(DataArchive):
 
 
 class DataArchiveZARR(DataArchive):
-    def __init__(self, archive_path: str, archive_name: str, chunks: tuple):
+    def __init__(self, archive_path: str, archive_name: str):
         super().__init__(archive_path)
         self.archive_name = archive_name
-        self.chunks = chunks
 
     def get_paths(self, archive_path: str) -> List[str]:
         paths = []
@@ -107,8 +110,15 @@ class DataArchiveZARR(DataArchive):
         root = zarr.open_group(store=os.path.join(save_path, archive_name), mode="a")
         pat = root.create_group(name=group_name, overwrite=True)
         for k, v in datas.items():
-            pat.array(name=k, data=v, chunks=self.chunks)
+            pat.array(name=k, data=v, chunks=self.__get_chunks__(len(v.shape)))
 
     def save_data(self, save_path: str, data_name: str, data: np.ndarray) -> None:
         root = zarr.open_group(store=save_path, mode="a")
-        root.array(name=data_name, data=data, chunks=self.chunks, overwrite=True)
+        root.array(name=data_name, data=data, chunks=self.__get_chunks__(len(data.shape)), overwrite=True)
+
+    @staticmethod
+    def __get_chunks__(data_length: int) -> tuple:
+        if data_length < 3:
+            return PAT_CHUNKS
+        else:
+            return D3_PAT_CHUNKS

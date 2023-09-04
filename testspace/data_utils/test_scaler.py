@@ -36,7 +36,7 @@ def get_data_archive(typ: str, path: str):
     if typ == "npz":
         return DataArchiveNPZ(archive_path=path)
     elif typ == "zarr":
-        return DataArchiveZARR(archive_path=path, archive_name="patients_data.zarr", chunks=(1000,))
+        return DataArchiveZARR(archive_path=path, archive_name="patients_data.zarr")
 
 
 @pytest.fixture(scope="function", autouse=True)

@@ -31,12 +31,6 @@ class Preprocessor:
         self.CONFIG_PATHS = config_paths
         self.CONFIG_DATALOADER = config_dataloader
         self.CONFIG_AUG = config_augmentation
-        self.dataloader = provider.get_data_loader(typ=self.CONFIG_DATALOADER[DLK.TYPE],
-                                                   config_dataloader=self.CONFIG_DATALOADER,
-                                                   config_paths=self.CONFIG_PATHS,
-                                                   dict_names=[self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][0],
-                                                               self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1],
-                                                               self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][4]])
         self.valid_archives_saving_path = None
         self.archives_of_batch_size_saving_path = None
         self.batch_size = None
@@ -69,9 +63,14 @@ class Preprocessor:
             os.makedirs(preprocessed_path)
 
         data_archive = provider.get_data_archive(typ="npz", archive_path=preprocessed_path,
-                                                 archive_name=ZARR_PAT_ARCHIVE,
-                                                 chunks=D3_PAT_CHUNKS if self.CONFIG_DATALOADER[DLK.D3] else PAT_CHUNKS)
-
+                                                 archive_name=ZARR_PAT_ARCHIVE)
+        dataloader = provider.get_data_loader(typ=self.CONFIG_DATALOADER[DLK.TYPE],
+                                              data_archive=data_archive,
+                                              config_dataloader=self.CONFIG_DATALOADER,
+                                              config_paths=self.CONFIG_PATHS,
+                                              dict_names=[self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][0],
+                                                          self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1],
+                                                          self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][4]])
         print('ROOT PATH', root_path)
         print('PREPROCESSED PATH', preprocessed_path)
 
@@ -80,13 +79,13 @@ class Preprocessor:
 
         # ---------Data reading part--------------
         if execution_flags['load_data_with_dataloader']:
-            self.dataloader.files_read_and_save_to_archive(root_path, preprocessed_path)
+            dataloader.files_read_and_save_to_archive(root_path, preprocessed_path)
 
         # ----------weights part------------------
         if execution_flags['add_sample_weights']:
             weight_calc = Weights(filename=self.weights_filename,
                                   data_archive=data_archive,
-                                  label_file=self.dataloader.get_labels_filename(),
+                                  label_file=dataloader.get_labels_filename(),
                                   y_dict_name=self.load_name_for_y,
                                   weight_dict_name=self.dict_names[-1])
             weights = weight_calc.weights_get_or_save(preprocessed_path)
