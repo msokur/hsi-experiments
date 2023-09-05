@@ -55,7 +55,7 @@ class Preprocessor:
             execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
 
         if root_path is None:
-            root_path = self.CONFIG_PATHS[PK.RAW_NPZ_PATH]
+            root_path = self.CONFIG_PATHS[PK.RAW_SOURCE_PATH]
         if preprocessed_path is None:
             preprocessed_path = self.CONFIG_PATHS[PK.RAW_NPZ_PATH]
 
