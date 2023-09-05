@@ -32,11 +32,11 @@ X_1_SNV_RESULT = np.array([[var] * FEATURES for var in np.arange(start=0.072232,
 X_0_SNV_RESULT = np.flip(X_1_SNV_RESULT * -1)
 
 
-def get_data_archive(typ: str, path: str):
+def get_data_archive(typ: str):
     if typ == "npz":
-        return DataArchiveNPZ(archive_path=path)
+        return DataArchiveNPZ()
     elif typ == "zarr":
-        return DataArchiveZARR(archive_path=path, archive_name="patients_data.zarr")
+        return DataArchiveZARR()
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -58,35 +58,35 @@ SNV_TEST_DATA = [(StandardScaler, "1d", "npz"), (StandardScaler, "3d", "npz"), (
 @pytest.mark.parametrize("scaler_class,folder,typ", SNV_TEST_DATA)
 def test_standard_scaler_samples(data_dir: str, scaler_class, folder: str, typ: str):
     path = os.path.join(data_dir, f"{typ}_file", folder)
-    scaler = scaler_class(preprocessed_path=path, data_archive=get_data_archive(typ=typ, path=path))
+    scaler = scaler_class(preprocessed_path=path, data_archive=get_data_archive(typ=typ))
     assert scaler.scaler.n_samples_seen_ == SAMPLES
 
 
 @pytest.mark.parametrize("scaler_class,folder,typ", SNV_TEST_DATA)
 def test_standard_scaler_features(data_dir: str, scaler_class, folder: str, typ: str):
     path = os.path.join(data_dir, f"{typ}_file", folder)
-    scaler = scaler_class(preprocessed_path=path, data_archive=get_data_archive(typ=typ, path=path))
+    scaler = scaler_class(preprocessed_path=path, data_archive=get_data_archive(typ=typ))
     assert scaler.scaler.n_features_in_ == FEATURES
 
 
 @pytest.mark.parametrize("scaler_class,folder,typ", SNV_TEST_DATA)
 def test_standard_scaler_mean(data_dir: str, scaler_class, folder: str, typ: str):
     path = os.path.join(data_dir, f"{typ}_file", folder)
-    scaler = scaler_class(preprocessed_path=path, data_archive=get_data_archive(typ=typ, path=path))
+    scaler = scaler_class(preprocessed_path=path, data_archive=get_data_archive(typ=typ))
     assert (scaler.scaler.mean_ == SNV_MEAN_RESULT).all()
 
 
 @pytest.mark.parametrize("scaler_class,folder,typ", SNV_TEST_DATA)
 def test_standard_scaler_var(data_dir: str, scaler_class, folder: str, typ: str):
     path = os.path.join(data_dir, f"{typ}_file", folder)
-    scaler = scaler_class(preprocessed_path=path, data_archive=get_data_archive(typ=typ, path=path))
+    scaler = scaler_class(preprocessed_path=path, data_archive=get_data_archive(typ=typ))
     assert pytest.approx(scaler.scaler.var_, 0.000001) == SNV_VAR_RESULT
 
 
 @pytest.mark.parametrize("scaler_class,folder,typ", SNV_TEST_DATA)
 def test_standard_scaler_std(data_dir: str, scaler_class, folder: str, typ: str):
     path = os.path.join(data_dir, f"{typ}_file", folder)
-    scaler = scaler_class(preprocessed_path=path, data_archive=get_data_archive(typ=typ, path=path))
+    scaler = scaler_class(preprocessed_path=path, data_archive=get_data_archive(typ=typ))
     assert pytest.approx(scaler.scaler.scale_, 0.000001) == SNV_STD_RESULT
 
 
@@ -96,21 +96,21 @@ SNV_GET_DATA = [("npz", "1d", SHAPE_1D), ("npz", "3d", SHAPE_3D), ("zarr", "1d",
 @pytest.mark.parametrize("typ,folder,shape", SNV_GET_DATA)
 def test_standard_scaler_get_samples_features_shape(data_dir: str, typ: str, folder: str, shape: tuple):
     path = os.path.join(data_dir, f"{typ}_file", folder)
-    scaler = SNV(preprocessed_path=path, data_archive=get_data_archive(typ=typ, path=path))
+    scaler = SNV(preprocessed_path=path, data_archive=get_data_archive(typ=typ))
     assert scaler.get_samples_features_shape() == (SAMPLES, FEATURES, shape)
 
 
 @pytest.mark.parametrize("typ,folder,shape", SNV_GET_DATA)
 def test_standard_scaler_get_mean(data_dir: str, typ: str, folder: str, shape: tuple):
     path = os.path.join(data_dir, f"{typ}_file", folder)
-    scaler = SNV(preprocessed_path=path, data_archive=get_data_archive(typ=typ, path=path))
+    scaler = SNV(preprocessed_path=path, data_archive=get_data_archive(typ=typ))
     assert (scaler.get_mean(samples=SAMPLES, features=FEATURES, shape=shape) == SNV_MEAN_RESULT).all()
 
 
 @pytest.mark.parametrize("typ,folder,shape", SNV_GET_DATA)
 def test_standard_scaler_get_var(data_dir: str, typ: str, folder: str, shape: tuple):
     path = os.path.join(data_dir, f"{typ}_file", folder)
-    scaler = SNV(preprocessed_path=path, data_archive=get_data_archive(typ=typ, path=path))
+    scaler = SNV(preprocessed_path=path, data_archive=get_data_archive(typ=typ))
     assert pytest.approx(scaler.get_var(mean=SNV_MEAN_RESULT, samples=SAMPLES, features=FEATURES,
                                         shape=shape), 0.000001) == SNV_VAR_RESULT
 
@@ -118,5 +118,5 @@ def test_standard_scaler_get_var(data_dir: str, typ: str, folder: str, shape: tu
 @pytest.mark.parametrize("typ,folder,shape", SNV_GET_DATA)
 def test_standard_scaler_get_std(data_dir: str, typ: str, folder: str, shape: tuple):
     path = os.path.join(data_dir, f"{typ}_file", folder)
-    scaler = SNV(preprocessed_path=path, data_archive=get_data_archive(typ=typ, path=path))
+    scaler = SNV(preprocessed_path=path, data_archive=get_data_archive(typ=typ))
     assert pytest.approx(scaler.get_std(var=SNV_VAR_RESULT), 0.000001) == SNV_STD_RESULT

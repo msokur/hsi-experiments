@@ -51,7 +51,7 @@ GET_DATA_LOADER_DATA = [("normal", DataLoader),
 
 @pytest.mark.parametrize("typ,result", GET_DATA_LOADER_DATA)
 def test_get_data_loader(typ, result):
-    loader = get_data_loader(typ=typ, data_archive=DataArchiveNPZ(archive_path=""),
+    loader = get_data_loader(typ=typ, data_archive=DataArchiveNPZ(),
                              config_dataloader={"FILE_EXTENSION": ".dat"}, config_paths={})
 
     assert isinstance(loader, result)
@@ -131,7 +131,7 @@ def scaler_path():
 @pytest.mark.parametrize("typ,result", GET_SCALER_DATA)
 def test_get_scaler(typ, result):
     path = "scaler_test"
-    scaler = get_scaler(typ=typ, preprocessed_path=path, data_archive=DataArchiveNPZ(archive_path=path))
+    scaler = get_scaler(typ=typ, preprocessed_path=path, data_archive=DataArchiveNPZ())
 
     assert isinstance(scaler, result)
 
@@ -182,15 +182,15 @@ def test_get_extension_loader_error():
         get_extension_loader(typ="test")
 
 
-GET_DATA_ARCHIVE = [("npz", DataArchiveNPZ, {"archive_path": ""}),
-                    ("zarr", DataArchiveZARR, {"archive_path": "", "archive_name": ""})]
+GET_DATA_ARCHIVE = [("npz", DataArchiveNPZ),
+                    ("zarr", DataArchiveZARR)]
 
 
-@pytest.mark.parametrize("typ,archive,param", GET_DATA_ARCHIVE)
-def test_get_data_archive(typ: str, archive, param: dict):
-    assert isinstance(get_data_archive(typ=typ, **param), archive)
+@pytest.mark.parametrize("typ,archive", GET_DATA_ARCHIVE)
+def test_get_data_archive(typ: str, archive):
+    assert isinstance(get_data_archive(typ=typ), archive)
 
 
 def test_get_data_archive_error():
     with pytest.raises(ValueError, match="Error! No corresponding data archive for test"):
-        get_data_archive(typ="test", archive_path="")
+        get_data_archive(typ="test")

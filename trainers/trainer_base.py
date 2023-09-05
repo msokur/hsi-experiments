@@ -5,7 +5,7 @@ import numpy as np
 import abc
 import pickle
 
-import data_utils.generator as generator
+from data_utils.generator import DataGenerator
 from configuration.copy_py_files import copy_files
 from configuration import get_config as conf
 from configuration.keys import TrainerKeys as TK, PathKeys as PK, DataLoaderKeys as DLK
@@ -51,27 +51,27 @@ class Trainer:
         if not os.path.exists(self.batch_path):
             os.mkdir(self.batch_path)
 
-        train_generator = generator.DataGenerator("train",
-                                                  self.CONFIG_PATHS[PK.SHUFFLED_PATH],
-                                                  self.batch_path,
-                                                  batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
-                                                  split_factor=self.CONFIG_TRAINER[TK.SPLIT_FACTOR],
-                                                  split_flag=True,
-                                                  valid_except_indexes=self.valid_except_indexes.copy(),
-                                                  except_indexes=self.excepted_indexes.copy(),
-                                                  for_tuning=for_tuning,
-                                                  log_dir=self.log_dir)
+        train_generator = DataGenerator("train",
+                                        self.CONFIG_PATHS[PK.SHUFFLED_PATH],
+                                        self.batch_path,
+                                        batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
+                                        split_factor=self.CONFIG_TRAINER[TK.SPLIT_FACTOR],
+                                        split_flag=True,
+                                        valid_except_indexes=self.valid_except_indexes.copy(),
+                                        except_indexes=self.excepted_indexes.copy(),
+                                        for_tuning=for_tuning,
+                                        log_dir=self.log_dir)
         self.save_valid_except_indexes(train_generator.valid_except_indexes)
-        valid_generator = generator.DataGenerator("valid",
-                                                  self.CONFIG_PATHS[PK.SHUFFLED_PATH],
-                                                  self.batch_path,
-                                                  batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
-                                                  split_factor=self.CONFIG_TRAINER[TK.SPLIT_FACTOR],
-                                                  split_flag=False,
-                                                  except_indexes=self.excepted_indexes,
-                                                  valid_except_indexes=train_generator.valid_except_indexes,
-                                                  for_tuning=for_tuning,
-                                                  log_dir=self.log_dir)
+        valid_generator = DataGenerator("valid",
+                                        self.CONFIG_PATHS[PK.SHUFFLED_PATH],
+                                        self.batch_path,
+                                        batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
+                                        split_factor=self.CONFIG_TRAINER[TK.SPLIT_FACTOR],
+                                        split_flag=False,
+                                        except_indexes=self.excepted_indexes,
+                                        valid_except_indexes=train_generator.valid_except_indexes,
+                                        for_tuning=for_tuning,
+                                        log_dir=self.log_dir)
 
         class_weights = train_generator.get_class_weights()
         print(class_weights)
@@ -159,7 +159,7 @@ class Trainer:
 
         # send_tg_message_history(self.log_dir, history)
 
-        return model
+        return model, history
 
     def get_output_shape(self):
         if DLK.OUTPUT_SIGNATURE in self.CONFIG_DATALOADER:

@@ -10,7 +10,10 @@ import utils
 from configuration.get_config import telegram, CONFIG_CV, CONFIG_PATHS, CONFIG_DATALOADER, CONFIG_TRAINER
 import provider
 
-from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, TrainerKeys as TK
+from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK
+from configuration.parameter import (
+    ARCHIVE_TYPE,
+)
 
 
 class CrossValidatorBase:
@@ -19,6 +22,7 @@ class CrossValidatorBase:
         self.CONFIG_PATHS = CONFIG_PATHS
         self.CONFIG_DATALOADER = CONFIG_DATALOADER
         self.CONFIG_TRAINER = CONFIG_TRAINER
+        self.data_archive = provider.get_data_archive(typ=ARCHIVE_TYPE)
 
         current_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         project_folder = os.path.dirname(current_folder)
@@ -64,6 +68,7 @@ class CrossValidatorBase:
             os.makedirs(root_folder)
 
         data_loader = provider.get_data_loader(typ=self.CONFIG_DATALOADER[DLK.TYPE],
+                                               data_archive=self.data_archive,
                                                config_dataloader=CONFIG_DATALOADER, config_paths=CONFIG_PATHS)
         paths, splits = data_loader.get_paths_and_splits()
 

@@ -1,4 +1,6 @@
-ZARR_PAT_ARCHIVE = "patients_data.zarr"    # Archive name for zarr
+ARCHIVE_TYPE = "npz"
+
+# --- ZARR params
 PAT_CHUNKS = (1000,)
 D3_PAT_CHUNKS = PAT_CHUNKS + (1, 1)
 

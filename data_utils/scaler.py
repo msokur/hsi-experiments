@@ -51,7 +51,7 @@ class Scaler:
         print(paths)
         X_s, y_s, indexes_s = self.get_shapes(paths[0])
         X, y, indexes = np.empty(shape=X_s), np.empty(shape=y_s), np.empty(shape=indexes_s)
-        for data in tqdm(self.data_archive.all_data_generator()):
+        for data in tqdm(self.data_archive.all_data_generator(archive_path=self.preprocessed_path)):
             _X, _y, _i = data[self.dict_names[0]], data[self.dict_names[1]], data[self.dict_names[2]]
 
             # check if data 3D
@@ -101,7 +101,7 @@ class Scaler:
         if not os.path.exists(destination_path):
             os.mkdir(destination_path)
 
-        for data in tqdm(self.data_archive.all_data_generator()):
+        for data in tqdm(self.data_archive.all_data_generator(archive_path=self.preprocessed_path)):
             X = data[self.dict_names[0]]
             X = self.scale_X(X)
 
@@ -160,7 +160,7 @@ class SNV(Scaler):
         samples = np.int64(0)
         features = 0
         shape = (0, 0)
-        for data in tqdm(self.data_archive.all_data_generator()):
+        for data in tqdm(self.data_archive.all_data_generator(archive_path=self.preprocessed_path)):
             shape = data[self.dict_names[0]].shape
             features = shape[-1]
             samples += shape[0]
@@ -169,7 +169,7 @@ class SNV(Scaler):
 
     def get_mean(self, samples: np.int64, features: int, shape: tuple) -> np.ndarray:
         mean_ = np.zeros(shape=features)
-        for data in tqdm(self.data_archive.all_data_generator()):
+        for data in tqdm(self.data_archive.all_data_generator(archive_path=self.preprocessed_path)):
             if len(shape) > 2:
                 X = DistributionsChecker.get_centers(data=data[self.dict_names[0]])
             else:
@@ -181,7 +181,7 @@ class SNV(Scaler):
 
     def get_var(self, mean: np.ndarray, samples: np.int64, features: int, shape: tuple) -> np.ndarray:
         var_ = np.zeros(shape=features)
-        for data in tqdm(self.data_archive.all_data_generator()):
+        for data in tqdm(self.data_archive.all_data_generator(archive_path=self.preprocessed_path)):
             if len(shape) > 2:
                 X = DistributionsChecker.get_centers(data=data[self.dict_names[0]])
             else:

@@ -32,23 +32,13 @@ def zarr_test_dir(zarr_data_dir: str) -> str:
 
 
 @pytest.fixture
-def zarr_test_name() -> str:
-    return "patients_data.zarr"
-
-
-@pytest.fixture
-def zarr_path(zarr_test_dir: str, zarr_test_name: str) -> str:
-    return os.path.join(zarr_test_dir, zarr_test_name)
-
-
-@pytest.fixture
-def dataloader(zarr_data_dir: str, zarr_test_name: str) -> DataLoader:
-    data_archive = DataArchiveZARR(archive_path=zarr_data_dir, archive_name=zarr_test_name)
+def dataloader() -> DataLoader:
+    data_archive = DataArchiveZARR()
     return DataLoader(data_archive=data_archive, config_dataloader={"FILE_EXTENSION": ".dat"}, config_paths={})
 
 
-def test_get_name(zarr_path: str, dataloader):
-    path = zarr_path + "/pat_1"
+def test_get_name(zarr_test_dir: str, dataloader):
+    path = zarr_test_dir + "/pat_1"
     assert dataloader.get_name(path=path) == "pat_1"
 
 
@@ -56,11 +46,11 @@ GET_PATHS_DATA = [([ARR_DATA_1, ARR_DATA_2, ARR_DATA_3], ["pat_1", "pat_2", "pat
 
 
 @pytest.mark.parametrize("values,names", GET_PATHS_DATA)
-def test_get_paths(zarr_test_dir: str, zarr_path: str, dataloader, values: list, names: list):
+def test_get_paths(zarr_test_dir: str, dataloader, values: list, names: list):
     result = []
     for value, name in zip(values, names):
         dataloader.X_y_dict_save_to_archive(destination_path=zarr_test_dir, values=value, name=name)
-        result.append(f"{zarr_path}/{name}")
+        result.append(f"{zarr_test_dir}/{name}")
 
     elem = dataloader.get_paths(root_path=zarr_test_dir)
     assert elem == result
@@ -73,12 +63,12 @@ X_Y_DICT_SAVE_DATA_TREE = [([ARR_DATA_1, ARR_DATA_2], ["pat_one", "pat_two"],
 
 
 @pytest.mark.parametrize("values,names,result", X_Y_DICT_SAVE_DATA_TREE)
-def test_X_y_dict_save_to_archive_tree(zarr_test_dir: str, zarr_path: str, dataloader, values: list, names: list,
+def test_X_y_dict_save_to_archive_tree(zarr_test_dir: str, dataloader, values: list, names: list,
                                        result: list):
     for value, name in zip(values, names):
         dataloader.X_y_dict_save_to_archive(destination_path=zarr_test_dir, values=value, name=name)
 
-    z_archive = zarr.open_group(store=zarr_path, mode="r")
+    z_archive = zarr.open_group(store=zarr_test_dir, mode="r")
     elem = []
     for group in z_archive.group_keys():
         elem.append(group)
@@ -93,11 +83,11 @@ X_Y_DICT_SAVE_DATA_CHUNKS = [(ARR_DATA_1, "pat_one", [(1000, 2), (1000, 2), (100
 
 
 @pytest.mark.parametrize("values,name,result", X_Y_DICT_SAVE_DATA_CHUNKS)
-def test_X_y_dict_save_to_archive_chunks(zarr_test_dir: str, zarr_path: str, dataloader, values: dict[str, np.ndarray],
+def test_X_y_dict_save_to_archive_chunks(zarr_test_dir: str, dataloader, values: dict[str, np.ndarray],
                                          name: str, result: list):
     dataloader.X_y_dict_save_to_archive(destination_path=zarr_test_dir, values=values, name=name)
 
-    z_archive = zarr.open_group(store=zarr_path, mode="r")
+    z_archive = zarr.open_group(store=zarr_test_dir, mode="r")
     elem = []
     for group in z_archive.group_keys():
         for sub_key in z_archive[group].array_keys():

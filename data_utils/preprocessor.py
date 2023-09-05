@@ -13,7 +13,7 @@ from data_utils.shuffle import Shuffle
 
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK, PreprocessorKeys as PPK, AugKeys as AK
 from configuration.parameter import (
-    ZARR_PAT_ARCHIVE, PAT_CHUNKS, D3_PAT_CHUNKS
+    ARCHIVE_TYPE
 )
 
 '''
@@ -62,15 +62,8 @@ class Preprocessor:
         if not os.path.exists(preprocessed_path):
             os.makedirs(preprocessed_path)
 
-        data_archive = provider.get_data_archive(typ="npz", archive_path=preprocessed_path,
-                                                 archive_name=ZARR_PAT_ARCHIVE)
-        dataloader = provider.get_data_loader(typ=self.CONFIG_DATALOADER[DLK.TYPE],
-                                              data_archive=data_archive,
-                                              config_dataloader=self.CONFIG_DATALOADER,
-                                              config_paths=self.CONFIG_PATHS,
-                                              dict_names=[self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][0],
-                                                          self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1],
-                                                          self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][4]])
+        data_archive = provider.get_data_archive(typ=ARCHIVE_TYPE)
+
         print('ROOT PATH', root_path)
         print('PREPROCESSED PATH', preprocessed_path)
 
@@ -79,13 +72,20 @@ class Preprocessor:
 
         # ---------Data reading part--------------
         if execution_flags['load_data_with_dataloader']:
+            dataloader = provider.get_data_loader(typ=self.CONFIG_DATALOADER[DLK.TYPE],
+                                                  data_archive=data_archive,
+                                                  config_dataloader=self.CONFIG_DATALOADER,
+                                                  config_paths=self.CONFIG_PATHS,
+                                                  dict_names=[self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][0],
+                                                              self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1],
+                                                              self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][4]])
             dataloader.files_read_and_save_to_archive(root_path, preprocessed_path)
 
         # ----------weights part------------------
         if execution_flags['add_sample_weights']:
             weight_calc = Weights(filename=self.weights_filename,
                                   data_archive=data_archive,
-                                  label_file=dataloader.get_labels_filename(),
+                                  label_file=CONFIG_DATALOADER[DLK.LABELS_FILENAME],
                                   y_dict_name=self.load_name_for_y,
                                   weight_dict_name=self.dict_names[-1])
             weights = weight_calc.weights_get_or_save(preprocessed_path)
@@ -116,10 +116,10 @@ if __name__ == '__main__':
     from configuration.get_config import telegram, CONFIG_PATHS, CONFIG_PREPROCESSOR, CONFIG_DATALOADER, CONFIG_AUG
 
     execution_flags_ = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
-    execution_flags_['load_data_with_dataloader'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["LOAD_DATA_WITH_DATALOADER"]
-    execution_flags_['add_sample_weights'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["ADD_SAMPLE_WEIGHTS"]
-    execution_flags_['scale'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["SCALE"]
-    execution_flags_['shuffle'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["SHUFFLE"]
+    execution_flags_['load_data_with_dataloader'] = CONFIG_PREPROCESSOR[PPK.EXECUTION_FLAGS][PPK.EF_LOAD_DATA_WITH_DATALOADER]
+    execution_flags_['add_sample_weights'] = CONFIG_PREPROCESSOR[PPK.EXECUTION_FLAGS][PPK.EF_ADD_SAMPLE_WEIGHTS]
+    execution_flags_['scale'] = CONFIG_PREPROCESSOR[PPK.EXECUTION_FLAGS][PPK.EF_SCALE]
+    execution_flags_['shuffle'] = CONFIG_PREPROCESSOR[PPK.EXECUTION_FLAGS][PPK.EF_SHUFFLE]
 
     try:
         preprocessor = Preprocessor(config_preprocessor=CONFIG_PREPROCESSOR, config_paths=CONFIG_PATHS,

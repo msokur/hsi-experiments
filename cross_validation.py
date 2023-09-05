@@ -55,13 +55,12 @@ def postprocessing_for_one_model():
     execution_flags['cross_validation'] = False   # cross_validators pipeline consist of 2 steps: 'cross_validation' (where models are trained) and 'evaluation'. In this case we only want to apply post-processing (evaluation) on existing model (that's why 'cross_validation' is set to False)
     cross_validator.pipeline(execution_flags=execution_flags)
     
-    
-    
+
 if __name__ == '__main__':
     from datetime import date
     try:
-        #out_of_the_box()        
-        postprocessing_for_one_model()
+        out_of_the_box()
+        # postprocessing_for_one_model()
 
         telegram.send_tg_message('Operations in cross_validation.py are successfully completed!')
                

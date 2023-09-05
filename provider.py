@@ -134,13 +134,13 @@ def get_extension_loader(typ: str, **kwargs):
         value_error(modul="file extension", typ=typ)
 
 
-def get_data_archive(typ: str, archive_path: str, archive_name: str = None):
+def get_data_archive(typ: str):
     from data_utils.data_archive import DataArchiveNPZ, DataArchiveZARR
 
     if typ == "npz":
-        return DataArchiveNPZ(archive_path=archive_path)
+        return DataArchiveNPZ()
     elif typ == "zarr":
-        return DataArchiveZARR(archive_path=archive_path, archive_name=archive_name)
+        return DataArchiveZARR()
     else:
         value_error(modul="data archive", typ=typ)
 

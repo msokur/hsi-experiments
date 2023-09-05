@@ -14,7 +14,7 @@ from data_utils.data_archive import DataArchive
 
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK
 from configuration.parameter import (
-    ZARR_PAT_ARCHIVE, DICT_X, DICT_y, DICT_IDX
+    DICT_X, DICT_y, DICT_IDX
 )
 from data_utils.background_detection import detect_background
 from data_utils.data_loaders.path_splits import get_splits
@@ -171,7 +171,7 @@ class DataLoader:
         return tissue_indexes
 
     def X_y_dict_save_to_archive(self, destination_path: str, values: dict, name: str) -> None:
-        self.data_archive.save_group(save_path=destination_path, archive_name=ZARR_PAT_ARCHIVE, group_name=name,
+        self.data_archive.save_group(save_path=destination_path, group_name=name,
                                      datas=values)
 
     def X_y_concatenate_from_spectrum(self, spectra, indexes, labels=None):
