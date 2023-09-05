@@ -47,9 +47,9 @@
   },
   "GASTRIC_Database_mk": {
     "1.CONCAT_WITH_PREFIX": {
-      "RAW_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "mk2"],
+      "RAW_NPZ_PATH": ["data_3d_zarr", "gastric", "3x3", "svn", "median", "mk2"],
       "RAW_SOURCE_PATH": ["Gastric"],
-      "TEST_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "mk2"]
+      "TEST_NPZ_PATH": ["data_3d_zarr", "gastric", "3x3", "svn", "median", "mk2"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
       "SHUFFLED_PATH": ["shuffled"],
