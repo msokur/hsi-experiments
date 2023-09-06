@@ -1,7 +1,7 @@
 loader_section = "GASTRIC"
 system_section_cluster = "Cluster_Benny"
 system_section_local = "Win_Benny"
-database_section = "GASTRIC_Database_mk"
+database_section = "GASTRIC_Database_mk_invivo"
 prepro_section = "GASTRIC"
 cv_section = "CV_GASTRIC_MK"
 trainer_section = "HNO_TUNER"

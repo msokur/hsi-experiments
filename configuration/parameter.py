@@ -1,4 +1,4 @@
-ARCHIVE_TYPE = "zarr"
+ARCHIVE_TYPE = "npz"
 
 # --- ZARR params
 PAT_CHUNKS = (1000,)

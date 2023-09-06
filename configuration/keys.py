@@ -82,6 +82,7 @@ class DataLoaderKeys:
     TISSUE_LABELS = "TISSUE_LABELS"
     PLOT_COLORS = "PLOT_COLORS"
     LABELS = "LABELS"
+    DATA_NAMES_FROM_FILE = "DATA_NAMES_FROM_FILE"
 
 
 class TrainerKeys:

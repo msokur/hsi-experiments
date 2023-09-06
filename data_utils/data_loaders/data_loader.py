@@ -130,7 +130,7 @@ class DataLoader:
     def files_read_and_save_to_archive(self, root_path, destination_path):
         print('----Saving of archives is started----')
 
-        paths = glob(os.path.join(root_path, "*" + self.CONFIG_DATALOADER[DLK.FILE_EXTENSION]))
+        paths = self.__get_raw_paths(root_path=root_path)
         with open(os.path.join(destination_path, self.get_labels_filename()), 'wb') as f:
             pickle.dump(self.get_labels(), f, pickle.HIGHEST_PROTOCOL)
 
@@ -242,6 +242,22 @@ class DataLoader:
         for label in np.unique(y):
             labeled_spectrum[label] = X[y == label]
         return labeled_spectrum
+
+    def __get_raw_paths(self, root_path: str) -> List[str]:
+        if DLK.DATA_NAMES_FROM_FILE in self.CONFIG_DATALOADER:
+            if self.CONFIG_DATALOADER[DLK.DATA_NAMES_FROM_FILE] is not None:
+                file_name = os.path.join(root_path, self.CONFIG_DATALOADER[DLK.DATA_NAMES_FROM_FILE])
+                try:
+                    df_names = pd.read_csv(filepath_or_buffer=file_name, header=None)
+                    paths = []
+                    for name in df_names[0]:
+                        paths.append(os.path.join(root_path, name))
+                    return paths
+                except FileNotFoundError:
+                    print(f"File '{file_name}' not found! "
+                          f"All files with extension '{self.CONFIG_DATALOADER[DLK.FILE_EXTENSION]}' will be used.")
+
+        return glob(os.path.join(root_path, "*" + self.CONFIG_DATALOADER[DLK.FILE_EXTENSION]))
 
 
 if __name__ == "__main__":
