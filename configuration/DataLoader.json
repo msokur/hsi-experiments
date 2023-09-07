@@ -208,7 +208,7 @@
 		"SPLIT_PATHS_BY": "Files",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
 		"WITH_BACKGROUND_EXTRACTION": false,
-		"DATA_NAMES_FROM_FILE": "invivo.csv"
+		"DATA_NAMES_FROM_FILE": "exvivo.csv"
 	},
 	"MAT_BRAIN": {
 		"TYPE": "normal",

@@ -17,17 +17,17 @@
   },
   "GASTRIC": {
     "EXECUTION_FLAGS": {
-      "LOAD_DATA_WITH_DATALOADER": true,
-      "ADD_SAMPLE_WEIGHTS": false,
-      "SCALE": false,
-      "SHUFFLE": false
+      "LOAD_DATA_WITH_DATALOADER": false,
+      "ADD_SAMPLE_WEIGHTS": true,
+      "SCALE": true,
+      "SHUFFLE": true
     },
     "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",
     "FILES_TO_COPY": [["data_utils", "*.py"], ["data_utils", "data_loaders", "data_loader_dyn.py"],
       ["data_utils", "configuration", "*.py"], ["data_utils", "configuration", "*.json"]],
-    "NORMALIZATION_TYPE": "svn",
+    "NORMALIZATION_TYPE": "svn_2",
     "SCALER_FILE": "scaler.scaler",
     "SCALER_PATH": null
   }

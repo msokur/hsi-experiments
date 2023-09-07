@@ -73,6 +73,20 @@
       "MASK_PATH": ["annotation", "mk_files"]
     }
   },
+  "GASTRIC_Database_mk_exvivo": {
+    "1.CONCAT_WITH_PREFIX": {
+      "RAW_NPZ_PATH": ["data_3d", "gastric_exvivo", "3x3", "svn", "median", "mk2"],
+      "RAW_SOURCE_PATH": ["Gastric"],
+      "TEST_NPZ_PATH": ["data_3d", "gastric_exvivo", "3x3", "svn", "median", "mk2"]
+    },
+    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+      "SHUFFLED_PATH": ["shuffled"],
+      "BATCHED_PATH": ["batch_sized"]
+    },
+    "3.CONCAT_WITH_RAW_SOURCE_PATH": {
+      "MASK_PATH": ["annotation", "mk_files"]
+    }
+  },
   "GASTRIC_Database_png": {
     "1.CONCAT_WITH_PREFIX": {
       "RAW_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "png"],
