@@ -4,7 +4,6 @@ import inspect
 from statsmodels.stats import weightstats
 import numpy as np
 from tqdm import tqdm
-from glob import glob
 import math
 from scipy.stats import ks_2samp
 
@@ -12,8 +11,11 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-from configuration.get_config import CONFIG_DATALOADER, CONFIG_DISTRIBUTION
-from configuration.keys import DistroCheckKeys as DCK, DataLoaderKeys as DLK
+from data_utils.data_archive import DataArchive
+from configuration.keys import DistroCheckKeys as DCK
+from configuration.parameter import (
+    DICT_X,
+)
 
 """
 This class is about choosing a representative small dataset for speed up the training
@@ -34,19 +36,24 @@ There are several functionality parts:
 
 
 class DistributionsChecker:
-    def __init__(self, path, prints=CONFIG_DISTRIBUTION[DCK.PRINTS]):
+    def __init__(self, data_archive: DataArchive, path: str, config_distribution: dict, dict_name_X: str = None):
         """
         Args:
+            data_archive: IO class for data management
             path: path with the archives to compare
-            prints (bool): if True, prints intermediate information
+            config_distribution: configuration parameters
         """
+        self.data_archive = data_archive
         self.path = path
-        self.test_paths = glob(os.path.join(self.path, '*.npz'))
-        self.all_data = np.array(self.get_data(self.test_paths))
-        self.prints = prints
+        self.CONFIG_DISTRIBUTION = config_distribution
+        if dict_name_X is None:
+            self.dict_name_X = DICT_X
+        self.test_paths = self.data_archive.get_paths(archive_path=self.path)
+        self.all_data = np.array(self.get_all_data(paths=self.test_paths))
+        self.prints = self.CONFIG_DISTRIBUTION[DCK.PRINTS]
 
     @staticmethod
-    def get_centers(data):
+    def get_centers(data: np.ndarray) -> np.ndarray:
         """ Get the center of a 3d patch.
 
         For 3d data: we don't need to compare every patch with the other patches
@@ -62,26 +69,46 @@ class DistributionsChecker:
         center = math.floor(data.shape[1] / 2)
         return data[:, center, center, ...]
 
-    @staticmethod
-    def get_data(paths, feature_index=-1):
+    def get_all_data(self, paths, feature_index=-1):
         """
-        Read data from the given paths.
+        Read data from the given path.
         It's also possible to get data with the given feature_index (for example, get only 4th feature)
 
         Returns:
-            concatenated data with shapes (number_of_samples, patch_size, patch_size, features) for 3d data
+            concatenated data with shapes (number_of_samples, features). For 3d data only the centered patches will be
+            used.
         """
         all_data = []
 
         for p in tqdm(paths):
-            data = np.load(p)
-            data = DistributionsChecker.get_centers(data['X'])
-
+            data = self.get_data(path=p, feature_index=feature_index)
             all_data += list(data)
-            if feature_index >= 0:
-                all_data += list(data[:, feature_index])
 
         return all_data
+
+    def get_data(self, path, feature_index=-1):
+        """
+        Read data from the given path.
+        It's also possible to get data with the given feature_index (for example, get only 4th feature)
+
+        Returns:
+            data with shapes (number_of_samples, feature(s)). For 3d data only the centered patches will be used.
+        """
+        data = self.data_archive.get_data(data_path=path, data_name=self.dict_name_X)
+        if len(data.shape) > 2:
+            data_1d = self.get_centers(data=data)
+        else:
+            data_1d = data[...]
+
+        if feature_index >= 0:
+            data_feature = data_1d[..., feature_index]
+        else:
+            data_feature = data_1d[...]
+
+        if len(data_feature.shape) > 2:
+            return np.reshape(a=data_feature, newshape=(data_feature.shape[0], data_feature.shape[-1]))
+        else:
+            return data_feature
 
     def z_test(self, d1, d2):
         """ z_test for comparing of 2 distributions with the same std: d1 and d2
@@ -98,11 +125,11 @@ class DistributionsChecker:
         if self.prints:
             print(f'std1 - {std1}, std2 - {std2}')
 
-        if np.abs(std1 - std2) < CONFIG_DISTRIBUTION[DCK.Z_TEST_STD_DELTA]:
+        if np.abs(std1 - std2) < self.CONFIG_DISTRIBUTION[DCK.Z_TEST_STD_DELTA]:
             z, p_value = weightstats.ztest(d1, x2=d2, value=0)
             if self.prints:
                 print('z-score and p_value:', z, p_value)
-            if p_value > CONFIG_DISTRIBUTION[DCK.Z_TEST_P_VALUE]:
+            if p_value > self.CONFIG_DISTRIBUTION[DCK.Z_TEST_P_VALUE]:
                 return True
         else:
             print('WARNING! Distributions (std) are too different, Z-test results '
@@ -122,7 +149,7 @@ class DistributionsChecker:
         ks = ks_2samp(d1, d2)
         if self.prints:
             print(ks)
-        if ks.pvalue > CONFIG_DISTRIBUTION[DCK.KS_TEST_P_VALUE]:
+        if ks.pvalue > self.CONFIG_DISTRIBUTION[DCK.KS_TEST_P_VALUE]:
             return True
         return False
 
@@ -133,16 +160,17 @@ class DistributionsChecker:
         Returns:
             True if archive with test_archive_index has the same distribution, False if not the same
         """
-        test_archive = np.load(self.test_paths[test_archive_index])
-        test_data = self.get_centers(test_archive['X'])
+        test_data = self.data_archive.get_data(data_path=self.test_paths[test_archive_index],
+                                               data_name=self.dict_name_X)
+        test_data_center = self.get_centers(test_data)
 
         results = []
-        for i in range(CONFIG_DATALOADER[DLK.LAST_NM] - CONFIG_DATALOADER[DLK.FIRST_NM]):
+        for i in range(test_data.shape[-1]):
             z_result = True
-            if CONFIG_DISTRIBUTION[DCK.Z_TEST]:
-                z_result = self.z_test(test_data[:, i], self.all_data[:, i])
+            if self.CONFIG_DISTRIBUTION[DCK.Z_TEST]:
+                z_result = self.z_test(test_data_center[:, i], self.all_data[:, i])
 
-            ks_result = self.kolmogorov_smirnov_test(self.all_data[:, i], test_data[:, i])
+            ks_result = self.kolmogorov_smirnov_test(self.all_data[:, i], test_data_center[:, i])
             results.append(z_result & ks_result)
         if np.all(results):
             return True

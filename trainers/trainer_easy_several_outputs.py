@@ -1,12 +1,9 @@
 import tensorflow.keras as keras
-import trainers.trainer_easy as trainer_easy
+from trainers.trainer_easy import TrainerEasy
 from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
 
 
-class TrainerEasySeveralOutputs(trainer_easy.TrainerEasy):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
+class TrainerEasySeveralOutputs(TrainerEasy):
     def compile_model(self, model: keras.Model) -> keras.Model:
         metric_dict = self.CONFIG_TRAINER[TK.CUSTOM_OBJECTS]
         METRICS = [

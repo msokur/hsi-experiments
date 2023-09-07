@@ -54,7 +54,9 @@ class CrossValidatorBase:
     def cross_validation_step(self, model_name, except_names=None):
         if except_names is None:
             except_names = []
-        trainer = provider.get_trainer(typ=self.CONFIG_TRAINER[CVK.TYPE], model_name=model_name,
+        trainer = provider.get_trainer(typ=self.CONFIG_TRAINER[CVK.TYPE],  data_archive=self.data_archive,
+                                       config_trainer=self.CONFIG_TRAINER, config_paths=self.CONFIG_PATHS,
+                                       config_dataloader=self.CONFIG_DATALOADER, model_name=model_name,
                                        except_indexes=except_names)
         trainer.train()
 

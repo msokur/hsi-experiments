@@ -3,14 +3,11 @@ import numpy as np
 import os
 from shutil import rmtree
 
-import trainers.trainer_base as trainer_base
+from trainers.trainer_base import Trainer
 from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
 
 
-class TrainerEasy(trainer_base.Trainer):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
+class TrainerEasy(Trainer):
     def train_process(self):
         self.logging_and_copying()
 

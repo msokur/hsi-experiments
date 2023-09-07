@@ -6,16 +6,19 @@ import abc
 import pickle
 
 from data_utils.generator import DataGenerator
+from data_utils.data_archive import DataArchive
 from configuration.copy_py_files import copy_files
-from configuration import get_config as conf
+from configuration.get_config import telegram
 from configuration.keys import TrainerKeys as TK, PathKeys as PK, DataLoaderKeys as DLK
 
 
 class Trainer:
-    def __init__(self, model_name: str, except_indexes=None, valid_except_indexes=None):
-        self.CONFIG_TRAINER = conf.CONFIG_TRAINER
-        self.CONFIG_PATHS = conf.CONFIG_PATHS
-        self.CONFIG_DATALOADER = conf.CONFIG_DATALOADER
+    def __init__(self, data_archive: DataArchive, config_trainer: dict, config_paths: dict, config_dataloader: dict,
+                 model_name: str, except_indexes=None, valid_except_indexes=None):
+        self.data_archive = data_archive
+        self.CONFIG_TRAINER = config_trainer
+        self.CONFIG_PATHS = config_paths
+        self.CONFIG_DATALOADER = config_dataloader
         if valid_except_indexes is None:
             valid_except_indexes = []
         if except_indexes is None:
@@ -142,7 +145,8 @@ class Trainer:
             elif self.CONFIG_PATHS[PK.MODE] != "WITHOUT_GPU":
                 print(f"ERROR Mode: {self.CONFIG_PATHS[PK.MODE]} not available! Continue without GPU strategy")
         except Exception as e:
-            conf.telegram.send_tg_message(f'ERROR!!!, training {self.log_dir} has finished with error {e}')
+            if telegram is not None:
+                telegram.send_tg_message(f'ERROR!!!, training {self.log_dir} has finished with error {e}')
             raise e  # TODO REMOVE!!
 
         model, history = self.train_process()

@@ -35,10 +35,8 @@ class DataLoader:
     def get_labels(self):
         return self.CONFIG_DATALOADER[DLK.LABELS]
 
-    def get_cube_name(self, path: str, delimiter=None) -> str:
-        if delimiter is None:
-            delimiter = self.CONFIG_PATHS[PK.SYS_DELIMITER]
-        return path.split(delimiter)[-1].split(".")[0].split(self.CONFIG_DATALOADER[DLK.NAME_SPLIT])[0]
+    def get_cube_name(self, path: str) -> str:
+        return os.path.split(p=path)[-1].split(".")[0].split(self.CONFIG_DATALOADER[DLK.NAME_SPLIT])[0]
 
     def get_name(self, path: str) -> str:
         return self.data_archive.get_name(path=path)
