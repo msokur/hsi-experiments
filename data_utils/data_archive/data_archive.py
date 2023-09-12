@@ -4,6 +4,8 @@ from typing import List, Dict, Union
 import numpy as np
 import os
 
+import zarr
+
 
 class DataArchive:
     @staticmethod
@@ -35,8 +37,9 @@ class DataArchive:
         pass
 
     @abc.abstractmethod
-    def save_batch_arrays(self, save_path: str, data: Dict[str, Union[np.ndarray, list]], data_indexes: np.ndarray,
-                          batch_file_name: str, split_size: int, save_dict_names: List[str]) -> Dict[str, np.ndarray]:
+    def save_batch_arrays(self, save_path: str, data: Union[zarr.Group, Dict[str, Union[np.ndarray, list]]],
+                          data_indexes: np.ndarray, batch_file_name: str, split_size: int,
+                          save_dict_names: List[str]) -> Dict[str, np.ndarray]:
         pass
 
     @abc.abstractmethod
@@ -57,5 +60,3 @@ class DataArchive:
         for delete in datas_to_delete:
             self.delete_group(delete_path=delete)
         os.remove(delete_path)
-
-

@@ -36,8 +36,6 @@ class Weights:
         else:
             self.weight_dict_name = weight_dict_name
 
-        self.data = None
-
     def weights_get_from_file(self, root_path: str) -> np.ndarray:
         weights_path = os.path.join(root_path, self.filename)
         if os.path.isfile(weights_path):

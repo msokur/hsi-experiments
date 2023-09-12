@@ -54,8 +54,6 @@ class Trainer:
             self.batch_path += '_' + self.excepted_indexes[0]
             if for_tuning:
                 self.batch_path += TUNE
-        if not os.path.exists(self.batch_path):
-            os.mkdir(self.batch_path)
 
         train_generator = DataGenerator(TRAIN,
                                         self.CONFIG_PATHS[PK.SHUFFLED_PATH],

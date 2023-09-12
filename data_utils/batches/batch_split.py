@@ -1,5 +1,5 @@
 import abc
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from tqdm import tqdm
 
 import os
@@ -24,8 +24,8 @@ class BatchSplit:
         self.p_dict_name = dict_names[2]
         self.config_distribution = config_distribution
 
-    def split(self, data_paths: List[str], batch_patch: str, except_cv_names: List[str], except_valid_names: List[str],
-              tune=False) -> Tuple[str, str]:
+    def split(self, data_paths: List[str], batch_patch: str, except_cv_names: List[str], except_train_names: List[str],
+              except_valid_names: List[str], tune=False) -> Tuple[str, str]:
         if tune:
             ds = DistributionsChecker(data_archive=self.data_archive, path=os.path.split(data_paths[0])[0],
                                       config_distribution=self.config_distribution, check_dict_name=self.spec_dict_name)
@@ -33,26 +33,24 @@ class BatchSplit:
             data_paths = [data_paths[tuning_index]]
 
         print('--------Splitting into npz of batch size started--------')
-        # ------------removing of previously generated archives (of the previous CV step) ----------------
-        self.__init_archive__(path=batch_patch)
-        train_path, valid_path, except_train_names = self.__split_data_archive__(root_data_paths=data_paths,
-                                                                                 root_batch_path=batch_patch,
-                                                                                 except_cv_names=except_cv_names,
-                                                                                 except_valid_names=except_valid_names)
-
         print(f"We except for patient out data: {','.join(n for n in except_cv_names)}.")
         print(f"We except for train data: {','.join(n for n in except_train_names)}.")
         print(f"We except for valid data: {','.join(n for n in except_valid_names)}.")
+        # ------------removing of previously generated archives (of the previous CV step) ----------------
+        self.__init_archive__(path=batch_patch)
+        train_path, valid_path = self.__split_data_archive__(root_data_paths=data_paths,
+                                                             root_batch_path=batch_patch,
+                                                             except_train_names=except_train_names,
+                                                             except_valid_names=except_valid_names)
+
         print('--------Splitting into batches finished--------')
         return train_path, valid_path
 
     @abc.abstractmethod
-    def __split_data_archive__(self, root_data_paths: List[str], root_batch_path: str, except_cv_names: List[str],
-                               except_valid_names: List[str]) -> Tuple[str, str, List[str]]:
-        arch_rest = self.__init_rest()
+    def __split_data_archive__(self, root_data_paths: List[str], root_batch_path: str, except_train_names: List[str],
+                               except_valid_names: List[str]) -> Tuple[str, str]:
+        train_rest = self.__init_rest()
         valid_rest = self.__init_rest()
-        except_names = except_cv_names + except_valid_names
-        except_train_names = []
         train_path = os.path.join(root_batch_path, TRAIN)
         valid_path = os.path.join(root_batch_path, VALID)
 
@@ -62,7 +60,6 @@ class BatchSplit:
             self.__check_dict_names(self.dict_names, data_)
             self.dict_names = list(set(self.dict_names).intersection(set(data_)))
 
-            # data = {name: data_[name] for name in self.dict_names}
             p_names = data_[self.p_dict_name][...]
             labels = data_[self.label_dict_name][...]
 
@@ -71,52 +68,39 @@ class BatchSplit:
 
             # ------------ get validation data indexes --------------
             valid_indexes = label_indexes & np.isin(p_names, except_valid_names)
+            self.__check_name_in_data(indexes=valid_indexes, data_path=p, names=except_valid_names)
 
             # ------------ get training data indexes --------------
-            train_indexes = label_indexes & np.isin(p_names, except_names, invert=True)
-            train_names = list(set(p_names[train_indexes]))
-            except_train_names = list(set(except_train_names + train_names))
-            if train_indexes.shape[0] == 0:
-                print(f"WARING! No train data found in {p} for the names: {','.join(n for n in train_names)}.")
+            train_indexes = label_indexes & np.isin(p_names, except_train_names)
+            self.__check_name_in_data(indexes=train_indexes, data_path=p, names=except_train_names)
 
             # ------------- split train and valid data ----------------
-            arch_rest_temp = self.data_archive.save_batch_arrays(save_path=train_path,
-                                                                 data=data_,
-                                                                 data_indexes=train_indexes,
-                                                                 batch_file_name=BATCH_FILE,
-                                                                 split_size=self.batch_size,
-                                                                 save_dict_names=self.dict_names)
-            valid_rest_temp = self.data_archive.save_batch_arrays(save_path=valid_path,
-                                                                  data=data_,
-                                                                  data_indexes=valid_indexes,
-                                                                  batch_file_name=BATCH_FILE,
-                                                                  split_size=self.batch_size,
-                                                                  save_dict_names=self.dict_names)
+            train_rest_temp = self.__split_and_save_batches__(save_path=train_path, data=data_,
+                                                              data_indexes=train_indexes)
+            valid_rest_temp = self.__split_and_save_batches__(save_path=valid_path, data=data_,
+                                                              data_indexes=valid_indexes)
 
             # ---------------- save rest from archive an valid data ------------------
             for name in self.dict_names:
-                arch_rest[name] += list(arch_rest_temp[name])
+                train_rest[name] += list(train_rest_temp[name])
                 valid_rest[name] += list(valid_rest_temp[name])
 
-        if len(arch_rest[self.dict_names[0]]) >= self.batch_size:
-            self.data_archive.save_batch_arrays(save_path=train_path,
-                                                data=arch_rest,
-                                                data_indexes=np.full(shape=len(arch_rest[self.dict_names[0]]),
-                                                                     fill_value=True),
-                                                batch_file_name=BATCH_FILE,
-                                                split_size=self.batch_size,
-                                                save_dict_names=self.dict_names)
+        if len(train_rest[self.dict_names[0]]) >= self.batch_size:
+            self.__split_and_save_batches__(save_path=train_path, data=train_rest,
+                                            data_indexes=np.full(shape=len(train_rest[self.dict_names[0]]),
+                                                                 fill_value=True))
 
         if len(valid_rest[self.dict_names[0]]) >= self.batch_size:
-            self.data_archive.save_batch_arrays(save_path=valid_path,
-                                                data=valid_rest,
-                                                data_indexes=np.full(shape=len(valid_rest_rest[self.dict_names[0]]),
-                                                                     fill_value=True),
-                                                batch_file_name=BATCH_FILE,
-                                                split_size=self.batch_size,
-                                                save_dict_names=self.dict_names)
+            self.__split_and_save_batches__(save_path=valid_path, data=valid_rest,
+                                            data_indexes=np.full(shape=len(valid_rest[self.dict_names[0]]),
+                                                                 fill_value=True))
 
-        return train_path, valid_path, except_train_names
+        return train_path, valid_path
+
+    def __split_and_save_batches__(self, save_path: str, data, data_indexes: np.ndarray) -> Dict[str, np.ndarray]:
+        return self.data_archive.save_batch_arrays(save_path=save_path, data=data, data_indexes=data_indexes,
+                                                   batch_file_name=BATCH_FILE, split_size=self.batch_size,
+                                                   save_dict_names=self.dict_names)
 
     def __init_archive__(self, path: str):
         self.__check_archive__(path=path)
@@ -139,7 +123,12 @@ class BatchSplit:
         if len(diff_dataset):
             print(f'WARNING! dict_names {diff_dataset} are not in dict_names of Preprocessor')
 
-    def __init_rest(self):
+    @staticmethod
+    def __check_name_in_data(indexes: np.ndarray, data_path: str, names: List[str]):
+        if indexes.shape[0] == 0:
+            print(f"WARING! No data found in {data_path} for the names: {','.join(n for n in names)}.")
+
+    def __init_rest(self) -> Dict[str, list]:
         rest_array = {}
         for name in self.dict_names:
             rest_array[name] = []
