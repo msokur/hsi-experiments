@@ -6,10 +6,13 @@ import abc
 import pickle
 
 from data_utils.generator import DataGenerator
-from data_utils.data_archive import DataArchive
+from data_utils.data_archive.data_archive import DataArchive
 from configuration.copy_py_files import copy_files
 from configuration.get_config import telegram
 from configuration.keys import TrainerKeys as TK, PathKeys as PK, DataLoaderKeys as DLK
+from configuration.parameter import (
+    VALID_LOG, HISTORY_FILE, TUNE, TRAIN, VALID
+)
 
 
 class Trainer:
@@ -34,7 +37,7 @@ class Trainer:
         pass
 
     def save_valid_except_indexes(self, valid_except_indexes):
-        with open(os.path.join(self.log_dir, "valid.valid_except_names"), "wb") as f:
+        with open(os.path.join(self.log_dir, VALID_LOG), "wb") as f:
             pickle.dump(valid_except_indexes, f, pickle.HIGHEST_PROTOCOL)
 
     def logging_and_copying(self):
@@ -50,11 +53,11 @@ class Trainer:
         if len(self.excepted_indexes) > 0:
             self.batch_path += '_' + self.excepted_indexes[0]
             if for_tuning:
-                self.batch_path += "tune"
+                self.batch_path += TUNE
         if not os.path.exists(self.batch_path):
             os.mkdir(self.batch_path)
 
-        train_generator = DataGenerator("train",
+        train_generator = DataGenerator(TRAIN,
                                         self.CONFIG_PATHS[PK.SHUFFLED_PATH],
                                         self.batch_path,
                                         batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
@@ -65,7 +68,7 @@ class Trainer:
                                         for_tuning=for_tuning,
                                         log_dir=self.log_dir)
         self.save_valid_except_indexes(train_generator.valid_except_indexes)
-        valid_generator = DataGenerator("valid",
+        valid_generator = DataGenerator(VALID,
                                         self.CONFIG_PATHS[PK.SHUFFLED_PATH],
                                         self.batch_path,
                                         batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
@@ -125,7 +128,7 @@ class Trainer:
         return callbacks_
 
     def save_history(self, history):
-        np.save(os.path.join(self.log_dir, 'history'), history.history)
+        np.save(os.path.join(self.log_dir, HISTORY_FILE), history.history)
 
     def train(self):
         try:
@@ -151,12 +154,12 @@ class Trainer:
 
         model, history = self.train_process()
 
-        checkpoints_paths = os.path.join(self.log_dir, 'checkpoints')
+        checkpoints_paths = os.path.join(self.log_dir, self.CONFIG_PATHS[PK.CHECKPOINT_PATH])
         if not os.path.exists(checkpoints_paths):
             os.mkdir(checkpoints_paths)
 
         if not self.CONFIG_TRAINER[TK.EARLY_STOPPING]["enable"]:
-            final_model_save_path = os.path.join(self.log_dir, 'checkpoints', f'cp-{len(history.history["loss"]):04d}')
+            final_model_save_path = os.path.join(checkpoints_paths, f'cp-{len(history.history["loss"]):04d}')
             if not os.path.exists(final_model_save_path):
                 os.mkdir(final_model_save_path)
             model.save(final_model_save_path)

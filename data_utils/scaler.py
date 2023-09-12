@@ -8,7 +8,7 @@ from sklearn import preprocessing
 import pickle
 
 from util.compare_distributions import DistributionsChecker
-from data_utils.data_archive import DataArchive
+from data_utils.data_archive.data_archive import DataArchive
 from configuration.parameter import (
     DICT_X, DICT_y, DICT_IDX,
     SCALER_FILE
@@ -107,7 +107,7 @@ class Scaler:
 
             datas = {n: a for n, a in data.items()}
             datas[self.dict_names[0]] = X.copy()
-            self.data_archive.save_data(save_path=os.path.abspath(data),
+            self.data_archive.save_data(save_path=self.data_archive.get_path(file=data),
                                         data_name=self.dict_names[0],
                                         data=X)
 
@@ -153,14 +153,14 @@ class SNV(Scaler):
         scaler.scale_ = std
         return scaler
 
-    def transform(self, X):
-        self.scaler.transform(X)
+    def transform(self, X) -> np.ndarray:
+        return self.scaler.transform(X)
 
     def get_samples_features_shape(self) -> Tuple[np.int64, int, tuple]:
         samples = np.int64(0)
         features = 0
         shape = (0, 0)
-        for data in tqdm(self.data_archive.all_data_generator(archive_path=self.preprocessed_path)):
+        for data in self.data_archive.all_data_generator(archive_path=self.preprocessed_path):
             shape = data[self.dict_names[0]].shape
             features = shape[-1]
             samples += shape[0]
@@ -169,7 +169,7 @@ class SNV(Scaler):
 
     def get_mean(self, samples: np.int64, features: int, shape: tuple) -> np.ndarray:
         mean_ = np.zeros(shape=features)
-        for data in tqdm(self.data_archive.all_data_generator(archive_path=self.preprocessed_path)):
+        for data in self.data_archive.all_data_generator(archive_path=self.preprocessed_path):
             if len(shape) > 2:
                 X = DistributionsChecker.get_centers(data=data[self.dict_names[0]])
             else:
@@ -181,7 +181,7 @@ class SNV(Scaler):
 
     def get_var(self, mean: np.ndarray, samples: np.int64, features: int, shape: tuple) -> np.ndarray:
         var_ = np.zeros(shape=features)
-        for data in tqdm(self.data_archive.all_data_generator(archive_path=self.preprocessed_path)):
+        for data in self.data_archive.all_data_generator(archive_path=self.preprocessed_path):
             if len(shape) > 2:
                 X = DistributionsChecker.get_centers(data=data[self.dict_names[0]])
             else:

@@ -9,10 +9,10 @@ from glob import glob
 from tqdm import tqdm
 
 from configuration.copy_py_files import copy_files
-from data_utils.data_archive import DataArchive
+from data_utils.data_archive.data_archive import DataArchive
 
 from configuration.parameter import (
-    SHUFFLE_ARCHIVE, SHUFFLE_GROUP_NAME, PILE_NAME
+    SHUFFLE_GROUP_NAME, PILE_NAME
 )
 
 
@@ -120,8 +120,7 @@ class Shuffle:
             random.shuffle(indexes)
 
             os.remove(pp)
-            self.data_archive.save_group(save_path=self.shuffle_saving_path, archive_name=SHUFFLE_ARCHIVE,
-                                         group_name=f"{SHUFFLE_GROUP_NAME}_{i}",
+            self.data_archive.save_group(save_path=self.shuffle_saving_path, group_name=f"{SHUFFLE_GROUP_NAME}_{i}",
                                          datas={n: a[indexes] for n, a in _data.items()})
 
         print("----Shuffling of piles finished----")

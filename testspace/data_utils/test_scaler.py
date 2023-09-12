@@ -2,8 +2,9 @@ import numpy as np
 import pytest
 import os
 
-from data_utils.scaler import StandardScaler, SNV, StandardScalerTransposed, NormalizerScaler
-from data_utils.data_archive import DataArchiveNPZ, DataArchiveZARR
+from data_utils.scaler import StandardScaler, SNV
+from data_utils.data_archive.data_archive_zarr import DataArchiveZARR
+from data_utils.data_archive.data_archive_npz import DataArchiveNPZ
 
 X_0 = np.array(np.arange(start=0, stop=120, step=1)).reshape((12, 10))
 

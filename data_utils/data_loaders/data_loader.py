@@ -10,7 +10,7 @@ from tqdm import tqdm
 from sklearn.feature_extraction import image
 
 import provider
-from data_utils.data_archive import DataArchive
+from data_utils.data_archive.data_archive import DataArchive
 
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK
 from configuration.parameter import (

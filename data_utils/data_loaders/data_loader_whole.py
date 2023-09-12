@@ -1,7 +1,7 @@
 import numpy as np
 
 from data_utils.data_loaders.data_loader import DataLoader
-from data_utils.data_archive import DataArchive
+from data_utils.data_archive.data_archive import DataArchive
 
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK
 

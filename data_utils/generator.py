@@ -110,6 +110,7 @@ class DataGenerator(keras.utils.Sequence):
         if self.mode == "valid":
             self.batches_npz_path = valid_batches_paths  # batches_paths[split_factor:]
 
+    # refactored in choice_names
     def get_valid_except_names(self):
         if len(self.valid_except_indexes) == 0:
             if CONFIG_CV[CVK.CHOOSE_EXCLUDED_VALID] == "restore":
@@ -150,6 +151,7 @@ class DataGenerator(keras.utils.Sequence):
         print('Return existing validation patients')
         return self.valid_except_indexes
 
+    # refactored in choice_names
     @staticmethod
     def choose_path(paths, paths_names, excepts, classes=None) -> ndarray:
         if classes is None:
@@ -174,12 +176,14 @@ class DataGenerator(keras.utils.Sequence):
                                              np.concatenate((excepts, valid)),
                                              classes)
 
+    # refactored in choice_names
     @staticmethod
     def get_random_choice(paths, excepts, size=1):
         return np.random.choice([r for r in paths if r not in excepts],
                                 size=size,
                                 replace=False)
 
+    # refactored in weights class
     def get_class_weights(self, labels=None):
         if labels is None:
             labels = CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]

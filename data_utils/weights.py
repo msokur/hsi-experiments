@@ -1,13 +1,13 @@
 import abc
 import os
 import pickle
-from typing import List
+from typing import List, Dict, Union
 
 from tqdm import tqdm
 
 import numpy as np
 
-from data_utils.data_archive import DataArchive
+from data_utils.data_archive.data_archive import DataArchive
 
 from configuration.parameter import (
     DICT_y, DICT_WEIGHT,
@@ -49,7 +49,7 @@ class Weights:
     def weights_get_or_save(self, root_path: str) -> np.ndarray:
         weights_path = os.path.join(root_path, self.filename)
 
-        paths = self.get_paths(root_path=root_path)
+        paths = self.data_archive.get_paths(archive_path=root_path)
 
         quantities = []
         for path in tqdm(paths):
@@ -81,7 +81,7 @@ class Weights:
         return weights
 
     def weighted_data_save(self, root_path: str, weights: np.ndarray):
-        paths = self.get_paths(root_path=root_path)
+        paths = self.data_archive.get_paths(archive_path=root_path)
         for i, path in tqdm(enumerate(paths)):
             y = self.get_y(path=path)
             weights_ = np.zeros(y.shape)
@@ -91,11 +91,27 @@ class Weights:
 
             self.save_data(path=path, weights=weights_)
 
-    def get_paths(self, root_path: str) -> List[str]:
-        return self.data_archive.get_paths(archive_path=root_path)
-
     def get_y(self, path: str) -> np.ndarray:
         return self.data_archive.get_data(data_path=path, data_name=self.y_dict_name)[...]
+
+    def get_class_weights(self, paths: List[str]) -> Dict[Union[int, str], float]:
+        labels = np.array(self.labels)
+        sums = np.zeros(labels.shape)
+
+        for p in paths:
+            y = self.data_archive.get_data(data_path=p, data_name=self.y_dict_name)
+            for i, l in enumerate(labels):
+                sums[i] += np.flatnonzero(y == l).shape[0]
+
+        total = np.sum(sums)
+        weights = {}
+        for i, l in enumerate(labels):
+            with np.errstate(divide="ignore", invalid="ignore"):
+                weights[l] = (1 / sums[i]) * total / len(labels)
+            if weights[l] == np.inf:
+                weights[l] = 0.0
+
+        return weights
 
     @abc.abstractmethod
     def save_data(self, path: str, weights: np.ndarray):

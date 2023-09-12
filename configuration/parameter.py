@@ -1,13 +1,12 @@
-ARCHIVE_TYPE = "npz"
+ARCHIVE_TYPE = "npz"                # type for data archive management
 
 # --- ZARR params
 PAT_CHUNKS = (1000,)
 D3_PAT_CHUNKS = PAT_CHUNKS + (1, 1)
 
-SHUFFLE_ARCHIVE = "shuffled_data"    # Archive name for shuffled zarr
-
-SHUFFLE_GROUP_NAME = "shuffled"
-PILE_NAME = ".pile"
+# --- shuffle
+SHUFFLE_GROUP_NAME = "shuffled"     # prefix for shuffled dataset
+PILE_NAME = ".pile"                 # data extension for piles
 
 
 # --- Data archive names
@@ -18,3 +17,15 @@ DICT_WEIGHT = "weights"                 # default dict name for weights
 
 # --- Scaler
 SCALER_FILE = "scaler.scaler"
+
+# --- Trainer
+VALID_LOG = "valid.valid_except_names"  # data name to log valid names
+HISTORY_FILE = "history"                # file name for training history
+
+# --- batches
+TUNE = "tune"                           # add to batchfolder for tune dataset
+TRAIN = "train"                         # key for train dataset
+VALID = "valid"                         # key for valid dataset
+BATCH_FILE = "batch"                    # prefix for batch file
+BATCH_IDX = "batch_indexes"             # name for array with
+BATCH_ORG_PATH = "batch_org_path"       # name for array with original data for batches (zarr)

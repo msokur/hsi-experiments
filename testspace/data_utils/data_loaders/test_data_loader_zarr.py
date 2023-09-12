@@ -5,7 +5,7 @@ from shutil import rmtree
 import numpy as np
 
 from data_utils.data_loaders.data_loader import DataLoader
-from data_utils.data_archive import DataArchiveZARR
+from data_utils.data_archive.data_archive_zarr import DataArchiveZARR
 
 ARR_DATA_1 = {"X": np.array([[0, 1], [2, 3], [4, 5]]), "y": np.array([0, 1, 2]),
               "indexes_in_datacube": np.array([(0, 0), (1, 1), (2, 2)])}

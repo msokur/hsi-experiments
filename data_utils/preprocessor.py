@@ -85,7 +85,7 @@ class Preprocessor:
         if execution_flags['add_sample_weights']:
             weight_calc = Weights(filename=self.weights_filename,
                                   data_archive=data_archive,
-                                  label_file=CONFIG_DATALOADER[DLK.LABELS_FILENAME],
+                                  label_file=os.path.join(preprocessed_path, CONFIG_DATALOADER[DLK.LABELS_FILENAME]),
                                   y_dict_name=self.load_name_for_y,
                                   weight_dict_name=self.dict_names[-1])
             weights = weight_calc.weights_get_or_save(preprocessed_path)
@@ -100,7 +100,7 @@ class Preprocessor:
                                          scaler_file=self.CONFIG_PREPROCESSOR[PPK.SCALER_FILE],
                                          scaler_path=self.CONFIG_PREPROCESSOR[PPK.SCALER_PATH],
                                          dict_names=[self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][x] for x in [0, 1, 4]])
-            scaler.iterate_over_archives_and_save_scaled_X(preprocessed_path, preprocessed_path)
+            scaler.iterate_over_archives_and_save_scaled_X(destination_path=preprocessed_path)
 
         # ----------shuffle part------------------
         if execution_flags['shuffle']:

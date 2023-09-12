@@ -11,11 +11,8 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-from data_utils.data_archive import DataArchive
+from data_utils.data_archive.data_archive import DataArchive
 from configuration.keys import DistroCheckKeys as DCK
-from configuration.parameter import (
-    DICT_X,
-)
 
 """
 This class is about choosing a representative small dataset for speed up the training
@@ -36,18 +33,18 @@ There are several functionality parts:
 
 
 class DistributionsChecker:
-    def __init__(self, data_archive: DataArchive, path: str, config_distribution: dict, dict_name_X: str = None):
+    def __init__(self, data_archive: DataArchive, path: str, config_distribution: dict, check_dict_name: str):
         """
         Args:
             data_archive: IO class for data management
             path: path with the archives to compare
             config_distribution: configuration parameters
+            check_dict_name: the name from the data to check in da data archive
         """
         self.data_archive = data_archive
         self.path = path
         self.CONFIG_DISTRIBUTION = config_distribution
-        if dict_name_X is None:
-            self.dict_name_X = DICT_X
+        self.check_dict_name = check_dict_name
         self.test_paths = self.data_archive.get_paths(archive_path=self.path)
         self.all_data = np.array(self.get_all_data(paths=self.test_paths))
         self.prints = self.CONFIG_DISTRIBUTION[DCK.PRINTS]
@@ -94,7 +91,7 @@ class DistributionsChecker:
         Returns:
             data with shapes (number_of_samples, feature(s)). For 3d data only the centered patches will be used.
         """
-        data = self.data_archive.get_data(data_path=path, data_name=self.dict_name_X)
+        data = self.data_archive.get_data(data_path=path, data_name=self.check_dict_name)
         if len(data.shape) > 2:
             data_1d = self.get_centers(data=data)
         else:
@@ -161,7 +158,7 @@ class DistributionsChecker:
             True if archive with test_archive_index has the same distribution, False if not the same
         """
         test_data = self.data_archive.get_data(data_path=self.test_paths[test_archive_index],
-                                               data_name=self.dict_name_X)
+                                               data_name=self.check_dict_name)
         test_data_center = self.get_centers(test_data)
 
         results = []
@@ -207,5 +204,5 @@ class DistributionsChecker:
 
 
 if __name__ == '__main__':
-    dc = DistributionsChecker('/work/users/mi186veva/data_3d/raw_3d_svn/shuffled', prints=False)
+    dc = DistributionsChecker('/work/users/mi186veva/data_3d/raw_3d_svn/shuffled')
     print(dc.test_all_archives_in_folder())
