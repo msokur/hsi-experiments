@@ -1,5 +1,5 @@
 import abc
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Iterable
 
 import numpy as np
 import os
@@ -24,7 +24,7 @@ class DataArchive:
         pass
 
     @abc.abstractmethod
-    def all_data_generator(self, archive_path: str):
+    def all_data_generator(self, archive_path: str) -> Iterable:
         pass
 
     @staticmethod

@@ -1,7 +1,7 @@
 import abc
 import os
 import pickle
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Iterable
 
 from tqdm import tqdm
 
@@ -51,7 +51,7 @@ class Weights:
 
         quantities = []
         for path in tqdm(paths):
-            y = self.get_y(path=path)
+            y = self.__get_y__(path=path)
 
             quantity = []
             for y_u in self.labels:
@@ -81,7 +81,7 @@ class Weights:
     def weighted_data_save(self, root_path: str, weights: np.ndarray):
         paths = self.data_archive.get_paths(archive_path=root_path)
         for i, path in tqdm(enumerate(paths)):
-            y = self.get_y(path=path)
+            y = self.__get_y__(path=path)
             weights_ = np.zeros(y.shape)
 
             for j in np.unique(y):
@@ -89,15 +89,12 @@ class Weights:
 
             self.save_data(path=path, weights=weights_)
 
-    def get_y(self, path: str) -> np.ndarray:
-        return self.data_archive.get_data(data_path=path, data_name=self.y_dict_name)[...]
-
-    def get_class_weights(self, paths: List[str]) -> Dict[Union[int, str], float]:
+    def get_class_weights(self, class_data_paths: List[str]) -> Dict[Union[int, str], float]:
         labels = np.array(self.labels)
         sums = np.zeros(labels.shape)
 
-        for p in paths:
-            y = self.data_archive.get_data(data_path=p, data_name=self.y_dict_name)
+        for path in class_data_paths:
+            y = self.__get_y__(path=path)
             for i, l in enumerate(labels):
                 sums[i] += np.flatnonzero(y == l).shape[0]
 
@@ -114,3 +111,6 @@ class Weights:
     @abc.abstractmethod
     def save_data(self, path: str, weights: np.ndarray):
         self.data_archive.save_data(save_path=path, data_name=self.weight_dict_name, data=weights)
+
+    def __get_y__(self, path: str) -> np.ndarray:
+        return self.data_archive.get_data(data_path=path, data_name=self.y_dict_name)[...]

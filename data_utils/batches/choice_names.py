@@ -13,7 +13,8 @@ from configuration.parameter import (
 
 
 class ChoiceNames:
-    def __init__(self, data_archive: DataArchive, config_cv: dict, labels: Union[int, str], y_dict_name: str, log_dir: str = None):
+    def __init__(self, data_archive: DataArchive, config_cv: dict, labels: Union[int, str], y_dict_name: str,
+                 log_dir: str = None):
         self.data_archive = data_archive
         self.CONFIG_CV = config_cv
         self.labels = labels
@@ -48,7 +49,7 @@ class ChoiceNames:
                                      np.concatenate((excepts, valid)),
                                      classes)
 
-    def get_valid_except_names(self, raw_path: str, except_indexes: List[str]):
+    def get_valid_except_names(self, raw_path: str, except_names: List[str]):
         if self.CONFIG_CV[CVK.CHOOSE_EXCLUDED_VALID] == "restore":
             print("Restore names of patients that will be used for validation dataset")
             restore_paths = glob(os.path.join(self.CONFIG_CV[CVK.RESTORE_VALID_PATH], "*", ""))
@@ -75,10 +76,10 @@ class ChoiceNames:
         print('Getting new validation patients')
         if self.CONFIG_CV[CVK.CHOOSE_EXCLUDED_VALID] == "randomly":
             return self.random_choice(paths=raw_paths_names,
-                                      excepts=except_indexes,
+                                      excepts=except_names,
                                       size=self.CONFIG_CV[CVK.HOW_MANY_VALID_EXCLUDE])
 
         elif self.CONFIG_CV[CVK.CHOOSE_EXCLUDED_VALID] == "by_class":
             return self.class_choice(paths=raw_paths,
                                      paths_names=raw_paths_names,
-                                     excepts=except_indexes)
+                                     excepts=except_names)

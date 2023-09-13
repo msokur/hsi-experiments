@@ -83,7 +83,7 @@ class DistributionsChecker:
 
         return all_data
 
-    def get_data(self, path, feature_index=-1):
+    def get_data(self, path, feature_index=-1) -> np.ndarray:
         """
         Read data from the given path.
         It's also possible to get data with the given feature_index (for example, get only 4th feature)
@@ -95,17 +95,12 @@ class DistributionsChecker:
         if len(data.shape) > 2:
             data_1d = self.get_centers(data=data)
         else:
-            data_1d = data[...]
+            data_1d = data
 
         if feature_index >= 0:
-            data_feature = data_1d[..., feature_index]
+            return data_1d[..., feature_index]
         else:
-            data_feature = data_1d[...]
-
-        if len(data_feature.shape) > 2:
-            return np.reshape(a=data_feature, newshape=(data_feature.shape[0], data_feature.shape[-1]))
-        else:
-            return data_feature
+            return data_1d[...]
 
     def z_test(self, d1, d2):
         """ z_test for comparing of 2 distributions with the same std: d1 and d2
@@ -157,17 +152,15 @@ class DistributionsChecker:
         Returns:
             True if archive with test_archive_index has the same distribution, False if not the same
         """
-        test_data = self.data_archive.get_data(data_path=self.test_paths[test_archive_index],
-                                               data_name=self.check_dict_name)
-        test_data_center = self.get_centers(test_data)
+        test_data = self.get_data(path=self.test_paths[test_archive_index])
 
         results = []
         for i in range(test_data.shape[-1]):
             z_result = True
             if self.CONFIG_DISTRIBUTION[DCK.Z_TEST]:
-                z_result = self.z_test(test_data_center[:, i], self.all_data[:, i])
+                z_result = self.z_test(test_data[:, i], self.all_data[:, i])
 
-            ks_result = self.kolmogorov_smirnov_test(self.all_data[:, i], test_data_center[:, i])
+            ks_result = self.kolmogorov_smirnov_test(self.all_data[:, i], test_data[:, i])
             results.append(z_result & ks_result)
         if np.all(results):
             return True

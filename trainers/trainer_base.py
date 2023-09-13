@@ -1,3 +1,5 @@
+from typing import List
+
 import tensorflow as tf
 from tensorflow import keras
 import os
@@ -5,40 +7,45 @@ import numpy as np
 import abc
 import pickle
 
-from data_utils.generator import DataGenerator
+from data_utils.batches import NameBatchSplit, Dataset
+from util.compare_distributions import DistributionsChecker
+from data_utils.weights import Weights
+
 from data_utils.data_archive.data_archive import DataArchive
 from configuration.copy_py_files import copy_files
 from configuration.get_config import telegram
-from configuration.keys import TrainerKeys as TK, PathKeys as PK, DataLoaderKeys as DLK
+from configuration.keys import TrainerKeys as TK, PathKeys as PK
 from configuration.parameter import (
     VALID_LOG, HISTORY_FILE, TUNE, TRAIN, VALID
 )
 
 
 class Trainer:
-    def __init__(self, data_archive: DataArchive, config_trainer: dict, config_paths: dict, config_dataloader: dict,
-                 model_name: str, except_indexes=None, valid_except_indexes=None):
+    def __init__(self, data_archive: DataArchive, config_trainer: dict, config_paths: dict, labels_to_train: List[int],
+                 model_name: str, except_cv_names: List[str], except_train_names: List[str],
+                 except_valid_names: List[str], dict_names: List[str], config_distribution: dict):
         self.data_archive = data_archive
         self.CONFIG_TRAINER = config_trainer
         self.CONFIG_PATHS = config_paths
-        self.CONFIG_DATALOADER = config_dataloader
-        if valid_except_indexes is None:
-            valid_except_indexes = []
-        if except_indexes is None:
-            except_indexes = []
+        self.labels_to_train = labels_to_train
+        self.log_dir = model_name
+        self.except_cv_names = except_cv_names
+        self.except_train_names = except_train_names
+        self.except_valid_names = except_valid_names
+        self.dict_names = dict_names
+        self.CONFIG_DISTRIBUTION = config_distribution
+        self.batch_split = NameBatchSplit(data_archive=self.data_archive, batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
+                                          use_labels=self.labels_to_train, dict_names=dict_names)
         self.batch_path = None
         self.mirrored_strategy = None
-        self.log_dir = model_name
-        self.excepted_indexes = except_indexes.copy()
-        self.valid_except_indexes = valid_except_indexes.copy()
 
     @abc.abstractmethod
     def train_process(self):
         pass
 
-    def save_valid_except_indexes(self, valid_except_indexes):
+    def save_except_names(self, except_names):
         with open(os.path.join(self.log_dir, VALID_LOG), "wb") as f:
-            pickle.dump(valid_except_indexes, f, pickle.HIGHEST_PROTOCOL)
+            pickle.dump(except_names, f, pickle.HIGHEST_PROTOCOL)
 
     def logging_and_copying(self):
         if not self.CONFIG_TRAINER[TK.RESTORE]:
@@ -48,58 +55,37 @@ class Trainer:
             copy_files(self.log_dir, self.CONFIG_TRAINER["FILES_TO_COPY"])
 
     def get_datasets(self, for_tuning=False):
-        # train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
+        root_data_paths = self.data_archive.get_paths(archive_path=self.CONFIG_PATHS[PK.SHUFFLED_PATH])
         self.batch_path = self.CONFIG_PATHS[PK.BATCHED_PATH]
-        if len(self.excepted_indexes) > 0:
-            self.batch_path += '_' + self.excepted_indexes[0]
+        if len(self.except_cv_names) > 0:
+            self.batch_path += "_" + self.except_cv_names[0]
             if for_tuning:
-                self.batch_path += TUNE
+                self.batch_path += "_" + TUNE
+                ds = DistributionsChecker(data_archive=self.data_archive, path=os.path.split(root_data_paths[0])[0],
+                                          config_distribution=self.CONFIG_DISTRIBUTION,
+                                          check_dict_name=self.dict_names[0])
+                tuning_index = ds.get_small_database_for_tuning()
+                root_data_paths = [root_data_paths[tuning_index]]
 
-        train_generator = DataGenerator(TRAIN,
-                                        self.CONFIG_PATHS[PK.SHUFFLED_PATH],
-                                        self.batch_path,
-                                        batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
-                                        split_factor=self.CONFIG_TRAINER[TK.SPLIT_FACTOR],
-                                        split_flag=True,
-                                        valid_except_indexes=self.valid_except_indexes.copy(),
-                                        except_indexes=self.excepted_indexes.copy(),
-                                        for_tuning=for_tuning,
-                                        log_dir=self.log_dir)
-        self.save_valid_except_indexes(train_generator.valid_except_indexes)
-        valid_generator = DataGenerator(VALID,
-                                        self.CONFIG_PATHS[PK.SHUFFLED_PATH],
-                                        self.batch_path,
-                                        batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
-                                        split_factor=self.CONFIG_TRAINER[TK.SPLIT_FACTOR],
-                                        split_flag=False,
-                                        except_indexes=self.excepted_indexes,
-                                        valid_except_indexes=train_generator.valid_except_indexes,
-                                        for_tuning=for_tuning,
-                                        log_dir=self.log_dir)
+        if not os.path.exists(path=self.batch_path):
+            os.mkdir(path=self.batch_path)
 
-        class_weights = train_generator.get_class_weights()
+        train_paths = self.batch_split.split(data_paths=root_data_paths,
+                                             batch_save_path=os.path.join(self.batch_path, TRAIN),
+                                             except_names=self.except_train_names)
+        valid_paths = self.batch_split.split(data_paths=root_data_paths,
+                                             batch_save_path=os.path.join(self.batch_path, VALID),
+                                             except_names=self.except_valid_names)
+        self.save_except_names(except_names=self.except_valid_names)
+
+        train_ds = self.__get_dataset__(batch_paths=train_paths)
+        valid_ds = self.__get_dataset__(batch_paths=valid_paths)
+
+        class_weights = Weights(filename="", data_archive=self.data_archive, labels=self.labels_to_train,
+                                y_dict_name=self.dict_names[1])
         print(class_weights)
 
-        def gen_train_generator():
-            for i in range(train_generator.len):
-                yield train_generator.getitem(i)
-
-        train_dataset = tf.data.Dataset.from_generator(gen_train_generator,
-                                                       output_signature=self.__get_output_signature())
-
-        def gen_valid_generator():
-            for i in range(valid_generator.len):
-                yield valid_generator.getitem(i)
-
-        valid_dataset = tf.data.Dataset.from_generator(gen_valid_generator,
-                                                       output_signature=self.__get_output_signature())
-
-        options = tf.data.Options()
-        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
-        train_dataset = train_dataset.with_options(options)
-        valid_dataset = valid_dataset.with_options(options)
-
-        return train_dataset, valid_dataset, train_generator, class_weights
+        return train_ds, valid_ds, class_weights
 
     def get_callbacks(self):
         checkpoint_path = os.path.join(self.log_dir, self.CONFIG_PATHS[PK.CHECKPOINT_PATH], "cp-{epoch:04d}")
@@ -162,34 +148,18 @@ class Trainer:
                 os.mkdir(final_model_save_path)
             model.save(final_model_save_path)
 
-        # send_tg_message_history(self.log_dir, history)
-
         return model, history
 
     def get_output_shape(self):
-        if DLK.OUTPUT_SIGNATURE in self.CONFIG_DATALOADER:
-            shape_spec = self.CONFIG_DATALOADER[DLK.OUTPUT_SIGNATURE]
-        else:
-            shape_spec = self.CONFIG_DATALOADER[DLK.LAST_NM] - self.CONFIG_DATALOADER[DLK.FIRST_NM]
+        data_paths = self.data_archive.get_paths(archive_path=self.CONFIG_PATHS[PK.SHUFFLED_PATH])
+        X = self.data_archive.get_data(data_path=data_paths[0], data_name=self.dict_names[0])
 
-        if self.CONFIG_DATALOADER[DLK.D3]:
-            output_shape = (self.CONFIG_DATALOADER[DLK.D3_SIZE][0], self.CONFIG_DATALOADER[DLK.D3_SIZE][1], shape_spec)
-        else:
-            output_shape = (shape_spec,)
+        return X.shape[1:]
 
-        return output_shape
-
-    def __get_output_signature(self):
-        shape = self.get_output_shape()
-
-        output_signature = (
-            tf.TensorSpec(shape=((None,) + shape), dtype=tf.float32),
-            tf.TensorSpec(shape=(None,), dtype=tf.float32))
-
-        if self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS]:
-            output_signature += (tf.TensorSpec(shape=(None,), dtype=tf.float32),)
-
-        return output_signature
+    def __get_dataset__(self, batch_paths: List[str]) -> Dataset:
+        return Dataset(data_archive=self.data_archive, batch_paths=batch_paths, X_name=self.dict_names[0],
+                       y_name=self.dict_names[1], weights_name=self.dict_names[5],
+                       with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS])
 
 
 if __name__ == '__main__':

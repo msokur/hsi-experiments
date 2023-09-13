@@ -1,6 +1,6 @@
 import tensorflow.keras as keras
 from trainers.trainer_easy import TrainerEasy
-from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
+from configuration.keys import TrainerKeys as TK
 
 
 class TrainerEasySeveralOutputs(TrainerEasy):
@@ -10,7 +10,7 @@ class TrainerEasySeveralOutputs(TrainerEasy):
             keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
         ]
         for key in metric_dict.keys():
-            METRICS.append(metric_dict[key]["metric"](num_classes=len(self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]),
+            METRICS.append(metric_dict[key]["metric"](num_classes=len(self.labels_to_train),
                                                       **metric_dict[key]["args"]))
 
         model.compile(

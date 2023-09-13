@@ -208,7 +208,197 @@
 		"SPLIT_PATHS_BY": "Files",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
 		"WITH_BACKGROUND_EXTRACTION": false,
+		"DATA_NAMES_FROM_FILE": null
+	},
+	"GASTRIC_EXVIVO": {
+		"TYPE": "normal",
+		"FILE_EXTENSION": ".dat",
+		"3D": true,
+		"3D_SIZE": [3, 3],
+		"FIRST_NM": 8,
+		"LAST_NM": 100,
+		"WAVE_AREA": 100,
+		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+		"NAME_SPLIT": null,
+		"NUMBER_SORT": ["Laura_Daten", null],
+		"MASK_DIFF": [".dat", ".mk2"],
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING_TYPE": "median_filter",
+		"SMOOTHING_VALUE": 5,
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_core",
+			"depth": 5,
+			"axis": [],
+			"not_used_labels": []
+		},
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [[255, 0, 64]],
+				"LABEL": "Oesophagus",
+				"COLOR": "red"
+			},
+			"1": {
+				"MASK": [[127, 127, 127]],
+				"LABEL": "Fat",
+				"COLOR": "gray"
+			},
+			"2": {
+				"MASK": [[255, 255, 0]],
+				"LABEL": "Pancreas",
+				"COLOR": "yellow"
+			},
+			"3": {
+				"MASK": [[0, 0, 255]],
+				"LABEL": "Colon",
+				"COLOR": "blue"
+			},
+			"4": {
+				"MASK": [[255, 0, 255]],
+				"LABEL": "Stomach",
+				"COLOR": "magenta"
+			},
+			"5": {
+				"MASK": [[0, 255, 0]],
+				"LABEL": "Liver",
+				"COLOR": "lime"
+			},
+			"6": {
+				"MASK": [[255, 191, 191]],
+				"LABEL": "Gall Bladder",
+				"COLOR": "pink"
+			},
+			"7": {
+				"MASK": [[26, 51, 77]],
+				"LABEL": "Spleen",
+				"COLOR": "midnightblue"
+			},
+			"8": {
+				"MASK": [[191, 127, 0]],
+				"LABEL": "Small Intestine",
+				"COLOR": "chocolate"
+			},
+			"9": {
+				"MASK": [[115, 115, 255]],
+				"LABEL": "Lungs",
+				"COLOR": "mediumslateblue"
+			},
+			"10": {
+				"MASK": [[77, 102, 77]],
+				"LABEL": "Rectum",
+				"COLOR": "darkolivegreen"
+			},
+			"11": {
+				"MASK": [[0, 255, 255]],
+				"LABEL": "Duodenum",
+				"COLOR": "cyan"
+			},
+			"12": {
+				"MASK": [[127, 77, 77]],
+				"LABEL": "Tumor",
+				"COLOR": "saddlebrown"
+			}
+		},
+		"SPLIT_PATHS_BY": "Files",
+		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
+		"WITH_BACKGROUND_EXTRACTION": false,
 		"DATA_NAMES_FROM_FILE": "exvivo.csv"
+	},
+	"GASTRIC_INVIVO": {
+		"TYPE": "normal",
+		"FILE_EXTENSION": ".dat",
+		"3D": true,
+		"3D_SIZE": [3, 3],
+		"FIRST_NM": 8,
+		"LAST_NM": 100,
+		"WAVE_AREA": 100,
+		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+		"NAME_SPLIT": null,
+		"NUMBER_SORT": ["Laura_Daten", null],
+		"MASK_DIFF": [".dat", ".mk2"],
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING_TYPE": "median_filter",
+		"SMOOTHING_VALUE": 5,
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_core",
+			"depth": 5,
+			"axis": [],
+			"not_used_labels": []
+		},
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [[255, 0, 64]],
+				"LABEL": "Oesophagus",
+				"COLOR": "red"
+			},
+			"1": {
+				"MASK": [[127, 127, 127]],
+				"LABEL": "Fat",
+				"COLOR": "gray"
+			},
+			"2": {
+				"MASK": [[255, 255, 0]],
+				"LABEL": "Pancreas",
+				"COLOR": "yellow"
+			},
+			"3": {
+				"MASK": [[0, 0, 255]],
+				"LABEL": "Colon",
+				"COLOR": "blue"
+			},
+			"4": {
+				"MASK": [[255, 0, 255]],
+				"LABEL": "Stomach",
+				"COLOR": "magenta"
+			},
+			"5": {
+				"MASK": [[0, 255, 0]],
+				"LABEL": "Liver",
+				"COLOR": "lime"
+			},
+			"6": {
+				"MASK": [[255, 191, 191]],
+				"LABEL": "Gall Bladder",
+				"COLOR": "pink"
+			},
+			"7": {
+				"MASK": [[26, 51, 77]],
+				"LABEL": "Spleen",
+				"COLOR": "midnightblue"
+			},
+			"8": {
+				"MASK": [[191, 127, 0]],
+				"LABEL": "Small Intestine",
+				"COLOR": "chocolate"
+			},
+			"9": {
+				"MASK": [[115, 115, 255]],
+				"LABEL": "Lungs",
+				"COLOR": "mediumslateblue"
+			},
+			"10": {
+				"MASK": [[77, 102, 77]],
+				"LABEL": "Rectum",
+				"COLOR": "darkolivegreen"
+			},
+			"11": {
+				"MASK": [[0, 255, 255]],
+				"LABEL": "Duodenum",
+				"COLOR": "cyan"
+			},
+			"12": {
+				"MASK": [[127, 77, 77]],
+				"LABEL": "Tumor",
+				"COLOR": "saddlebrown"
+			}
+		},
+		"SPLIT_PATHS_BY": "Files",
+		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
+		"WITH_BACKGROUND_EXTRACTION": false,
+		"DATA_NAMES_FROM_FILE": "invivo.csv"
 	},
 	"MAT_BRAIN": {
 		"TYPE": "normal",

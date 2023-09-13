@@ -7,7 +7,7 @@ import os
 
 from trainers.trainer_base import Trainer
 import pickle
-from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
+from configuration.keys import TrainerKeys as TK
 
 
 class TrainerTuner(Trainer):
@@ -25,7 +25,7 @@ class TrainerTuner(Trainer):
 
         '''-------DATASET---------'''
 
-        train_dataset, valid_dataset, _, class_weights = self.get_datasets(
+        train_dataset, valid_dataset, class_weights = self.get_datasets(
             for_tuning=self.CONFIG_TRAINER[TK.SMALLER_DATASET])
 
         '''-------TRAINING---------'''
@@ -84,8 +84,7 @@ class TrainerTuner(Trainer):
 
     def search(self, tuner: kt.Tuner) -> tuple[kt.HyperParameters, keras.Model]:
         print("------ Start search tuning parameter ---------")
-        train_dataset_t, valid_dataset_t, train_generator, class_weights_t = self.get_datasets(for_tuning=True)
-        self.valid_except_indexes = train_generator.valid_except_indexes
+        train_dataset_t, valid_dataset_t, class_weights_t = self.get_datasets(for_tuning=True)
 
         tuner.search(x=train_dataset_t,
                      epochs=self.CONFIG_TRAINER[TK.TUNER_EPOCHS],
@@ -115,7 +114,7 @@ class TrainerTuner(Trainer):
     def get_model(self) -> kt.HyperModel:
         base_model = self.CONFIG_TRAINER[TK.MODEL](shape=self.get_output_shape(),
                                                    conf=self.CONFIG_TRAINER[TK.MODEL_CONFIG],
-                                                   num_of_labels=len(self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]),
+                                                   num_of_labels=len(self.labels_to_train),
                                                    custom_metrics=self.CONFIG_TRAINER[TK.CUSTOM_OBJECTS])
 
         return base_model

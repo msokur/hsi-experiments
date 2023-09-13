@@ -6,7 +6,7 @@
                  ["scrips", "start_cv.job"], ["trainers", "*.py"], ["utils", "*.py"]],
     "WITH_SAMPLE_WEIGHTS": false,
     "MODEL": "paper_model",
-    "MODEL_PARAMS": "paper_model_hno",
+    "MODEL_PARAMS": "paper_model",
     "LEARNING_RATE": 1e-4,
     "CUSTOM_OBJECTS": {
       "F1_score": [{"name":  "f1_score_weighted", "average": "weighted"}]
@@ -36,7 +36,7 @@
                  ["scrips", "start_cv.job"], ["trainers", "*.py"], ["utils", "*.py"]],
     "WITH_SAMPLE_WEIGHTS": false,
     "MODEL": "paper_model",
-    "MODEL_PARAMS": "paper_model_tuner_hno",
+    "MODEL_PARAMS": "paper_model_tuner",
     "LEARNING_RATE": 1e-4,
     "CUSTOM_OBJECTS": {
       "F1_score": [{"name":  "f1_score_weighted", "average": "weighted"}]
@@ -66,15 +66,15 @@
       "restore_best_weights": true
     }
   },
-  "paper_model_hno": {
+  "paper_model": {
     "DROPOUT": 0.1
   },
-  "inception_model_hno": {
+  "inception_model": {
     "WITH_BATCH_NORM": false,
     "INCEPTION_FACTOR": 8,
     "DROPOUT": 0.1
   },
-  "inception_model_tuner_hno": {
+  "inception_model_tuner": {
     "WITH_ONES": false,
     "NUM_BLOCK": {"min_value":  0, "max_value": 2},
     "NUM_BRANCHES": {"min_value":  1, "max_value": 3},
@@ -87,7 +87,7 @@
     "OPTIMIZER": ["adadelta", "adagrad", "adam", "adamax", "ftrl", "nadam", "rms" ,"sgd"],
     "DROPOUT": {"min_value": 0.1, "max_value": 0.9, "step": 0.1}
   },
-  "paper_model_tuner_hno": {
+  "paper_model_tuner": {
     "CONV_1D_FILTERS": {"min_value": 32, "max_value": 128, "step": 16},
     "CONV_3D_FILTERS": {"min_value": 16, "max_value": 128, "step": 16},
     "NUM_DENSE": {"min_value":  0, "max_value": 2},

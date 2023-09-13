@@ -1,4 +1,4 @@
-ARCHIVE_TYPE = "npz"                # type for data archive management
+ARCHIVE_TYPE = "zarr"                # type for data archive management
 
 # --- ZARR params
 PAT_CHUNKS = (1000,)
@@ -29,3 +29,8 @@ VALID = "valid"                         # key for valid dataset
 BATCH_FILE = "batch"                    # prefix for batch file
 BATCH_IDX = "batch_indexes"             # name for array with
 BATCH_ORG_PATH = "batch_org_path"       # name for array with original data for batches (zarr)
+
+# --- Generator
+GEN_ALL = "all"                         # modus all for data generator
+GEN_TRAIN = "train"                     # modus train for data generator
+GEN_VALID = "valid"                     # modus valid for data generator

@@ -9,15 +9,14 @@
     "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",
-    "FILES_TO_COPY": [["data_utils", "*.py"], ["data_utils", "data_loaders", "data_loader_dyn.py"],
-      ["data_utils", "configuration", "*.py"], ["data_utils", "configuration", "*.json"]],
+    "FILES_TO_COPY": [["configuration", "*.json"], ["configuration", "meta_config","*.py"]],
     "NORMALIZATION_TYPE": "svn",
     "SCALER_FILE": "scaler.scaler",
     "SCALER_PATH": null
   },
   "GASTRIC": {
     "EXECUTION_FLAGS": {
-      "LOAD_DATA_WITH_DATALOADER": false,
+      "LOAD_DATA_WITH_DATALOADER": true,
       "ADD_SAMPLE_WEIGHTS": true,
       "SCALE": true,
       "SHUFFLE": true
@@ -25,8 +24,7 @@
     "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",
-    "FILES_TO_COPY": [["data_utils", "*.py"], ["data_utils", "data_loaders", "data_loader_dyn.py"],
-      ["data_utils", "configuration", "*.py"], ["data_utils", "configuration", "*.json"]],
+    "FILES_TO_COPY": [["configuration", "meta_config","*.py"], ["configuration", "*.json"]],
     "NORMALIZATION_TYPE": "svn_2",
     "SCALER_FILE": "scaler.scaler",
     "SCALER_PATH": null

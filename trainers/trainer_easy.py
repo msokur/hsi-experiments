@@ -24,7 +24,7 @@ class TrainerEasy(Trainer):
 
         '''-------DATASET---------'''
 
-        train_dataset, valid_dataset, train_generator, class_weights = self.get_datasets(
+        train_dataset, valid_dataset, class_weights = self.get_datasets(
             for_tuning=self.CONFIG_TRAINER[TK.SMALLER_DATASET])
 
         '''-------TRAINING---------'''
@@ -83,7 +83,7 @@ class TrainerEasy(Trainer):
 
     def get_new_model(self) -> keras.Model:
         model = self.CONFIG_TRAINER[TK.MODEL](shape=self.get_output_shape(), conf=self.CONFIG_TRAINER[TK.MODEL_CONFIG],
-                                              num_of_labels=len(self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]))
+                                              num_of_labels=len(self.labels_to_train))
         model = self.compile_model(model)
         return model
 

@@ -2,15 +2,20 @@ import os
 from glob import glob
 import abc
 import datetime
+from typing import List
+
 import numpy as np
 import csv
 import inspect
 
 import utils
-from configuration.get_config import telegram, CONFIG_CV, CONFIG_PATHS, CONFIG_DATALOADER, CONFIG_TRAINER
+from configuration.get_config import telegram, CONFIG_CV, CONFIG_PATHS, CONFIG_DATALOADER, CONFIG_TRAINER, \
+    CONFIG_PREPROCESSOR, CONFIG_DISTRIBUTION
 import provider
+from data_utils.batches import ChoiceNames
 
-from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK
+from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, \
+    PreprocessorKeys as PPK
 from configuration.parameter import (
     ARCHIVE_TYPE,
 )
@@ -51,13 +56,28 @@ class CrossValidatorBase:
     def evaluation(self, **kwargs):  # has to be implemented in child classes
         pass
 
-    def cross_validation_step(self, model_name, except_names=None):
-        if except_names is None:
-            except_names = []
-        trainer = provider.get_trainer(typ=self.CONFIG_TRAINER[CVK.TYPE],  data_archive=self.data_archive,
+    def cross_validation_step(self, model_name: str, except_names: List[str], except_cv_names=None):
+        if except_cv_names is None:
+            except_cv_names = []
+        choice_names = ChoiceNames(data_archive=self.data_archive, config_cv=self.CONFIG_CV,
+                                   labels=self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
+                                   y_dict_name=CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1],
+                                   log_dir=model_name)
+        except_valid_names = choice_names.get_valid_except_names(raw_path=self.CONFIG_PATHS[PK.RAW_NPZ_PATH],
+                                                                 except_names=except_cv_names)
+        except_train_names = list(set(except_names) - set(except_cv_names) - set(except_valid_names))
+
+        print(f"We except for patient out data: {','.join(n for n in except_cv_names)}.")
+        print(f"We except for train data: {','.join(n for n in except_train_names)}.")
+        print(f"We except for valid data: {','.join(n for n in except_valid_names)}.")
+
+        trainer = provider.get_trainer(typ=self.CONFIG_TRAINER[CVK.TYPE], data_archive=self.data_archive,
                                        config_trainer=self.CONFIG_TRAINER, config_paths=self.CONFIG_PATHS,
-                                       config_dataloader=self.CONFIG_DATALOADER, model_name=model_name,
-                                       except_indexes=except_names)
+                                       labels_to_train=self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
+                                       model_name=model_name, except_cv_indexes=except_cv_names,
+                                       except_train_names=except_train_names, except_valid_names=except_valid_names,
+                                       dict_names=CONFIG_PREPROCESSOR[PPK.DICT_NAMES],
+                                       config_distribution=CONFIG_DISTRIBUTION)
         trainer.train()
 
     def cross_validation(self, root_folder_name: str, csv_filename=None):
@@ -89,11 +109,13 @@ class CrossValidatorBase:
 
             paths_patch = np.array(paths)[indexes]
 
-            if self.check_data_label(paths_patch):
+            if self.__check_data_label__(paths_patch):
                 print(f"In files {paths_patch} are no needed labels for training!")
                 continue
 
-            self.cross_validation_step(model_name, except_names=[data_loader.get_name(p) for p in paths_patch])
+            except_names = [data_loader.get_name(path=p) for p in paths]
+            self.cross_validation_step(model_name=model_name, except_names=except_names,
+                                       except_cv_names=[data_loader.get_name(p) for p in paths_patch])
 
             for i, path_ in enumerate(paths_patch):
                 sensitivity, specificity = 0, 0
@@ -115,14 +137,14 @@ class CrossValidatorBase:
 
         return int(checkpoints_folders[0].split(self.CONFIG_PATHS[PK.SYS_DELIMITER])[-1].split('-')[-1])
 
-    def check_data_label(self, paths) -> bool:
+    def __check_data_label__(self, paths) -> bool:
         label_not_to_train = True
         for path in paths:
-            label_not_to_train = label_not_to_train & self.check_label(path)
+            label_not_to_train = label_not_to_train & self.__check_label__(path)
 
         return label_not_to_train
 
-    def check_label(self, path: str) -> bool:
+    def __check_label__(self, path: str) -> bool:
         data = np.load(path)
         unique_y = np.unique(data["y"])
         intersect = np.intersect1d(unique_y, self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
