@@ -319,7 +319,7 @@
 		"MASK_DIFF": [".dat", ".mk2"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": null
+		"SMOOTHING_TYPE": null,
 		"SMOOTHING_VALUE": 5,
 		"BORDER_CONFIG": {
 			"enable": false,
