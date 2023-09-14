@@ -36,7 +36,8 @@ GET_TRAINER_DATA = [("Tuner", "trainer_tuner", TrainerTuner),
 @pytest.mark.parametrize("typ,model_name,result", GET_TRAINER_DATA)
 def test_get_trainer(typ, model_name, result):
     trainer = get_trainer(typ=typ, data_archive=DataArchiveNPZ(), config_trainer={}, config_paths={},
-                          config_dataloader={}, model_name=model_name)
+                          labels_to_train=[0], model_name=model_name, except_cv_names=[""], except_train_names=[""],
+                          except_valid_names=[""], dict_names=[""], config_distribution={})
 
     assert isinstance(trainer, result)
 

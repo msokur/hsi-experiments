@@ -34,8 +34,6 @@ class Trainer:
         self.except_valid_names = except_valid_names
         self.dict_names = dict_names
         self.CONFIG_DISTRIBUTION = config_distribution
-        self.batch_split = NameBatchSplit(data_archive=self.data_archive, batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
-                                          use_labels=self.labels_to_train, dict_names=dict_names)
         self.batch_path = None
         self.mirrored_strategy = None
 
@@ -70,12 +68,14 @@ class Trainer:
         if not os.path.exists(path=self.batch_path):
             os.mkdir(path=self.batch_path)
 
-        train_paths = self.batch_split.split(data_paths=root_data_paths,
-                                             batch_save_path=os.path.join(self.batch_path, TRAIN),
-                                             except_names=self.except_train_names)
-        valid_paths = self.batch_split.split(data_paths=root_data_paths,
-                                             batch_save_path=os.path.join(self.batch_path, VALID),
-                                             except_names=self.except_valid_names)
+        batch_split = NameBatchSplit(data_archive=self.data_archive, batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
+                                     use_labels=self.labels_to_train, dict_names=dict_names)
+        train_paths = batch_split.split(data_paths=root_data_paths,
+                                        batch_save_path=os.path.join(self.batch_path, TRAIN),
+                                        except_names=self.except_train_names)
+        valid_paths = batch_split.split(data_paths=root_data_paths,
+                                        batch_save_path=os.path.join(self.batch_path, VALID),
+                                        except_names=self.except_valid_names)
         self.save_except_names(except_names=self.except_valid_names)
 
         train_ds = self.__get_dataset__(batch_paths=train_paths)
