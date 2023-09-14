@@ -69,7 +69,7 @@ class Trainer:
             os.mkdir(path=self.batch_path)
 
         batch_split = NameBatchSplit(data_archive=self.data_archive, batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
-                                     use_labels=self.labels_to_train, dict_names=dict_names)
+                                     use_labels=self.labels_to_train, dict_names=self.dict_names)
         train_paths = batch_split.split(data_paths=root_data_paths,
                                         batch_save_path=os.path.join(self.batch_path, TRAIN),
                                         except_names=self.except_train_names)

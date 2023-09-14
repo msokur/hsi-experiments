@@ -4,7 +4,7 @@ import os
 from shutil import rmtree
 
 from trainers.trainer_base import Trainer
-from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
+from configuration.keys import TrainerKeys as TK
 
 
 class TrainerEasy(Trainer):

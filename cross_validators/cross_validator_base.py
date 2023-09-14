@@ -67,14 +67,14 @@ class CrossValidatorBase:
                                                                  except_names=except_cv_names)
         except_train_names = list(set(except_names) - set(except_cv_names) - set(except_valid_names))
 
-        print(f"We except for patient out data: {','.join(n for n in except_cv_names)}.")
-        print(f"We except for train data: {','.join(n for n in except_train_names)}.")
-        print(f"We except for valid data: {','.join(n for n in except_valid_names)}.")
+        print(f"We except for patient out data: {', '.join(n for n in except_cv_names)}.\n")
+        print(f"We except for train data: {', '.join(n for n in except_train_names)}.\n")
+        print(f"We except for valid data: {', '.join(n for n in except_valid_names)}.\n")
 
         trainer = provider.get_trainer(typ=self.CONFIG_TRAINER[CVK.TYPE], data_archive=self.data_archive,
                                        config_trainer=self.CONFIG_TRAINER, config_paths=self.CONFIG_PATHS,
                                        labels_to_train=self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
-                                       model_name=model_name, except_cv_indexes=except_cv_names,
+                                       model_name=model_name, except_cv_names=except_cv_names,
                                        except_train_names=except_train_names, except_valid_names=except_valid_names,
                                        dict_names=CONFIG_PREPROCESSOR[PPK.DICT_NAMES],
                                        config_distribution=CONFIG_DISTRIBUTION)
