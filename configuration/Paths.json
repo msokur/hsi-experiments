@@ -47,13 +47,14 @@
   },
   "GASTRIC_Database_mk": {
     "1.CONCAT_WITH_PREFIX": {
-      "RAW_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "mk2"],
-      "RAW_SOURCE_PATH": ["Gastric"],
-      "TEST_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "mk2"]
+      "ROOT_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "mk2"],
+      "RAW_SOURCE_PATH": ["Gastric"]
     },
-    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+    "2.CONCAT_WITH_ROOT_PATH": {
+      "RAW_NPZ_PATH": ["patient_data"],
       "SHUFFLED_PATH": ["shuffled"],
-      "BATCHED_PATH": ["batch_sized"]
+      "BATCHED_PATH": ["batch_sized"],
+      "TEST_NPZ_PATH": ["patient_data"]
     },
     "3.CONCAT_WITH_RAW_SOURCE_PATH": {
       "MASK_PATH": ["annotation", "mk_files"]
@@ -61,13 +62,14 @@
   },
   "GASTRIC_Database_mk_invivo": {
     "1.CONCAT_WITH_PREFIX": {
-      "RAW_NPZ_PATH": ["data_3d", "zarr", "gastric_invivo", "3x3", "svn", "no_smooth", "mk2"],
-      "RAW_SOURCE_PATH": ["Gastric"],
-      "TEST_NPZ_PATH": ["data_3d", "zarr", "gastric_invivo", "3x3", "svn", "no_smooth", "mk2"]
+      "ROOT_PATH": ["data_3d", "zarr", "gastric_invivo", "3x3", "svn", "no_smooth", "mk2"],
+      "RAW_SOURCE_PATH": ["Gastric"]
     },
-    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+    "2.CONCAT_WITH_ROOT_PATH": {
+      "RAW_NPZ_PATH": ["patient_data"],
       "SHUFFLED_PATH": ["shuffled"],
-      "BATCHED_PATH": ["batch_sized"]
+      "BATCHED_PATH": ["batch_sized"],
+      "TEST_NPZ_PATH": ["patient_data"]
     },
     "3.CONCAT_WITH_RAW_SOURCE_PATH": {
       "MASK_PATH": ["annotation", "mk_files"]
@@ -75,13 +77,14 @@
   },
   "GASTRIC_Database_mk_exvivo": {
     "1.CONCAT_WITH_PREFIX": {
-      "RAW_NPZ_PATH": ["data_3d", "zarr", "gastric_exvivo", "3x3", "svn", "no_smooth", "mk2"],
-      "RAW_SOURCE_PATH": ["Gastric"],
-      "TEST_NPZ_PATH": ["data_3d", "zarr", "gastric_exvivo", "3x3", "svn", "no_smooth", "mk2"]
+      "ROOT_PATH": ["data_3d", "zarr", "gastric_exvivo", "3x3", "svn", "no_smooth", "mk2"],
+      "RAW_SOURCE_PATH": ["Gastric"]
     },
-    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+    "2.CONCAT_WITH_ROOT_PATH": {
+      "RAW_NPZ_PATH": ["patient_data"],
       "SHUFFLED_PATH": ["shuffled"],
-      "BATCHED_PATH": ["batch_sized"]
+      "BATCHED_PATH": ["batch_sized"],
+      "TEST_NPZ_PATH": ["patient_data"]
     },
     "3.CONCAT_WITH_RAW_SOURCE_PATH": {
       "MASK_PATH": ["annotation", "mk_files"]

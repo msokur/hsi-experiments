@@ -88,7 +88,7 @@ class Shuffle:
                 values = {}
                 for k in data.keys():
                     if k in self.dict_names:
-                        values[k] = data[k][pile]
+                        values[k] = data[k][...][pile]
 
                 values[self.dict_names[2]] = _names
                 values[self.dict_names[3]] = _indexes
