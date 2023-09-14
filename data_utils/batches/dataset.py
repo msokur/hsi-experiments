@@ -2,7 +2,7 @@ from typing import List
 
 from tensorflow import keras
 
-from data_utils.data_archive.data_archive import DataArchive
+from data_utils.data_archive import DataArchive
 
 
 class Dataset(keras.utils.Sequence):
@@ -20,9 +20,8 @@ class Dataset(keras.utils.Sequence):
         return len(self.batch_paths)
 
     def __getitem__(self, idx):
-        data = self.data_archive.get_datas(data_path=self.batch_paths[idx])
-
-        if self.with_sample_weights and self.weights_name in data.keys():
-            return data[self.X_name], data[self.y_name], data[self.weights_name]
+        if self.with_sample_weights:
+            return self.data_archive.get_batch_data(batch_path=self.batch_paths[idx], X=self.X_name, y=self.y_name,
+                                                    weights=self.weights_name)
         else:
-            return data[self.X_name], data[self.y_name]
+            return self.data_archive.get_batch_data(batch_path=self.batch_paths[idx], X=self.X_name, y=self.y_name)

@@ -9,7 +9,7 @@ from glob import glob
 from tqdm import tqdm
 
 from configuration.copy_py_files import copy_files
-from data_utils.data_archive.data_archive import DataArchive
+from data_utils.data_archive import DataArchive
 
 from configuration.parameter import (
     SHUFFLE_GROUP_NAME, PILE_NAME
@@ -17,8 +17,8 @@ from configuration.parameter import (
 
 
 class Shuffle:
-    def __init__(self, data_archive: DataArchive, raw_path: str, dict_names: list, piles_number: int, shuffle_saving_path: str, augmented=False,
-                 files_to_copy: list = None):
+    def __init__(self, data_archive: DataArchive, raw_path: str, dict_names: list, piles_number: int,
+                 shuffle_saving_path: str, augmented=False, files_to_copy: list = None):
         self.data_archive = data_archive
         self.raw_path = raw_path
         self.dict_names = dict_names

@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 import numpy as np
 
-from data_utils.data_archive.data_archive import DataArchive
+from data_utils.data_archive import DataArchive
 
 from configuration.parameter import (
     DICT_y, DICT_WEIGHT,

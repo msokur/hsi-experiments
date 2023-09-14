@@ -3,8 +3,7 @@ import pytest
 import os
 
 from data_utils.scaler import StandardScaler, SNV
-from data_utils.data_archive.data_archive_zarr import DataArchiveZARR
-from data_utils.data_archive.data_archive_npz import DataArchiveNPZ
+from data_utils.data_archive import DataArchiveZARR, DataArchiveNPZ
 
 X_0 = np.array(np.arange(start=0, stop=120, step=1)).reshape((12, 10))
 

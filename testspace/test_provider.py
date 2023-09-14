@@ -21,8 +21,7 @@ from data_utils.scaler import NormalizerScaler, StandardScaler, StandardScalerTr
 
 from data_utils.border import detect_border, detect_core
 
-from data_utils.data_archive.data_archive_zarr import DataArchiveZARR
-from data_utils.data_archive.data_archive_npz import DataArchiveNPZ
+from data_utils.data_archive import DataArchiveZARR, DataArchiveNPZ
 
 from cross_validators.cross_validator_normal import CrossValidationNormal
 

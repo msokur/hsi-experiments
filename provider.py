@@ -137,8 +137,7 @@ def get_extension_loader(typ: str, **kwargs):
 
 
 def get_data_archive(typ: str):
-    from data_utils.data_archive.data_archive_npz import DataArchiveNPZ
-    from data_utils.data_archive.data_archive_zarr import DataArchiveZARR
+    from data_utils.data_archive import DataArchiveNPZ, DataArchiveZARR
 
     if typ == "npz":
         return DataArchiveNPZ()

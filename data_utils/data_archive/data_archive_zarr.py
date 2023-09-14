@@ -8,7 +8,7 @@ import zarr
 from configuration.parameter import (
     PAT_CHUNKS, D3_PAT_CHUNKS, BATCH_IDX, BATCH_ORG_PATH,
 )
-from data_utils.data_archive.data_archive import DataArchive
+from data_utils.data_archive import DataArchive
 
 
 class DataArchiveZARR(DataArchive):
@@ -42,9 +42,19 @@ class DataArchiveZARR(DataArchive):
         data = self.get_datas(data_path=data_path)
         return data[data_name]
 
-    def save_batch_arrays(self, save_path: str, data: Union[zarr.Group, Dict[str, Union[np.ndarray, list]]],
-                          data_indexes: np.ndarray, batch_file_name: str, split_size: int,
-                          save_dict_names: List[str]) -> Dict[str, np.ndarray]:
+    def get_batch_data(self, batch_path: str, X: str, y: str, weights: str = None):
+        batch_data = self.get_datas(data_path=batch_path)
+        batch_mask = batch_data.get(BATCH_IDX)
+        data_path = batch_data.get(BATCH_ORG_PATH)[0]
+        data = self.get_datas(data_path=data_path)
+        if weights is not None:
+            return data[X][...][batch_mask], data[y][...][batch_mask], data[weights][...][batch_mask]
+        else:
+            return data[X][...][batch_mask], data[y][...][batch_mask]
+
+    def save_batch_datas(self, save_path: str, data: Union[zarr.Group, Dict[str, Union[np.ndarray, list]]],
+                         data_indexes: np.ndarray, batch_file_name: str, split_size: int,
+                         save_dict_names: List[str]) -> Dict[str, np.ndarray]:
         save_arch = zarr.open_group(store=save_path, mode="a")
         idx = len([k for k in save_arch.group_keys()])
         batch = save_arch.create_group(name=f"{batch_file_name}{idx}", overwrite=True)

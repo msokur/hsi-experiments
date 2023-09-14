@@ -37,9 +37,13 @@ class DataArchive:
         pass
 
     @abc.abstractmethod
-    def save_batch_arrays(self, save_path: str, data: Union[zarr.Group, Dict[str, Union[np.ndarray, list]]],
-                          data_indexes: np.ndarray, batch_file_name: str, split_size: int,
-                          save_dict_names: List[str]) -> Dict[str, np.ndarray]:
+    def get_batch_data(self, batch_path: str, X: str, y: str, weights: str = None):
+        pass
+
+    @abc.abstractmethod
+    def save_batch_datas(self, save_path: str, data: Union[zarr.Group, Dict[str, Union[np.ndarray, list]]],
+                         data_indexes: np.ndarray, batch_file_name: str, split_size: int,
+                         save_dict_names: List[str]) -> Dict[str, np.ndarray]:
         pass
 
     @abc.abstractmethod

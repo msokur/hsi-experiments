@@ -11,7 +11,7 @@ from data_utils.batches import NameBatchSplit, Dataset
 from util.compare_distributions import DistributionsChecker
 from data_utils.weights import Weights
 
-from data_utils.data_archive.data_archive import DataArchive
+from data_utils.data_archive import DataArchive
 from configuration.copy_py_files import copy_files
 from configuration.get_config import telegram
 from configuration.keys import TrainerKeys as TK, PathKeys as PK

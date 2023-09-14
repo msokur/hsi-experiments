@@ -11,7 +11,7 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-from data_utils.data_archive.data_archive import DataArchive
+from data_utils.data_archive import DataArchive
 from configuration.keys import DistroCheckKeys as DCK
 
 """

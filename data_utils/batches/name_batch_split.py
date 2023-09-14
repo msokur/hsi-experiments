@@ -5,7 +5,7 @@ from tqdm import tqdm
 import os
 import numpy as np
 
-from data_utils.data_archive.data_archive import DataArchive
+from data_utils.data_archive import DataArchive
 from configuration.parameter import (
     BATCH_FILE
 )
@@ -68,9 +68,9 @@ class NameBatchSplit:
         return rest
 
     def __split_and_save_batches__(self, save_path: str, data, data_indexes: np.ndarray) -> Dict[str, np.ndarray]:
-        return self.data_archive.save_batch_arrays(save_path=save_path, data=data, data_indexes=data_indexes,
-                                                   batch_file_name=BATCH_FILE, split_size=self.batch_size,
-                                                   save_dict_names=self.dict_names)
+        return self.data_archive.save_batch_datas(save_path=save_path, data=data, data_indexes=data_indexes,
+                                                  batch_file_name=BATCH_FILE, split_size=self.batch_size,
+                                                  save_dict_names=self.dict_names)
 
     def __init_archive__(self, path: str):
         if not os.path.exists(path=path):

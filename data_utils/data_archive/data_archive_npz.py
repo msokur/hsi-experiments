@@ -4,7 +4,7 @@ from typing import List, Dict, Union, Iterable
 
 import numpy as np
 
-from data_utils.data_archive.data_archive import DataArchive
+from data_utils.data_archive import DataArchive
 
 
 class DataArchiveNPZ(DataArchive):
@@ -33,8 +33,15 @@ class DataArchiveNPZ(DataArchive):
         data = self.get_datas(data_path=data_path)
         return data[data_name]
 
-    def save_batch_arrays(self, save_path: str, data: Dict[str, Union[np.ndarray, list]], data_indexes: np.ndarray,
-                          batch_file_name: str, split_size: int, save_dict_names: List[str]) -> Dict[str, np.ndarray]:
+    def get_batch_data(self, batch_path: str, X: str, y: str, weights: str = None):
+        data = self.get_datas(data_path=batch_path)
+        if weights is not None:
+            return data[X], data[y], data[weights]
+        else:
+            return data[X], data[y]
+
+    def save_batch_datas(self, save_path: str, data: Dict[str, Union[np.ndarray, list]], data_indexes: np.ndarray,
+                         batch_file_name: str, split_size: int, save_dict_names: List[str]) -> Dict[str, np.ndarray]:
         # ---------------splitting into archives----------
         chunks = data_indexes.shape[0] // split_size
         chunks_max = chunks * split_size

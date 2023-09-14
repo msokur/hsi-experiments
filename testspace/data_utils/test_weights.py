@@ -5,8 +5,7 @@ import os
 import pickle
 
 from data_utils.weights import Weights
-from data_utils.data_archive.data_archive_zarr import DataArchiveZARR
-from data_utils.data_archive.data_archive_npz import DataArchiveNPZ
+from data_utils.data_archive import DataArchiveZARR, DataArchiveNPZ
 
 WEIGHTS_RESULT = np.array([[8, 8, 8, 8], [4, 4, 0, 0]])
 

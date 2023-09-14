@@ -5,7 +5,7 @@ import numpy as np
 import pickle
 import os
 
-from data_utils.data_archive.data_archive import DataArchive
+from data_utils.data_archive import DataArchive
 from configuration.keys import CrossValidationKeys as CVK
 from configuration.parameter import (
     VALID_LOG,
