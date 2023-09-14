@@ -33,7 +33,10 @@ class DataArchiveNPZ(DataArchive):
         data = self.get_datas(data_path=data_path)
         return data[data_name]
 
-    def get_batch_data(self, batch_path: str, X: str, y: str, weights: str = None):
+    def get_batch_data(self, batch_path: str, name: str):
+        return self.get_data(data_path=batch_path, data_name=name)
+
+    def get_batch_datas(self, batch_path: str, X: str, y: str, weights: str = None):
         data = self.get_datas(data_path=batch_path)
         if weights is not None:
             return data[X], data[y], data[weights]
@@ -72,7 +75,3 @@ class DataArchiveNPZ(DataArchive):
         datas[data_name] = data
         main_path, name = os.path.split(p=save_path)
         self.save_group(save_path=main_path, group_name=name, datas=datas)
-
-    @staticmethod
-    def delete_group(delete_path):
-        os.remove(delete_path)

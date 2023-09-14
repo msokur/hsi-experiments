@@ -93,8 +93,8 @@ class Weights:
         labels = np.array(self.labels)
         sums = np.zeros(labels.shape)
 
-        for path in class_data_paths:
-            y = self.__get_y__(path=path)
+        for p in class_data_paths:
+            y = self.data_archive.get_batch_data(batch_path=p, name=self.y_dict_name)
             for i, l in enumerate(labels):
                 sums[i] += np.flatnonzero(y == l).shape[0]
 

@@ -21,7 +21,7 @@ class NameBatchSplit:
         self.p_dict_name = dict_names[2]
 
     def split(self, data_paths: List[str], batch_save_path: str, except_names: List[str]) -> List[str]:
-        print(f"--------Splitting data into {batch_save_path} of batch size started--------")
+        print(f"--------Splitting {os.path.split(batch_save_path)[-1]} data into batches started--------")
         # ------------removing of previously generated archives (of the previous CV step) ----------------
         self.__init_archive__(path=batch_save_path)
         # ----- split datas into batches ----
@@ -33,7 +33,7 @@ class NameBatchSplit:
             self.__split_and_save_batches__(save_path=batch_save_path, data=rest,
                                             data_indexes=np.full(shape=len(rest[self.dict_names[0]]), fill_value=True))
 
-        print(f"--------Splitting data into {batch_save_path} finished--------")
+        print(f"--------Splitting {os.path.split(batch_save_path)[-1]} data into batches finished--------")
         return self.data_archive.get_paths(archive_path=batch_save_path)
 
     @abc.abstractmethod

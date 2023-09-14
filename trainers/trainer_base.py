@@ -81,8 +81,10 @@ class Trainer:
         train_ds = self.__get_dataset__(batch_paths=train_paths)
         valid_ds = self.__get_dataset__(batch_paths=valid_paths)
 
-        class_weights = Weights(filename="", data_archive=self.data_archive, labels=self.labels_to_train,
-                                y_dict_name=self.dict_names[1])
+        weights = Weights(filename="", data_archive=self.data_archive, labels=self.labels_to_train,
+                          y_dict_name=self.dict_names[1])
+
+        class_weights = weights.get_class_weights(class_data_paths=train_paths)
         print(class_weights)
 
         return train_ds, valid_ds, class_weights

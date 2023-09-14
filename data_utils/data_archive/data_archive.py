@@ -1,8 +1,8 @@
 import abc
+from shutil import rmtree
 from typing import List, Dict, Union, Iterable
 
 import numpy as np
-import os
 
 import zarr
 
@@ -37,7 +37,11 @@ class DataArchive:
         pass
 
     @abc.abstractmethod
-    def get_batch_data(self, batch_path: str, X: str, y: str, weights: str = None):
+    def get_batch_data(self, batch_path: str, name: str):
+        pass
+
+    @abc.abstractmethod
+    def get_batch_datas(self, batch_path: str, X: str, y: str, weights: str = None):
         pass
 
     @abc.abstractmethod
@@ -55,12 +59,5 @@ class DataArchive:
         pass
 
     @staticmethod
-    @abc.abstractmethod
-    def delete_group(delete_path):
-        pass
-
-    def delete_archive(self, delete_path):
-        datas_to_delete = self.get_paths(archive_path=delete_path)
-        for delete in datas_to_delete:
-            self.delete_group(delete_path=delete)
-        os.remove(delete_path)
+    def delete_archive(delete_path):
+        rmtree(delete_path)

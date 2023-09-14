@@ -21,7 +21,7 @@ class Dataset(keras.utils.Sequence):
 
     def __getitem__(self, idx):
         if self.with_sample_weights:
-            return self.data_archive.get_batch_data(batch_path=self.batch_paths[idx], X=self.X_name, y=self.y_name,
-                                                    weights=self.weights_name)
+            return self.data_archive.get_batch_datas(batch_path=self.batch_paths[idx], X=self.X_name, y=self.y_name,
+                                                     weights=self.weights_name)
         else:
-            return self.data_archive.get_batch_data(batch_path=self.batch_paths[idx], X=self.X_name, y=self.y_name)
+            return self.data_archive.get_batch_datas(batch_path=self.batch_paths[idx], X=self.X_name, y=self.y_name)

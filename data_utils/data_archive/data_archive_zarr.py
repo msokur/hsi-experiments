@@ -1,5 +1,4 @@
 import os
-from shutil import rmtree
 from typing import List, Dict, Union, Iterable
 
 import numpy as np
@@ -42,10 +41,13 @@ class DataArchiveZARR(DataArchive):
         data = self.get_datas(data_path=data_path)
         return data[data_name]
 
-    def get_batch_data(self, batch_path: str, X: str, y: str, weights: str = None):
-        batch_data = self.get_datas(data_path=batch_path)
-        batch_mask = batch_data.get(BATCH_IDX)
-        data_path = batch_data.get(BATCH_ORG_PATH)[0]
+    def get_batch_data(self, batch_path: str, name: str):
+        batch_mask, data_path = self.__get_batch_mask_and_path(batch_path=batch_path)
+        data = self.get_datas(data_path=data_path)
+        return data[name][...][batch_mask]
+
+    def get_batch_datas(self, batch_path: str, X: str, y: str, weights: str = None):
+        batch_mask, data_path = self.__get_batch_mask_and_path(batch_path=batch_path)
         data = self.get_datas(data_path=data_path)
         if weights is not None:
             return data[X][...][batch_mask], data[y][...][batch_mask], data[weights][...][batch_mask]
@@ -73,12 +75,14 @@ class DataArchiveZARR(DataArchive):
         root.array(name=data_name, data=data, chunks=self.__get_chunks__(len(data.shape)), overwrite=True)
 
     @staticmethod
-    def delete_group(delete_path):
-        rmtree(delete_path)
-
-    @staticmethod
     def __get_chunks__(data_length: int) -> tuple:
         if data_length < 3:
             return PAT_CHUNKS
         else:
             return D3_PAT_CHUNKS
+
+    def __get_batch_mask_and_path(self, batch_path: str):
+        batch_data = self.get_datas(data_path=batch_path)
+        batch_mask = batch_data.get(BATCH_IDX)
+        data_path = batch_data.get(BATCH_ORG_PATH)[0]
+        return batch_mask, data_path
