@@ -33,8 +33,9 @@ class ChoiceNames:
         valid = self.random_choice(paths_names, excepts)
 
         path_idx = paths_names.index(valid[0])
-        unique_classes = self.data_archive.get_data(data_path=paths[path_idx], data_name=self.y_dict_name)
-        con_classes = np.concatenate((classes, unique_classes[...]))
+        y = self.data_archive.get_data(data_path=paths[path_idx], data_name=self.y_dict_name)
+        unique_classes = np.unique(y)
+        con_classes = np.concatenate((classes, unique_classes))
         con_unique_classes = np.intersect1d(con_classes, self.labels)
         if len(con_unique_classes) >= len(self.labels):
             return valid

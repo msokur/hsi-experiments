@@ -145,8 +145,8 @@ class CrossValidatorBase:
         return label_not_to_train
 
     def __check_label__(self, path: str) -> bool:
-        data = np.load(path)
-        unique_y = np.unique(data["y"])
+        data = self.data_archive.get_datas(data_path=path)
+        unique_y = np.unique(data[CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1]])
         intersect = np.intersect1d(unique_y, self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
 
         return True if intersect.__len__() == 0 else False
