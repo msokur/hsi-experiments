@@ -25,7 +25,7 @@
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",
     "FILES_TO_COPY": [["configuration", "meta_config","*.py"], ["configuration", "*.json"]],
-    "NORMALIZATION_TYPE": "svn_2",
+    "NORMALIZATION_TYPE": "svn_T",
     "SCALER_FILE": "scaler.scaler",
     "SCALER_PATH": null
   }
