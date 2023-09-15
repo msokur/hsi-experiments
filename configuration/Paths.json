@@ -47,7 +47,7 @@
   },
   "GASTRIC_Database_mk": {
     "1.CONCAT_WITH_PREFIX": {
-      "ROOT_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "mk2"],
+      "ROOT_PATH": ["data_3d", "zarr", "gastric", "3x3", "svnT", "no_smooth", "mk2"],
       "RAW_SOURCE_PATH": ["Gastric"]
     },
     "2.CONCAT_WITH_ROOT_PATH": {

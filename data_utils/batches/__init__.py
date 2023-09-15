@@ -1,3 +1,3 @@
 from .choice_names import ChoiceNames
-from .dataset import Dataset
+from .data_generator import DataGenerator
 from .name_batch_split import NameBatchSplit

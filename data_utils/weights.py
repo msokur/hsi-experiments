@@ -1,7 +1,7 @@
 import abc
 import os
 import pickle
-from typing import List, Dict, Union, Iterable
+from typing import List, Dict, Union
 
 from tqdm import tqdm
 

@@ -8,7 +8,7 @@
 ##SBATCH --gres=gpu:v100:2
 ##SBATCH --gres=gpu:rtx2080ti:2
 
-#SBATCH --output=output/PrePro_GASTRIC_EXVIVO_3x3_SNV_NO_SMOOTH_MK%j.log
+#SBATCH --output=output/PrePro_GASTRIC_3x3_SNV_NO_SMOOTH_MK%j.log
 
 #module load FlexiBLAS/3.0.4-GCC-10.3.0
 module load Python/3.9.5-GCCcore-10.3.0

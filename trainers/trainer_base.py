@@ -7,7 +7,7 @@ import numpy as np
 import abc
 import pickle
 
-from data_utils.batches import NameBatchSplit, Dataset
+from data_utils.batches import NameBatchSplit, DataGenerator
 from util.compare_distributions import DistributionsChecker
 from data_utils.weights import Weights
 
@@ -78,15 +78,18 @@ class Trainer:
                                         except_names=self.except_valid_names)
         self.save_except_names(except_names=self.except_valid_names)
 
-        train_ds = self.__get_dataset__(batch_paths=train_paths)
-        valid_ds = self.__get_dataset__(batch_paths=valid_paths)
+        options = tf.data.Options()
+        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
+        train_ds = self.__get_dataset__(batch_paths=train_paths, options=options)
+        valid_ds = self.__get_dataset__(batch_paths=valid_paths, options=options)
 
         weights = Weights(filename="", data_archive=self.data_archive, labels=self.labels_to_train,
                           y_dict_name=self.dict_names[1])
 
         class_weights = weights.get_class_weights(class_data_paths=train_paths)
         print(class_weights)
-
+        # TODO class_weights dirty fix
+        class_weights = {k: v for k, v in enumerate(class_weights.values())}
         return train_ds, valid_ds, class_weights
 
     def get_callbacks(self):
@@ -158,10 +161,17 @@ class Trainer:
 
         return X.shape[1:]
 
-    def __get_dataset__(self, batch_paths: List[str]) -> Dataset:
-        return Dataset(data_archive=self.data_archive, batch_paths=batch_paths, X_name=self.dict_names[0],
-                       y_name=self.dict_names[1], weights_name=self.dict_names[5],
-                       with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS])
+    def __get_dataset__(self, batch_paths: List[str], options: tf.data.Options):
+        dataset = DataGenerator(data_archive=self.data_archive, batch_paths=batch_paths, X_name=self.dict_names[0],
+                                y_name=self.dict_names[1], weights_name=self.dict_names[5],
+                                with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS])
+        tf_dataset = tf.data.Dataset.from_generator(generator=dataset, output_signature=dataset.get_output_signature())
+        return tf_dataset.with_options(options=options)
+
+    @staticmethod
+    def __set_tf_option__():
+        options = tf.data.Options()
+        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
 
 
 if __name__ == '__main__':
