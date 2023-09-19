@@ -5,6 +5,9 @@ from shutil import rmtree
 
 from trainers.trainer_base import Trainer
 from configuration.keys import TrainerKeys as TK
+from configuration.parameter import (
+    MODEL_BATCH_SIZE,
+)
 
 
 class TrainerEasy(Trainer):
@@ -37,7 +40,7 @@ class TrainerEasy(Trainer):
             epochs=self.CONFIG_TRAINER[TK.EPOCHS],
             verbose=2,
             initial_epoch=initial_epoch,
-            batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
+            batch_size=MODEL_BATCH_SIZE,
             callbacks=self.get_callbacks(),
             use_multiprocessing=True,
             class_weight=class_weights,

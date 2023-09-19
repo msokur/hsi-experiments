@@ -9,10 +9,12 @@ current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfra
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
+from provider import get_data_archive, get_prediction_to_image
 from configuration.get_config import CONFIG_DATALOADER, CONFIG_TRAINER, CONFIG_PATHS, CONFIG_CV
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK, CrossValidationKeys as CVK
-from data_utils.prediction_to_image.prediction_to_image_npz import PredictionToImage_npz
-from data_utils.prediction_to_image.prediction_to_image_png import PredictionToImage_png
+from configuration.parameter import (
+    ARCHIVE_TYPE, PRED_TO_IMG_TYP
+)
 
 
 def get_csv_path(log_path: str, folder: str):
@@ -23,15 +25,6 @@ def get_csv_path(log_path: str, folder: str):
         raise ValueError(f'Too many .csv files in "{path}"!')
 
     return csv_file[0]
-
-
-def get_prediction_to_image(mode: str):
-    if mode == "npz":
-        return PredictionToImage_npz(dataloader_conf=CONFIG_DATALOADER, model_conf=CONFIG_TRAINER)
-    elif mode == "png":
-        return PredictionToImage_png(dataloader_conf=CONFIG_DATALOADER, model_conf=CONFIG_TRAINER)
-    else:
-        raise ValueError(f'No Mode "{mode}" found for visualisation!')
 
 
 def get_model_path(path: str) -> str:
@@ -51,10 +44,6 @@ def get_save_path(main_path: str, name: str) -> str:
     return os.path.join(path, name + ".jpg")
 
 
-def get_name_from_npz(path: str) -> str:
-    return os.path.split(path)[-1].replace(".npz", "")
-
-
 def get_dat_path(raw_path: str, name: str) -> str:
     if CONFIG_DATALOADER[DLK.NAME_SPLIT] is not None:
         path = glob(os.path.join(raw_path, f"{name + CONFIG_DATALOADER[DLK.NAME_SPLIT]}.dat"))
@@ -67,18 +56,19 @@ def get_dat_path(raw_path: str, name: str) -> str:
 
 
 if __name__ == "__main__":
-    pred_to_img = get_prediction_to_image(mode="npz")
+    pred_to_img = get_prediction_to_image(typ=PRED_TO_IMG_TYP, data_archive=get_data_archive(typ=ARCHIVE_TYPE),
+                                          dataloader_conf=CONFIG_DATALOADER, model_conf=CONFIG_TRAINER)
     csv_path = get_csv_path(log_path=CONFIG_PATHS[PK.MODEL_NAME_PATHS], folder=CONFIG_CV[CVK.NAME])
-    csv_data = pd.read_csv(csv_path, delimiter=",", header=None, names=["Date", "x", "y", "z", "npz", "model"])
+    csv_data = pd.read_csv(csv_path, delimiter=",", header=None, names=["Date", "x", "y", "z", "archive", "model"])
 
     for idx, row in tqdm(csv_data.iterrows()):
-        file_name = get_name_from_npz(row["npz"])
+        file_name = pred_to_img.get_name(path=row["archive"])
         model_path = get_model_path(path=row["model"])
-        npz_path = row["npz"]
+        archive_path = row["archive"]
         save_path = get_save_path(main_path=os.path.split(row["model"])[0], name=file_name)
-        dat_path = get_dat_path(raw_path=CONFIG_PATHS[PK.RAW_NPZ_PATH], name=file_name)
-        anno_mask = pred_to_img.get_annotation_mask(path=npz_path)
-        pred_mask = pred_to_img.get_prediction_mask(spectrum_path=npz_path, model_path=model_path)
+        dat_path = get_dat_path(raw_path=CONFIG_PATHS[PK.RAW_SOURCE_PATH], name=file_name)
+        anno_mask = pred_to_img.get_annotation_mask(path=archive_path)
+        pred_mask = pred_to_img.get_prediction_mask(spectrum_path=archive_path, model_path=model_path)
         diff_mask = pred_to_img.get_diff_mask(annotation_mask=anno_mask, prediction_mask=pred_mask)
 
         print(f'Save Image for "{file_name}" in "{save_path}"')

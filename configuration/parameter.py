@@ -29,8 +29,12 @@ VALID = "valid"                         # key for valid dataset
 BATCH_FILE = "batch"                    # prefix for batch file
 BATCH_IDX = "batch_indexes"             # name for array with
 BATCH_ORG_PATH = "batch_org_path"       # name for array with original data for batches (zarr)
+MODEL_BATCH_SIZE = 500
 
 # --- Generator
 GEN_ALL = "all"                         # modus all for data generator
 GEN_TRAIN = "train"                     # modus train for data generator
 GEN_VALID = "valid"                     # modus valid for data generator
+
+# --- prediction to image
+PRED_TO_IMG_TYP = "archive"

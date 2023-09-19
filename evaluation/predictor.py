@@ -9,7 +9,10 @@ import inspect
 from configuration import get_config as conf
 from configuration.keys import PathKeys as PK, TrainerKeys as TK, CrossValidationKeys as CVK, DataLoaderKeys as DLK
 from models.model_randomness import set_tf_seed
-from provider import get_data_loader
+from provider import get_data_loader, get_data_archive
+from configuration.parameter import (
+    ARCHIVE_TYPE
+)
 
 tf.random.set_seed(1)
 
@@ -31,6 +34,7 @@ class Predictor:
 
         if MODEL_FOLDER == '':
             MODEL_FOLDER = os.path.join(LOGS_PATH, self.MODEL_NAME)
+            self.data_archive = get_data_archive(typ=ARCHIVE_TYPE)
 
         CHECKPOINTS_FOLDER_NAME = os.path.join(MODEL_FOLDER, "checkpoints")
         MODEL_PATH = os.path.join(CHECKPOINTS_FOLDER_NAME, CHECKPOINT)
@@ -43,8 +47,8 @@ class Predictor:
         print(", \n".join("%s: %s" % item for item in vars(self).items()))
         print("------------------------------------------------")
 
-    def get_predictions_for_npz(self, path):
-        data = np.load(path)
+    def get_predictions_from_archive(self, path):
+        data = self.data_archive.get_datas(data_path=path)
         spectrum = data["X"]
         gt = data["y"]
         size = None
@@ -52,13 +56,12 @@ class Predictor:
             size = data["size"]
 
         # get only needed samples
-        indexes = np.zeros(gt.shape).astype(bool)
-        if not conf.CONFIG_CV[CVK.USE_ALL_LABELS]:
-            for label in conf.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]:
-                indexes = indexes | (gt == label)
+        indexes = np.full(shape=gt.shape, fill_value=False)
+        for label in conf.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]:
+            indexes = indexes | (gt == label)
         else:
             indexes = np.ones(gt.shape).astype(bool)
-        if conf.CONFIG_DATALOADER[DLK.WITH_BACKGROUND_EXTRACTION]:
+        if conf.CONFIG_DATALOADER[DLK.WITH_BACKGROUND_EXTRACTION] and "bg_mask" in data:
             gt = gt[indexes & data["bg_mask"]]
             spectrum = spectrum[indexes & data["bg_mask"]]
 
@@ -67,7 +70,7 @@ class Predictor:
 
         predictions = self.model.predict(spectrum)
 
-        return predictions, gt, size
+        return predictions, gt[...], size
 
     @staticmethod
     def edit_model_path_if_local(model_path):
@@ -85,10 +88,9 @@ class Predictor:
     @staticmethod
     def get_best_checkpoint_from_csv(model_path):
         checkpoints_paths = sorted(glob(os.path.join(model_path,
-                                                     conf.CONFIG_PATHS[PK.CHECKPOINT_PATH], "*"
-                                                     + conf.CONFIG_PATHS[PK.MODEL_NAME_PATHS])))
+                                                     conf.CONFIG_PATHS[PK.CHECKPOINT_PATH], "*")))
         best_checkpoint_path = checkpoints_paths[-1]
-        return best_checkpoint_path.split(conf.CONFIG_PATHS[PK.MODEL_NAME_PATHS])[-2]
+        return os.path.split(best_checkpoint_path)[-1]
 
     @staticmethod
     def get_checkpoint(checkpoint, model_path):
@@ -100,9 +102,8 @@ class Predictor:
         else:
             return checkpoint
 
-    @staticmethod
-    def save_predictions(training_csv_path,
-                         npz_folder,
+    def save_predictions(self, training_csv_path,
+                         pat_archive_folder,
                          predictions_saving_folder,
                          predictions_npy_filename,
                          checkpoint=None):
@@ -116,9 +117,10 @@ class Predictor:
             5 - model path
         """
 
-        all_predictions_raw, all_gt = [], []
         results_dictionary = []
-        data_loader = get_data_loader(typ=conf.CONFIG_DATALOADER[DLK.TYPE], config_dataloader=conf.CONFIG_DATALOADER,
+        data_loader = get_data_loader(typ=conf.CONFIG_DATALOADER[DLK.TYPE],
+                                      data_archive=self.data_archive,
+                                      config_dataloader=conf.CONFIG_DATALOADER,
                                       config_paths=conf.CONFIG_PATHS)
         with open(training_csv_path, newline='') as csvfile:
             report_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
@@ -129,11 +131,11 @@ class Predictor:
 
                 if checkpoint is not None:
                     checkpoint = Predictor.get_checkpoint(checkpoint, model_path)
-                name = data_loader.get_name_func(row[4], delimiter='/')
+                name = data_loader.get_name(path=row[4])
                 print(f'We get checkpoint {checkpoint} for {model_path}')
 
                 predictor = Predictor(checkpoint, MODEL_FOLDER=model_path)
-                predictions, gt, size = predictor.get_predictions_for_npz(os.path.join(npz_folder, name + ".npz"))
+                predictions, gt, size = predictor.get_predictions_from_archive(os.path.join(pat_archive_folder, name))
 
                 results_dictionary.append({
                     'name': name,

@@ -1,10 +1,8 @@
 import abc
 from shutil import rmtree
-from typing import List, Dict, Union, Iterable
+from typing import List, Dict, Iterable
 
 import numpy as np
-
-import zarr
 
 
 class DataArchive:
@@ -34,20 +32,6 @@ class DataArchive:
 
     @abc.abstractmethod
     def get_data(self, data_path: str, data_name: str) -> np.ndarray:
-        pass
-
-    @abc.abstractmethod
-    def get_batch_data(self, batch_path: str, name: str):
-        pass
-
-    @abc.abstractmethod
-    def get_batch_datas(self, batch_path: str, X: str, y: str, weights: str = None):
-        pass
-
-    @abc.abstractmethod
-    def save_batch_datas(self, save_path: str, data: Union[zarr.Group, Dict[str, Union[np.ndarray, list]]],
-                         data_indexes: np.ndarray, batch_file_name: str, split_size: int,
-                         save_dict_names: List[str]) -> Dict[str, np.ndarray]:
         pass
 
     @abc.abstractmethod

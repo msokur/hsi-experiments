@@ -1,11 +1,11 @@
 import os
-from typing import List, Dict, Union, Iterable
+from typing import List, Dict, Iterable
 
 import numpy as np
 import zarr
 
 from configuration.parameter import (
-    PAT_CHUNKS, D3_PAT_CHUNKS, BATCH_IDX, BATCH_ORG_PATH,
+    PAT_CHUNKS, D3_PAT_CHUNKS,
 )
 from data_utils.data_archive import DataArchive
 
@@ -41,29 +41,6 @@ class DataArchiveZARR(DataArchive):
         data = self.get_datas(data_path=data_path)
         return data[data_name]
 
-    def get_batch_data(self, batch_path: str, name: str):
-        batch_mask, data_path = self.__get_batch_mask_and_path(batch_path=batch_path)
-        data = self.get_datas(data_path=data_path)
-        return data[name][...][batch_mask]
-
-    def get_batch_datas(self, batch_path: str, X: str, y: str, weights: str = None):
-        batch_mask, data_path = self.__get_batch_mask_and_path(batch_path=batch_path)
-        data = self.get_datas(data_path=data_path)
-        if weights is not None:
-            return data[X][...][batch_mask], data[y][...][batch_mask], data[weights][...][batch_mask]
-        else:
-            return data[X][...][batch_mask], data[y][...][batch_mask]
-
-    def save_batch_datas(self, save_path: str, data: Union[zarr.Group, Dict[str, Union[np.ndarray, list]]],
-                         data_indexes: np.ndarray, batch_file_name: str, split_size: int,
-                         save_dict_names: List[str]) -> Dict[str, np.ndarray]:
-        save_arch = zarr.open_group(store=save_path, mode="a")
-        idx = len([k for k in save_arch.group_keys()])
-        batch = save_arch.create_group(name=f"{batch_file_name}{idx}", overwrite=True)
-        batch.array(name=BATCH_IDX, data=data_indexes, chunks=(split_size,))
-        batch.array(name=BATCH_ORG_PATH, data=[self.get_path(file=data)])
-        return {k: np.array([]) for k in save_dict_names}
-
     def save_group(self, save_path: str, group_name: str, datas: Dict[str, np.ndarray]) -> None:
         root = zarr.open_group(store=save_path, mode="a")
         pat = root.create_group(name=group_name, overwrite=True)
@@ -80,9 +57,3 @@ class DataArchiveZARR(DataArchive):
             return PAT_CHUNKS
         else:
             return D3_PAT_CHUNKS
-
-    def __get_batch_mask_and_path(self, batch_path: str):
-        batch_data = self.get_datas(data_path=batch_path)
-        batch_mask = batch_data.get(BATCH_IDX)
-        data_path = batch_data.get(BATCH_ORG_PATH)[0]
-        return batch_mask, data_path

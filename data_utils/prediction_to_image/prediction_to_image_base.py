@@ -4,6 +4,7 @@ import keras
 import numpy as np
 from matplotlib import colors as mcolor, pyplot as plt
 
+from data_utils.data_archive import DataArchive
 from models.model_randomness import set_tf_seed
 from data_utils.hypercube_data import cube
 
@@ -11,10 +12,14 @@ from configuration.keys import DataLoaderKeys as DLK, TrainerKeys as TK
 
 
 class PredictionToImage_base:
-    def __init__(self, dataloader_conf: dict, model_conf: dict, image_size=(480, 640)):
+    def __init__(self, data_archive: DataArchive, dataloader_conf: dict, model_conf: dict, image_size=(480, 640)):
+        self.data_archive = data_archive
         self.CONFIG_DATALOADER = dataloader_conf
         self.CONFIG_MODEL = model_conf
         self.image_size = image_size
+
+    def get_name(self, path):
+        return self.data_archive.get_name(path=path)
 
     def get_diff_mask(self, annotation_mask: np.ndarray, prediction_mask: np.ndarray) -> np.ndarray:
         diff_mask = np.full(self.image_size, -1)

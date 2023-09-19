@@ -25,7 +25,6 @@ def out_of_the_box():
     # because they passed automatically
     cross_validator.pipeline(execution_flags=execution_flags,
                              # thresholds_range=[[0.0001, 0.001, 20]],  # specify thresholds if classification is binary
-                             save_predictions=config.CONFIG_CV[CVK.SAVE_PREDICTION],
                              save_curves=config.CONFIG_CV[CVK.SAVE_CURVES])
 
 

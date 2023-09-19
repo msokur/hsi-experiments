@@ -21,11 +21,12 @@ class DataGenerator:
         return len(self.batch_paths)
 
     def __getitem__(self, idx):
-        if self.with_sample_weights:
-            return self.data_archive.get_batch_datas(batch_path=self.batch_paths[idx], X=self.X_name, y=self.y_name,
-                                                     weights=self.weights_name)
-        else:
-            return self.data_archive.get_batch_datas(batch_path=self.batch_paths[idx], X=self.X_name, y=self.y_name)
+        batch_data = self.data_archive.get_datas(data_path=self.batch_paths[idx])
+
+        if self.with_sample_weights and self.weights_name in batch_data:
+            return batch_data[self.X_name], batch_data[self.y_name], batch_data[self.weights_name]
+
+        return batch_data[self.X_name], batch_data[self.y_name]
 
     def __call__(self):
         for idx in range(self.__len__()):
@@ -33,14 +34,15 @@ class DataGenerator:
 
     def get_output_signature(self) -> Union[Tuple[tf.TensorSpec, tf.TensorSpec],
                                             Tuple[tf.TensorSpec, tf.TensorSpec, tf.TensorSpec]]:
-        X, y, weights = self.data_archive.get_batch_datas(batch_path=self.batch_paths[0], X=self.X_name, y=self.y_name,
-                                                          weights=self.weights_name)
+        data = self.data_archive.get_datas(data_path=self.batch_paths[0])
+        X, y = data[self.X_name], data[self.y_name]
         output_signature = (
-            tf.TensorSpec(shape=tf.TensorShape(X.shape[1:]), dtype=X.dtype),
-            tf.TensorSpec(shape=tf.TensorShape([] if len(y.shape) == 1 else y.shape[1:]), dtype=y.dtype)
+            tf.TensorSpec(shape=((None,) + (X.shape[1:])), dtype=X.dtype, name=self.X_name),
+            tf.TensorSpec(shape=(None,) if len(y.shape) == 1 else ((None,) + (y.shape[1:])), dtype=y.dtype,
+                          name=self.y_name)
         )
-
         if self.with_sample_weights:
-            output_signature += (tf.TensorSpec(shape=tf.TensorShape([]), dtype=weights.dtype),)
+            weights = data[self.weights_name]
+            output_signature += (tf.TensorSpec(shape=(None,), dtype=weights.dtype, name=self.weights_name),)
 
         return output_signature

@@ -3,17 +3,20 @@ import numpy as np
 from data_utils.prediction_to_image.prediction_to_image_base import PredictionToImage_base
 
 from configuration.keys import DataLoaderKeys as DLK
+from configuration.parameter import (
+    DICT_X, DICT_y, DICT_IDX,
+)
 
 
 class PredictionToImage_npz(PredictionToImage_base):
     def get_spectrum(self, path: str):
-        X, y, idx = self.load_npz(path=path)
+        X, y, idx = self.load_datas(path=path)
         mask = np.isin(y, self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
 
         return X[mask], idx[mask]
 
     def get_annotation_mask(self, path: str) -> np.ndarray:
-        _, y, idx = self.load_npz(path=path)
+        _, y, idx = self.load_datas(path=path)
         mask = self.whole_mask(class_list=y, indexes=idx)
 
         return mask
@@ -27,19 +30,20 @@ class PredictionToImage_npz(PredictionToImage_base):
             class_mask[idx[0]][idx[1]] = class_label
         return class_mask
 
-    @staticmethod
-    def load_npz(path: str):
-        data = np.load(path)
-        X = data["X"]
-        y = data["y"]
-        idx = data["indexes_in_datacube"]
+    def load_datas(self, path: str):
+        data = self.data_archive.get_datas(data_path=path)
+        X = data[DICT_X]
+        y = data[DICT_y]
+        idx = data[DICT_IDX]
 
         return X, y, idx
 
 
 if __name__ == '__main__':
     import os
+    from provider import get_data_archive
     from configuration.get_config import CONFIG_DATALOADER, CONFIG_TRAINER
+    from configuration.parameter import ARCHIVE_TYPE
 
     os.environ['TF_DETERMINISTIC_OPS'] = '1'
 
@@ -49,7 +53,8 @@ if __name__ == '__main__':
     image_path = os.path.join(main_path, "raw_data", "2019_04_30_15_34_56_SpecCube.png")
     # masks_png = test_png.annotation_mask(image_path)
 
-    test_npz = PredictionToImage_npz(dataloader_conf=CONFIG_DATALOADER, model_conf=CONFIG_TRAINER)
+    test_npz = PredictionToImage_npz(data_archive=get_data_archive(typ=ARCHIVE_TYPE), dataloader_conf=CONFIG_DATALOADER,
+                                     model_conf=CONFIG_TRAINER)
     npz_path = os.path.join(main_path, "raw_data", "2019_04_30_15_34_56_.npz")
     dat_path = r"E:\ICCAS\ESO\EsophagusCancer\2019_04_30_15_34_56_SpecCube.dat"
     anno_masks = test_npz.get_annotation_mask(npz_path)

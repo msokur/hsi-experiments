@@ -147,6 +147,16 @@ def get_data_archive(typ: str):
         value_error(modul="data archive", typ=typ)
 
 
+def get_prediction_to_image(typ: str, **kwargs):
+    from data_utils.prediction_to_image import PredictionToImage_npz, PredictionToImage_png
+    if typ == "archive":
+        return PredictionToImage_npz(**kwargs)
+    elif typ == "png":
+        return PredictionToImage_png(**kwargs)
+    else:
+        value_error(modul=" prediction to image", typ=typ)
+
+
 def value_error(modul: str, typ: str):
     raise ValueError(f"Error! No corresponding {modul} for {typ}")
 

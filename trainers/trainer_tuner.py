@@ -8,6 +8,9 @@ import os
 from trainers.trainer_base import Trainer
 import pickle
 from configuration.keys import TrainerKeys as TK
+from configuration.parameter import (
+    MODEL_BATCH_SIZE
+)
 
 
 class TrainerTuner(Trainer):
@@ -36,7 +39,7 @@ class TrainerTuner(Trainer):
                                  validation_data=valid_dataset,
                                  verbose=2,
                                  epochs=self.CONFIG_TRAINER[TK.EPOCHS],
-                                 batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
+                                 batch_size=MODEL_BATCH_SIZE,
                                  callbacks=self.get_callbacks(),
                                  use_multiprocessing=True,
                                  class_weight=class_weights,
