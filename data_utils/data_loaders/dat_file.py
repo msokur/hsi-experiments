@@ -205,7 +205,7 @@ class DatFile:
             img = img.convert("RGBA")
             warnings.warn("Better use '.png' format. Alpha channel added.")
 
-        return np.reshape(img.getdata(), newshape=img.size + (4,))
+        return np.reshape(img.getdata(), newshape=img.size[::-1] + (4,))
 
     def mk2_mask(self, mask_path: str, shape: tuple) -> np.ndarray:
         """ Loads Marker from .mk2 file and returns an annotation mask

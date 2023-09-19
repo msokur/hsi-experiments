@@ -56,15 +56,18 @@ COMBINED_RESULT_INDEX_MASK = np.array([[0, 0, -1], [1, -1, 1], [-1, 1, -1]])
 
 PNG_IMG_1 = np.array([[RED, NO_ANNO, NO_ANNO],
                       [NO_ANNO, GREEN, NO_ANNO],
-                      [NO_ANNO, NO_ANNO, BLUE]])
+                      [NO_ANNO, NO_ANNO, BLUE],
+                      [NO_ANNO, NO_ANNO, NO_ANNO]])
 
 PNG_IMG_2 = np.array([[RED, BLACK, BLACK],
                       [BLACK, GREEN, BLACK],
-                      [BLACK, BLACK, BLUE]])
+                      [BLACK, BLACK, BLUE],
+                      [BLACK, BLACK, BLACK]])
 
-JPG_IMG = np.array([[[104, 75, 0, 255], [255, 255, 196, 255], [255, 255, 209, 255]],
-                    [[255, 255, 197, 255], [151, 148, 139, 255], [242, 252, 255, 255]],
-                    [[255, 255, 207, 255], [245, 251, 255, 255], [5, 13, 184, 255]]])
+JPG_IMG = np.array([[[96, 85, 0, 255], [255, 255, 198, 255], [255, 255, 237, 255]],
+                    [[255, 255, 198, 255], [151, 148, 133, 255], [251, 251, 255, 255]],
+                    [[255, 255, 239, 255], [251, 251, 255, 255], [15, 19, 108, 255]],
+                    [[255, 255, 248, 255], [246, 248, 255, 255], [238, 242, 255, 255]]])
 
 MK2_RESULT_MASK = np.array([[NO_ANNO, NO_ANNO, NO_ANNO, NO_ANNO, NO_ANNO, GREEN, NO_ANNO, NO_ANNO],
                             [NO_ANNO, NO_ANNO, NO_ANNO, NO_ANNO, GREEN, GREEN, GREEN, NO_ANNO],
