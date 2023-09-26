@@ -249,10 +249,10 @@ class EvaluationBase(Metrics):
             if npz_folder is None:
                 npz_folder = self.npz_folder
 
-            Predictor.save_predictions(training_csv_path,
-                                       npz_folder,
-                                       save_folder_with_checkpoint,
-                                       predictions_npy_filename,
+            Predictor.save_predictions(training_csv_path=training_csv_path,
+                                       pat_archive_folder=npz_folder,
+                                       predictions_saving_folder=save_folder_with_checkpoint,
+                                       predictions_npy_filename=predictions_npy_filename,
                                        checkpoint=checkpoint_name)
 
     def save_predictions_and_metrics(self, training_csv_path=None,  # for predictions

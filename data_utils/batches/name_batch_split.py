@@ -78,7 +78,7 @@ class NameBatchSplit:
         chunks_max = chunks * self.batch_size
 
         if chunks > 0:
-            data_ = {k: np.array_split(data[k][data_indexes][:chunks_max], chunks) for k in self.save_dict_names}
+            data_ = {k: np.array_split(data[k][...][data_indexes][:chunks_max], chunks) for k in self.save_dict_names}
 
             idx = len(self.data_archive.get_paths(archive_path=save_path))
             for row in range(chunks):
@@ -90,7 +90,7 @@ class NameBatchSplit:
                 idx += 1
 
         # ---------------saving of the non equal last part for the future partition---------
-        rest = {k: data[k][data_indexes][chunks_max:] for k in self.save_dict_names}
+        rest = {k: data[k][...][data_indexes][chunks_max:] for k in self.save_dict_names}
         # ---------------saving of the non equal last part for the future partition---------
         return rest
 

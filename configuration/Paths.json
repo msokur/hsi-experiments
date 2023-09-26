@@ -63,7 +63,7 @@
   },
   "GASTRIC_Database_mk_invivo": {
     "1.CONCAT_WITH_PREFIX": {
-      "ROOT_PATH": ["data_3d", "zarr", "gastric_invivo", "3x3", "svn", "no_smooth", "mk2"],
+      "ROOT_PATH": ["data_3d", "npz", "gastric_invivo", "3x3", "svn", "no_smooth", "mk2"],
       "RAW_SOURCE_PATH": ["Gastric"]
     },
     "2.CONCAT_WITH_ROOT_PATH": {
@@ -78,7 +78,7 @@
   },
   "GASTRIC_Database_mk_exvivo": {
     "1.CONCAT_WITH_PREFIX": {
-      "ROOT_PATH": ["data_3d", "zarr", "gastric_exvivo", "3x3", "svn", "no_smooth", "mk2"],
+      "ROOT_PATH": ["data_3d", "npz", "gastric_exvivo", "3x3", "svn", "no_smooth", "mk2"],
       "RAW_SOURCE_PATH": ["Gastric"]
     },
     "2.CONCAT_WITH_ROOT_PATH": {

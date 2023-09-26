@@ -34,7 +34,8 @@ class Predictor:
 
         if MODEL_FOLDER == '':
             MODEL_FOLDER = os.path.join(LOGS_PATH, self.MODEL_NAME)
-            self.data_archive = get_data_archive(typ=ARCHIVE_TYPE)
+
+        self.data_archive = get_data_archive(typ=ARCHIVE_TYPE)
 
         CHECKPOINTS_FOLDER_NAME = os.path.join(MODEL_FOLDER, "checkpoints")
         MODEL_PATH = os.path.join(CHECKPOINTS_FOLDER_NAME, CHECKPOINT)
@@ -59,8 +60,7 @@ class Predictor:
         indexes = np.full(shape=gt.shape, fill_value=False)
         for label in conf.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]:
             indexes = indexes | (gt == label)
-        else:
-            indexes = np.ones(gt.shape).astype(bool)
+
         if conf.CONFIG_DATALOADER[DLK.WITH_BACKGROUND_EXTRACTION] and "bg_mask" in data:
             gt = gt[indexes & data["bg_mask"]]
             spectrum = spectrum[indexes & data["bg_mask"]]
@@ -102,7 +102,8 @@ class Predictor:
         else:
             return checkpoint
 
-    def save_predictions(self, training_csv_path,
+    @staticmethod
+    def save_predictions(training_csv_path,
                          pat_archive_folder,
                          predictions_saving_folder,
                          predictions_npy_filename,
@@ -119,7 +120,7 @@ class Predictor:
 
         results_dictionary = []
         data_loader = get_data_loader(typ=conf.CONFIG_DATALOADER[DLK.TYPE],
-                                      data_archive=self.data_archive,
+                                      data_archive=get_data_archive(typ=ARCHIVE_TYPE),
                                       config_dataloader=conf.CONFIG_DATALOADER,
                                       config_paths=conf.CONFIG_PATHS)
         with open(training_csv_path, newline='') as csvfile:

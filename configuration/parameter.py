@@ -1,4 +1,4 @@
-ARCHIVE_TYPE = "zarr"                # type for data archive management
+ARCHIVE_TYPE = "npz"                # type for data archive management
 
 # --- ZARR params
 PAT_CHUNKS = (1000,)

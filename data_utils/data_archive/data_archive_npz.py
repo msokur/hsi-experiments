@@ -27,6 +27,8 @@ class DataArchiveNPZ(DataArchive):
 
     @staticmethod
     def get_datas(data_path: str) -> Union[np.ndarray, Iterable, int, float, tuple, dict]:
+        if not data_path.endswith(".npz"):
+            data_path += ".npz"
         return np.load(file=data_path)
 
     def get_data(self, data_path: str, data_name: str) -> np.ndarray:
