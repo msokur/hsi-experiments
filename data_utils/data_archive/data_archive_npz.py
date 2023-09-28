@@ -9,7 +9,7 @@ from data_utils.data_archive import DataArchive
 
 class DataArchiveNPZ(DataArchive):
     @staticmethod
-    def get_path(file: np.lib.npyio.NpzFile) -> str:
+    def get_path(file) -> str:
         return file.fid.name
 
     @staticmethod

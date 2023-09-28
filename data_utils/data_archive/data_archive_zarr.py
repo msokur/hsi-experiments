@@ -20,7 +20,7 @@ class DataArchiveZARR(DataArchive):
         paths = []
         data = zarr.open_group(store=archive_path)
         for group in data.group_keys():
-            paths.append(os.path.abspath(archive_path) + f"/{data[group].path}")
+            paths.append(os.path.join(os.path.abspath(archive_path), data[group].path))
 
         return paths
 
