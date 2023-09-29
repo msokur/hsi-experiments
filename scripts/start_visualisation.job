@@ -9,7 +9,7 @@
 #SBATCH --mem=64G
 #SBATCH --gres=gpu:rtx2080ti:2
 
-#SBATCH --output=output/VISU_GASTRIC_INVIVO_3x3_SNV-T_NO_SMOOTH_MK%j.log
+#SBATCH --output=output/VISU_ESO_17x17_SNV-T_NO_SMOOTH%j.log
 
 
 module load Python/3.9.5-GCCcore-10.3.0

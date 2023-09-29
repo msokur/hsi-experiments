@@ -11,7 +11,7 @@
     "CUSTOM_OBJECTS": {
       "F1_score": [{"name":  "f1_score_weighted", "average": "weighted"}]
       },
-    "BATCH_SIZE": 500,
+    "BATCH_SIZE": 1000,
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 50,
     "SMALLER_DATASET": false,
