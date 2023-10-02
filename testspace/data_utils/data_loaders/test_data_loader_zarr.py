@@ -50,7 +50,7 @@ def test_get_paths(zarr_test_dir: str, dataloader, values: list, names: list):
     result = []
     for value, name in zip(values, names):
         dataloader.X_y_dict_save_to_archive(destination_path=zarr_test_dir, values=value, name=name)
-        result.append(f"{zarr_test_dir}/{name}")
+        result.append(os.path.join(zarr_test_dir, name))
 
     elem = dataloader.get_paths(root_path=zarr_test_dir)
     assert elem == result

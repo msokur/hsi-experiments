@@ -36,6 +36,8 @@ class DataArchiveNPZ(DataArchive):
         return data[data_name]
 
     def save_group(self, save_path: str, group_name: str, datas: Dict[str, np.ndarray]) -> None:
+        if not os.path.exists(save_path):
+            os.mkdir(path=save_path)
         np.savez(file=os.path.join(save_path, group_name), **datas)
 
     def save_data(self, save_path: str, data_name: str, data: np.ndarray) -> None:

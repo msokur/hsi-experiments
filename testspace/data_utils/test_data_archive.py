@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 import zarr
 import os
+from shutil import rmtree
 
 from data_utils.data_archive import DataArchiveZARR, DataArchiveNPZ, DataArchive
 
@@ -24,7 +25,6 @@ DATA_1D_1 = {"X": DATA_1D_X_1, "indexes_in_datacube": DATA_i, "y": DATA_y_1}
 
 DATA_3D_0 = {"X": DATA_3D_X_0, "indexes_in_datacube": DATA_i, "y": DATA_y_0}
 DATA_3D_1 = {"X": DATA_3D_X_1, "indexes_in_datacube": DATA_i, "y": DATA_y_1}
-
 
 GET_PATH_TEST_DATA = [(DataArchiveNPZ(), "npz", "data_test_0.npz"),
                       (DataArchiveZARR(), "zarr", "data_test_0")]
@@ -97,16 +97,17 @@ GET_DATAS_TEST_DATA = [(DataArchiveNPZ(), "npz", "1d", "data_test_0.npz", DATA_1
                        (DataArchiveZARR(), "zarr", "3d", "data_test_0", DATA_3D_0)]
 
 
-@pytest.mark.parametrize("data_archive,typ,patch,data_name,result", GET_DATAS_TEST_DATA)
-def test_get_datas_keys(data_dir: str, data_archive: DataArchive, typ: str, patch: str, data_name: str, result: dict):
-    file_path = os.path.join(data_dir, f"{typ}_file", patch, data_name)
+@pytest.mark.parametrize("data_archive,typ,patch,group_name,result", GET_DATAS_TEST_DATA)
+def test_get_datas_keys(data_dir: str, data_archive: DataArchive, typ: str, patch: str, group_name: str, result: dict):
+    file_path = os.path.join(data_dir, f"{typ}_file", patch, group_name)
     datas = data_archive.get_datas(data_path=file_path)
     assert datas.keys() == result.keys()
 
 
-@pytest.mark.parametrize("data_archive,typ,patch,data_name,result", GET_DATAS_TEST_DATA)
-def test_get_datas_values(data_dir: str, data_archive: DataArchive, typ: str, patch: str, data_name: str, result: dict):
-    file_path = os.path.join(data_dir, f"{typ}_file", patch, data_name)
+@pytest.mark.parametrize("data_archive,typ,patch,group_name,result", GET_DATAS_TEST_DATA)
+def test_get_datas_values(data_dir: str, data_archive: DataArchive, typ: str, patch: str, group_name: str,
+                          result: dict):
+    file_path = os.path.join(data_dir, f"{typ}_file", patch, group_name)
     datas = data_archive.get_datas(data_path=file_path)
     for k in datas.keys():
         assert (datas[k][...] == result[k]).all()
@@ -129,13 +130,66 @@ def test_get_data(data_dir: str, data_archive: DataArchive, typ: str, patch: str
     assert (data_archive.get_data(data_path=file_path, data_name=array_name)[...] == result).all()
 
 
-def test_save_group():
-    assert False
+@pytest.fixture
+def delete_save_group_archive(save_group_path: str):
+    yield
+    rmtree(path=save_group_path)
 
 
-def test_save_data():
-    assert False
+@pytest.fixture
+def save_group_path(data_dir: str) -> str:
+    return os.path.join(data_dir, "save_group")
 
 
-def test_delete_archive():
-    assert False
+@pytest.fixture
+def group_name() -> str:
+    return "save_group_testing"
+
+
+SAVE_GROUP_TEST_DATA = [(DataArchiveNPZ(), ".npz"),
+                        (DataArchiveZARR(), ".zarr")]
+
+
+@pytest.mark.parametrize("data_archive,ext", SAVE_GROUP_TEST_DATA)
+def test_save_group_exist(delete_save_group_archive, save_group_path: str, group_name: str, data_archive: DataArchive,
+                          ext: str):
+    data_archive.save_group(save_path=save_group_path, group_name=group_name + ext, datas=DATA_1D_0)
+    assert os.path.exists(os.path.join(save_group_path, group_name + ext))
+
+
+@pytest.mark.parametrize("data_archive,ext", SAVE_GROUP_TEST_DATA)
+def test_save_group_data(delete_save_group_archive, save_group_path: str, group_name: str, data_archive: DataArchive,
+                         ext: str):
+    data_archive.save_group(save_path=save_group_path, group_name=group_name + ext, datas=DATA_1D_0)
+    datas = data_archive.get_datas(os.path.join(save_group_path, group_name + ext))
+    for (result_key, result_value), (k, v) in zip(datas.items(), DATA_1D_0.items()):
+        assert result_key == k and (result_value[...] == v).all()
+
+
+@pytest.mark.parametrize("data_archive,ext", SAVE_GROUP_TEST_DATA)
+def test_save_data(delete_save_group_archive, save_group_path: str, group_name: str, data_archive: DataArchive,
+                   ext: str):
+    data_archive.save_group(save_path=save_group_path, group_name=group_name + ext, datas=DATA_1D_0)
+    data_archive.save_data(save_path=os.path.join(save_group_path, group_name + ext), data_name="test", data=DATA_y_0)
+    assert (data_archive.get_data(os.path.join(save_group_path, group_name + ext), data_name="test")[
+                ...] == DATA_y_0).all()
+
+
+SAVE_DATA_TEST_DATA = [(DataArchiveNPZ(), ".npz", FileNotFoundError),
+                       (DataArchiveZARR(), ".zarr", zarr.errors.GroupNotFoundError)]
+
+
+@pytest.mark.parametrize("data_archive,ext,error", SAVE_DATA_TEST_DATA)
+def test_save_data_error(save_group_path: str, group_name: str, data_archive: DataArchive, ext: str, error):
+    with pytest.raises(error):
+        data_archive.save_data(save_path=os.path.join(save_group_path, group_name + ext), data_name="test",
+                               data=DATA_y_0)
+
+
+@pytest.mark.parametrize("data_archive,ext", SAVE_GROUP_TEST_DATA)
+def test_delete_archive(save_group_path: str, group_name: str, data_archive: DataArchive, ext: str):
+    data_archive.save_group(save_path=save_group_path, group_name=group_name + ext, datas=DATA_1D_0)
+    exist = os.path.exists(os.path.join(save_group_path, group_name + ext))
+    data_archive.delete_archive(delete_path=save_group_path)
+    deleted = not os.path.exists(os.path.join(save_group_path, group_name + ext))
+    assert exist and deleted
