@@ -36,7 +36,7 @@
   },
   "ESO_Database": {
     "1.CONCAT_WITH_PREFIX": {
-      "ROOT_PATH" : ["data_3d", "npz", "eso", "17x17", "svn_t", "no_smooth"],
+      "ROOT_PATH" : ["data_3d", "npz", "eso", "3x3", "svn_t", "no_smooth"],
       "RAW_SOURCE_PATH": ["EsophagusCancer"]
     },
     "2.CONCAT_WITH_ROOT_PATH": {

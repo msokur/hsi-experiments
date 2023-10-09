@@ -14,12 +14,14 @@ from configuration.parameter import (
 
 class ChoiceNames:
     def __init__(self, data_archive: DataArchive, config_cv: dict, labels: Union[int, str], y_dict_name: str,
-                 log_dir: str = None):
+                 log_dir: str = None, set_seed=True):
         self.data_archive = data_archive
         self.CONFIG_CV = config_cv
         self.labels = labels
         self.y_dict_name = y_dict_name
         self.log_dir = log_dir
+        if set_seed:
+            np.random.seed(seed=1)
 
     @staticmethod
     def random_choice(paths, excepts, size=1) -> np.ndarray:

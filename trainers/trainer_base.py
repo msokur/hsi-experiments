@@ -162,7 +162,7 @@ class Trainer:
 
         return X.shape[1:]
 
-    def __get_dataset__(self, batch_paths: List[str], options: tf.data.Options):
+    def __get_dataset__(self, batch_paths: List[str], options: tf.data.Options) -> tf.data.Dataset:
         dataset = DataGenerator(data_archive=self.data_archive, batch_paths=batch_paths, X_name=self.dict_names[0],
                                 y_name=self.dict_names[1], weights_name=self.dict_names[5],
                                 with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS])
