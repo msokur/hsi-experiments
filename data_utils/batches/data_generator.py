@@ -34,6 +34,11 @@ class DataGenerator:
 
     def get_output_signature(self) -> Union[Tuple[tf.TensorSpec, tf.TensorSpec],
                                             Tuple[tf.TensorSpec, tf.TensorSpec, tf.TensorSpec]]:
+        """
+        Returns the output signature from the data that the data generator generate for a training.
+        Always give the signature from the spectrum and label data. If 'with_sample_weights' True , there is also a
+        TensorSpec for the sample weights.
+        """
         data = self.data_archive.get_datas(data_path=self.batch_paths[0])
         X, y = data[self.X_name], data[self.y_name]
         output_signature = (

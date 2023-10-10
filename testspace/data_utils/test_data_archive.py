@@ -4,27 +4,12 @@ import zarr
 import os
 from shutil import rmtree
 
+from testspace.data_utils.conftest import (
+    DATA_1D_X_0, DATA_1D_X_1, DATA_3D_X_0, DATA_3D_X_1, DATA_y_0, DATA_y_1, DATA_i, DATA_1D_0, DATA_1D_1, DATA_3D_0,
+    DATA_3D_1
+)
 from data_utils.data_archive import DataArchiveZARR, DataArchiveNPZ, DataArchive
 
-SPEC = 10
-SAMPLES = 12
-
-DATA_1D_X_0 = np.arange(start=0, stop=SAMPLES * SPEC, step=1).reshape((SAMPLES, SPEC))
-DATA_1D_X_1 = np.arange(start=SAMPLES * SPEC, stop=SAMPLES * SPEC * 2, step=1).reshape((SAMPLES, SPEC))
-
-DATA_3D_X_0 = np.array([list(x) * 9 for x in DATA_1D_X_0]).reshape((SAMPLES, 3, 3, SPEC))
-DATA_3D_X_1 = np.array([list(x) * 9 for x in DATA_1D_X_1]).reshape((SAMPLES, 3, 3, SPEC))
-
-DATA_y_0 = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3])
-DATA_y_1 = np.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
-
-DATA_i = np.array([[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8], [9, 9], [10, 10], [11, 11]])
-
-DATA_1D_0 = {"X": DATA_1D_X_0, "indexes_in_datacube": DATA_i, "y": DATA_y_0}
-DATA_1D_1 = {"X": DATA_1D_X_1, "indexes_in_datacube": DATA_i, "y": DATA_y_1}
-
-DATA_3D_0 = {"X": DATA_3D_X_0, "indexes_in_datacube": DATA_i, "y": DATA_y_0}
-DATA_3D_1 = {"X": DATA_3D_X_1, "indexes_in_datacube": DATA_i, "y": DATA_y_1}
 
 GET_PATH_TEST_DATA = [(DataArchiveNPZ(), "npz", "data_test_0.npz"),
                       (DataArchiveZARR(), "zarr", "data_test_0")]

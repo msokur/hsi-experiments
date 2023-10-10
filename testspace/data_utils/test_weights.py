@@ -15,7 +15,7 @@ LABELS = [0, 1, 2, 3]
 
 Y_DICT_NAME = "y"
 
-WEIGHT_DICT_NAME = "weights"
+WEIGHT_DICT_NAME = "weights_test"
 
 WEIGHTS_SAVE_RESULT = {"weights": WEIGHTS_RESULT,
                        "sum": 24,
@@ -87,6 +87,6 @@ def test_weighted_data_save_zarr(zarr_1d_data_dir: str):
     for file in ["data_test_0", "data_test_1"]:
         data = zarr.open_group(store=os.path.join(zarr_1d_data_dir, file), mode="a")
         data_weights.append(data[WEIGHT_DICT_NAME][...].copy())
-        data.pop(key=WEIGHT_DICT_NAME)
+        data.pop(WEIGHT_DICT_NAME)
 
     assert (data_weights == WEIGHT_DATA_SAVE_RESULT).all()
