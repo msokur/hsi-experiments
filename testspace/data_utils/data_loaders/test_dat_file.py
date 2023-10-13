@@ -64,10 +64,10 @@ PNG_IMG_2 = np.array([[RED, BLACK, BLACK],
                       [BLACK, BLACK, BLUE],
                       [BLACK, BLACK, BLACK]])
 
-JPG_IMG = np.array([[[96, 85, 0, 255], [255, 255, 198, 255], [255, 255, 237, 255]],
-                    [[255, 255, 198, 255], [151, 148, 133, 255], [251, 251, 255, 255]],
-                    [[255, 255, 239, 255], [251, 251, 255, 255], [15, 19, 108, 255]],
-                    [[255, 255, 248, 255], [246, 248, 255, 255], [238, 242, 255, 255]]])
+JPG_IMG = np.array([[[89, 82, 14, 255], [255, 255, 193, 255], [250, 252, 255, 255]],
+                    [[255, 255, 193, 255], [160, 153, 85, 255], [252, 254, 255, 255]],
+                    [[254, 253, 255, 255], [254, 253, 255, 255], [11, 15, 138, 255]],
+                    [[254, 253, 255, 255], [252, 251, 255, 255], [236, 240, 255, 255]]])
 
 MK2_RESULT_MASK = np.array([[NO_ANNO, NO_ANNO, NO_ANNO, NO_ANNO, NO_ANNO, GREEN, NO_ANNO, NO_ANNO],
                             [NO_ANNO, NO_ANNO, NO_ANNO, NO_ANNO, GREEN, GREEN, GREEN, NO_ANNO],
@@ -199,7 +199,7 @@ def test_mask_read_jpg(dat_data_dir: str, img_name, result):
     path = os.path.join(dat_data_dir, img_name)
     with pytest.warns(UserWarning, match="Better use '.png' format. Alpha channel added."):
         img = DatFile.mask_read(mask_path=path)
-
+    print(img)
     assert (img == result).all()
 
 

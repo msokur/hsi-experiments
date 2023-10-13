@@ -154,10 +154,12 @@ def test_save_group_data(delete_save_group_archive, save_group_path: str, group_
 @pytest.mark.parametrize("data_archive,ext", SAVE_GROUP_TEST_DATA)
 def test_save_data(delete_save_group_archive, save_group_path: str, group_name: str, data_archive: DataArchive,
                    ext: str):
+    result = DATA_1D_0.copy()
+    result["test"] = DATA_y_0
     data_archive.save_group(save_path=save_group_path, group_name=group_name + ext, datas=DATA_1D_0)
     data_archive.save_data(save_path=os.path.join(save_group_path, group_name + ext), data_name="test", data=DATA_y_0)
-    assert (data_archive.get_data(os.path.join(save_group_path, group_name + ext), data_name="test")[
-                ...] == DATA_y_0).all()
+    for k, v in data_archive.get_datas(data_path=os.path.join(save_group_path, group_name + ext)).items():
+        assert (v[...] == result[k]).all()
 
 
 SAVE_DATA_TEST_DATA = [(DataArchiveNPZ(), ".npz", FileNotFoundError),

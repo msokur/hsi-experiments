@@ -139,7 +139,7 @@ class DataLoader:
 
         print('----Saving of archives is over----')
 
-    def patches3d_get_from_spectrum(self, spectrum):
+    def patches3d_get_from_spectrum(self, spectrum: np.ndarray):
         spectrum_ = np.array([])
         size = self.CONFIG_DATALOADER[DLK.D3_SIZE]
         # Better not to use non even sizes
@@ -213,7 +213,7 @@ class DataLoader:
         return self.CONFIG_DATALOADER[DLK.CONTAMINATION_FILENAME]
 
     def background_get_mask(self, spectrum, shapes):
-        background_mask = np.ones(shapes).astype(np.bool)
+        background_mask = np.ones(shapes).astype(np.bool_)
         if self.CONFIG_DATALOADER[DLK.WITH_BACKGROUND_EXTRACTION]:
             background_mask = detect_background(spectrum)
             background_mask = np.reshape(background_mask, shapes)

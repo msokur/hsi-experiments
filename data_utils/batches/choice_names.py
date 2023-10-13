@@ -13,7 +13,7 @@ from configuration.parameter import (
 
 
 class ChoiceNames:
-    def __init__(self, data_archive: DataArchive, config_cv: dict, labels: Union[int, str], y_dict_name: str,
+    def __init__(self, data_archive: DataArchive, config_cv: dict, labels: List[Union[int, str]], y_dict_name: str,
                  log_dir: str = None, set_seed=True):
         self.data_archive = data_archive
         self.CONFIG_CV = config_cv
