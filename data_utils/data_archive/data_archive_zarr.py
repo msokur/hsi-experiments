@@ -5,7 +5,7 @@ import numpy as np
 import zarr
 
 from configuration.parameter import (
-    PAT_CHUNKS, D3_PAT_CHUNKS,
+    BLOCK_SIZE, D3_CHUNK
 )
 from data_utils.data_archive import DataArchive
 
@@ -45,15 +45,17 @@ class DataArchiveZARR(DataArchive):
         root = zarr.open_group(store=save_path, mode="a")
         pat = root.create_group(name=group_name, overwrite=True)
         for k, v in datas.items():
-            pat.array(name=k, data=v, chunks=self.__get_chunks__(len(v.shape)))
+            pat.array(name=k, data=v, chunks=self.__get_chunks__(v.shape))
 
     def save_data(self, save_path: str, data_name: str, data: np.ndarray) -> None:
         root = zarr.open_group(store=save_path, mode="r+")
-        root.array(name=data_name, data=data, chunks=self.__get_chunks__(len(data.shape)), overwrite=True)
+        root.array(name=data_name, data=data, chunks=self.__get_chunks__(data.shape), overwrite=True)
 
     @staticmethod
-    def __get_chunks__(data_length: int) -> tuple:
-        if data_length < 3:
-            return PAT_CHUNKS
+    def __get_chunks__(data_shape: tuple) -> tuple:
+        block_count = -(-data_shape[0] // BLOCK_SIZE)
+        chunk = -(-data_shape[0] // block_count)
+        if len(data_shape) < 3:
+            return (chunk,)
         else:
-            return D3_PAT_CHUNKS
+            return (chunk,) + D3_CHUNK

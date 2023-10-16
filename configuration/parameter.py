@@ -1,8 +1,8 @@
 ARCHIVE_TYPE = "npz"                # type for data archive management
 
 # --- ZARR params
-PAT_CHUNKS = (1000,)
-D3_PAT_CHUNKS = PAT_CHUNKS + (1, 1)
+BLOCK_SIZE = 10000                  # number of samples per chunk
+D3_CHUNK = (1, 1)                   # chunks for patches
 
 # --- shuffle
 SHUFFLE_GROUP_NAME = "shuffled"     # prefix for shuffled dataset
