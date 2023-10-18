@@ -52,7 +52,7 @@ def test___getitem__(data_dir: str, data_archive: DataArchive, typ: str, patch: 
                              weights_name=WEIGHTS_NAME, with_sample_weights=with_weights)
     data = data_gen.__getitem__(idx=idx)
     for d, r in zip(data, results):
-        assert (d[...] == r).all()
+        assert (d == r).all()
 
 
 CALL_TEST_DATA = [(DataArchiveZARR(), "zarr", "1d", True, [D1_X_y_w_0, D1_X_y_w_1]),
@@ -68,7 +68,7 @@ def test___call__(data_dir: str, data_archive: DataArchive, typ: str, patch: str
                              weights_name=WEIGHTS_NAME, with_sample_weights=with_weights)
     for datas, result in zip(data_gen.__call__(), results):
         for data, res in zip(datas, result):
-            assert (data[...] == res).all()
+            assert (data == res).all()
 
 
 SIGNATURE_TEST_DATA = [(DataArchiveZARR(), "zarr", "1d", True, (X_1D_TF_SPEC, y_TF_SPEC, WEIGHT_TF_SPEC)),

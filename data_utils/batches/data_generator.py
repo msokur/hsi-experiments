@@ -24,9 +24,9 @@ class DataGenerator:
         batch_data = self.data_archive.get_datas(data_path=self.batch_paths[idx])
 
         if self.with_sample_weights and self.weights_name in batch_data:
-            return batch_data[self.X_name][...], batch_data[self.y_name][...], batch_data[self.weights_name][...]
+            return batch_data[self.X_name][:], batch_data[self.y_name][:], batch_data[self.weights_name][:]
 
-        return batch_data[self.X_name][...], batch_data[self.y_name][...]
+        return batch_data[self.X_name][:], batch_data[self.y_name][:]
 
     def __call__(self):
         for idx in range(self.__len__()):
