@@ -1,5 +1,5 @@
 import abc
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from tqdm import tqdm
 
 import os
@@ -26,26 +26,34 @@ class NameBatchSplit:
         if with_sample_weights:
             self.save_dict_names.append(self.weight_dict_name)
 
-    def split(self, data_paths: List[str], batch_save_path: str, except_names: List[str]) -> List[str]:
-        print(f"--------Splitting {os.path.split(batch_save_path)[-1]} data into batches started--------")
+    def split(self, data_paths: List[str], batch_save_path: str, except_train_names: List[str],
+              except_valid_names: List[str], train_folder: str, valid_folder: str) -> Tuple[List[str], List[str]]:
+        print(f"--------Splitting data into train and valid batches started--------")
         # ------------removing of previously generated archives (of the previous CV step) ----------------
-        self.__init_archive__(path=batch_save_path)
+        train_dir = os.path.join(batch_save_path, train_folder)
+        self.__init_archive__(path=train_dir)
+        valid_dir = os.path.join(batch_save_path, valid_folder)
+        self.__init_archive__(path=valid_dir)
         # ----- split datas into batches ----
-        rest = self.__split_data_archive__(root_data_paths=data_paths,
-                                           batch_save_path=batch_save_path,
-                                           except_names=except_names)
+        train_rest, valid_rest = self.__split_data_archive__(root_data_paths=data_paths,
+                                                             batch_train_save_path=train_dir,
+                                                             batch_valid_save_path=valid_dir,
+                                                             except_train_names=except_train_names,
+                                                             except_valid_names=except_valid_names)
         # ----- save rest of archive ----
-        if len(rest[self.dict_names[0]]) >= self.batch_size:
-            self.__split_and_save_batches__(save_path=batch_save_path, data={k: np.array(v) for k, v in rest.items()},
-                                            data_indexes=np.full(shape=len(rest[self.dict_names[0]]), fill_value=True))
-
-        print(f"--------Splitting {os.path.split(batch_save_path)[-1]} data into batches finished--------")
-        return self.data_archive.get_paths(archive_path=batch_save_path)
+        self.__save_rest(batch_save_path=train_dir, rest=train_rest)
+        self.__save_rest(batch_save_path=valid_dir, rest=valid_rest)
+        print(f"--------Splitting data into train and valid batches finished--------")
+        train_paths = self.data_archive.get_paths(archive_path=train_dir)
+        valid_paths = self.data_archive.get_paths(archive_path=valid_dir)
+        return train_paths, valid_paths
 
     @abc.abstractmethod
-    def __split_data_archive__(self, root_data_paths: List[str], batch_save_path: str,
-                               except_names: List[str]) -> Dict[str, list]:
-        rest = self.__init_rest()
+    def __split_data_archive__(self, root_data_paths: List[str], batch_train_save_path: str, batch_valid_save_path: str,
+                               except_train_names: List[str], except_valid_names: List[str]) \
+            -> Tuple[Dict[str, list], Dict[str, list]]:
+        train_rest = self.__init_rest()
+        valid_rest = self.__init_rest()
 
         for p in tqdm(root_data_paths):
             # ------------ except_indexes filtering ---------------
@@ -59,18 +67,23 @@ class NameBatchSplit:
             label_indexes = np.isin(labels, self.use_labels)
 
             # ------------ get data indexes --------------
-            data_indexes = label_indexes & np.isin(p_names, except_names)
-            self.__check_name_in_data(indexes=data_indexes, data_path=p, names=except_names)
+            train_data_indexes = label_indexes & np.isin(p_names, except_train_names)
+            self.__check_name_in_data(indexes=train_data_indexes, data_path=p, names=except_train_names)
+            valid_data_indexes = label_indexes & np.isin(p_names, except_valid_names)
+            self.__check_name_in_data(indexes=valid_data_indexes, data_path=p, names=except_train_names)
 
             # ------------- split data ----------------
-            rest_temp = self.__split_and_save_batches__(save_path=batch_save_path, data=data_,
-                                                        data_indexes=data_indexes)
+            train_rest_temp = self.__split_and_save_batches__(save_path=batch_train_save_path, data=data_,
+                                                              data_indexes=train_data_indexes)
+            valid_rest_temp = self.__split_and_save_batches__(save_path=batch_valid_save_path, data=data_,
+                                                              data_indexes=valid_data_indexes)
 
             # ---------------- save rest from archive ------------------
             for name in self.save_dict_names:
-                rest[name] += list(rest_temp[name])
+                train_rest[name] += list(train_rest_temp[name])
+                valid_rest[name] + list(valid_rest_temp[name])
 
-        return rest
+        return train_rest, valid_rest
 
     def __split_and_save_batches__(self, save_path: str, data, data_indexes: np.ndarray) -> Dict[str, np.ndarray]:
         # ---------------splitting into archives----------
@@ -93,6 +106,11 @@ class NameBatchSplit:
         rest = {k: data[k][...][data_indexes][chunks_max:] for k in self.save_dict_names}
         # ---------------saving of the non equal last part for the future partition---------
         return rest
+
+    def __save_rest(self, batch_save_path: str, rest: Dict[str, list]):
+        if len(rest[self.dict_names[0]]) >= self.batch_size:
+            self.__split_and_save_batches__(save_path=batch_save_path, data={k: np.array(v) for k, v in rest.items()},
+                                            data_indexes=np.full(shape=len(rest[self.dict_names[0]]), fill_value=True))
 
     def __init_archive__(self, path: str):
         if not os.path.exists(path=path):

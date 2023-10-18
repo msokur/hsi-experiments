@@ -71,12 +71,10 @@ class Trainer:
         batch_split = NameBatchSplit(data_archive=self.data_archive, batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
                                      use_labels=self.labels_to_train, dict_names=self.dict_names,
                                      with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS])
-        train_paths = batch_split.split(data_paths=root_data_paths,
-                                        batch_save_path=os.path.join(self.batch_path, TRAIN),
-                                        except_names=self.except_train_names)
-        valid_paths = batch_split.split(data_paths=root_data_paths,
-                                        batch_save_path=os.path.join(self.batch_path, VALID),
-                                        except_names=self.except_valid_names)
+        train_paths, valid_paths = batch_split.split(data_paths=root_data_paths, batch_save_path=self.batch_path,
+                                                     except_train_names=self.except_train_names,
+                                                     except_valid_names=self.except_valid_names,
+                                                     train_folder=TRAIN, valid_folder=VALID)
         self.save_except_names(except_names=self.except_valid_names)
 
         options = tf.data.Options()

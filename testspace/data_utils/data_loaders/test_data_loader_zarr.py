@@ -78,8 +78,8 @@ def test_X_y_dict_save_to_archive_tree(zarr_test_dir: str, dataloader, values: l
     assert elem == result
 
 
-X_Y_DICT_SAVE_DATA_CHUNKS = [(ARR_DATA_1, "pat_one", [(1000, 2), (1000, 2), (1000,)]),
-                             (ARR_DATA_3, "pat_three", [(1000, 1, 1, 2), (1000, 2), (1000,)])]
+X_Y_DICT_SAVE_DATA_CHUNKS = [(ARR_DATA_1, "pat_one", [(1, 1), (1, 1), (1,)]),
+                             (ARR_DATA_3, "pat_three", [(1, 3, 3, 1), (1, 1), (1,)])]
 
 
 @pytest.mark.parametrize("values,name,result", X_Y_DICT_SAVE_DATA_CHUNKS)
@@ -91,6 +91,6 @@ def test_X_y_dict_save_to_archive_chunks(zarr_test_dir: str, dataloader, values:
     elem = []
     for group in z_archive.group_keys():
         for sub_key in z_archive[group].array_keys():
-            elem.append(z_archive[group][sub_key].info.obj.chunks)
+            elem.append(z_archive[group][sub_key].cdata_shape)
 
     assert elem == result
