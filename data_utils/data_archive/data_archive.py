@@ -106,4 +106,6 @@ class DataArchive:
 
         :param delete_path: Archive path to delete
         """
+        print(f"--- Delete archive in {delete_path}. ---")
         rmtree(delete_path)
+        print("--- Delete finish ---")
