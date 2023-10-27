@@ -8,7 +8,7 @@ import os
 from tqdm import tqdm
 
 from data_utils.data_archive import DataArchive
-from data_utils.tfrecord.tfr_utils import get_features, tfr_parser
+from data_utils.tfrecord.tfr_utils import get_features, tfr_parser_X_y, tfr_parser_X_y_sw
 from configuration.parameter import (
     TRAIN, VALID,
 )
@@ -24,6 +24,8 @@ class TFRDatasets:
         self.weights_name = weights_name
         self.with_sample_weights = with_sample_weights
         self.use_labels = use_labels
+        self.options = tf.data.Options()
+        self.options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
 
     def create_train_and_valid_tfrecord_files(self, archive_paths: List[str], out_files_dir: str,
                                               train_names: List[str], valid_names: List[str]) -> Tuple[str, str]:
@@ -52,9 +54,9 @@ class TFRDatasets:
             label_indexes = np.isin(y, self.use_labels)
 
             train_example = self.__get_tf_example(X=X, y=y, pat_names=pat_names, label_indexes=label_indexes,
-                                                  except_names=train_names, sample_weights=sample_weights, path=p)
+                                                  except_names=train_names, path=p, sample_weights=sample_weights)
             valid_example = self.__get_tf_example(X=X, y=y, pat_names=pat_names, label_indexes=label_indexes,
-                                                  except_names=valid_names, sample_weights=sample_weights, path=p)
+                                                  except_names=valid_names, path=p, sample_weights=sample_weights)
 
             train_writer.write(train_example.SerializeToString())
             valid_writer.write(valid_example.SerializeToString())
@@ -64,24 +66,36 @@ class TFRDatasets:
 
         return train_out_file, valid_out_file
 
-    @staticmethod
-    def get_datasets(train_tfr_file: str, valid_tfr_file: str):
-        train_dataset = tf.data.TFRecordDataset(filenames=train_tfr_file).map(tfr_parser)
-        valid_dataset = tf.data.TFRecordDataset(filenames=valid_tfr_file).map(tfr_parser)
+    def get_datasets(self, train_tfr_file: str, valid_tfr_file: str):
+        train_dataset = self.__get_dataset(file=train_tfr_file)
+        valid_dataset = self.__get_dataset(file=valid_tfr_file)
 
         return train_dataset, valid_dataset
+
+    def __get_dataset(self, file: str):
+        if self.with_sample_weights:
+            parse_fn = tfr_parser_X_y_sw
+        else:
+            parse_fn = tfr_parser_X_y
+
+        dataset = tf.data.TFRecordDataset(filenames=file).with_options(options=self.options)
+
+        return dataset.map(map_func=parse_fn)
 
     @staticmethod
     def __get_tfr_file(out_file_dir: str, file_name: str) -> str:
         return os.path.join(out_file_dir, file_name + ".tfrecords")
 
     def __get_tf_example(self, X: np.ndarray, y: np.ndarray, pat_names: np.ndarray, label_indexes: np.ndarray,
-                         except_names: List[str], sample_weights: np.ndarray, path: str) -> tf.train.Example:
+                         except_names: List[str], path: str, sample_weights: np.ndarray = None) -> tf.train.Example:
         name_indexes = np.isin(pat_names, except_names)
         indexes = label_indexes & name_indexes
         self.__check_name_in_data(indexes=indexes, data_path=path, names=except_names)
 
-        features = get_features(X=X[indexes], y=y[indexes], sample_weights=sample_weights[indexes])
+        if sample_weights is not None:
+            sample_weights = sample_weights[indexes]
+
+        features = get_features(X=X[indexes], y=y[indexes], sample_weights=sample_weights)
 
         return tf.train.Example(features=tf.train.Features(feature=features))
 

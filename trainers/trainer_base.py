@@ -79,8 +79,8 @@ class Trainer:
 
         train_ds, valid_ds = tfr_datasets.get_datasets(train_tfr_file=train_file, valid_tfr_file=valid_file)
 
-        class_weights = get_class_weights(dataset=train_ds, labels=np.ndarray(self.labels_to_train))
-        print(class_weights)
+        class_weights = get_class_weights(dataset=train_ds, labels=np.array(self.labels_to_train))
+        print(f"---Class weights---\n{class_weights}")
         # TODO class_weights dirty fix
         class_weights = {k: v for k, v in enumerate(class_weights.values())}
         return train_ds, valid_ds, class_weights

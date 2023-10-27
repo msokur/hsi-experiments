@@ -34,7 +34,7 @@ def _get_feature_keys():
     return keys_to_features
 
 
-def get_features(X: np.ndarray, y: np.ndarray, sample_weights: np.ndarray) -> Dict[str, tf.train.Feature]:
+def get_features(X: np.ndarray, y: np.ndarray, sample_weights: np.ndarray = None) -> Dict[str, tf.train.Feature]:
     X_shape = X.shape
     y_shape = y.shape
 
@@ -59,7 +59,7 @@ def get_features(X: np.ndarray, y: np.ndarray, sample_weights: np.ndarray) -> Di
     return features
 
 
-def tfr_parser(record):
+def __tfr_parser(record):
     parsed = tf.io.parse_single_example(record, _get_feature_keys())
     # --- read and reshape X ---
     decode_X = tf.io.decode_raw(input_bytes=parsed[FEATURE_X], out_type=tf.float32)
@@ -77,14 +77,22 @@ def tfr_parser(record):
     if parsed[FEATURE_Y_AXIS_1] > 0:
         y = tf.reshape(tensor=decode_y, shape=[parsed[FEATURE_SAMPLES], parsed[FEATURE_Y_AXIS_1]], name=FEATURE_Y)
     else:
-        y = decode_y
+        y = tf.reshape(tensor=decode_y, shape=[parsed[FEATURE_SAMPLES]], name=FEATURE_Y)
 
-    if parsed[FEATURE_WEIGHTS] != "NaN":
-        sample_weights = tf.io.decode_raw(input_bytes=parsed[FEATURE_WEIGHTS], out_type=tf.int64, name=FEATURE_WEIGHTS)
+    return X, y, parsed
 
-        return X, y, sample_weights
+
+def tfr_parser_X_y(record):
+    X, y, _ = __tfr_parser(record=record)
 
     return X, y
+
+
+def tfr_parser_X_y_sw(record):
+    X, y, parsed = __tfr_parser(record)
+    sample_weights = tf.io.decode_raw(input_bytes=parsed[FEATURE_WEIGHTS], out_type=tf.int64, name=FEATURE_WEIGHTS)
+
+    return X, y, sample_weights
 
 
 def get_class_weights(dataset: tf.data.Dataset, labels: np.ndarray) -> Dict[Union[str, int], float]:

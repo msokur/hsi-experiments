@@ -2,7 +2,7 @@ import pytest
 import tensorflow as tf
 import numpy as np
 
-from data_utils.tfrecord.tfr_utils import get_features, tfr_parser, get_class_weights
+from data_utils.tfrecord.tfr_utils import get_features, tfr_parser_X_y, get_class_weights
 
 
 SIZE_1D = (10, 9)
@@ -18,7 +18,11 @@ def test_get_features():
     assert False
 
 
-def test_tfr_parser():
+def test_tfr_paser_X_y():
+    assert False
+
+
+def test_tfr_paser_X_y_sw():
     assert False
 
 
