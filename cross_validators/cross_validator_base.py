@@ -77,7 +77,7 @@ class CrossValidatorBase:
                                        model_name=model_name, except_cv_names=except_cv_names,
                                        except_train_names=except_train_names, except_valid_names=except_valid_names,
                                        dict_names=CONFIG_PREPROCESSOR[PPK.DICT_NAMES],
-                                       config_distribution=CONFIG_DISTRIBUTION)
+                                       config_distribution=CONFIG_DISTRIBUTION, d3=self.CONFIG_DATALOADER[DLK.D3])
         trainer.train()
 
     def cross_validation(self, root_folder_name: str, csv_filename=None):

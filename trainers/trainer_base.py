@@ -22,7 +22,7 @@ from configuration.parameter import (
 class Trainer:
     def __init__(self, data_archive: DataArchive, config_trainer: dict, config_paths: dict, labels_to_train: List[int],
                  model_name: str, except_cv_names: List[str], except_train_names: List[str],
-                 except_valid_names: List[str], dict_names: List[str], config_distribution: dict):
+                 except_valid_names: List[str], dict_names: List[str], config_distribution: dict, d3: bool):
         self.data_archive = data_archive
         self.CONFIG_TRAINER = config_trainer
         self.CONFIG_PATHS = config_paths
@@ -33,6 +33,7 @@ class Trainer:
         self.except_valid_names = except_valid_names
         self.dict_names = dict_names
         self.CONFIG_DISTRIBUTION = config_distribution
+        self.d3 = d3
         self.batch_path = None
         self.mirrored_strategy = None
 
@@ -70,7 +71,7 @@ class Trainer:
         tfr_datasets = TFRDatasets(data_archive=self.data_archive, X_name=self.dict_names[0], y_name=self.dict_names[1],
                                    pat_names=self.dict_names[2], weights_name=self.dict_names[4],
                                    with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS],
-                                   use_labels=self.labels_to_train)
+                                   use_labels=self.labels_to_train, d3=self.d3)
         train_file, valid_file = tfr_datasets.create_train_and_valid_tfrecord_files(archive_paths=root_data_paths,
                                                                                     out_files_dir=self.batch_path,
                                                                                     train_names=self.except_train_names,

@@ -38,7 +38,6 @@ FEATURE_SAMPLES = "samples"             # name for TFRecord feature with samples
 FEATURE_SPEC = "spectrum"               # name for TFRecord feature with spectrum count (X axis last)
 FEATURE_X_AXIS_1 = "X_patch_0"            # name for TFRecord feature with X axis 1 size
 FEATURE_X_AXIS_2 = "X_patch_1"            # name for TFRecord feature with X axis 2 size
-FEATURE_Y_AXIS_1 = "y_axis1"            # name for TFRecord feature with y axis 1 size
 FEATURE_WEIGHTS = "sample_weights"      # # name for TFRecord feature with sample weight list
 
 # --- Generator

@@ -4,8 +4,7 @@ import tensorflow as tf
 import numpy as np
 
 from configuration.parameter import (
-    FEATURE_X, FEATURE_Y, FEATURE_SAMPLES, FEATURE_SPEC, FEATURE_X_AXIS_1, FEATURE_X_AXIS_2,
-    FEATURE_Y_AXIS_1, FEATURE_WEIGHTS,
+    FEATURE_X, FEATURE_Y, FEATURE_SAMPLES, FEATURE_SPEC, FEATURE_X_AXIS_1, FEATURE_X_AXIS_2, FEATURE_WEIGHTS,
 )
 
 
@@ -27,8 +26,7 @@ def _get_feature_keys():
         FEATURE_SAMPLES: tf.io.FixedLenFeature(shape=[], dtype=tf.int64, default_value=0),
         FEATURE_SPEC: tf.io.FixedLenFeature(shape=[], dtype=tf.int64, default_value=0),
         FEATURE_X_AXIS_1: tf.io.FixedLenFeature(shape=[], dtype=tf.int64, default_value=0),
-        FEATURE_X_AXIS_2: tf.io.FixedLenFeature(shape=[], dtype=tf.int64, default_value=0),
-        FEATURE_Y_AXIS_1: tf.io.FixedLenFeature(shape=[], dtype=tf.int64, default_value=0)
+        FEATURE_X_AXIS_2: tf.io.FixedLenFeature(shape=[], dtype=tf.int64, default_value=0)
     }
 
     return keys_to_features
@@ -36,63 +34,43 @@ def _get_feature_keys():
 
 def get_features(X: np.ndarray, y: np.ndarray, sample_weights: np.ndarray = None) -> Dict[str, tf.train.Feature]:
     X_shape = X.shape
-    y_shape = y.shape
 
     features = {
         FEATURE_X: _bytes_feature(value=X.astype(dtype=np.float32).tobytes()),
         FEATURE_Y: _bytes_feature(value=y.astype(dtype=np.int64).tobytes()),
+        FEATURE_WEIGHTS: _bytes_feature(value=sample_weights.astype(dtype=np.int64).tobytes()),
         FEATURE_SAMPLES: _int64_feature(value=X_shape[0]),
         FEATURE_SPEC: _int64_feature(value=X_shape[-1])
     }
 
     if len(X_shape) > 2:
         features[FEATURE_X_AXIS_1] = _int64_feature(value=X_shape[1])
-    if len(X_shape) > 3:
         features[FEATURE_X_AXIS_2] = _int64_feature(value=X_shape[2])
-
-    if len(y_shape) > 1:
-        features[FEATURE_Y_AXIS_1] = _int64_feature(value=y_shape[1])
-
-    if sample_weights is not None:
-        features[FEATURE_WEIGHTS] = _bytes_feature(value=sample_weights.astype(dtype=np.int64).tobytes())
 
     return features
 
 
-def __tfr_parser(record):
+def tfr_parser(record, X_d3: bool, with_sw: bool):
     parsed = tf.io.parse_single_example(record, _get_feature_keys())
     # --- read and reshape X ---
     decode_X = tf.io.decode_raw(input_bytes=parsed[FEATURE_X], out_type=tf.float32)
     # --- get shape for X ---
     X_shape = [parsed[FEATURE_SAMPLES]]
-    if parsed[FEATURE_X_AXIS_1] > 0:
-        X_shape.append(parsed[FEATURE_X_AXIS_1])
-    if parsed[FEATURE_X_AXIS_2] > 0:
-        X_shape.append(parsed[FEATURE_X_AXIS_2])
-    X_shape.append(parsed[FEATURE_SPEC])
+    if X_d3:
+        X_shape += [parsed[FEATURE_X_AXIS_1], [FEATURE_X_AXIS_2]]
+    X_shape += [parsed[FEATURE_X_AXIS_2]]
     X = tf.reshape(tensor=decode_X, shape=X_shape, name=FEATURE_X)
 
     # --- read and reshape y ---
     decode_y = tf.io.decode_raw(input_bytes=parsed[FEATURE_Y], out_type=tf.int64, name=FEATURE_Y)
-    if parsed[FEATURE_Y_AXIS_1] > 0:
-        y = tf.reshape(tensor=decode_y, shape=[parsed[FEATURE_SAMPLES], parsed[FEATURE_Y_AXIS_1]], name=FEATURE_Y)
-    else:
-        y = tf.reshape(tensor=decode_y, shape=[parsed[FEATURE_SAMPLES]], name=FEATURE_Y)
+    y = tf.reshape(tensor=decode_y, shape=[parsed[FEATURE_SAMPLES]], name=FEATURE_Y)
 
-    return X, y, parsed
-
-
-def tfr_parser_X_y(record):
-    X, y, _ = __tfr_parser(record=record)
+    # --- read sample weights
+    if with_sw:
+        sw = tf.io.decode_raw(input_bytes=parsed[FEATURE_WEIGHTS], out_type=tf.int64, name=FEATURE_WEIGHTS)
+        return X, y, sw
 
     return X, y
-
-
-def tfr_parser_X_y_sw(record):
-    X, y, parsed = __tfr_parser(record)
-    sample_weights = tf.io.decode_raw(input_bytes=parsed[FEATURE_WEIGHTS], out_type=tf.int64, name=FEATURE_WEIGHTS)
-
-    return X, y, sample_weights
 
 
 def get_class_weights(dataset: tf.data.Dataset, labels: np.ndarray) -> Dict[Union[str, int], float]:

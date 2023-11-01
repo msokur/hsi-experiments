@@ -8,7 +8,7 @@ import os
 from tqdm import tqdm
 
 from data_utils.data_archive import DataArchive
-from data_utils.tfrecord.tfr_utils import get_features, tfr_parser_X_y, tfr_parser_X_y_sw
+from data_utils.tfrecord.tfr_utils import get_features, tfr_parser
 from configuration.parameter import (
     TRAIN, VALID,
 )
@@ -16,7 +16,7 @@ from configuration.parameter import (
 
 class TFRDatasets:
     def __init__(self, data_archive: DataArchive, X_name: str, y_name: str, pat_names: str, weights_name: str,
-                 with_sample_weights: bool, use_labels: list):
+                 with_sample_weights: bool, use_labels: list, d3: bool):
         self.data_archive = data_archive
         self.X_name = X_name
         self.y_name = y_name
@@ -24,8 +24,8 @@ class TFRDatasets:
         self.weights_name = weights_name
         self.with_sample_weights = with_sample_weights
         self.use_labels = use_labels
-        self.options = tf.data.Options()
-        self.options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
+        self.d3 = d3
+        self.options = self.__get_tf_options()
 
     def create_train_and_valid_tfrecord_files(self, archive_paths: List[str], out_files_dir: str,
                                               train_names: List[str], valid_names: List[str]) -> Tuple[str, str]:
@@ -73,14 +73,10 @@ class TFRDatasets:
         return train_dataset, valid_dataset
 
     def __get_dataset(self, file: str):
-        if self.with_sample_weights:
-            parse_fn = tfr_parser_X_y_sw
-        else:
-            parse_fn = tfr_parser_X_y
-
         dataset = tf.data.TFRecordDataset(filenames=file).with_options(options=self.options)
 
-        return dataset.map(map_func=parse_fn)
+        return dataset.map(map_func=lambda record: tfr_parser(record=record, X_d3=self.d3,
+                                                              with_sw=self.with_sample_weights))
 
     @staticmethod
     def __get_tfr_file(out_file_dir: str, file_name: str) -> str:
@@ -110,3 +106,10 @@ class TFRDatasets:
         if os.path.exists(file_path):
             print(f"--- Remove old file: {file_path}")
             os.remove(file_path)
+
+    @staticmethod
+    def __get_tf_options():
+        options = tf.data.Options()
+        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
+
+        return options
