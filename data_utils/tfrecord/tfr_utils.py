@@ -38,7 +38,6 @@ def get_features(X: np.ndarray, y: np.ndarray, sample_weights: np.ndarray = None
     features = {
         FEATURE_X: _bytes_feature(value=X.astype(dtype=np.float32).tobytes()),
         FEATURE_Y: _bytes_feature(value=y.astype(dtype=np.int64).tobytes()),
-        FEATURE_WEIGHTS: _bytes_feature(value=sample_weights.astype(dtype=np.int64).tobytes()),
         FEATURE_SAMPLES: _int64_feature(value=X_shape[0]),
         FEATURE_SPEC: _int64_feature(value=X_shape[-1])
     }
@@ -46,6 +45,9 @@ def get_features(X: np.ndarray, y: np.ndarray, sample_weights: np.ndarray = None
     if len(X_shape) > 2:
         features[FEATURE_X_AXIS_1] = _int64_feature(value=X_shape[1])
         features[FEATURE_X_AXIS_2] = _int64_feature(value=X_shape[2])
+
+    if sample_weights is not None:
+        features[FEATURE_WEIGHTS] = _bytes_feature(value=sample_weights.astype(dtype=np.int64).tobytes())
 
     return features
 
