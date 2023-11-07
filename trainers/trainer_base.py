@@ -8,7 +8,7 @@ import abc
 import pickle
 
 from util.compare_distributions import DistributionsChecker
-from data_utils.tfrecord import TFRDatasets, get_class_weights
+from data_utils.tfrecord import TFRSplit, TFRDatasets, get_class_weights
 
 from data_utils.data_archive import DataArchive
 from configuration.copy_py_files import copy_files
@@ -68,18 +68,20 @@ class Trainer:
         if not os.path.exists(path=self.batch_path):
             os.mkdir(path=self.batch_path)
 
-        tfr_datasets = TFRDatasets(data_archive=self.data_archive, X_name=self.dict_names[0], y_name=self.dict_names[1],
-                                   pat_names=self.dict_names[2], weights_name=self.dict_names[4],
-                                   with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS],
-                                   use_labels=self.labels_to_train, d3=self.d3)
-        train_file, valid_file = tfr_datasets.create_train_and_valid_tfrecord_files(archive_paths=root_data_paths,
-                                                                                    out_files_dir=self.batch_path,
-                                                                                    train_names=self.except_train_names,
-                                                                                    valid_names=self.except_valid_names)
+        tfr_split = TFRSplit(data_archive=self.data_archive, X_name=self.dict_names[0], y_name=self.dict_names[1],
+                             pat_names=self.dict_names[2], weights_name=self.dict_names[4],
+                             with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS],
+                             use_labels=self.labels_to_train)
+        train_file, valid_file = tfr_split.create_train_and_valid_tfrecord_files(archive_paths=root_data_paths,
+                                                                                 out_files_dir=self.batch_path,
+                                                                                 train_names=self.except_train_names,
+                                                                                 valid_names=self.except_valid_names)
         self.save_except_names(except_names=self.except_valid_names)
 
+        tfr_datasets = TFRDatasets(d3=self.d3, with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS])
         train_ds, valid_ds = tfr_datasets.get_datasets(train_tfr_file=train_file, valid_tfr_file=valid_file)
 
+        print("--- Calc class weights ---")
         class_weights = get_class_weights(dataset=train_ds, labels=np.array(self.labels_to_train))
         print(f"---Class weights---\n{class_weights}")
         # TODO class_weights dirty fix
