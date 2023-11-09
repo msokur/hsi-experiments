@@ -38,6 +38,7 @@ class TFRDatasets:
             dataset = dataset.flat_map(map_func=lambda X, y, sw: tf.data.Dataset.from_tensor_slices(tensors=(X, y, sw)))
         else:
             dataset = dataset.flat_map(map_func=lambda X, y: tf.data.Dataset.from_tensor_slices(tensors=(X, y)))
+
         return dataset.batch(batch_size=self.batch_size)
 
     @staticmethod

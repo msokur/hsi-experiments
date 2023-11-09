@@ -78,7 +78,8 @@ class Trainer:
                                                                                  valid_names=self.except_valid_names)
         self.save_except_names(except_names=self.except_valid_names)
 
-        tfr_datasets = TFRDatasets(d3=self.d3, with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS])
+        tfr_datasets = TFRDatasets(batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE], d3=self.d3,
+                                   with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS])
         train_ds, valid_ds = tfr_datasets.get_datasets(train_tfr_file=train_file, valid_tfr_file=valid_file)
 
         print("--- Calc class weights ---")

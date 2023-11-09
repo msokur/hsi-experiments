@@ -15,6 +15,20 @@ from configuration.parameter import (
 class ChoiceNames:
     def __init__(self, data_archive: DataArchive, config_cv: dict, labels: List[Union[int, str]], y_dict_name: str,
                  log_dir: str = None, set_seed=True):
+        """Class to choose file names.
+
+        There are three options:
+
+        - Restore -> restore names from a file in the given 'log_dir' with the sequent from the config
+        - Random Choice -> take a random chose
+        - Class Choice -> take a selection and looks if every label is in this selection
+
+        :param data_archive: Object to load files
+        :param config_cv: Configuration for typ of selection
+        :param labels: The labels that should be in the selection (Class choice)
+        :param y_dict_name: The array name in the file with the labels
+        :param log_dir: Path to restore names (Restore)
+        :param set_seed: If True it will set a seed for the randomness"""
         self.data_archive = data_archive
         self.CONFIG_CV = config_cv
         self.labels = labels
@@ -25,13 +39,36 @@ class ChoiceNames:
 
     @staticmethod
     def random_choice(paths, excepts, size=1) -> np.ndarray:
+        """Choose a random value form an array.
+
+        :param paths: Array with the values
+        :param excepts: This values are not allowed to take
+        :param size: How many values should be taken
+
+        :return: A numpy array with the chosen values
+
+        :raise ValueError: When there is no value in the array to take"""
         return np.random.choice([r for r in paths if r not in excepts],
                                 size=size,
                                 replace=False)
 
     def class_choice(self, paths, paths_names, excepts, classes=None) -> np.ndarray:
+        """Take random file names and check if every label is in the whole selection.
+
+        :param paths: The absolute file paths
+        :param paths_names: File names in the same order from the paths
+        :param excepts: File names that should not take
+        :param classes: Don't care about these labels.
+
+        :return: A numpy array with the chosen names
+
+        :raises ValueError: When not abel to find all labels in the files"""
         if classes is None:
             classes = np.array([])
+        # --- Check if there is any name left
+        if (np.isin(paths_names, excepts)).all():
+            raise ValueError("Check your data. Can't find enough files with all labels inside!")
+
         valid = self.random_choice(paths_names, excepts)
 
         path_idx = paths_names.index(valid[0])
