@@ -1,7 +1,7 @@
 ARCHIVE_TYPE = "npz"                # type for data archive management
 
 # --- ZARR params
-BLOCK_SIZE = 10000                  # number of samples per chunk
+BLOCK_SIZE = 10000                  # max number of samples per chunk
 D3_CHUNK = (1, 1)                   # chunks for patches
 
 # --- shuffle
@@ -30,6 +30,15 @@ BATCH_FILE = "batch"                    # prefix for batch file
 BATCH_IDX = "batch_indexes"             # name for array with
 BATCH_ORG_PATH = "batch_org_path"       # name for array with original data for batches (zarr)
 MODEL_BATCH_SIZE = 500
+
+# --- TFRecord Dataset
+FEATURE_X = "X"                         # name for TFRecord feature with X list
+FEATURE_Y = "y"                         # name for TFRecord feature with y list
+FEATURE_SAMPLES = "samples"             # name for TFRecord feature with samples count (X axis 0, y axis 0)
+FEATURE_SPEC = "spectrum"               # name for TFRecord feature with spectrum count (X axis last)
+FEATURE_X_AXIS_1 = "X_patch_0"            # name for TFRecord feature with X axis 1 size
+FEATURE_X_AXIS_2 = "X_patch_1"            # name for TFRecord feature with X axis 2 size
+FEATURE_WEIGHTS = "sample_weights"      # # name for TFRecord feature with sample weight list
 
 # --- Generator
 GEN_ALL = "all"                         # modus all for data generator

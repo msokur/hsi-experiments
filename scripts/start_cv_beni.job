@@ -10,7 +10,7 @@
 ##SBATCH --gres=gpu:v100:2
 #SBATCH --gres=gpu:rtx2080ti:2
 
-#SBATCH --output=output/CV_ESO_3x3_SNV-T_NO_SMOOTH_speed_test_0%j.log
+#SBATCH --output=output/CV_ESO_3x3_SNV-T_NO_SMOOTH_speed_test%j.log
 
 #module load FlexiBLAS/3.0.4-GCC-10.3.0
 module load Python/3.9.5-GCCcore-10.3.0

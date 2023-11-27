@@ -8,9 +8,8 @@ import abc
 import pickle
 import psutil
 
-from data_utils.batches import NameBatchSplit, DataGenerator
 from util.compare_distributions import DistributionsChecker
-from data_utils.weights import Weights
+from data_utils.tfrecord import TFRSplit, TFRDatasets, get_class_weights
 
 from callbacks import CustomTensorboardCallback
 from data_utils.data_archive import DataArchive
@@ -18,14 +17,14 @@ from configuration.copy_py_files import copy_files
 from configuration.get_config import telegram
 from configuration.keys import TrainerKeys as TK, PathKeys as PK
 from configuration.parameter import (
-    VALID_LOG, HISTORY_FILE, TUNE, TRAIN, VALID
+    VALID_LOG, HISTORY_FILE, TUNE,
 )
 
 
 class Trainer:
     def __init__(self, data_archive: DataArchive, config_trainer: dict, config_paths: dict, labels_to_train: List[int],
                  model_name: str, except_cv_names: List[str], except_train_names: List[str],
-                 except_valid_names: List[str], dict_names: List[str], config_distribution: dict):
+                 except_valid_names: List[str], dict_names: List[str], config_distribution: dict, d3: bool):
         self.data_archive = data_archive
         self.CONFIG_TRAINER = config_trainer
         self.CONFIG_PATHS = config_paths
@@ -36,6 +35,7 @@ class Trainer:
         self.except_valid_names = except_valid_names
         self.dict_names = dict_names
         self.CONFIG_DISTRIBUTION = config_distribution
+        self.d3 = d3
         self.batch_path = None
         self.mirrored_strategy = None
 
@@ -70,25 +70,23 @@ class Trainer:
         if not os.path.exists(path=self.batch_path):
             os.mkdir(path=self.batch_path)
 
-        batch_split = NameBatchSplit(data_archive=self.data_archive, batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE],
-                                     use_labels=self.labels_to_train, dict_names=self.dict_names,
-                                     with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS])
-        train_paths, valid_paths = batch_split.split(data_paths=root_data_paths, batch_save_path=self.batch_path,
-                                                     except_train_names=self.except_train_names,
-                                                     except_valid_names=self.except_valid_names,
-                                                     train_folder=TRAIN, valid_folder=VALID)
+        tfr_split = TFRSplit(data_archive=self.data_archive, X_name=self.dict_names[0], y_name=self.dict_names[1],
+                             pat_names=self.dict_names[2], weights_name=self.dict_names[4],
+                             with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS],
+                             use_labels=self.labels_to_train)
+        train_file, valid_file = tfr_split.create_train_and_valid_tfrecord_files(archive_paths=root_data_paths,
+                                                                                 out_files_dir=self.batch_path,
+                                                                                 train_names=self.except_train_names,
+                                                                                 valid_names=self.except_valid_names)
         self.save_except_names(except_names=self.except_valid_names)
 
-        options = tf.data.Options()
-        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
-        train_ds = self.__get_dataset__(batch_paths=train_paths, options=options)
-        valid_ds = self.__get_dataset__(batch_paths=valid_paths, options=options)
+        tfr_datasets = TFRDatasets(batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE], d3=self.d3,
+                                   with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS])
+        train_ds, valid_ds = tfr_datasets.get_datasets(train_tfr_file=train_file, valid_tfr_file=valid_file)
 
-        weights = Weights(filename="", data_archive=self.data_archive, labels=self.labels_to_train,
-                          y_dict_name=self.dict_names[1])
-
-        class_weights = weights.get_class_weights(class_data_paths=train_paths)
-        print(class_weights)
+        print("--- Calc class weights ---")
+        class_weights = get_class_weights(dataset=train_ds, labels=np.array(self.labels_to_train))
+        print(f"---Class weights---\n{class_weights}")
         # TODO class_weights dirty fix
         class_weights = {k: v for k, v in enumerate(class_weights.values())}
         return train_ds, valid_ds, class_weights
@@ -166,18 +164,6 @@ class Trainer:
         X = self.data_archive.get_data(data_path=data_paths[0], data_name=self.dict_names[0])
 
         return X.shape[1:]
-
-    def __get_dataset__(self, batch_paths: List[str], options: tf.data.Options) -> tf.data.Dataset:
-        dataset = DataGenerator(data_archive=self.data_archive, batch_paths=batch_paths, X_name=self.dict_names[0],
-                                y_name=self.dict_names[1], weights_name=self.dict_names[5],
-                                with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS])
-        tf_dataset = tf.data.Dataset.from_generator(generator=dataset, output_signature=dataset.get_output_signature())
-        return tf_dataset.with_options(options=options)
-
-    @staticmethod
-    def __set_tf_option__():
-        options = tf.data.Options()
-        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
 
 
 if __name__ == '__main__':
