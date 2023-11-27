@@ -4,7 +4,7 @@ from glob import glob
 import os
 import numpy as np
 
-import config
+from archive import config
 from data_utils.data_loaders.archive.data_loader_base import DataLoader
 
 

@@ -6,11 +6,13 @@ import os
 import numpy as np
 import abc
 import pickle
+import psutil
 
 from data_utils.batches import NameBatchSplit, DataGenerator
 from util.compare_distributions import DistributionsChecker
 from data_utils.weights import Weights
 
+from callbacks import CustomTensorboardCallback
 from data_utils.data_archive import DataArchive
 from configuration.copy_py_files import copy_files
 from configuration.get_config import telegram
@@ -102,6 +104,11 @@ class Trainer:
             mode=self.CONFIG_TRAINER[TK.MODEL_CHECKPOINT]["mode"])
 
         callbacks_ = [checkpoints_callback]
+
+        if self.CONFIG_CV["MODE"] == 'DEBUG':
+            custom_callback = CustomTensorboardCallback(process=psutil.Process(os.getpid()))
+            callbacks_.append(custom_callback)
+
         if self.CONFIG_TRAINER[TK.EARLY_STOPPING]["enable"]:
             early_stopping_callback = keras.callbacks.EarlyStopping(
                 monitor=self.CONFIG_TRAINER[TK.EARLY_STOPPING]["monitor"],

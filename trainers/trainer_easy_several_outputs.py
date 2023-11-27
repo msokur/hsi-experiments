@@ -4,6 +4,9 @@ from configuration.keys import TrainerKeys as TK
 
 
 class TrainerEasySeveralOutputs(TrainerEasy):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def compile_model(self, model: keras.Model) -> keras.Model:
         metric_dict = self.CONFIG_TRAINER[TK.CUSTOM_OBJECTS]
         METRICS = [

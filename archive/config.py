@@ -12,12 +12,12 @@ import inspect
 import numpy as np
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-sys.path.insert(0, os.path.join(current_dir, 'util'))
-sys.path.insert(1, os.path.join(current_dir, 'data_utils'))
-sys.path.insert(1, os.path.join(current_dir, os.path.join('data_utils', 'data_loaders')))
-sys.path.insert(1, os.path.join(current_dir, os.path.join('data_utils', 'archive')))
-sys.path.insert(2, os.path.join(current_dir, 'models'))
-sys.path.insert(3, os.path.join(current_dir, 'trainers'))
+sys.path.insert(0, os.path.join(current_dir, '../util'))
+sys.path.insert(1, os.path.join(current_dir, '../data_utils'))
+sys.path.insert(1, os.path.join(current_dir, os.path.join('../data_utils', 'data_loaders')))
+sys.path.insert(1, os.path.join(current_dir, os.path.join('../data_utils', 'archive')))
+sys.path.insert(2, os.path.join(current_dir, '../models'))
+sys.path.insert(3, os.path.join(current_dir, '../trainers'))
 print('paths from config', sys.path)
 import tf_metrics
 

@@ -1,5 +1,5 @@
 from hypercube_data import *
-import config
+from archive import config
 import os
 import glob
 import cv2
@@ -8,7 +8,7 @@ from tqdm import tqdm
 import pickle
 from sklearn import preprocessing
 from augmentator import *
-from multiprocessing import Pool
+
 
 def get_masks(mask):
     gesund_indexes = np.where((mask[:, :, 0] == 0) & (mask[:, :, 1] == 0) & (mask[:, :, 2] == 255)) #blue

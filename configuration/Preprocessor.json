@@ -28,5 +28,21 @@
     "NORMALIZATION_TYPE": "svn_T",
     "SCALER_FILE": "scaler.scaler",
     "SCALER_PATH": null
-  }
+  },
+    "COLON":{
+    "EXECUTION_FLAGS": {
+      "LOAD_DATA_WITH_DATALOADER": true,
+      "ADD_SAMPLE_WEIGHTS": true,
+      "SCALE": true,
+      "SHUFFLE": true
+    },
+    "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
+    "PILES_NUMBER": 100,
+    "WEIGHT_FILENAME": "weights.weights",
+    "FILES_TO_COPY": [["data_utils", "*.py"], ["data_utils", "data_loaders", "*.py"],
+      ["data_utils", "configuration", "*.py"], ["data_utils", "configuration", "*.json"]],
+    "NORMALIZATION_TYPE": "l2_norm",
+    "SCALER_FILE": "scaler.scaler",
+    "SCALER_PATH": null
+    }
 }

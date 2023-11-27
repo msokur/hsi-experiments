@@ -20,7 +20,7 @@ class EvaluationBase(Metrics):
 
         current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         parent_dir = os.path.dirname(current_dir)
-        self.test_folder = os.path.join(parent_dir, 'test')
+        self.test_folder = os.path.join(parent_dir, 'metrics')
 
         self.save_evaluation_folder = os.path.join(self.test_folder, name)
         if not os.path.exists(self.save_evaluation_folder):
@@ -280,7 +280,7 @@ class EvaluationBase(Metrics):
             save_curves:
                 if save curves. If True ROC curves for every patient and for all predictions together are saved
             predictions_npy_filename:
-                By default predictions are saved to predictions.npy in test/cross_validation_name/cp-checkpoint_number/
+                By default predictions are saved to predictions.npy in metrics/cross_validation_name/cp-checkpoint_number/
                 folder. With this parameter it's possible to give it another name. For general metrics calculation is
                 not necessary
 

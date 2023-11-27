@@ -5,11 +5,12 @@
       "evaluation": true
     },
     "FIRST_SPLIT": 0,
-    "HOW_MANY_VALID_EXCLUDE": 1,
+    "HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID": 1,
     "CHOOSE_EXCLUDED_VALID": "by_class",
     "USE_ALL_LABELS": false,
     "SAVE_PREDICTION": true,
-    "SAVE_CURVES": false
+    "SAVE_CURVES": false,
+    "MODE": "RUN"
   },
   "CV_HNO_NORMAL": {
     "TYPE": "normal",
@@ -49,6 +50,14 @@
     "POST_PROCESSING_ALGORITHM": "algorithm_plain",
     "NAME": "Colon_MedianFilter",
     "DATABASE_ABBREVIATION": "Colon_MedianFilter",
+    "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
+    "RESTORE_VALID_SEQUENCE": "",
+    "GET_CHECKPOINT_FROM_VALID": true
+  },
+    "CV_COLON": {
+    "TYPE": "normal",
+    "NAME": "run_colon",
+    "DATABASE_ABBREVIATION": "run_colon",
     "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
     "RESTORE_VALID_SEQUENCE": "",
     "GET_CHECKPOINT_FROM_VALID": true

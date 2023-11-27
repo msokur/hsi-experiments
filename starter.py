@@ -3,7 +3,7 @@ import datetime
 import numpy as np
 import csv
 
-import config
+from archive import config
 from provider import get_data_loader
 from data_utils.data_loaders.archive.data_loader_base import DataLoader
 

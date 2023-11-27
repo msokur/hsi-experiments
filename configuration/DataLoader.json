@@ -577,6 +577,44 @@
 		"SPLIT_PATHS_BY": "Files",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
 		"WITH_BACKGROUND_EXTRACTION": false
-	}
+	},
+    "COLON": {
+		"TYPE": "normal",
+		"FILE_EXTENSION": ".dat",
+		"3D": true,
+		"3D_SIZE": [3, 3],
+		"FIRST_NM": 8,
+		"LAST_NM": 100,
+		"WAVE_AREA": 100,
+		"LABELS_TO_TRAIN": [0, 1],
+		"NAME_SPLIT": "_SpecCube",
+		"MASK_DIFF": [".dat", ".dat_Mask JW Kolo.png"],
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING_TYPE": null,
+		"SMOOTHING_VALUE": 5,
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_core",
+			"depth": 5,
+			"axis": [],
+			"not_used_labels": []
+		},
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [[0, 0, 255]],
+				"LABEL": "Healthy",
+				"COLOR": "blue"
+			},
+			"1": {
+				"MASK": [[255, 255, 0]],
+				"LABEL": "Cancer",
+				"COLOR": "yellow"
+		}},
+		"SPLIT_PATHS_BY": "Files",
+		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
+		"WITH_BACKGROUND_EXTRACTION": false
+    }
+    
 }
 

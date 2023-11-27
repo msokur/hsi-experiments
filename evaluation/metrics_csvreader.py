@@ -60,6 +60,6 @@ class MetricsCsvReaderComparisonFiles(MetricsCsvReader):   #for compare_all_thre
     
 if __name__ == '__main__':
     reader = MetricsCsvReader()
-    print(reader.read_metrics('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test/Esophagus_MedFilter/cp-0038/metrics_by_threshold_None.csv', names=['Sensitivity', 'Specificity', 'Accuracy']))
+    print(reader.read_metrics('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/metrics/Esophagus_MedFilter/cp-0038/metrics_by_threshold_None.csv', names=['Sensitivity', 'Specificity', 'Accuracy']))
     #reader = MetricsCsvReaderComparisonFiles()
-    #reader.read_metrics('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/test/Esophagus_MedFilter/cp-0000/compare_all_thresholds.csv', names=['Sensitivity', 'Specificity'])
+    #reader.read_metrics('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/metrics/Esophagus_MedFilter/cp-0000/compare_all_thresholds.csv', names=['Sensitivity', 'Specificity'])

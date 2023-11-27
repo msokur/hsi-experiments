@@ -2,7 +2,7 @@ __pycache__
 data
 gradient_tape
 .ipynb_checkpoints
-test
+metrics
 logs
 .scaler
 2020_03_10_10_15_04_SpecCube.dat_Mask JW Kolo.png

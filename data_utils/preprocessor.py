@@ -1,6 +1,7 @@
 import sys
 import inspect
 import os
+import psutil
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
@@ -51,6 +52,8 @@ class Preprocessor:
         }
 
     def pipeline(self, root_path=None, preprocessed_path=None, execution_flags=None):
+        process = psutil.Process(os.getpid())
+
         if execution_flags is None:
             execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
 
@@ -102,6 +105,8 @@ class Preprocessor:
                                          dict_names=[self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][x] for x in [0, 1, 4]])
             scaler.iterate_over_archives_and_save_scaled_X(destination_path=preprocessed_path)
 
+        print('-------------------------------------------------Memory, preprocessor 3', process.memory_info().rss)
+
         # ----------shuffle part------------------
         if execution_flags['shuffle']:
             shuffle = Shuffle(data_archive=data_archive, raw_path=preprocessed_path, dict_names=self.dict_names,
@@ -110,6 +115,8 @@ class Preprocessor:
                               augmented=self.CONFIG_AUG[AK.ENABLE],
                               files_to_copy=self.CONFIG_PREPROCESSOR["FILES_TO_COPY"])
             shuffle.shuffle()
+
+        print('-------------------------------------------------Memory, preprocessor 4', process.memory_info().rss)
 
 
 if __name__ == '__main__':

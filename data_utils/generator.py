@@ -61,7 +61,7 @@ class DataGenerator(keras.utils.Sequence):
 
         self.split()
         self.len = self.__len__()
-        print("self.len", self.len)
+        print(f"Number of batches for {mode}", self.len)
 
     def __len__(self):
         """Denotes the number of batches per epoch"""
@@ -102,6 +102,10 @@ class DataGenerator(keras.utils.Sequence):
         batches_paths = glob.glob(os.path.join(self.batches_npz_path, "*.npz"))
         valid_batches_paths = glob.glob(os.path.join(self.batches_npz_path,
                                                      "valid", "*.npz"))
+
+        if CONFIG_CV["MODE"] == 'DEBUG':
+            batches_paths = batches_paths[::100]
+            valid_batches_paths = valid_batches_paths[::100]
 
         if self.mode == "all":
             self.batches_npz_path = batches_paths + valid_batches_paths  # batches_paths.copy()

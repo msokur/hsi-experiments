@@ -40,7 +40,7 @@ def postprocessing_for_one_model():
                                                     "metrics": {
                                                         'save_metrics': False,
                                                         'checkpoints': None,
-                                                        'thresholds': np.round(np.linspace(0.0001, 0.001, 5), 4),
+                                                        'thresholds': None, #np.round(np.linspace(0.0001, 0.001, 5), 4),
                                                         'save_curves': False
                                                     }
                                                 },

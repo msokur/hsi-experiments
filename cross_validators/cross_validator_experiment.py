@@ -26,7 +26,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
         root_folder = args.experiment_folder.split(config.SYSTEM_PATHS_DELIMITER)[-1]
         self.root_folder = root_folder
 
-        # -------------------------test path
+        # -------------------------metrics path
 
         metrics_saving_path = os.path.join(args.test_path, args.cv_name)
         if not os.path.exists(metrics_saving_path):

@@ -21,8 +21,8 @@ class CrossValidatorSpain(CrossValidatorBase):
         csv_path = CrossValidatorBase.get_csv(search_path)
         # print(csv_path)
 
-        saving_path = os.path.join('test', name)
-        saving_path_whole = os.path.join('test', name + '_whole_image')
+        saving_path = os.path.join('metrics', name)
+        saving_path_whole = os.path.join('metrics', name + '_whole_image')
         if config.MODE == 'CLUSTER':
             saving_path = os.path.join(self.project_folder, saving_path)
             saving_path_whole = os.path.join(self.project_folder, saving_path_whole)
@@ -104,8 +104,8 @@ class CrossValidatorSpain(CrossValidatorBase):
             csv_path = CrossValidatorBase.get_csv(search_path)
         # print(csv_path)
 
-        test_path = os.path.join('test', name)
-        test_path_whole = os.path.join('test', name + '_whole_image')
+        test_path = os.path.join('metrics', name)
+        test_path_whole = os.path.join('metrics', name + '_whole_image')
         if config.MODE == 'CLUSTER':
             test_path = os.path.join(self.prefix, test_path)
             test_path_whole = os.path.join(self.prefix, test_path_whole)

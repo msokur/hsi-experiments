@@ -1,11 +1,10 @@
 import sys
 import os
 import inspect
-from statsmodels.stats import weightstats
 import numpy as np
 from tqdm import tqdm
 import math
-from scipy.stats import ks_2samp
+
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -118,6 +117,7 @@ class DistributionsChecker:
             print(f'std1 - {std1}, std2 - {std2}')
 
         if np.abs(std1 - std2) < self.CONFIG_DISTRIBUTION[DCK.Z_TEST_STD_DELTA]:
+            from statsmodels.stats import weightstats
             z, p_value = weightstats.ztest(d1, x2=d2, value=0)
             if self.prints:
                 print('z-score and p_value:', z, p_value)
@@ -129,6 +129,7 @@ class DistributionsChecker:
         return False
 
     def kolmogorov_smirnov_test(self, d1, d2):
+        from scipy.stats import ks_2samp
         """ Method for comparing of two derived distributions.
 
         Args:
