@@ -30,7 +30,7 @@ class TFRDatasets:
 
         :return: Parsed TFRecord dataset
         """
-        dataset = tf.data.TFRecordDataset(filenames=file).with_options(options=self.options)
+        dataset = tf.data.TFRecordDataset(filenames=file)
         dataset = dataset.map(map_func=lambda record: tfr_parser(record=record, X_d3=self.d3,
                                                                  with_sw=self.with_sample_weights))
         # --- make every sample able to slice over
@@ -39,7 +39,7 @@ class TFRDatasets:
         else:
             dataset = dataset.flat_map(map_func=lambda X, y: tf.data.Dataset.from_tensor_slices(tensors=(X, y)))
 
-        return dataset.batch(batch_size=self.batch_size)
+        return dataset.batch(batch_size=self.batch_size).with_options(options=self.options)
 
     @staticmethod
     def __get_tf_options():

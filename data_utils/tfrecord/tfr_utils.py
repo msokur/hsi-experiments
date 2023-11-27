@@ -14,7 +14,7 @@ def _int64_feature(value: int) -> tf.train.Feature:
 
 
 def _bytes_feature(value: bytes) -> tf.train.Feature:
-    """Returns a bytes_list from a / byte."""
+    """Returns a bytes_list from a string / byte."""
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
 
