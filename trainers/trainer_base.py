@@ -24,7 +24,7 @@ from configuration.parameter import (
 class Trainer:
     def __init__(self, data_archive: DataArchive, config_trainer: dict, config_paths: dict, labels_to_train: List[int],
                  model_name: str, except_cv_names: List[str], except_train_names: List[str],
-                 except_valid_names: List[str], dict_names: List[str], config_distribution: dict, d3: bool):
+                 except_valid_names: List[str], dict_names: List[str], config_distribution: dict, d3: bool, mode: str):
         self.data_archive = data_archive
         self.CONFIG_TRAINER = config_trainer
         self.CONFIG_PATHS = config_paths
@@ -36,6 +36,7 @@ class Trainer:
         self.dict_names = dict_names
         self.CONFIG_DISTRIBUTION = config_distribution
         self.d3 = d3
+        self.mode = mode
         self.batch_path = None
         self.mirrored_strategy = None
 
@@ -103,7 +104,7 @@ class Trainer:
 
         callbacks_ = [checkpoints_callback]
 
-        if self.CONFIG_CV["MODE"] == 'DEBUG':
+        if self.mode == 'DEBUG':
             custom_callback = CustomTensorboardCallback(process=psutil.Process(os.getpid()))
             callbacks_.append(custom_callback)
 

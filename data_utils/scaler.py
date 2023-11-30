@@ -105,8 +105,6 @@ class Scaler:
             X = data[self.dict_names[0]]
             X = self.scale_X(X)
 
-            datas = {n: a for n, a in data.items()}
-            datas[self.dict_names[0]] = X.copy()
             self.data_archive.save_data(save_path=self.data_archive.get_path(file=data),
                                         data_name=self.dict_names[0],
                                         data=X)
