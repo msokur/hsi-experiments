@@ -6,34 +6,31 @@ import inspect
 import matplotlib.pylab as plt
 import abc
 
-from configuration.get_config import CONFIG_PATHS, CONFIG_CV
-from configuration.keys import PathKeys as PK, CrossValidationKeys as CVK
+from configuration.keys import CrossValidationKeys as CVK
 from evaluation.metrics import Metrics
 from evaluation.predictor import Predictor
 
 
 class EvaluationBase(Metrics):
 
-    def __init__(self, npz_folder=None, *args, **kwargs):
+    def __init__(self, config_cv: dict, npz_folder: str):
         super().__init__()
-        name = CONFIG_CV[CVK.NAME]
+        self.CONFIG_CV = config_cv
+        self.name = self.CONFIG_CV[CVK.NAME]
 
         current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         parent_dir = os.path.dirname(current_dir)
         self.test_folder = os.path.join(parent_dir, 'metrics')
 
-        self.save_evaluation_folder = os.path.join(self.test_folder, name)
+        self.save_evaluation_folder = os.path.join(self.test_folder, self.name)
         if not os.path.exists(self.save_evaluation_folder):
-            os.mkdir(self.save_evaluation_folder)
+            os.makedirs(self.save_evaluation_folder)
 
         self.comparable_characteristics_csvname = "compare_all_thresholds.csv"
         self.metrics_filename_base = "metrics_by_threshold"
         self.predictions_npy_filename = 'predictions.npy'
         self.checkpoint_basename = 'cp-'
 
-        self.name = name
-        if npz_folder is None:
-            self.npz_folder = CONFIG_PATHS[PK.RAW_NPZ_PATH]
         self.npz_folder = npz_folder
 
         self.additional_columns = {}
@@ -62,15 +59,14 @@ class EvaluationBase(Metrics):
 
         return metrics_
 
-    @staticmethod
-    def check_checkpoints_for_evaluation(checkpoints):
+    def check_checkpoints_for_evaluation(self, checkpoints):
         print(f'checkpoints: {checkpoints}')
-        if CONFIG_CV[CVK.GET_CHECKPOINT_FROM_VALID] and (checkpoints is not None):
+        if self.CONFIG_CV[CVK.GET_CHECKPOINT_FROM_VALID] and (checkpoints is not None):
             raise ValueError("Error! config.CV_GET_CHECKPOINT_FROM_VALID is True (it means that the last checkpoint "
                              "will be taken for each patient from EarlyStopping) and checkpoints are "
                              "specified. Please don't specify checkpoints or set "
                              "CV_GET_CHECKPOINT_FROM_VALID to False")
-        if CONFIG_CV[CVK.GET_CHECKPOINT_FROM_VALID]:
+        if self.CONFIG_CV[CVK.GET_CHECKPOINT_FROM_VALID]:
             return [0]
 
         return checkpoints
@@ -112,7 +108,7 @@ class EvaluationBase(Metrics):
 
         predictions_npy_filename = self.check_predictions_npy_filename(predictions_npy_filename)
 
-        checkpoints = EvaluationBase.check_checkpoints_for_evaluation(checkpoints)
+        checkpoints = self.check_checkpoints_for_evaluation(checkpoints)
         thresholds = self.check_thresholds_for_evaluation(thresholds)
 
         for cp in checkpoints:
@@ -235,11 +231,13 @@ class EvaluationBase(Metrics):
                                        training_csv_path=None,
                                        predictions_npy_filename=None):
         predictions_npy_filename = self.check_predictions_npy_filename(predictions_npy_filename)
-        checkpoints = EvaluationBase.check_checkpoints_for_evaluation(checkpoints)
+        checkpoints = self.check_checkpoints_for_evaluation(checkpoints)
 
         for checkpoint in checkpoints:
             if type(checkpoint) == int:
                 checkpoint_name = f'cp-{checkpoint:04d}'
+            else:
+                checkpoint_name = f'cp-{checkpoint}'
 
             save_folder_with_checkpoint = os.path.join(self.save_evaluation_folder,
                                                        f'{self.checkpoint_basename}{checkpoint:04d}')
@@ -280,9 +278,9 @@ class EvaluationBase(Metrics):
             save_curves:
                 if save curves. If True ROC curves for every patient and for all predictions together are saved
             predictions_npy_filename:
-                By default predictions are saved to predictions.npy in metrics/cross_validation_name/cp-checkpoint_number/
-                folder. With this parameter it's possible to give it another name. For general metrics calculation is
-                not necessary
+                By default predictions are saved to predictions.npy in metrics/cross_validation_name/
+                cp-checkpoint_number/folder. With this parameter it's possible to give it another name.
+                For general metrics calculation is not necessary
 
         Restrictions:
             1. If you want to specify checkpoints you have to set config.CV_GET_CHECKPOINT_FROM_VALID = False

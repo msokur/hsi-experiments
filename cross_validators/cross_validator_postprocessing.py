@@ -22,6 +22,7 @@ import csv
 from data_utils.preprocessor import Preprocessor
 from cross_validators.cross_validator_base import CrossValidatorBase
 from configuration.get_config import CONFIG_CV, CONFIG_DATALOADER, CONFIG_PATHS
+from configuration.keys import PathKeys as PK
 from provider import get_whole_analog_of_data_loader, get_evaluation, get_data_loader
 
 
@@ -35,7 +36,7 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
                 'Error! AWT (algorithm_with_threshold) could only be used with binary classification. Please use '
                 '"algorithm_plain" for multiclass classification')
         super().__init__()
-        self.LABELED_NPZ_FOLDER = CONFIG_PATHS["RAW_NPZ_PATH"]
+        self.LABELED_NPZ_FOLDER = CONFIG_PATHS[PK.RAW_NPZ_PATH]
         self.cross_validation_type = cross_validation_type
 
         self.whole_database = get_whole_analog_of_data_loader(CONFIG_DATALOADER["TYPE"])
@@ -66,7 +67,8 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
         if not os.path.exists(self.saving_folder_with_checkpoint):
             os.mkdir(self.saving_folder_with_checkpoint)
 
-        self.evaluator = get_evaluation(CONFIG_DATALOADER['LABELS_TO_TRAIN'])
+        self.evaluator = get_evaluation(labels=CONFIG_DATALOADER['LABELS_TO_TRAIN'], config_cv=self.CONFIG_CV,
+                                        npz_folder=self.CONFIG_PATHS[PK.RAW_NPZ_PATH])
 
         self.whole_predictions_filename = 'predictions_whole.npy'
         self.predictions_filename = self.evaluator.predictions_npy_filename
@@ -222,7 +224,7 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
                     self.evaluator.comparable_characteristics_csvname = "compare_all_thresholds_postprocessed_AP.csv"
 
                 self.evaluator.metrics_filename_base += '_postprocessed_' + str(mf)
-                self.evaluator.metrics_filename_base = folder + CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"] \
+                self.evaluator.metrics_filename_base = folder + CONFIG_PATHS[PK.SYS_DELIMITER] \
                                                        + self.evaluator.metrics_filename_base
                 self.evaluator.additional_columns = {'median': mf}
 
@@ -232,8 +234,8 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
 
                 self.evaluator.evaluate(
                     save_curves=False,
-                    predictions_npy_filename=folder_name + CONFIG_PATHS[
-                        "SYSTEM_PATHS_DELIMITER"] + self.file_with_postprocessed_predictions_for_labeled_samples,
+                    predictions_npy_filename=folder_name + CONFIG_PATHS[PK.SYS_DELIMITER]
+                                             + self.file_with_postprocessed_predictions_for_labeled_samples,
                     thresholds=thresholds_for_metrics,
                     checkpoints=self.configuration['save_predictions_and_evaluate_on_labeled_samples']['metrics'][
                         'checkpoints']
@@ -298,7 +300,7 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
             report_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
             for row in tqdm(report_reader):
                 name = data_loader.get_name_func(row[4], delimiter='/')
-                data = np.load(os.path.join(CONFIG_PATHS["RAW_NPZ_PATH"], name + '.npz'))
+                data = np.load(os.path.join(CONFIG_PATHS[PK.RAW_NPZ_PATH], name + '.npz'))
                 indexes_in_datacube = data['indexes_in_datacube']
                 predictions = postprocessed_predictions[name]['predictions']
                 predictions = predictions[indexes_in_datacube[:, 0], indexes_in_datacube[:, 1]]
@@ -354,7 +356,7 @@ def postprocessing_test_all_models():
              # 16
              ]):
 
-        CONFIG_PATHS["RAW_NPZ_PATH"] = os.path.join('/work/users/mi186veva/data_3d', scaling_type)
+        CONFIG_PATHS[PK.RAW_NPZ_PATH] = os.path.join('/work/users/mi186veva/data_3d', scaling_type)
         config.NORMALIZATION_TYPE = scaling_type
 
         if scaling_type == 'svn_T':

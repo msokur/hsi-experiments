@@ -10,15 +10,11 @@ class F1_score(Metric):
         self.f1 = self.add_weight("f1", initializer="zeros")
 
     def update_state(self, y_true, y_pred, sample_weight=None):
-        #y_pred_threshold = K.greater_equal(K.cast(y_pred, dtype=tf.float32), self.threshold)
-        #cm = tf.math.confusion_matrix(y_true, y_pred_threshold, dtype=tf.float32)
-        
-        #tp = cm[1][1]
-        #fp = cm[0][1]
-        #fn = cm[1][0]
-        tp = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-        fp = K.sum(K.round(K.clip(y_pred - y_true, 0, 1)))
-        fn = K.sum(K.round(K.clip(y_true - y_true, 0, 1)))
+        y_pred_threshold = K.cast(K.greater_equal(y_pred, self.threshold), dtype=tf.float32)
+
+        tp = K.sum(y_true * y_pred_threshold)
+        fp = K.sum(K.clip(y_pred_threshold - y_true, 0, 1))
+        fn = K.sum(K.clip(y_true - y_pred_threshold, 0, 1))
         self.f1.assign(tp / (tp + 0.5 * (fp + fn) + K.epsilon()))
 
     def merge_state(self, metrics):

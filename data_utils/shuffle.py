@@ -93,7 +93,7 @@ class Shuffle:
                 values[self.dict_names[2]] = _names
                 values[self.dict_names[3]] = _indexes
 
-                pickle.dump(values, open(os.path.join(self.shuffle_saving_path, str(i_pile) + '.pile'), 'ab'))
+                pickle.dump(values, open(os.path.join(self.shuffle_saving_path, str(i_pile) + PILE_NAME), 'ab'))
 
         print("--Splitting into piles finished--")
 

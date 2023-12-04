@@ -16,7 +16,8 @@ class CrossValidationNormal(CrossValidatorBase):
         training_csv_path = self.get_csv(os.path.join(self.project_folder, "logs", self.CONFIG_CV[CVK.NAME]))
         print('training_csv_path', training_csv_path)
 
-        evaluator = provider.get_evaluation(labels=self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
+        evaluator = provider.get_evaluation(labels=self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
+                                            config_cv=self.CONFIG_CV, npz_folder=self.CONFIG_PATHS[PK.RAW_NPZ_PATH])
 
         evaluator.save_predictions_and_metrics(training_csv_path=training_csv_path,
                                                npz_folder=self.CONFIG_PATHS[PK.RAW_NPZ_PATH],
