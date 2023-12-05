@@ -23,7 +23,7 @@ class DataArchiveZARR(DataArchive):
         for group in data.group_keys():
             paths.append(os.path.join(root_path, data[group].path))
 
-        return paths
+        return sorted(paths)
 
     @staticmethod
     def get_name(path: str) -> str:

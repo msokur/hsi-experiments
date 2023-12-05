@@ -7,12 +7,13 @@ import numpy as np
 
 from glob import glob
 from tqdm import tqdm
+import warnings
 
 from configuration.copy_py_files import copy_files
 from data_utils.data_archive import DataArchive
 
 from configuration.parameter import (
-    SHUFFLE_GROUP_NAME, PILE_NAME
+    SHUFFLE_GROUP_NAME, PILE_NAME, MAX_SIZE_PER_PILE
 )
 
 
@@ -34,12 +35,33 @@ class Shuffle:
 
         copy_files(self.shuffle_saving_path, self.files_to_copy)
 
+        self.__check_piles_number()
         piles = self.__create_piles()
         self.__split_into_piles(piles=piles)
         self.__shuffle_piles()
         print("--------Shuffling finished--------")
 
     # ------------------divide all samples into piles_number files------------------
+
+    def __check_piles_number(self):
+        size = 0.0
+        # get size from data archive
+        for p in self.data_archive.get_paths(archive_path=self.raw_path):
+            # get file size in byte and convert to GB
+            size += os.path.getsize(p) / (1024.0 ** 3)
+
+        size_per_pile = size / self.piles_number
+
+        if size_per_pile > MAX_SIZE_PER_PILE:
+            # calculate the needed pile size
+            new_piles_number = int(-(-size // MAX_SIZE_PER_PILE))
+            warnings.warn(f"A maximum size of {MAX_SIZE_PER_PILE}GB per shuffle file is allowed, so the pile numer of "
+                          f"{self.piles_number} is to small for a Dataset with the size {size}GB. Pile number is set to"
+                          f" {new_piles_number}!")
+            warnings.warn("If you need lager shuffle files change parameter 'MAX_SIZE_PER_PILE' in "
+                          "configuration/parameter.")
+            self.piles_number = new_piles_number
+
     def __create_piles(self) -> List[list]:
         print("----Piles creating started----")
 
@@ -69,9 +91,9 @@ class Shuffle:
             _data = self.data_archive.get_datas(data_path=p)
 
             data = {n: a for n, a in _data.items()}
-            X, y = data[self.dict_names[0]][...], data[self.dict_names[1]][...]
 
             if self.augmented:
+                X, y = data[self.dict_names[0]][...], data[self.dict_names[1]][...]
                 y = [[_y_] * X.shape[1] for _y_ in y]
                 data[self.dict_names[0]] = np.concatenate(X, axis=0)
                 data[self.dict_names[1]] = np.concatenate(y, axis=0)

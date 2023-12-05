@@ -7,6 +7,8 @@ D3_CHUNK = (1, 1)                   # chunks for patches
 # --- shuffle
 SHUFFLE_GROUP_NAME = "shuffled"     # prefix for shuffled dataset
 PILE_NAME = ".pile"                 # data extension for piles
+MAX_SIZE_PER_PILE = 2.0             # maximal size per pile/shuffle file in GB
+TFR_META_EXTENSION = ".tfrmeta"
 
 
 # --- Data archive names

@@ -73,7 +73,7 @@ def get_features(X: np.ndarray, y: np.ndarray, sample_weights: np.ndarray = None
     if sample_weights is not None:
         if sample_weights.shape.__len__() > 1:
             _error(var="sample_weights", org_shape=sample_weights.shape, shape="1")
-        features[FEATURE_WEIGHTS] = _bytes_feature(value=sample_weights.astype(dtype=np.int64).tobytes())
+        features[FEATURE_WEIGHTS] = _bytes_feature(value=sample_weights.astype(dtype=np.float32).tobytes())
 
     return features
 

@@ -14,7 +14,7 @@ class DataArchiveNPZ(DataArchive):
 
     @staticmethod
     def get_paths(archive_path: str) -> List[str]:
-        return glob(os.path.join(archive_path, "*.npz"))
+        return sorted(glob(os.path.join(archive_path, "*.npz")))
 
     @staticmethod
     def get_name(path: str) -> str:
