@@ -8,20 +8,19 @@ from configuration.parameter import (
 )
 
 
-def write_meta_info(shuffle_saving_path: str, file_name: str, labels: list, names: list, names_idx: list,
+def write_meta_info(save_dir: str, file_name: str, labels: np.ndarray, names: np.ndarray, names_idx: np.ndarray,
                     X_shape: tuple):
-    X_shape = list(X_shape)[1:]
-
-    meta_data = _base_meta_data(X_shape=X_shape)
+    meta_data = _base_meta_data(total_samples=X_shape[0], X_shape=list(X_shape)[1:])
 
     meta_data["samples_per_patient_name"] = _count_labels_per_name(labels=labels, names=names, names_idx=names_idx)
 
-    with open(os.path.join(shuffle_saving_path, file_name + TFR_META_EXTENSION), "w") as file:
+    with open(os.path.join(save_dir, file_name + TFR_META_EXTENSION), "w") as file:
         json.dump(meta_data, file)
 
 
-def _base_meta_data(X_shape: list) -> dict:
+def _base_meta_data(total_samples: int, X_shape: list) -> dict:
     meta_data = {
+        "total_samples": total_samples,
         f"{FEATURE_X}_shape": X_shape,
         f"{FEATURE_X}_dtype": "float32",
         f"{FEATURE_Y}_dtype": "int64",
@@ -41,22 +40,24 @@ def _base_meta_data(X_shape: list) -> dict:
     return meta_data
 
 
-def _count_labels_per_name(labels: list, names: list, names_idx: list) -> dict:
+def _count_labels_per_name(labels: np.ndarray, names: np.ndarray, names_idx: np.ndarray) -> dict:
     samples_per_patient = {}
     unique_names = np.unique(names)
     unique_labels = np.unique(labels)
     label_masks = {label: np.isin(labels, label) for label in unique_labels}
 
     for name in unique_names:
+        samples_per_patient[name] = {}
         name_mask = np.isin(names, name)
         name_idx = np.unique(names_idx[name_mask])
         if len(name_idx) > 1:
             raise ValueError(f"Too many indexes for patient name '{name}'!")
-        samples_per_patient[name][FEATURE_PAT_IDX] = name_idx[0]
+        samples_per_patient[name][FEATURE_PAT_IDX] = int(name_idx[0])
 
         for label, label_mask in label_masks.items():
-            pat_label_mask = name_mask and label_mask
+            pat_label_mask = np.logical_and(label_mask, name_mask)
             count = np.count_nonzero(pat_label_mask)
-            samples_per_patient[name][str(label)] = count
+            if count > 0:
+                samples_per_patient[name][str(label)] = count
 
     return samples_per_patient

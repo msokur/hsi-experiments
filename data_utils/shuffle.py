@@ -34,7 +34,8 @@ class Shuffle:
         if not os.path.exists(self.shuffle_saving_path):
             os.mkdir(self.shuffle_saving_path)
 
-        copy_files(self.shuffle_saving_path, self.files_to_copy)
+        if self.files_to_copy is not None:
+            copy_files(self.shuffle_saving_path, self.files_to_copy)
 
         self.__check_piles_number()
         piles = self.__create_piles()
@@ -155,7 +156,7 @@ class Shuffle:
             os.remove(pp)
 
             # save shuffled date and meta information
-            write_meta_info(shuffle_saving_path=self.shuffle_saving_path, file_name=f"{SHUFFLE_GROUP_NAME}_{i}",
+            write_meta_info(save_dir=self.shuffle_saving_path, file_name=f"{SHUFFLE_GROUP_NAME}_{i}",
                             labels=sh_data[self.dict_names[1]], names=sh_data[self.dict_names[2]],
                             names_idx=sh_data[self.dict_names[3]], X_shape=sh_data[self.dict_names[0]].shape)
             save_tfr_file(save_path=self.shuffle_saving_path, file_name=f"{SHUFFLE_GROUP_NAME}_{i}",

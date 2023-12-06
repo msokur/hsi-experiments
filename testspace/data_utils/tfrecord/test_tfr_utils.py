@@ -37,7 +37,7 @@ def test_get_features_length(args: dict, result: int):
 X1D_BYTE_LIST = _bytes_feature(value=DATA_1D_X_0.astype(dtype=np.float32).tobytes())
 X3D_BYTE_LIST = _bytes_feature(value=DATA_3D_X_0.astype(dtype=np.float32).tobytes())
 Y_BYTE_LIST = _bytes_feature(value=DATA_y_0.astype(dtype=np.int64).tobytes())
-WEIGHTS_BYTE_LIST = _bytes_feature(value=DATA_WEIGHTS_0.astype(dtype=np.int64).tobytes())
+WEIGHTS_BYTE_LIST = _bytes_feature(value=DATA_WEIGHTS_0.astype(dtype=np.float32).tobytes())
 SAMPLES_INT_LIST = _int64_feature(value=12)
 SPEC_INT_LIST = _int64_feature(value=10)
 PATCH_INT_LIST = _int64_feature(value=3)
