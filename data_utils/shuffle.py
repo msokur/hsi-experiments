@@ -11,6 +11,7 @@ import warnings
 
 from configuration.copy_py_files import copy_files
 from data_utils.data_archive import DataArchive
+from data_utils.tfrecord import write_meta_info, save_tfr_file
 
 from configuration.parameter import (
     SHUFFLE_GROUP_NAME, PILE_NAME, MAX_SIZE_PER_PILE
@@ -47,11 +48,14 @@ class Shuffle:
         size = 0.0
         # get size from data archive
         for p in self.data_archive.get_paths(archive_path=self.raw_path):
-            # get file size in byte and convert to GB
+            # get file size in bytes and convert to GB
             size += os.path.getsize(p) / (1024.0 ** 3)
 
+        # add 1% more space for the patient index and name array
+        size *= 1.01
         size_per_pile = size / self.piles_number
 
+        # set new self.piles_number if the calculated pile size bigger den the maximum size
         if size_per_pile > MAX_SIZE_PER_PILE:
             # calculate the needed pile size
             new_piles_number = int(-(-size // MAX_SIZE_PER_PILE))
@@ -103,6 +107,7 @@ class Shuffle:
                 pile = random.randint(0, self.piles_number - 1)
                 piles[pile].append(it)
 
+            # get array with patient index and name
             for i_pile, pile in enumerate(piles):
                 _names = [name] * len(pile)
                 _indexes = [i] * len(pile)
@@ -115,6 +120,7 @@ class Shuffle:
                 values[self.dict_names[2]] = _names
                 values[self.dict_names[3]] = _indexes
 
+                # save pile
                 pickle.dump(values, open(os.path.join(self.shuffle_saving_path, str(i_pile) + PILE_NAME), 'ab'))
 
         print("--Splitting into piles finished--")
@@ -124,6 +130,7 @@ class Shuffle:
         piles_paths = glob(os.path.join(self.shuffle_saving_path, f"*{PILE_NAME}"))
         print(len(piles_paths))
 
+        # load all piles and there sub dictionary's
         for i, pp in tqdm(enumerate(piles_paths)):
             data = []
             with open(pp, "rb") as fr:
@@ -134,15 +141,26 @@ class Shuffle:
                     pass
 
             _data = {}
+            # concatenate the subarray for every key from the datas in the pile
             for key in data[0].keys():
                 _data[key] = [f[key] for f in data]
                 _data[key] = np.concatenate(_data[key], axis=0)
 
+            # shuffle the data in the pile
             indexes = list(np.arange(_data[self.dict_names[0]].shape[0]))
             random.shuffle(indexes)
+            sh_data = {n: a[indexes] for n, a in _data.items()}
 
+            # remove pile
             os.remove(pp)
-            self.data_archive.save_group(save_path=self.shuffle_saving_path, group_name=f"{SHUFFLE_GROUP_NAME}_{i}",
-                                         datas={n: a[indexes] for n, a in _data.items()})
+
+            # save shuffled date and meta information
+            write_meta_info(shuffle_saving_path=self.shuffle_saving_path, file_name=f"{SHUFFLE_GROUP_NAME}_{i}",
+                            labels=sh_data[self.dict_names[1]], names=sh_data[self.dict_names[2]],
+                            names_idx=sh_data[self.dict_names[3]], X_shape=sh_data[self.dict_names[0]].shape)
+            save_tfr_file(save_path=self.shuffle_saving_path, file_name=f"{SHUFFLE_GROUP_NAME}_{i}",
+                          X=sh_data[self.dict_names[0]], y=sh_data[self.dict_names[1]],
+                          pat_names=sh_data[self.dict_names[2]], pat_idx=sh_data[self.dict_names[3]],
+                          idx_in_cube=sh_data[self.dict_names[4]], sw=sh_data[self.dict_names[5]])
 
         print("----Shuffling of piles finished----")

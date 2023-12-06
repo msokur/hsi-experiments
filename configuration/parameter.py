@@ -9,6 +9,7 @@ SHUFFLE_GROUP_NAME = "shuffled"     # prefix for shuffled dataset
 PILE_NAME = ".pile"                 # data extension for piles
 MAX_SIZE_PER_PILE = 2.0             # maximal size per pile/shuffle file in GB
 TFR_META_EXTENSION = ".tfrmeta"
+PAT_NAME_SEPERATOR = ","
 
 
 # --- Data archive names
@@ -38,9 +39,14 @@ FEATURE_X = "X"                         # name for TFRecord feature with X list
 FEATURE_Y = "y"                         # name for TFRecord feature with y list
 FEATURE_SAMPLES = "samples"             # name for TFRecord feature with samples count (X axis 0, y axis 0)
 FEATURE_SPEC = "spectrum"               # name for TFRecord feature with spectrum count (X axis last)
-FEATURE_X_AXIS_1 = "X_patch_0"            # name for TFRecord feature with X axis 1 size
-FEATURE_X_AXIS_2 = "X_patch_1"            # name for TFRecord feature with X axis 2 size
-FEATURE_WEIGHTS = "sample_weights"      # # name for TFRecord feature with sample weight list
+FEATURE_X_AXIS_1 = "X_patch_0"          # name for TFRecord feature with X axis 1 size
+FEATURE_X_AXIS_2 = "X_patch_1"          # name for TFRecord feature with X axis 2 size
+FEATURE_WEIGHTS = "sample_weights"      # name for TFRecord feature with sample weight list
+FEATURE_IDX_CUBE = "indexes_in_datacube"    # name for TFRecord feature withe original index in datacube
+FEATURE_PAT_IDX = "patient_index"       # name for TFRecord feature withe patient index
+FEATURE_PAT_NAME = "patient_names"       # name for TFRecord feature withe patient name
+PAT_NAME_ENCODING = "UTF-8"
+TFR_FILE_EXTENSION = ".tfrecord"
 
 # --- Generator
 GEN_ALL = "all"                         # modus all for data generator

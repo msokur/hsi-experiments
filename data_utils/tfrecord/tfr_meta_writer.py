@@ -3,7 +3,8 @@ import os
 import json
 
 from configuration.parameter import (
-    TFR_META_EXTENSION,
+    TFR_META_EXTENSION, FEATURE_X, FEATURE_Y, FEATURE_IDX_CUBE, FEATURE_WEIGHTS, FEATURE_SAMPLES, FEATURE_SPEC,
+    FEATURE_PAT_NAME, PAT_NAME_SEPERATOR, PAT_NAME_ENCODING, FEATURE_PAT_IDX, FEATURE_X_AXIS_1, FEATURE_X_AXIS_2
 )
 
 
@@ -21,20 +22,21 @@ def write_meta_info(shuffle_saving_path: str, file_name: str, labels: list, name
 
 def _base_meta_data(X_shape: list) -> dict:
     meta_data = {
-        "X_shape": X_shape,
-        "X_dtype": "float32",
-        "y_dtype": "int64",
-        "indexes_in_datacube_dtype": "int64",
-        "sample_weights_dtype": "float32",
-        "samples_dtype": "int64",
-        "spectrum": "int64",
-        "patient_name_seperator": ",",
-        "patient_index_dtype": "int64"
+        f"{FEATURE_X}_shape": X_shape,
+        f"{FEATURE_X}_dtype": "float32",
+        f"{FEATURE_Y}_dtype": "int64",
+        f"{FEATURE_IDX_CUBE}_dtype": "int64",
+        f"{FEATURE_WEIGHTS}_dtype": "float32",
+        f"{FEATURE_SAMPLES}_dtype": "int64",
+        f"{FEATURE_SPEC}_size_dtype": "int64",
+        f"{FEATURE_PAT_NAME}_seperator": PAT_NAME_SEPERATOR,
+        f"{FEATURE_PAT_NAME}_encoding": PAT_NAME_ENCODING,
+        f"{FEATURE_PAT_IDX}_dtype": "int64"
     }
 
     if len(X_shape) > 1:
-        meta_data["X_patch_0"] = "int64"
-        meta_data["X_patch_1"] = "int64"
+        meta_data[f"{FEATURE_X_AXIS_1}_size_dtype"] = "int64"
+        meta_data[f"{FEATURE_X_AXIS_2}_size_dtype"] = "int64"
 
     return meta_data
 
@@ -50,7 +52,7 @@ def _count_labels_per_name(labels: list, names: list, names_idx: list) -> dict:
         name_idx = np.unique(names_idx[name_mask])
         if len(name_idx) > 1:
             raise ValueError(f"Too many indexes for patient name '{name}'!")
-        samples_per_patient[name]["patient_index"] = name_idx[0]
+        samples_per_patient[name][FEATURE_PAT_IDX] = name_idx[0]
 
         for label, label_mask in label_masks.items():
             pat_label_mask = name_mask and label_mask
