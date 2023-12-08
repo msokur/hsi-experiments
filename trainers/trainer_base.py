@@ -83,7 +83,7 @@ class Trainer:
 
         tfr_datasets = TFRDatasets(batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE], d3=self.d3,
                                    with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS])
-        train_ds, valid_ds = tfr_datasets.get_datasets(train_tfr_file=train_file, valid_tfr_file=valid_file)
+        train_ds, valid_ds = tfr_datasets.get_datasets(train_names=train_file, valid_names=valid_file)
 
         print("--- Calc class weights ---")
         class_weights = get_class_weights(dataset=train_ds, labels=np.array(self.labels_to_train))

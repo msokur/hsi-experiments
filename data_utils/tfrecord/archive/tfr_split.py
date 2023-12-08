@@ -7,7 +7,7 @@ import tensorflow as tf
 import numpy as np
 
 from data_utils.data_archive import DataArchive
-from data_utils.tfrecord.tfr_utils import get_features
+from data_utils.tfrecord.archive.tfr_utils import get_features
 from configuration.parameter import (
     TRAIN, VALID,
 )

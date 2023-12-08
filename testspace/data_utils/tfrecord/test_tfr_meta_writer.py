@@ -4,8 +4,9 @@ import os
 import numpy as np
 
 from configuration.parameter import (
-    TFR_META_EXTENSION, FEATURE_X_AXIS_1, FEATURE_X_AXIS_2, FEATURE_X, FEATURE_Y, FEATURE_IDX_CUBE, FEATURE_WEIGHTS,
-    FEATURE_SAMPLES, FEATURE_SPEC, FEATURE_PAT_NAME, PAT_NAME_SEPERATOR, PAT_NAME_ENCODING, FEATURE_PAT_IDX
+    TFR_META_EXTENSION, FEATURE_X_AXIS_1, FEATURE_X_AXIS_2, TOTAL_SAMPLES, FEATURE_X, FEATURE_Y, FEATURE_IDX_CUBE,
+    FEATURE_WEIGHTS, FEATURE_SAMPLES, FEATURE_SPEC, FEATURE_PAT_NAME, PAT_NAME_SEPERATOR, PAT_NAME_ENCODING,
+    FEATURE_PAT_IDX, SAMPLES_PER_NAME
 )
 from data_utils.tfrecord import write_meta_info
 
@@ -15,9 +16,9 @@ NAME_1 = "test_1"
 NAME_IDX_1 = 1
 NAME_2 = "test_2"
 NAME_IDX_2 = 2
-TOTAL_SAMPLES = 100
-X_SHAPE_1D = (TOTAL_SAMPLES, 10)
-X_SHAPE_3D = (TOTAL_SAMPLES, 3, 3, 10)
+TOTAL_SAMPLES_ = 100
+X_SHAPE_1D = (TOTAL_SAMPLES_, 10)
+X_SHAPE_3D = (TOTAL_SAMPLES_, 3, 3, 10)
 
 LABEL_LIST = np.array([0, 1, 2, 3, 0, 1, 2, 0, 1], dtype=np.int64)
 NAMES_LIST = np.array([NAME_0, NAME_1, NAME_2, NAME_2, NAME_1, NAME_0, NAME_1, NAME_2, NAME_0])
@@ -42,6 +43,8 @@ def test_write_meta_info_error():
     with pytest.raises(ValueError, match=f"Too many indexes for patient name '{NAME_0}'!"):
         write_meta_info(save_dir="", file_name=FILE_NAME, labels=LABEL_LIST, names=ERROR_NAME_LIST,
                         names_idx=NAME_IDX_LIST, X_shape=X_SHAPE_1D)
+
+
 @pytest.fixture
 def delete_meta_info(data_dir: str):
     yield
@@ -61,7 +64,7 @@ def _get_meta_info(d3: bool) -> dict:
 
 def _base_meta_data(X_shape: list) -> dict:
     return {
-        "total_samples": TOTAL_SAMPLES,
+        TOTAL_SAMPLES: TOTAL_SAMPLES_,
         f"{FEATURE_X}_shape": X_shape,
         f"{FEATURE_X}_dtype": "float32",
         f"{FEATURE_Y}_dtype": "int64",
@@ -72,7 +75,7 @@ def _base_meta_data(X_shape: list) -> dict:
         f"{FEATURE_PAT_NAME}_seperator": PAT_NAME_SEPERATOR,
         f"{FEATURE_PAT_NAME}_encoding": PAT_NAME_ENCODING,
         f"{FEATURE_PAT_IDX}_dtype": "int64",
-        "samples_per_patient_name": {
+        SAMPLES_PER_NAME: {
             NAME_0: {
                 FEATURE_PAT_IDX: NAME_IDX_0,
                 "0": 1,

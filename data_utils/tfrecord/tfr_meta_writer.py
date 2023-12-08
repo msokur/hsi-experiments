@@ -3,8 +3,9 @@ import os
 import json
 
 from configuration.parameter import (
-    TFR_META_EXTENSION, FEATURE_X, FEATURE_Y, FEATURE_IDX_CUBE, FEATURE_WEIGHTS, FEATURE_SAMPLES, FEATURE_SPEC,
-    FEATURE_PAT_NAME, PAT_NAME_SEPERATOR, PAT_NAME_ENCODING, FEATURE_PAT_IDX, FEATURE_X_AXIS_1, FEATURE_X_AXIS_2
+    SAMPLES_PER_NAME, TFR_META_EXTENSION, TOTAL_SAMPLES, FEATURE_X, FEATURE_Y, FEATURE_IDX_CUBE, FEATURE_WEIGHTS,
+    FEATURE_SAMPLES, FEATURE_SPEC, FEATURE_PAT_NAME, PAT_NAME_SEPERATOR, PAT_NAME_ENCODING, FEATURE_PAT_IDX,
+    FEATURE_X_AXIS_1, FEATURE_X_AXIS_2
 )
 
 
@@ -12,7 +13,7 @@ def write_meta_info(save_dir: str, file_name: str, labels: np.ndarray, names: np
                     X_shape: tuple):
     meta_data = _base_meta_data(total_samples=X_shape[0], X_shape=list(X_shape)[1:])
 
-    meta_data["samples_per_patient_name"] = _count_labels_per_name(labels=labels, names=names, names_idx=names_idx)
+    meta_data[SAMPLES_PER_NAME] = _count_labels_per_name(labels=labels, names=names, names_idx=names_idx)
 
     with open(os.path.join(save_dir, file_name + TFR_META_EXTENSION), "w") as file:
         json.dump(meta_data, file)
@@ -20,7 +21,7 @@ def write_meta_info(save_dir: str, file_name: str, labels: np.ndarray, names: np
 
 def _base_meta_data(total_samples: int, X_shape: list) -> dict:
     meta_data = {
-        "total_samples": total_samples,
+        TOTAL_SAMPLES: total_samples,
         f"{FEATURE_X}_shape": X_shape,
         f"{FEATURE_X}_dtype": "float32",
         f"{FEATURE_Y}_dtype": "int64",

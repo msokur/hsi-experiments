@@ -8,8 +8,11 @@ D3_CHUNK = (1, 1)                   # chunks for patches
 SHUFFLE_GROUP_NAME = "shuffled"     # prefix for shuffled dataset
 PILE_NAME = ".pile"                 # data extension for piles
 MAX_SIZE_PER_PILE = 2.0             # maximal size per pile/shuffle file in GB
+
+# --- TFR meta files
+SAMPLES_PER_NAME = "samples_per_patient_name"
+TOTAL_SAMPLES = "total_samples"
 TFR_META_EXTENSION = ".tfrmeta"
-PAT_NAME_SEPERATOR = ","
 
 
 # --- Data archive names
@@ -45,6 +48,7 @@ FEATURE_WEIGHTS = "sample_weights"      # name for TFRecord feature with sample 
 FEATURE_IDX_CUBE = "indexes_in_datacube"    # name for TFRecord feature withe original index in datacube
 FEATURE_PAT_IDX = "patient_index"       # name for TFRecord feature withe patient index
 FEATURE_PAT_NAME = "patient_names"       # name for TFRecord feature withe patient name
+PAT_NAME_SEPERATOR = ","
 PAT_NAME_ENCODING = "UTF-8"
 TFR_FILE_EXTENSION = ".tfrecord"
 

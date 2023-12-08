@@ -17,7 +17,7 @@ GET_DATASETS_RANK = [("1d", False, [2, 1]), ("1d", True, [2, 1, 1]),
 def get_test_datasets(shape: str, with_sw: bool, file_dir: str, file_name: str):
     tfr_datasets = TFRDatasets(batch_size=BATCH_SIZE, d3=True if shape == "3d" else False, with_sample_weights=with_sw)
     file = os.path.join(file_dir, shape, file_name)
-    return tfr_datasets.get_datasets(train_tfr_file=file, valid_tfr_file=file)
+    return tfr_datasets.get_datasets(train_names=file, valid_names=file)
 
 
 @pytest.mark.parametrize("shape,with_sw,ranks", GET_DATASETS_RANK)

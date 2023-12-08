@@ -125,6 +125,7 @@ class Shuffle:
                 pickle.dump(values, open(os.path.join(self.shuffle_saving_path, str(i_pile) + PILE_NAME), 'ab'))
 
         print("--Splitting into piles finished--")
+        del piles
 
     def __shuffle_piles(self):
         print("----Shuffling of piles started----")
