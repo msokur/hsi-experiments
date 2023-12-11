@@ -38,16 +38,17 @@ def test___len__(zarr_3d_data_dir: str):
     assert data_gen.__len__() == 2
 
 
-GETITEM_TEST_DATA = [(DataArchiveZARR(), "zarr", "1d", 0, False, D1_X_y_0),
-                     (DataArchiveZARR(), "zarr", "3d", 1, True, D3_X_y_w_1),
-                     (DataArchiveNPZ(), "npz", "1d", 1, False, D1_X_y_1),
-                     (DataArchiveNPZ(), "npz", "3d", 0, True, D3_X_y_w_0)]
+GETITEM_TEST_DATA = [(DataArchiveZARR(), "zarr", "1d", 0, False, D1_X_y_1),
+                     (DataArchiveZARR(), "zarr", "3d", 1, True, D3_X_y_w_0),
+                     (DataArchiveNPZ(), "npz", "1d", 1, False, D1_X_y_0),
+                     (DataArchiveNPZ(), "npz", "3d", 0, True, D3_X_y_w_1)]
 
 
 @pytest.mark.parametrize("data_archive,typ,patch,idx,with_weights,results", GETITEM_TEST_DATA)
 def test___getitem__(data_dir: str, data_archive: DataArchive, typ: str, patch: str, idx: int, with_weights: bool,
                      results: tuple):
     batch_paths = glob(os.path.join(data_dir, f"{typ}_file", patch, "data_test_*"))
+    print(batch_paths)
     data_gen = DataGenerator(data_archive=data_archive, batch_paths=batch_paths, X_name=X_NAME, y_name=y_NAME,
                              weights_name=WEIGHTS_NAME, with_sample_weights=with_weights)
     data = data_gen.__getitem__(idx=idx)
@@ -55,10 +56,10 @@ def test___getitem__(data_dir: str, data_archive: DataArchive, typ: str, patch: 
         assert (d == r).all()
 
 
-CALL_TEST_DATA = [(DataArchiveZARR(), "zarr", "1d", True, [D1_X_y_w_0, D1_X_y_w_1]),
-                  (DataArchiveZARR(), "zarr", "3d", False, [D3_X_y_0, D3_X_y_1]),
-                  (DataArchiveNPZ(), "npz", "1d", True, [D1_X_y_w_0, D1_X_y_w_1]),
-                  (DataArchiveNPZ(), "npz", "3d", False, [D3_X_y_0, D3_X_y_1])]
+CALL_TEST_DATA = [(DataArchiveZARR(), "zarr", "1d", True, [D1_X_y_w_1, D1_X_y_w_0]),
+                  (DataArchiveZARR(), "zarr", "3d", False, [D3_X_y_1, D3_X_y_0]),
+                  (DataArchiveNPZ(), "npz", "1d", True, [D1_X_y_w_1, D1_X_y_w_0]),
+                  (DataArchiveNPZ(), "npz", "3d", False, [D3_X_y_1, D3_X_y_0])]
 
 
 @pytest.mark.parametrize("data_archive,typ,patch,with_weights,results", CALL_TEST_DATA)

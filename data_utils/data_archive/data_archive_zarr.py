@@ -25,10 +25,6 @@ class DataArchiveZARR(DataArchive):
 
         return sorted(paths)
 
-    @staticmethod
-    def get_name(path: str) -> str:
-        return os.path.split(path)[-1]
-
     def all_data_generator(self, archive_path: str) -> Iterable:
         paths = self.get_paths(archive_path=archive_path)
         for path in paths:

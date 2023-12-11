@@ -205,16 +205,17 @@ def test_mask_read_jpg(dat_data_dir: str, img_name, result):
 
 FORMAT_ERROR = "Mask format not supported! Only '.png', '.jpeg', '.jpg' or '.jpe' are supported."
 
-MASK_READ_ERROR_DATA = [("test_mask.bmp", FORMAT_ERROR),
-                        ("test_mask.pbm", FORMAT_ERROR),
-                        ("test_mask.tiff", FORMAT_ERROR),
-                        ("", "Mask file not found. Check your configurations!")]
+MASK_READ_ERROR_DATA = [("test_mask.bmp", FORMAT_ERROR, ValueError),
+                        ("test_mask.pbm", FORMAT_ERROR, ValueError),
+                        ("test_mask.tiff", FORMAT_ERROR, ValueError),
+                        ("", "Mask path is a directory not a file!", IsADirectoryError),
+                        ("test.png", "Mask file not found. Check your configurations!", FileNotFoundError)]
 
 
-@pytest.mark.parametrize("img_name,error_msg", MASK_READ_ERROR_DATA)
-def test_mask_read_error(dat_data_dir: str, img_name, error_msg):
+@pytest.mark.parametrize("img_name,error_msg,error_typ", MASK_READ_ERROR_DATA)
+def test_mask_read_error(dat_data_dir: str, img_name, error_msg, error_typ):
     path = os.path.join(dat_data_dir, img_name)
-    with pytest.raises(ValueError, match=error_msg):
+    with pytest.raises(error_typ, match=error_msg):
         DatFile.mask_read(mask_path=path)
 
 

@@ -195,7 +195,9 @@ class DatFile:
         try:
             img = Image.open(mask_path)
         except FileNotFoundError:
-            raise ValueError("Mask file not found. Check your configurations!")
+            raise FileNotFoundError("Mask file not found. Check your configurations!")
+        except IsADirectoryError:
+            raise IsADirectoryError("Mask path is a directory not a file!")
 
         if img.format not in ["PNG", "JPG", "JPEG", "JPE"]:
             raise ValueError("Mask format not supported! "

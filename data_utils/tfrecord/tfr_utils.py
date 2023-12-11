@@ -1,20 +1,17 @@
-import os
 import json
 
-from glob import glob
-from typing import List, Dict, Generator
+from typing import List, Dict
 
 import numpy as np
+import tensorflow as tf
 
 from configuration.parameter import (
     TFR_META_EXTENSION, TFR_FILE_EXTENSION, SAMPLES_PER_NAME, FEATURE_PAT_IDX,
 )
 
 
-def cw_from_meta(stored_path: str, labels: list, names: list) -> Dict[int, float]:
-    meta_files = _get_meta_files(stored_path=stored_path)
-    tfr_files = glob(os.path.join(stored_path, "*" + TFR_FILE_EXTENSION))
-    _check_lengths(len_meta=meta_files.__len__(), len_tfr=tfr_files.__len__(), stored_path=stored_path)
+def get_cw_from_meta(tfr_files: list, labels: list, names: list) -> Dict[int, float]:
+    meta_files = _get_meta_files(tfr_paths=tfr_files)
 
     sums = {f"{label}": 0.0 for label in labels}
 
@@ -34,8 +31,8 @@ def cw_from_meta(stored_path: str, labels: list, names: list) -> Dict[int, float
     return cw
 
 
-def parse_names_to_int(stored_path: str) -> Dict[str, int]:
-    meta_files = _get_meta_files(stored_path=stored_path)
+def parse_names_to_int(tfr_files: list) -> Dict[str, int]:
+    meta_files = _get_meta_files(tfr_paths=tfr_files)
 
     names_int = {}
     for meta_file in meta_files:
@@ -57,17 +54,13 @@ def parse_names_to_int(stored_path: str) -> Dict[str, int]:
     return names_int
 
 
-def _get_meta_files(stored_path: str) -> List[str]:
-    return sorted(glob(os.path.join(stored_path, "*" + TFR_META_EXTENSION)))
+def select(data, allowed):
+    use = tf.map_fn(fn=lambda com: tf.equal(x=data, y=allowed), elems=allowed, fn_output_signature=tf.bool)
+    return tf.math.reduce_any(input_tensor=use)
 
 
-def _check_lengths(len_meta: int, len_tfr: int, stored_path: str):
-    if len_meta == 0:
-        raise ValueError(f"No meta files found in the directory '{stored_path}'!")
-    elif len_meta > len_tfr:
-        raise ValueError(f"More meta files then shuffled files in the directory '{stored_path}'!")
-    elif len_meta < len_tfr:
-        raise ValueError(f"Less meta files then shuffled files in the directory '{stored_path}'!")
+def _get_meta_files(tfr_paths: List[str]) -> List[str]:
+    return [tfr_p.replace(TFR_FILE_EXTENSION, TFR_META_EXTENSION) for tfr_p in tfr_paths]
 
 
 def _get_samples_per_label(paths: List[str], names: list):

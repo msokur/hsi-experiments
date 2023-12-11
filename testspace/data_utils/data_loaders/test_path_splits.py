@@ -1,10 +1,12 @@
 import pytest
 import numpy as np
+import os
 
 from data_utils.data_loaders.path_splits import get_splits, split_int, split_list, split_name
 
 
-PATHS = ["C:\\folder\\data0_1.dat", "C:\\folder\\data1_1.dat", "C:\\folder\\data0_2.dat", "C:\\folder\\data1_2.dat"]
+PATHS = [os.path.join(*["C:", "folder", "data0_1.dat"]), os.path.join(*["C:", "folder", "data1_1.dat"]),
+         os.path.join(*["C:", "folder", "data0_2.dat"]), os.path.join(*["C:", "folder", "data1_2.dat"])]
 
 
 GET_SPLITS_DATA = [("Name", PATHS, (0, 5), [np.array([0, 2]), np.array([1, 3])]),

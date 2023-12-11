@@ -1,9 +1,7 @@
-from typing import List
-
 import tensorflow as tf
 
 from data_utils.tfrecord.tfr_parser import tfr_1d_train_parser, tfr_3d_train_parser
-from data_utils.tfrecord.tfr_utils import parse_names_to_int
+from data_utils.tfrecord.tfr_utils import parse_names_to_int, select
 
 
 class TFRDatasets:
@@ -14,47 +12,62 @@ class TFRDatasets:
         self.with_sample_weights = with_sample_weights
         self.options = self.__get_tf_options()
 
-    def get_datasets(self, train_names: list, valid_names: list, labels: list):
+    def get_datasets(self, ds_paths: list, train_names: list, valid_names: list, labels: list):
         """Loads a parsed training and validation TFRecord datasets.
-
+        
+        :param ds_paths: Paths for the Dataset
         :param train_names: List with names for training data
         :param valid_names: list with names for validation data
         :param labels: List with labels to use for training and validation
 
         :return: A tuple with the parsed training and validation dataset
         """
-        train_ints = self.__get_names_int_list(names=train_names)
-        valid_ints = self.__get_names_int_list(names=valid_names)
+        train_ints = self.__get_names_int_list(ds_paths=ds_paths, names=train_names)
+        valid_ints = self.__get_names_int_list(ds_paths=ds_paths, names=valid_names)
+        tf_labels = tf.Variable(initial_value=labels, dtype=tf.int64)
 
-        train_dataset = self.__get_dataset(file=train_names)
-        valid_dataset = self.__get_dataset(file=valid_names)
+        dataset = tf.data.TFRecordDataset(filenames=ds_paths)
+
+        if self.d3:
+            dataset = dataset.map(map_func=tfr_3d_train_parser)
+        else:
+            dataset = dataset.map(map_func=tfr_1d_train_parser)
+
+        train_dataset = self.__get_dataset(dataset=dataset, names_int=train_ints, labels=tf_labels)
+        valid_dataset = self.__get_dataset(dataset=dataset, names_int=valid_ints, labels=tf_labels)
 
         return train_dataset, valid_dataset
 
-    def __get_names_int_list(self, names: list) -> List[int]:
-        names_int_dict = parse_names_to_int(stored_path=self.data_dir)
+    @staticmethod
+    def __get_names_int_list(ds_paths: list, names: list) -> tf.Variable:
+        names_int_dict = parse_names_to_int(tfr_files=ds_paths)
         names_int = []
         for name in names:
             if name in names_int_dict:
-                names_int += names_int_dict[name]
+                names_int += [names_int_dict[name]]
 
-        return names_int
+        return tf.Variable(initial_value=names_int, dtype=tf.int64)
 
-    def __get_dataset(self, file: str):
+    def __get_dataset(self, dataset: tf.data.TFRecordDataset, names_int: tf.Variable, labels: tf.Variable):
         """Load a TFRecord dataset and pares the date.
 
-        :param file: Path to TRRecord file
+        :param dataset: TFRDataset with X, y, sample weights and name indexes
+        :param names_int: To use name indexes
+        :param labels: To use labels
 
         :return: Parsed TFRecord dataset
         """
-        dataset = tf.data.TFRecordDataset(filenames=file)
-        dataset = dataset.map(map_func=lambda record: tfr_parser(record=record, X_d3=self.d3,
-                                                                 with_sw=self.with_sample_weights))
         # --- make every sample able to slice over
+        dataset = dataset.flat_map(map_func=lambda X, y, sw, pat_idx: tf.data.Dataset.from_tensor_slices(
+                tensors=(X, y, sw, pat_idx)))
+        # filter the not used names
+        dataset = dataset.filter(lambda X, y, sw, pat_idx: select(data=pat_idx, allowed=names_int))
+        # filter not used labels
+        dataset = dataset.filter(lambda X, y, sw, pat_idx: select(data=y, allowed=labels))
         if self.with_sample_weights:
-            dataset = dataset.flat_map(map_func=lambda X, y, sw: tf.data.Dataset.from_tensor_slices(tensors=(X, y, sw)))
+            dataset = dataset.map(lambda X, y, sw, pat_idx: (X, y))
         else:
-            dataset = dataset.flat_map(map_func=lambda X, y: tf.data.Dataset.from_tensor_slices(tensors=(X, y)))
+            dataset = dataset.map(lambda X, y, sw, pat_idx: (X, y, sw))
 
         return dataset.batch(batch_size=self.batch_size).with_options(options=self.options)
 

@@ -51,6 +51,8 @@ def get_number(elem: str, split: list) -> int:
     2
     """
     elem = os.path.split(elem)[-1]
+    if "\\" in elem:
+        elem = elem.split("\\")[-1]
     try:
         number = int(elem.split(split[0])[-1].split(".")[0].split(split[1])[0])
     except ValueError:

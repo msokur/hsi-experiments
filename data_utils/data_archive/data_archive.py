@@ -31,7 +31,6 @@ class DataArchive:
         pass
 
     @staticmethod
-    @abc.abstractmethod
     def get_name(path: str) -> str:
         """
         Returns the name from the group.
@@ -40,7 +39,16 @@ class DataArchive:
 
         :return: Group name
         """
-        pass
+        # check if Windows or Linux/Mac dir
+        if "\\" in path:
+            name = path.split("\\")[-1]
+        else:
+            name = path.split("/")[-1]
+        # remove data extension
+        if "." in name:
+            return name.split(".")[0]
+        else:
+            return name
 
     @abc.abstractmethod
     def all_data_generator(self, archive_path: str) -> Iterable:

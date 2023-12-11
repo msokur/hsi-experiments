@@ -16,10 +16,6 @@ class DataArchiveNPZ(DataArchive):
     def get_paths(archive_path: str) -> List[str]:
         return sorted(glob(os.path.join(archive_path, "*.npz")))
 
-    @staticmethod
-    def get_name(path: str) -> str:
-        return os.path.split(path)[-1].split(".npz")[0]
-
     def all_data_generator(self, archive_path: str) -> Iterable:
         paths = self.get_paths(archive_path=archive_path)
         for path in paths:
