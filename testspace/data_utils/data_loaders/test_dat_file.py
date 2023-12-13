@@ -208,7 +208,7 @@ FORMAT_ERROR = "Mask format not supported! Only '.png', '.jpeg', '.jpg' or '.jpe
 MASK_READ_ERROR_DATA = [("test_mask.bmp", FORMAT_ERROR, ValueError),
                         ("test_mask.pbm", FORMAT_ERROR, ValueError),
                         ("test_mask.tiff", FORMAT_ERROR, ValueError),
-                        ("", "Mask path is a directory not a file!", IsADirectoryError),
+                        ("", "Mask file not found. Check your configurations!", FileNotFoundError),
                         ("test.png", "Mask file not found. Check your configurations!", FileNotFoundError)]
 
 

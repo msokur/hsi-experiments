@@ -54,9 +54,13 @@ def parse_names_to_int(tfr_files: list) -> Dict[str, int]:
     return names_int
 
 
-def select(data, allowed):
-    use = tf.map_fn(fn=lambda com: tf.equal(x=data, y=allowed), elems=allowed, fn_output_signature=tf.bool)
-    return tf.math.reduce_any(input_tensor=use)
+def filter_name_idx_and_labels(X, y, sw, pat_idx, use_pat_idx: tf.Variable, use_labels: tf.Variable):
+    idx_mask = _select(data=pat_idx, allowed=use_pat_idx)
+    label_mask = _select(data=y, allowed=use_labels)
+    mask = tf.logical_and(x=idx_mask, y=label_mask)
+
+    return (tf.boolean_mask(tensor=X, mask=mask), tf.boolean_mask(tensor=y, mask=mask),
+            tf.boolean_mask(tensor=sw, mask=mask))
 
 
 def _get_meta_files(tfr_paths: List[str]) -> List[str]:
@@ -79,3 +83,8 @@ def _get_samples_per_name(file_path: str) -> dict:
     info = json.load(open(file=file_path, mode="r"))
     # get the section with the samples per name
     return info[SAMPLES_PER_NAME]
+
+
+def _select(data, allowed):
+    use = tf.map_fn(fn=lambda com: tf.equal(x=data, y=com), elems=allowed, fn_output_signature=tf.bool)
+    return tf.cast(tf.math.reduce_sum(input_tensor=tf.cast(use, dtype=tf.int32), axis=0), dtype=tf.bool)

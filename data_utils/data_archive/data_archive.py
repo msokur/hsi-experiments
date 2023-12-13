@@ -3,9 +3,14 @@ from shutil import rmtree
 from typing import List, Dict, Iterable
 
 import numpy as np
+import platform
+import os
 
 
 class DataArchive:
+    def __init__(self):
+        self.system = platform.system()
+
     @staticmethod
     @abc.abstractmethod
     def get_path(file) -> str:
@@ -30,8 +35,7 @@ class DataArchive:
         """
         pass
 
-    @staticmethod
-    def get_name(path: str) -> str:
+    def get_name(self, path: str) -> str:
         """
         Returns the name from the group.
 
@@ -40,10 +44,14 @@ class DataArchive:
         :return: Group name
         """
         # check if Windows or Linux/Mac dir
-        if "\\" in path:
-            name = path.split("\\")[-1]
+        if self.system == "Windows":
+            name = os.path.split(path)[-1]
         else:
-            name = path.split("/")[-1]
+            name = path
+            if "\\" in name:
+                name = path.split("\\")[-1]
+            if "/" in name:
+                name = path.split("/")[-1]
         # remove data extension
         if "." in name:
             return name.split(".")[0]

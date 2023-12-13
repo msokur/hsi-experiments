@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from data_utils.tfrecord.tfr_parser import tfr_1d_train_parser, tfr_3d_train_parser
-from data_utils.tfrecord.tfr_utils import parse_names_to_int, select
+from data_utils.tfrecord.tfr_utils import parse_names_to_int, filter_name_idx_and_labels
 
 
 class TFRDatasets:
@@ -60,10 +60,10 @@ class TFRDatasets:
         # --- make every sample able to slice over
         dataset = dataset.flat_map(map_func=lambda X, y, sw, pat_idx: tf.data.Dataset.from_tensor_slices(
                 tensors=(X, y, sw, pat_idx)))
-        # filter the not used names
-        dataset = dataset.filter(lambda X, y, sw, pat_idx: select(data=pat_idx, allowed=names_int))
-        # filter not used labels
-        dataset = dataset.filter(lambda X, y, sw, pat_idx: select(data=y, allowed=labels))
+        # filter the not used names and labels
+        dataset = dataset.map(lambda X, y, sw, pat_idx: filter_name_idx_and_labels(X=X, y=y, sw=sw, pat_idx=pat_idx,
+                                                                                   use_pat_idx=names_int,
+                                                                                   use_labels=labels))
         if self.with_sample_weights:
             dataset = dataset.map(lambda X, y, sw, pat_idx: (X, y))
         else:
