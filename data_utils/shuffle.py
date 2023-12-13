@@ -52,8 +52,8 @@ class Shuffle:
             # get file size in bytes and convert to GB
             size += os.path.getsize(p) / (1024.0 ** 3)
 
-        # add 1% more space for the patient index and name array
-        size *= 1.01
+        # add 2,5% more space for the patient index and name array
+        size *= 1.025
         size_per_pile = size / self.piles_number
 
         # set new self.piles_number if the calculated pile size bigger den the maximum size
@@ -69,6 +69,7 @@ class Shuffle:
 
     def __create_piles(self) -> List[list]:
         print("----Piles creating started----")
+        print(f"Pile number: {self.piles_number}")
 
         # remove previous piles if they exist
         piles_paths = glob(os.path.join(self.shuffle_saving_path, f"*{PILE_NAME}*"))
@@ -130,7 +131,6 @@ class Shuffle:
     def __shuffle_piles(self):
         print("----Shuffling of piles started----")
         piles_paths = glob(os.path.join(self.shuffle_saving_path, f"*{PILE_NAME}"))
-        print(len(piles_paths))
 
         # load all piles and there sub dictionary's
         for i, pp in tqdm(enumerate(piles_paths)):

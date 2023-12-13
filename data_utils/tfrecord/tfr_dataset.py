@@ -76,6 +76,6 @@ class TFRDatasets:
     def __get_tf_options():
         """Get TF data options"""
         options = tf.data.Options()
-        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.FILE
+        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
 
         return options
