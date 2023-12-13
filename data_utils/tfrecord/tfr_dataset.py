@@ -57,17 +57,18 @@ class TFRDatasets:
 
         :return: Parsed TFRecord dataset
         """
-        # --- make every sample able to slice over
-        dataset = dataset.flat_map(map_func=lambda X, y, sw, pat_idx: tf.data.Dataset.from_tensor_slices(
-                tensors=(X, y, sw, pat_idx)))
         # filter the not used names and labels
         dataset = dataset.map(lambda X, y, sw, pat_idx: filter_name_idx_and_labels(X=X, y=y, sw=sw, pat_idx=pat_idx,
                                                                                    use_pat_idx=names_int,
                                                                                    use_labels=labels))
+        # --- make every sample able to slice over
+        dataset = dataset.flat_map(map_func=lambda X, y, sw: tf.data.Dataset.from_tensor_slices(
+            tensors=(X, y, sw)))
+
         if self.with_sample_weights:
-            dataset = dataset.map(lambda X, y, sw, pat_idx: (X, y))
+            dataset = dataset.map(lambda X, y, sw: (X, y))
         else:
-            dataset = dataset.map(lambda X, y, sw, pat_idx: (X, y, sw))
+            dataset = dataset.map(lambda X, y, sw: (X, y, sw))
 
         return dataset.batch(batch_size=self.batch_size).with_options(options=self.options)
 

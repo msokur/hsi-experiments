@@ -5,7 +5,7 @@ from glob import glob
 
 from data_utils.tfrecord import TFRDatasets
 from testspace.data_utils.tfrecord.conftest import (
-    DATA_1D_X_0, DATA_3D_X_0, DATA_y_0, DATA_WEIGHTS_0, DATA_i, NAMES, NAMES_IDX
+    TF_DATA_1D_X_0, TF_DATA_3D_X_0, TF_DATA_y_0, TF_DATA_WEIGHTS_0, TF_NAMES_IDX
 )
 from configuration.parameter import (
     TFR_FILE_EXTENSION,
@@ -34,8 +34,11 @@ def test_get_datasets_rank(tfr_data_dir: str, shape: str, with_sw: bool, ranks: 
         assert element.shape.rank == rank
 
 
-GET_DATASET_VALUE = [("1d", False, (DATA_1D_X_0, DATA_y_0)), ("1d", True, (DATA_1D_X_0, DATA_y_0, DATA_WEIGHTS_0)),
-                     ("3d", False, (DATA_3D_X_0, DATA_y_0)), ("3d", True, (DATA_3D_X_0, DATA_y_0, DATA_WEIGHTS_0))]
+RES_MASK = np.isin(TF_DATA_y_0, LABELS) * np.isin(TF_NAMES_IDX, [0, 1, 2, 3])
+GET_DATASET_VALUE = [("1d", False, (TF_DATA_1D_X_0[RES_MASK], TF_DATA_y_0[RES_MASK])),
+                     ("1d", True, (TF_DATA_1D_X_0[RES_MASK], TF_DATA_y_0[RES_MASK], TF_DATA_WEIGHTS_0[RES_MASK])),
+                     ("3d", False, (TF_DATA_3D_X_0[RES_MASK], TF_DATA_y_0[RES_MASK])),
+                     ("3d", True, (TF_DATA_3D_X_0[RES_MASK], TF_DATA_y_0[RES_MASK], TF_DATA_WEIGHTS_0[RES_MASK]))]
 
 
 @pytest.mark.parametrize("shape,with_sw,results", GET_DATASET_VALUE)
