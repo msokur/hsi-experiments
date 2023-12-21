@@ -5,7 +5,6 @@ from typing import List
 
 import numpy as np
 from tqdm import tqdm
-from glob import glob
 import math
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -14,9 +13,6 @@ sys.path.insert(0, parentdir)
 
 from data_utils.tfrecord import get_shape_from_meta, get_numpy_X
 from configuration.keys import DistroCheckKeys as DCK
-from configuration.parameter import (
-    TFR_FILE_EXTENSION,
-)
 
 """
 This class is about choosing a representative small dataset for speed up the training
@@ -38,7 +34,7 @@ There are several functionality parts:
 
 
 class DistributionsChecker:
-    def __init__(self, paths: List[str, ...], config_distribution: dict):
+    def __init__(self, paths: List[str], config_distribution: dict):
         """
         Args:
             paths: paths with the archives to compare

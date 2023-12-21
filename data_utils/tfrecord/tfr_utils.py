@@ -24,9 +24,9 @@ def get_cw_from_meta(tfr_files: list, labels: list, names: list) -> Dict[int, fl
     total = np.sum([samples for samples in sums.values()])
     cw = {}
     for label, samples in sums.items():
-        with np.errstate(divide="ignore", invalid="ignore"):
+        if samples > 0.0:
             cw[label] = (1 / samples) * total / labels.__len__()
-        if cw[label] == np.inf:
+        else:
             cw[label] = 0.0
 
     return cw

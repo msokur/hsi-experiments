@@ -1,7 +1,6 @@
 import tensorflow.keras as keras
 import numpy as np
 import os
-from shutil import rmtree
 
 from trainers.trainer_base import Trainer
 from configuration.keys import TrainerKeys as TK
@@ -47,8 +46,6 @@ class TrainerEasy(Trainer):
             workers=int(os.cpu_count()))
 
         self.save_history(history)
-
-        rmtree(self.batch_path)
 
         return model, history
 

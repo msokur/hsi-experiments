@@ -13,7 +13,9 @@ from configuration.parameter import (
 CW_TEST_DATA = [("1d", [0, 1, 2, 3], ["test_0", "test_1", "test_2", "test_3", "test_4"],
                  {"0": 1.25, "1": 0.625, "2": 2.5, "3": 0.833}),
                 ("1d", [0, 1, 3], ["test_0", "test_1", "test_2", "test_3"], {"0": 1.458, "1": 0.729, "3": 1.061}),
-                ("3d", [1, 2, 3], ["test_0", "test_2", "test_3", "test_4"], {"1": 0.667, "2": 3.556, "3": 0.821})]
+                ("3d", [1, 2, 3], ["test_0", "test_2", "test_3", "test_4"], {"1": 0.667, "2": 3.556, "3": 0.821}),
+                ("1d", [0, 1, 2, 3, 4], ["test_0", "test_1", "test_2", "test_3", "test_4"],
+                 {"0": 1., "1": 0.5, "2": 2., "3": 0.667, "4": 0.0})]
 
 
 @pytest.mark.parametrize("shape,labels,names,result", CW_TEST_DATA)

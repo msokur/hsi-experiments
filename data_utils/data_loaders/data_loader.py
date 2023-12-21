@@ -156,9 +156,10 @@ class DataLoader:
             for path in paths:
                 name = self.get_cube_name(path=path)
                 values = self.file_read(path=path)
-                values[ORG_NAME] = np.array([[name] * values[self.dict_names[0]].shape[0]])
+                values[ORG_NAME] = np.array([name] * values[self.dict_names[0]].shape[0])
                 if first:
                     self.X_y_dict_save_to_archive(destination_path=destination_path, values=values, name=pat_name)
+                    first = False
                 else:
                     self.data_archive.append_data(file_path=os.path.join(destination_path, pat_name),
                                                   append_datas=values)

@@ -1,5 +1,3 @@
-from shutil import rmtree
-
 import keras_tuner as kt
 import tensorflow.keras as keras
 
@@ -48,8 +46,6 @@ class TrainerTuner(Trainer):
 
         self.save_history(history)
 
-        rmtree(self.batch_path)
-
         return best_model, history
 
     def restore_tuner(self, directory=''):
@@ -95,7 +91,6 @@ class TrainerTuner(Trainer):
                      class_weight=class_weights_t,
                      callbacks=[keras.callbacks.TensorBoard(self.tuner_dir)])
 
-        rmtree(self.batch_path)
         print("------ Finish search tuning parameter ---------")
         tuner.results_summary(num_trials=1)
 
