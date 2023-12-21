@@ -42,3 +42,18 @@ class DataArchiveNPZ(DataArchive):
         datas[data_name] = data
         main_path, name = os.path.split(p=save_path)
         self.save_group(save_path=main_path, group_name=name, datas=datas)
+
+    def append_data(self, file_path: str, append_datas: Dict[str, np.ndarray]) -> None:
+        if not file_path.endswith(".npz"):
+            file_path += ".npz"
+
+        if not os.path.exists(path=file_path):
+            super()._file_not_found(file=file_path)
+
+        data = np.load(file=file_path)
+        super()._check_keys(name=os.path.split(file_path)[-1], base_keys=set(data.keys()),
+                            append_keys=set(append_datas.keys()))
+        new_data = {}
+        for k, v in data.items():
+            new_data[k] = np.concatenate((v, append_datas[k]), axis=0)
+        np.savez(file=file_path, **new_data)

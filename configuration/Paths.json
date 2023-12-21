@@ -34,6 +34,18 @@
       "BATCHED_PATH": ["batch_sized"]
     }
   },
+  "HNO_COMBINED_Database": {
+    "1.CONCAT_WITH_PREFIX": {
+      "ROOT_PATH": ["data_3d", "hno", "3x3", "svn_T", "no_smooth", "combined"],
+      "RAW_SOURCE_PATH": ["Parotis-Faelle", "*"]
+    },
+    "2.CONCAT_WITH_ROOT_PATH": {
+      "RAW_NPZ_PATH": ["patient_data"],
+      "SHUFFLED_PATH": ["shuffled"],
+      "BATCHED_PATH": ["batch_sized"],
+      "TEST_NPZ_PATH": ["patient_data"]
+    }
+  },
   "ESO_Database": {
     "1.CONCAT_WITH_PREFIX": {
       "ROOT_PATH" : ["data_3d", "npz", "eso", "3x3", "svn_t", "no_smooth"],

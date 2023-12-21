@@ -39,37 +39,34 @@ def get_splits(typ: str, paths: list, values: Union[int, list[list[str]], tuple]
     return split_int(len(paths), 1)
 
 
-def __warning(msg: str):
-    warnings.warn(f"'{msg}' in configurations is not correct. Paths will be split by files with 1!")
-
-
-def split_int(path_length: int, num: int) -> List[np.ndarray]:
+def split_name(paths: list, name_slice: tuple) -> List[np.ndarray]:
     """
-    Splits a range of integers in equally parts. The range has the length from 'path_length' and in every part there are
-    min. the number of 'num' values.
+    Split and group the indexes from the paths list by given slice for the file name. It will be use the file name
+    without the file extension to get the indexes.
 
-    If the path length is x and the num y, the first array have x//y + 1 values and the rest x//y.
+    :param paths: List with the paths to split and group.
+    :param name_slice: Tuple with the indices to start and stop (not included).
 
-    :param path_length: A integer with the range to split.
-    :param num: Number of values per split.
-
-    :return: A list with numpy arrays with the split integers.
-
-    :raises ValueError: When path_length < num.
+    :return: A list with the grouped indexes from the paths list.
 
     Example
     -------
-    >>> x = 4
-    >>> y = 2
-    >>> z = split_int(x, y)
-    [array([0, 1]), array([2, 4])]
+    >>> path_list = ['/dir/data0_1.dat', '/dir/data1_1.dat', '/dir/data0_2.dat', '/dir/data1_2.dat']
+    >>> names_slice = (0, 5)
+    >>> split_name(path_list, names_slice)
+    [array([0, 2]), array([1, 3])]
 
-    >>> x = 5
-    >>> y = 2
-    >>> z = split_int(x, y)
-    [array([0, 1, 2]), array([3, 4])]
+    >>> path_list = ['/dir/data0_1.dat', '/dir/data1_1.dat', '/dir/data0_2.dat', '/dir/data1_2.dat']
+    >>> names_slice = (0, 7)
+    >>> split_name(path_list, names_slice)
+    [array([0]), array([2]), array([1]), array([3])]
     """
-    return np.array_split(range(path_length), path_length // num)
+    unique = np.unique([os.path.split(path)[-1].split(".")[0][slice(name_slice[0], name_slice[1])] for path in paths])
+    splits = []
+    for name in unique:
+        splits.append(np.flatnonzero([True if name in path else False for path in paths]))
+
+    return splits
 
 
 def split_list(paths: list[str], name_list: list[list[str]]) -> List[np.ndarray]:
@@ -109,31 +106,34 @@ def split_list(paths: list[str], name_list: list[list[str]]) -> List[np.ndarray]
     return splits
 
 
-def split_name(paths: list, name_slice: tuple) -> List[np.ndarray]:
+def split_int(path_length: int, num: int) -> List[np.ndarray]:
     """
-    Split and group the indexes from the paths list by given slice for the file name. It will be use the file name
-    without the file extension to get the indexes.
+    Splits a range of integers in equally parts. The range has the length from 'path_length' and in every part there are
+    min. the number of 'num' values.
 
-    :param paths: List with the paths to split and group.
-    :param name_slice: Tuple with the indices to start and stop (not included).
+    If the path length is x and the num y, the first array have x//y + 1 values and the rest x//y.
 
-    :return: A list with the grouped indexes from the paths list.
+    :param path_length: A integer with the range to split.
+    :param num: Number of values per split.
+
+    :return: A list with numpy arrays with the split integers.
+
+    :raises ValueError: When path_length < num.
 
     Example
     -------
-    >>> path_list = ['/dir/data0_1.dat', '/dir/data1_1.dat', '/dir/data0_2.dat', '/dir/data1_2.dat']
-    >>> names_slice = (0, 5)
-    >>> split_name(path_list, names_slice)
-    [array([0, 2]), array([1, 3])]
+    >>> x = 4
+    >>> y = 2
+    >>> z = split_int(x, y)
+    [array([0, 1]), array([2, 4])]
 
-    >>> path_list = ['/dir/data0_1.dat', '/dir/data1_1.dat', '/dir/data0_2.dat', '/dir/data1_2.dat']
-    >>> names_slice = (0, 7)
-    >>> split_name(path_list, names_slice)
-    [array([0]), array([2]), array([1]), array([3])]
+    >>> x = 5
+    >>> y = 2
+    >>> z = split_int(x, y)
+    [array([0, 1, 2]), array([3, 4])]
     """
-    unique = np.unique([os.path.split(path)[-1].split(".")[0][slice(name_slice[0], name_slice[1])] for path in paths])
-    splits = []
-    for name in unique:
-        splits.append(np.flatnonzero([True if name in path else False for path in paths]))
+    return np.array_split(range(path_length), path_length // num)
 
-    return splits
+
+def __warning(msg: str):
+    warnings.warn(f"'{msg}' in configurations is not correct. Paths will be split by files with 1!")

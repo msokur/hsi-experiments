@@ -48,6 +48,16 @@ class DataArchiveZARR(DataArchive):
         root = zarr.open_group(store=save_path, mode="r+")
         root.array(name=data_name, data=data, chunks=self.__get_chunks__(data.shape), overwrite=True)
 
+    def append_data(self, file_path: str, append_datas: Dict[str, np.ndarray]) -> None:
+        if not os.path.exists(path=file_path):
+            super()._file_not_found(file=file_path)
+
+        data = zarr.open_group(store=file_path, mode="r+")
+        super()._check_keys(name=os.path.split(file_path)[-1], base_keys=set(data.keys()),
+                            append_keys=set(append_datas.keys()))
+        for k, v in data.items():
+            v.append(append_datas[k], axis=0)
+
     @staticmethod
     def __get_chunks__(data_shape: tuple) -> tuple:
         block_count = -(-data_shape[0] // BLOCK_SIZE)

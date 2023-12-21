@@ -9,8 +9,9 @@
     "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",
-    "FILES_TO_COPY": [["configuration", "*.json"], ["configuration", "meta_config","*.py"]],
-    "NORMALIZATION_TYPE": "svn",
+    "FILES_TO_COPY": [["data_utils", "*.py"], ["data_utils", "*", "*.py"],
+      ["configuration", "*.py"], ["configuration", "*.json"]],
+    "NORMALIZATION_TYPE": "svn_T",
     "SCALER_FILE": "scaler.scaler",
     "SCALER_PATH": null
   },

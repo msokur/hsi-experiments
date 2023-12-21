@@ -9,6 +9,7 @@ if WITHOUT_RANDOMNESS:
 else:
     os.environ['TF_DETERMINISTIC_OPS'] = '0'
 
+# change here the name of the .py file for configuration import
 from configuration.meta_configs.Benny import *
 
 from configuration.configloader_base import read_config

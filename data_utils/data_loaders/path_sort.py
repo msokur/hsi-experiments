@@ -1,4 +1,5 @@
 import os
+from typing import List, Dict
 
 
 def get_sort(paths: list, number: bool, split: list) -> list:
@@ -16,6 +17,31 @@ def get_sort(paths: list, number: bool, split: list) -> list:
         return sort(paths=paths, split=split)
     else:
         return sorted(paths)
+
+
+def sort(paths: list, split: list) -> list:
+    """
+    Sort the paths by number in the file name that is between the two strings in split.
+
+    :param paths: A list with the paths to sort
+    :param split: A list with the letters before and after the number.
+
+    :return: A sorted list with paths by numbers.
+
+    Example
+    -------
+    >>> a = ['C:/folder2/data1cube.dat', 'C:/folder3/data2cube.dat', 'C:/folder4/data0cube.dat']
+    >>> b = ['data', 'cube']
+    >>> c = sort(a, b)
+    ['C:/folder4/data0cube.dat', 'C:/folder2/data1cube.dat', 'C:/folder3/data2cube.dat']
+    """
+
+    def take_only_number(elem):
+        return get_number(elem=elem, split=split)
+
+    paths = sorted(paths, key=take_only_number)
+
+    return paths
 
 
 def get_number(elem: str, split: list) -> int:
@@ -60,25 +86,20 @@ def get_number(elem: str, split: list) -> int:
     return number
 
 
-def sort(paths: list, split: list) -> list:
-    """
-    Sort the paths by number in the file name that is between the two strings in split.
+def folder_sort(paths: List[str], depth: int = 1) -> Dict[str, List[str]]:
+    if depth < 1:
+        raise ValueError("Depth smaller then 1 is not allowed by folder sort!")
 
-    :param paths: A list with the paths to sort
-    :param split: A list with the letters before and after the number.
+    names_and_paths = {}
+    for p in paths:
+        folder = os.path.split(p=p)[0]
+        for i in range(depth - 1):
+            folder = os.path.split(p=folder)[0]
+        folder_name = os.path.split(p=folder)[-1]
 
-    :return: A sorted list with paths by numbers.
+        if folder_name not in names_and_paths:
+            names_and_paths[folder_name] = [p]
+        else:
+            names_and_paths[folder_name].append(p)
 
-    Example
-    -------
-    >>> a = ['C:/folder2/data1cube.dat', 'C:/folder3/data2cube.dat', 'C:/folder4/data0cube.dat']
-    >>> b = ['data', 'cube']
-    >>> c = sort(a, b)
-    ['C:/folder4/data0cube.dat', 'C:/folder2/data1cube.dat', 'C:/folder3/data2cube.dat']
-    """
-    def take_only_number(elem):
-        return get_number(elem=elem, split=split)
-
-    paths = sorted(paths, key=take_only_number)
-
-    return paths
+    return names_and_paths

@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Tuple
 
 import tensorflow as tf
 from tensorflow import keras
+from glob import glob
 import os
 import numpy as np
 import abc
@@ -9,7 +10,7 @@ import pickle
 import psutil
 
 from util.compare_distributions import DistributionsChecker
-from data_utils.tfrecord import TFRDatasets, get_cw_from_meta
+from data_utils.tfrecord import TFRDatasets, get_cw_from_meta, get_shape_from_meta
 
 from callbacks import CustomTensorboardCallback
 from data_utils.data_archive import DataArchive
@@ -17,7 +18,7 @@ from configuration.copy_py_files import copy_files
 from configuration.get_config import telegram
 from configuration.keys import TrainerKeys as TK, PathKeys as PK
 from configuration.parameter import (
-    VALID_LOG, HISTORY_FILE, TUNE,
+    VALID_LOG, HISTORY_FILE, TUNE, TFR_FILE_EXTENSION
 )
 
 
@@ -56,20 +57,12 @@ class Trainer:
             copy_files(self.log_dir, self.CONFIG_TRAINER["FILES_TO_COPY"])
 
     def get_datasets(self, for_tuning=False):
-        root_data_paths = self.data_archive.get_paths(archive_path=self.CONFIG_PATHS[PK.SHUFFLED_PATH])
-        self.batch_path = self.CONFIG_PATHS[PK.BATCHED_PATH]
-        if len(self.except_cv_names) > 0:
-            self.batch_path += "_" + self.except_cv_names[0]
-            if for_tuning:
-                self.batch_path += "_" + TUNE
-                ds = DistributionsChecker(data_archive=self.data_archive, path=os.path.split(root_data_paths[0])[0],
-                                          config_distribution=self.CONFIG_DISTRIBUTION,
-                                          check_dict_name=self.dict_names[0])
-                tuning_index = ds.get_small_database_for_tuning()
-                root_data_paths = [root_data_paths[tuning_index]]
-
-        if not os.path.exists(path=self.batch_path):
-            os.mkdir(path=self.batch_path)
+        root_data_paths = sorted(glob(os.path.join(self.CONFIG_PATHS[PK.SHUFFLED_PATH], "*" + TFR_FILE_EXTENSION)))
+        if for_tuning:
+            ds = DistributionsChecker(paths=root_data_paths,
+                                      config_distribution=self.CONFIG_DISTRIBUTION)
+            tuning_index = ds.get_small_database_for_tuning()
+            root_data_paths = [root_data_paths[tuning_index]]
 
         self.save_except_names(except_names=self.except_valid_names)
 
@@ -155,11 +148,8 @@ class Trainer:
 
         return model, history
 
-    def get_output_shape(self):
-        data_paths = self.data_archive.get_paths(archive_path=self.CONFIG_PATHS[PK.SHUFFLED_PATH])
-        X = self.data_archive.get_data(data_path=data_paths[0], data_name=self.dict_names[0])
-
-        return X.shape[1:]
+    def get_output_shape(self) -> Tuple[int, ...]:
+        return get_shape_from_meta(glob(os.path.join(self.CONFIG_PATHS[PK.SHUFFLED_PATH], "*" + TFR_FILE_EXTENSION)))
 
 
 if __name__ == '__main__':

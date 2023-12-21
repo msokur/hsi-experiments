@@ -29,6 +29,14 @@ def tfr_3d_train_parser(record):
     return X, y, sw, pat_idx
 
 
+def tfr_X_parser(record, shape: tf.Variable):
+    parsed = tf.io.parse_single_example(record, _base_feature_keys())
+
+    X_shape = tf.concat(values=[[parsed[FEATURE_SAMPLES]], shape], axis=0)
+
+    return _decode_and_reshape_X(parsed=parsed, shape=X_shape)
+
+
 def _base_feature_keys():
     """Returns the feature keys for a 1D dataset"""
     return {

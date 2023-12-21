@@ -1,12 +1,13 @@
 import json
 
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 import numpy as np
 import tensorflow as tf
 
+from data_utils.tfrecord.tfr_parser import tfr_X_parser
 from configuration.parameter import (
-    TFR_META_EXTENSION, TFR_FILE_EXTENSION, SAMPLES_PER_NAME, FEATURE_PAT_IDX,
+    TFR_META_EXTENSION, TFR_FILE_EXTENSION, SAMPLES_PER_NAME, FEATURE_PAT_IDX, FEATURE_X
 )
 
 
@@ -36,7 +37,7 @@ def parse_names_to_int(tfr_files: list) -> Dict[str, int]:
 
     names_int = {}
     for meta_file in meta_files:
-        samples_per_names = _get_samples_per_name(file_path=meta_file)
+        samples_per_names = _get_section_from_meta(file_path=meta_file, section=SAMPLES_PER_NAME)
         for name in samples_per_names.keys():
             # get indexes from all meta files
             if name not in names_int:
@@ -63,13 +64,35 @@ def filter_name_idx_and_labels(X, y, sw, pat_idx, use_pat_idx: tf.Variable, use_
             tf.boolean_mask(tensor=sw, mask=mask))
 
 
+def get_shape_from_meta(tfr_files: list) -> Tuple[int, ...]:
+    meta_files = _get_meta_files(tfr_paths=tfr_files)
+
+    model_shape = None
+    for p in meta_files:
+        if model_shape is None:
+            model_shape = _get_section_from_meta(file_path=p, section=f"{FEATURE_X}_shape")
+        else:
+            if model_shape != _get_section_from_meta(file_path=p, section=f"{FEATURE_X}_shape"):
+                raise ValueError("Chck your dataset! Different data shapes in meta files!")
+
+    return tuple(model_shape)
+
+
+def get_numpy_X(tfr_path: str, shape: tuple) -> np.ndarray:
+    shape_ = tf.Variable(shape, dtype=tf.int64)
+    data = tf.data.TFRecordDataset(filenames=tfr_path).map(map_func=lambda record: tfr_X_parser(record=record,
+                                                                                                shape=shape_))
+
+    return data.as_numpy_iterator().next()
+
+
 def _get_meta_files(tfr_paths: List[str]) -> List[str]:
     return [tfr_p.replace(TFR_FILE_EXTENSION, TFR_META_EXTENSION) for tfr_p in tfr_paths]
 
 
 def _get_samples_per_label(paths: List[str], names: list):
     for p in paths:
-        samples_per_names = _get_samples_per_name(file_path=p)
+        samples_per_names = _get_section_from_meta(file_path=p, section=SAMPLES_PER_NAME)
         # create a list with samples per label for the needed names
         samples_per_labels = [samples_per_names[name] for name in names if name in names]
         for samples_per_label in samples_per_labels:
@@ -78,11 +101,11 @@ def _get_samples_per_label(paths: List[str], names: list):
             yield samples_per_label
 
 
-def _get_samples_per_name(file_path: str) -> dict:
+def _get_section_from_meta(file_path: str, section: str) -> dict:
     # open meta file
     info = json.load(open(file=file_path, mode="r"))
     # get the section with the samples per name
-    return info[SAMPLES_PER_NAME]
+    return info[section]
 
 
 def _select(data, allowed):

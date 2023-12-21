@@ -1,21 +1,27 @@
 import sys
 import os
 import inspect
+from typing import List
+
 import numpy as np
 from tqdm import tqdm
+from glob import glob
 import math
-
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-from data_utils.data_archive import DataArchive
+from data_utils.tfrecord import get_shape_from_meta, get_numpy_X
 from configuration.keys import DistroCheckKeys as DCK
+from configuration.parameter import (
+    TFR_FILE_EXTENSION,
+)
 
 """
 This class is about choosing a representative small dataset for speed up the training
-Detailed description: https://git.iccas.de/MaktabiM/hsi-experiments/-/wikis/How-to-choose-a-representative-smaller-dataset-for-faster-training-(comparison-of-distributions-of-two-datasets)
+Detailed description: 
+https://git.iccas.de/MaktabiM/hsi-experiments/-/wikis/How-to-choose-a-representative-smaller-dataset-for-faster-training-(comparison-of-distributions-of-two-datasets)
 
 There are several functionality parts:
 1. Comparing distributions:
@@ -32,19 +38,15 @@ There are several functionality parts:
 
 
 class DistributionsChecker:
-    def __init__(self, data_archive: DataArchive, path: str, config_distribution: dict, check_dict_name: str):
+    def __init__(self, paths: List[str, ...], config_distribution: dict):
         """
         Args:
-            data_archive: IO class for data management
-            path: path with the archives to compare
+            paths: paths with the archives to compare
             config_distribution: configuration parameters
-            check_dict_name: the name from the data to check in da data archive
         """
-        self.data_archive = data_archive
-        self.path = path
+        self.test_paths = paths
+        self.path = os.path.split(paths[0])[0]
         self.CONFIG_DISTRIBUTION = config_distribution
-        self.check_dict_name = check_dict_name
-        self.test_paths = self.data_archive.get_paths(archive_path=self.path)
         self.all_data = np.array(self.get_all_data(paths=self.test_paths))
         self.prints = self.CONFIG_DISTRIBUTION[DCK.PRINTS]
 
@@ -90,8 +92,9 @@ class DistributionsChecker:
         Returns:
             data with shapes (number_of_samples, feature(s)). For 3d data only the centered patches will be used.
         """
-        data = self.data_archive.get_data(data_path=path, data_name=self.check_dict_name)
-        if len(data.shape) > 2:
+        shape = get_shape_from_meta(tfr_files=[path])
+        data = get_numpy_X(tfr_path=path, shape=shape)
+        if shape.__len__() > 2:
             data_1d = self.get_centers(data=data)
         else:
             data_1d = data

@@ -1,6 +1,6 @@
 import pytest
 
-from data_utils.data_loaders.path_sort import get_sort, get_number, sort
+from data_utils.data_loaders.path_sort import get_sort, get_number, sort, folder_sort
 
 DATE_PATHS = ["C:\\folder1\\folder2\\2023_07_04_10_10_30_cube.mat",
               "C:\\folder1\\folder2\\2022_01_30_12_30_01_cube.mat",
@@ -48,6 +48,17 @@ RESULT_NUMBER_PATH_3 = ["C:\\folder1\\folder2\\1cube.dat",
                         "C:\\folder1\\folder2\\3cube.dat",
                         "C:\\folder1\\folder2\\4cube.dat"]
 
+DATA_FOLDER_SORT = ["C:\\folder1\\folder3\\1cube.dat",
+                    "C:\\folder2\\folder3\\2cube.dat",
+                    "C:\\folder1\\folder4\\3cube.dat",
+                    "C:\\folder2\\folder4\\4cube.dat"]
+
+RESULT_FOLDER_SORT_1 = {"folder3": ["C:\\folder1\\folder3\\1cube.dat", "C:\\folder2\\folder3\\2cube.dat"],
+                        "folder4": ["C:\\folder1\\folder4\\3cube.dat", "C:\\folder2\\folder4\\4cube.dat"]}
+
+RESULT_FOLDER_SORT_2 = {"folder1": ["C:\\folder1\\folder3\\1cube.dat", "C:\\folder1\\folder4\\3cube.dat"],
+                        "folder2": ["C:\\folder2\\folder3\\2cube.dat", "C:\\folder2\\folder4\\4cube.dat"]}
+
 GET_SORT_DATA = [(DATE_PATHS, False, None, RESULT_DATE_PATHS),
                  (NUMBER_PATHS_1, True, NUMBER_SPLITS_1, RESULT_NUMBER_PATH_1),
                  ([], False, None, []),
@@ -89,3 +100,16 @@ SORT_DATA = [(NUMBER_PATHS_1, NUMBER_SPLITS_1, RESULT_NUMBER_PATH_1),
 @pytest.mark.parametrize("paths,number_splits,result", SORT_DATA)
 def test_sort(paths, number_splits, result):
     assert sort(paths=paths, split=number_splits) == result
+
+
+FOLDER_SORT_DATA = [(1, RESULT_FOLDER_SORT_1), (2, RESULT_FOLDER_SORT_2)]
+
+
+@pytest.mark.parametrize("depth,result", FOLDER_SORT_DATA)
+def test_folder_sort(depth: int, result: dict):
+    assert folder_sort(paths=DATA_FOLDER_SORT, depth=depth) == result
+
+
+def test_folder_sort_error():
+    with pytest.raises(ValueError, match="Depth smaller then 1 is not allowed by folder sort!"):
+        folder_sort(paths=DATA_FOLDER_SORT, depth=0)

@@ -14,11 +14,11 @@ from data_utils.data_archive import DataArchive
 
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK
 from configuration.parameter import (
-    DICT_X, DICT_y, DICT_IDX
+    DICT_X, DICT_y, DICT_IDX, ORG_NAME
 )
 from data_utils.background_detection import detect_background
 from data_utils.data_loaders.path_splits import get_splits
-from data_utils.data_loaders.path_sort import get_sort
+from data_utils.data_loaders.path_sort import get_sort, folder_sort
 
 
 class DataLoader:
@@ -132,26 +132,44 @@ class DataLoader:
         with open(os.path.join(destination_path, self.get_labels_filename()), 'wb') as f:
             pickle.dump(self.get_labels(), f, pickle.HIGHEST_PROTOCOL)
 
+        read_and_save_func = self.read_and_save_base
+
+        if DLK.COMBINE_DATA in self.CONFIG_DATALOADER:
+            if self.CONFIG_DATALOADER[DLK.COMBINE_DATA]:
+                read_and_save_func = self.read_and_save_folder
+
+        read_and_save_func(paths=paths, destination_path=destination_path)
+
+        print('----Saving of archives is over----')
+
+    def read_and_save_base(self, paths: List[str], destination_path: str):
         for path in tqdm(paths):
             name = self.get_cube_name(path)
             values = self.file_read(path)
             self.X_y_dict_save_to_archive(destination_path, values, name)
 
-        print('----Saving of archives is over----')
+    def read_and_save_folder(self, paths: List[str], destination_path: str):
+        names_and_paths = folder_sort(paths=paths)
+
+        for pat_name, paths in tqdm(names_and_paths.items()):
+            first = True
+            for path in paths:
+                name = self.get_cube_name(path=path)
+                values = self.file_read(path=path)
+                values[ORG_NAME] = np.array([[name] * values[self.dict_names[0]].shape[0]])
+                if first:
+                    self.X_y_dict_save_to_archive(destination_path=destination_path, values=values, name=pat_name)
+                else:
+                    self.data_archive.append_data(file_path=os.path.join(destination_path, pat_name),
+                                                  append_datas=values)
 
     def patches3d_get_from_spectrum(self, spectrum: np.ndarray):
-        spectrum_ = np.array([])
         size = self.CONFIG_DATALOADER[DLK.D3_SIZE]
         # Better not to use non even sizes
         pad = [int((s - 1) / 2) for s in size]
-        if size[0] % 2 == 1 and size[1] % 2 == 1:
-            spectrum_ = np.pad(spectrum, ((pad[0], pad[0]), (pad[1], pad[1]), (0, 0)))
-        elif size[0] % 2 == 1 and size[1] % 2 == 0:
-            spectrum_ = np.pad(spectrum, ((pad[0], pad[0]), (pad[1], pad[1] + 1), (0, 0)))
-        elif size[0] % 2 == 0 and size[1] % 2 == 1:
-            spectrum_ = np.pad(spectrum, ((pad[0], pad[0] + 1), (pad[1], pad[1]), (0, 0)))
-        elif size[0] % 2 == 0 and size[1] % 2 == 0:
-            spectrum_ = np.pad(spectrum, ((pad[0], pad[0] + 1), (pad[1], pad[1] + 1), (0, 0)))
+        pad_width = [[pad[idx], pad[idx]] if s % 2 == 1 else [pad[idx], pad[idx] + 1] for idx, s in enumerate(size)]
+        pad_width.append([0, 0])
+        spectrum_ = np.pad(array=spectrum, pad_width=np.array(pad_width))
 
         patches = image.extract_patches_2d(spectrum_, tuple(size))
         patches = np.reshape(patches, (spectrum.shape[0], spectrum.shape[1], size[0], size[1], patches.shape[-1]))

@@ -20,6 +20,7 @@ DICT_X = "X"                            # default dict name for spectrum
 DICT_y = "y"                            # default dict name for classifications
 DICT_IDX = "indexes_in_datacube"        # default dict name for original indexes in hyper cube
 DICT_WEIGHT = "weights"                 # default dict name for weights
+ORG_NAME = "org_name"                   # original file name, when mor files in one data archive
 
 # --- Scaler
 SCALER_FILE = "scaler.scaler"

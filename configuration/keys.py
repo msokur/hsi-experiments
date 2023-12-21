@@ -84,6 +84,7 @@ class DataLoaderKeys:
     PLOT_COLORS = "PLOT_COLORS"
     LABELS = "LABELS"
     DATA_NAMES_FROM_FILE = "DATA_NAMES_FROM_FILE"
+    COMBINE_DATA = "COMBIN_DATA_FROM_FOLDER"
 
 
 class TrainerKeys:

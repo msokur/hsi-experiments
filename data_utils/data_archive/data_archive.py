@@ -1,4 +1,5 @@
 import abc
+import warnings
 from shutil import rmtree
 from typing import List, Dict, Iterable
 
@@ -115,6 +116,20 @@ class DataArchive:
         """
         pass
 
+    @abc.abstractmethod
+    def append_data(self, file_path: str, append_datas: Dict[str, np.ndarray]) -> None:
+        """
+        Appends datas to a existing data archive.
+
+        :param file_path: The path to the file to append
+        :param append_datas: The data to append
+
+        :raises ValueError: When the append data has not all data from the data archive
+        :raises FileNorFoundError: If the file to append not exist
+        :raises UserWarning: If more data in the append data then in the data archive
+        """
+        pass
+
     @staticmethod
     def delete_archive(delete_path: str):
         """
@@ -125,3 +140,18 @@ class DataArchive:
         print(f"--- Delete archive in {delete_path}. ---")
         rmtree(delete_path)
         print("--- Delete finish ---")
+
+    @staticmethod
+    def _file_not_found(file: str):
+        raise FileNotFoundError(f"File: '{file}' not found to append data!")
+
+    @staticmethod
+    def _check_keys(name: str, base_keys: set, append_keys: set):
+        a = base_keys - append_keys
+        b = append_keys - base_keys
+
+        if a.__len__() > 0:
+            raise ValueError(f"Different keys in data archive '{name}' to combine data!")
+        elif b.__len__() > 0:
+            not_in_data = ", ".join(b)
+            raise warnings.warn(f"Data '{not_in_data}' will be not append to data archive!")
