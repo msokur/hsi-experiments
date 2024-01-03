@@ -11,7 +11,15 @@ from configuration.parameter import (
 )
 
 
-def get_cw_from_meta(tfr_files: list, labels: list, names: list) -> Dict[int, float]:
+def get_cw_from_meta(tfr_files: list, labels: list, names: list) -> Dict[str, float]:
+    """Calculate class weights from meta file.
+
+    :param tfr_files: Paths to datasets
+    :param labels: Used labels
+    :param names: Used names
+
+    :return: A dictionary with the label name as str and the class weight
+    """
     meta_files = _get_meta_files(tfr_paths=tfr_files)
 
     sums = {f"{label}": 0.0 for label in labels}
@@ -33,6 +41,14 @@ def get_cw_from_meta(tfr_files: list, labels: list, names: list) -> Dict[int, fl
 
 
 def parse_names_to_int(tfr_files: list) -> Dict[str, int]:
+    """Read the integer values in the metafile for every name.
+
+    :param tfr_files: Paths to datasets
+
+    :return: A dictionary with the actual str name as key and the integer as value
+
+    :raises ValueError: If there is more than one integer for a name
+    """
     meta_files = _get_meta_files(tfr_paths=tfr_files)
 
     names_int = {}
@@ -64,7 +80,15 @@ def filter_name_idx_and_labels(X, y, sw, pat_idx, use_pat_idx: tf.Variable, use_
             tf.boolean_mask(tensor=sw, mask=mask))
 
 
-def get_shape_from_meta(tfr_files: list) -> Tuple[int, ...]:
+def get_shape_from_meta(tfr_files: list) -> Tuple[int]:
+    """Get Dataset shape for X from meta files
+
+    :param tfr_files: Paths to datasets
+
+    :return: A tuple with the shape for X
+
+    :raises ValueError: When different shape in the meta files
+    """
     meta_files = _get_meta_files(tfr_paths=tfr_files)
 
     model_shape = None
@@ -79,6 +103,13 @@ def get_shape_from_meta(tfr_files: list) -> Tuple[int, ...]:
 
 
 def get_numpy_X(tfr_path: str, shape: tuple) -> np.ndarray:
+    """Get X as numpy array from a TFRecord file.
+
+    :param tfr_path: Path from the file to read
+    :param shape: The shape from X
+
+    :return: Numpy array with data from X
+    """
     shape_ = tf.Variable(shape, dtype=tf.int64)
     data = tf.data.TFRecordDataset(filenames=tfr_path).map(map_func=lambda record: tfr_X_parser(record=record,
                                                                                                 shape=shape_))
@@ -87,6 +118,12 @@ def get_numpy_X(tfr_path: str, shape: tuple) -> np.ndarray:
 
 
 def _get_meta_files(tfr_paths: List[str]) -> List[str]:
+    """Replace TFRecord file extension with TFRecord meta file extension.
+
+    :param tfr_paths: TFRecord file paths
+
+    :return: List with paths to TFRecord meta files
+    """
     return [tfr_p.replace(TFR_FILE_EXTENSION, TFR_META_EXTENSION) for tfr_p in tfr_paths]
 
 

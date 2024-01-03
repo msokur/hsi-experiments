@@ -5,8 +5,13 @@ from data_utils.tfrecord.tfr_utils import parse_names_to_int, filter_name_idx_an
 
 
 class TFRDatasets:
-    def __init__(self, data_dir: str, batch_size: int, d3: bool, with_sample_weights: bool):
-        self.data_dir = data_dir
+    def __init__(self, batch_size: int, d3: bool, with_sample_weights: bool):
+        """TFRecords dataset from a shuffled dataset
+
+        :param batch_size: Size from batches
+        :param d3: True -> data with patches, False -> data without patches
+        :param with_sample_weights: True -> use sample weights, False -> don't use sample weights
+        """
         self.batch_size = batch_size
         self.d3 = d3
         self.with_sample_weights = with_sample_weights
@@ -40,6 +45,13 @@ class TFRDatasets:
 
     @staticmethod
     def __get_names_int_list(ds_paths: list, names: list) -> tf.Variable:
+        """Parsed names in Dataset files to integer
+
+        :param ds_paths: List with the paths from the data
+        :param names: List with names to use
+
+        :return: A tf Variable with integer
+        """
         names_int_dict = parse_names_to_int(tfr_files=ds_paths)
         names_int = []
         for name in names:

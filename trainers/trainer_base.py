@@ -66,8 +66,7 @@ class Trainer:
 
         self.save_except_names(except_names=self.except_valid_names)
 
-        tfr_datasets = TFRDatasets(data_dir=self.CONFIG_PATHS[PK.SHUFFLED_PATH],
-                                   batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE], d3=self.d3,
+        tfr_datasets = TFRDatasets(batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE], d3=self.d3,
                                    with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS])
         train_ds, valid_ds = tfr_datasets.get_datasets(ds_paths=root_data_paths, train_names=self.except_train_names,
                                                        valid_names=self.except_valid_names, labels=self.labels_to_train)

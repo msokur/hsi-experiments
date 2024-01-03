@@ -21,8 +21,7 @@ GET_DATASETS_RANK = [("1d", False, [2, 1]), ("1d", True, [2, 1, 1]),
 
 
 def get_test_datasets(shape: str, with_sw: bool, file_dir: str):
-    tfr_datasets = TFRDatasets(data_dir=file_dir, batch_size=BATCH_SIZE, d3=True if shape == "3d" else False,
-                               with_sample_weights=with_sw)
+    tfr_datasets = TFRDatasets(batch_size=BATCH_SIZE, d3=True if shape == "3d" else False, with_sample_weights=with_sw)
     paths = glob(os.path.join(file_dir, shape, "*" + TFR_FILE_EXTENSION))
     return tfr_datasets.get_datasets(ds_paths=paths, train_names=USE_NAMES, valid_names=[], labels=LABELS)
 
