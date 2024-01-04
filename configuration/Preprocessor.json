@@ -10,7 +10,7 @@
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",
     "FILES_TO_COPY": [["data_utils", "*.py"], ["data_utils", "data_loaders", "*.py"],
-      ["data_utils", "configuration", "*.py"], ["data_utils", "configuration", "*.json"]],
+      ["configuration", "*.py"], ["configuration", "*.json"]],
     "NORMALIZATION_TYPE": "svn",
     "SCALER_FILE": "scaler.scaler",
     "SCALER_PATH": null
@@ -26,7 +26,7 @@
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",
     "FILES_TO_COPY": [["data_utils", "*.py"], ["data_utils", "data_loaders", "*.py"],
-      ["data_utils", "configuration", "*.py"], ["data_utils", "configuration", "*.json"]],
+      ["configuration", "*.py"], ["configuration", "*.json"]],
     "NORMALIZATION_TYPE": "svn",
     "SCALER_FILE": "scaler.scaler",
     "SCALER_PATH": null
@@ -42,7 +42,7 @@
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",
     "FILES_TO_COPY": [["data_utils", "*.py"], ["data_utils", "data_loaders", "*.py"],
-      ["data_utils", "configuration", "*.py"], ["data_utils", "configuration", "*.json"]],
+      ["configuration", "*.py"], ["configuration", "*.json"]],
     "NORMALIZATION_TYPE": "l2_norm",
     "SCALER_FILE": "scaler.scaler",
     "SCALER_PATH": null
