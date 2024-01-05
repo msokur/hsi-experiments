@@ -1,14 +1,14 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=32
-#SBATCH --job-name=7_prepro
+#SBATCH --ntasks-per-node=4
+#SBATCH --job-name=weights_prepro
 #SBATCH --partition=clara
 #SBATCH --time=40:00:00
-#SBATCH --mem=36G
+#SBATCH --mem=16G
 ##SBATCH --gres=gpu:v100:2
 ##SBATCH --gres=gpu:rtx2080ti:8
 
-#SBATCH --output=outputs/preprocessor_7х7_%j.log
+#SBATCH --output=outputs/preprocessor_check_separate_weights_%j.log
 
 #module load FlexiBLAS/3.0.4-GCC-10.3.0
 #module load Python
