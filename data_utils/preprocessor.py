@@ -1,11 +1,9 @@
 import sys
 import inspect
 import os
-import numpy as np
-import glob
-from tqdm import tqdm
-import pickle
+from glob import glob
 import psutil
+from datetime import datetime
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
@@ -15,6 +13,7 @@ from configuration.get_config import telegram, CONFIG_PATHS, CONFIG_PREPROCESSOR
 import provider
 from configuration.copy_py_files import copy_files
 from data_utils.shuffle import Shuffle
+from data_utils.weights import Weights
 
 '''
 Preprocessor contains opportunity of
@@ -42,65 +41,9 @@ class Preprocessor:
         self.dict_names = self.CONFIG_PREPROCESSOR["DICT_NAMES"]
         self.piles_number = self.CONFIG_PREPROCESSOR["PILES_NUMBER"]
         self.weights_filename = self.CONFIG_PREPROCESSOR["WEIGHT_FILENAME"]
+        
+        self.Weights = Weights(self.CONFIG_DATALOADER, self.dataloader, self.weights_filename)
 
-    def weights_get_from_file(self, root_path):
-        weights_path = os.path.join(root_path, self.weights_filename)
-        if os.path.isfile(weights_path):
-            weights = pickle.load(open(weights_path, 'rb'))
-            return weights['weights']
-        else:
-            raise ValueError("No .weights file was found in the directory, check given path")
-
-    def weights_get_or_save(self, root_path):
-        weights_path = os.path.join(root_path, self.weights_filename)
-
-        paths = glob.glob(os.path.join(root_path, '*.npz'))
-        y_unique = pickle.load(open(os.path.join(root_path, self.dataloader.get_labels_filename()), 'rb'))
-
-        quantities = []
-        for path in tqdm(paths):
-            data = np.load(path)
-            X, y = data['X'], data['y']
-
-            quantity = []
-            for y_u in y_unique:
-                quantity.append(X[y == y_u].shape[0])
-
-            quantities.append(quantity)
-
-        quantities = np.array(quantities)
-
-        sum_ = np.sum(quantities[:, self.CONFIG_DATALOADER["LABELS"]])
-        with np.errstate(divide='ignore', invalid='ignore'):
-            weights = sum_ / quantities
-
-        weights[np.isinf(weights)] = 0
-
-        data = {
-            'weights': weights,
-            'sum': sum_,
-            'quantities': quantities
-        }
-
-        with open(weights_path, 'wb') as f:
-            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
-
-        return weights
-
-    def weightedData_save(self, root_path, weights):
-        paths = glob.glob(os.path.join(root_path, "*.npz"))
-        for i, path in tqdm(enumerate(paths)):
-            data = np.load(path)
-            X, y = data["X"], data["y"]
-            weights_ = np.zeros(y.shape)
-
-            for j in np.unique(y):
-                weights_[y == j] = weights[i, j]
-
-            data_ = {n: a for n, a in data.items()}
-            data_["weights"] = weights_
-
-            np.savez(os.path.join(root_path, self.dataloader.get_name(path)), **data_)
 
     @staticmethod
     def get_execution_flags_for_pipeline_with_all_true():
@@ -112,6 +55,9 @@ class Preprocessor:
         }
 
     def pipeline(self, root_path=None, preprocessed_path=None, execution_flags=None):
+        dt_string = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+        print("Time before the start of preprocessing", dt_string)
+        
         process = psutil.Process(os.getpid())
         
         if execution_flags is None:
@@ -132,20 +78,20 @@ class Preprocessor:
                    self.CONFIG_PREPROCESSOR["FILES_TO_COPY"],
                    self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
         
-        print('-------------------------------------------------Memory, preprocessor 0', process.memory_info().rss)
+        print('-------------------------------------------------Memory, preprocessor 0, before preprocessing', process.memory_info().rss)
 
         # ---------Data reading part--------------
         if execution_flags['load_data_with_dataloader']:
             self.dataloader.files_read_and_save_to_npz(root_path, preprocessed_path)
             
-        print('-------------------------------------------------Memory, preprocessor 1', process.memory_info().rss)
+        print('-------------------------------------------------Memory, preprocessor 1, after reading of origin files', process.memory_info().rss)
 
         # ----------weights part------------------
         if execution_flags['add_sample_weights']:
-            weights = self.weights_get_or_save(preprocessed_path)
-            self.weightedData_save(preprocessed_path, weights)
+            weights = self.Weights.weights_get_or_save(preprocessed_path)
+            self.Weights.weightedData_save(preprocessed_path, weights)
         
-        print('-------------------------------------------------Memory, preprocessor 2', process.memory_info().rss)
+        print('-------------------------------------------------Memory, preprocessor 2, after sample weights', process.memory_info().rss)
 
         # ----------scaler part ------------------
         if execution_flags['scale'] and self.CONFIG_PREPROCESSOR["NORMALIZATION_TYPE"] is not None:
@@ -157,7 +103,7 @@ class Preprocessor:
                                          dict_names=[self.CONFIG_PREPROCESSOR["DICT_NAMES"][x] for x in [0, 1, 4]])
             scaler.iterate_over_archives_and_save_scaled_X(preprocessed_path, preprocessed_path)
 
-        print('-------------------------------------------------Memory, preprocessor 3', process.memory_info().rss)
+        print('-------------------------------------------------Memory, preprocessor 3, after scaling', process.memory_info().rss)
         
         # ----------shuffle part------------------
         if execution_flags['shuffle']:
@@ -169,7 +115,7 @@ class Preprocessor:
                               augmented=CONFIG_AUG["enable"])
             shuffle.shuffle()
         
-        print('-------------------------------------------------Memory, preprocessor 4', process.memory_info().rss)
+        print('-------------------------------------------------Memory, preprocessor 4, after shuffling', process.memory_info().rss)
 
 
 if __name__ == '__main__':
