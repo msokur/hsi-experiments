@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --job-name=ram_gpu4
+#SBATCH --ntasks-per-node=16
+#SBATCH --job-name=with_SW_weighted_metrics
 #SBATCH --partition=clara
 #SBATCH --time=10:00:00
 #SBATCH --mem=24G
 ##SBATCH --gres=gpu:v100:2
-#SBATCH --gres=gpu:rtx2080ti:4
-#SBATCH --output=outputs/_repair_cv_gpu4_RAM_%j.log
+#SBATCH --gres=gpu:rtx2080ti:2
+#SBATCH --output=outputs/_check_CV_with_SW_with_weighted_metrics_%j.log
 
 #module load Python
 #module load matplotlib

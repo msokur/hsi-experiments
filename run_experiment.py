@@ -13,6 +13,8 @@ from evaluation.validator import Validator
 class Experiment:
     def __init__(self, name, config_for_experiment):
         self.name = name
+        
+        #-------------create root folder---------------
         config.MODEL_NAME_PATHS.append(self.name)
         self.root_folder = os.path.join(*config.MODEL_NAME_PATHS)
         if not os.path.exists(self.root_folder):
@@ -21,7 +23,9 @@ class Experiment:
         self.config_for_experiment = config_for_experiment
         self.combinations_keys = config_for_experiment.keys()
         self.combinations = list(itertools.product(*config_for_experiment.values()))
-
+        
+        
+        #--------------create metrics folder-------------
         prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
         test_root_path = os.path.join(prefix, 'metrics')
         test_path = os.path.join(test_root_path, name)
@@ -31,6 +35,7 @@ class Experiment:
 
         self.save_combinations()
         # self.run_experiment()
+             
 
     def save_combinations(self):
         self.json_name = os.path.join(self.root_folder, 'combinations.json')
