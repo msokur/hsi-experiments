@@ -6,6 +6,7 @@ import numpy as np
 import abc
 import pickle
 import psutil
+from glob import glob
 
 import data_utils.generator as generator
 from configuration.copy_py_files import copy_files
@@ -31,13 +32,40 @@ class Trainer:
         self.valid_except_indexes = valid_except_indexes.copy()
 
     @abc.abstractmethod
-    def compile_model(self, model):
-        pass
-
-    @abc.abstractmethod
     def get_model(self):
         pass
+    
+    @abc.abstractmethod
+    def get_parameters_for_compile(self):
+        #shold return Loss and Metrics
+        pass
+    
+    def compile_model(self, model):
+        loss, raw_metrics = self.get_parameters_for_compile()
+        METRICS, WEIGHTED_METRICS = self.fill_metrics(raw_metrics)
+        print(loss, METRICS, WEIGHTED_METRICS)
+            
+        model.compile(
+            optimizer=keras.optimizers.Adam(learning_rate=self.CONFIG_TRAINER["LEARNING_RATE"]),
+            loss=loss,
+            metrics=METRICS,
+            weighted_metrics=WEIGHTED_METRICS
+        )
 
+        return model
+    
+    def fill_metrics(self, raw_metrics):
+        METRICS, WEIGHTED_METRICS = [], []
+        
+        if self.CONFIG_TRAINER["WITH_SAMPLE_WEIGHTS"]:
+            WEIGHTED_METRICS = raw_metrics.copy()
+            METRICS = None
+        else:
+            WEIGHTED_METRICS = None
+            METRICS = raw_metrics.copy()
+            
+        return METRICS, WEIGHTED_METRICS
+        
     def save_valid_except_indexes(self, valid_except_indexes):
         with open(os.path.join(self.log_dir, "valid.valid_except_names"), "wb") as f:
             pickle.dump(valid_except_indexes, f, pickle.HIGHEST_PROTOCOL)
@@ -48,7 +76,15 @@ class Trainer:
                 os.mkdir(self.log_dir)
 
             copy_files(self.log_dir, self.CONFIG_TRAINER["FILES_TO_COPY"], self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
-
+    
+    def if_split_dataset(self)
+        split_train=True
+        batches = glob(os.path.join(self.batch_path, '*.npz'))
+        if self.CONFIG_CV["MODE"] == 'DEBUG' and len(batches) > 0:
+            split_train=False
+            
+        return split_train
+    
     def get_datasets(self, for_tuning=False):
         # train, test, class_weight = get_data(log_dir, paths=paths, except_indexes=except_indexes)
         self.batch_path = self.CONFIG_PATHS["BATCHED_PATH"]
@@ -59,9 +95,7 @@ class Trainer:
         if not os.path.exists(self.batch_path):
             os.mkdir(self.batch_path)
             
-        split_train=True
-        if self.CONFIG_CV["MODE"] == 'DEBUG':
-            split_train=False
+        split_train=self.if_split_dataset()
             
         train_generator = generator.DataGenerator("train",
                                                   self.CONFIG_PATHS["SHUFFLED_PATH"],

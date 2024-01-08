@@ -8,22 +8,16 @@ import trainers.trainer_base as trainer_base
 class TrainerEasy(trainer_base.Trainer):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-    def compile_model(self, model):
+        
+    def get_parameters_for_compile(self):
+        loss = keras.losses.BinaryCrossentropy()
         metric_dict = self.CONFIG_TRAINER["CUSTOM_OBJECTS"]
-        METRICS = [
-            keras.metrics.BinaryAccuracy(name="accuracy"),
-        ]
-        for key in metric_dict.keys():            
-            METRICS.append(metric_dict[key]["metric"](**metric_dict[key]["args"]))
-
-        model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=self.CONFIG_TRAINER["LEARNING_RATE"]),
-            loss=keras.losses.BinaryCrossentropy(),
-            metrics=METRICS,
-        )
-
-        return model
+        raw_metrics = []
+        
+        for key in metric_dict.keys():
+            raw_metrics.append(metric_dict[key]["metric"](**metric_dict[key]["args"]))
+                
+        return loss, raw_metrics
 
     def get_restored_model(self):
         print('!!!!!!!!!!!!We restore model!!!!!!!!!!!!')

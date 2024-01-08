@@ -70,7 +70,7 @@ class DataGenerator(keras.utils.Sequence):
         data = np.load(self.batches_npz_path[index])
         X, y = data["X"], data["y"]
 
-        if CONFIG_TRAINER["WITH_SAMPLE_WEIGHTS"] and "weights" in data.keys():
+        if CONFIG_TRAINER["WITH_SAMPLE_WEIGHTS"]:
             return X, y, data["weights"]
 
         return X, y.astype(np.float)
@@ -183,27 +183,28 @@ class DataGenerator(keras.utils.Sequence):
                                 replace=False)
 
     def get_class_weights(self, labels=None):
-        if labels is None:
-            labels = CONFIG_DATALOADER["LABELS_TO_TRAIN"]
-        labels = np.array(labels)
-        sums = np.zeros(labels.shape)
+        if not CONFIG_TRAINER["WITH_SAMPLE_WEIGHTS"]: # if sample weights will be used, we shouldn't use class_weights (and should return None as class_weights respectively)
+            if labels is None:
+                labels = CONFIG_DATALOADER["LABELS_TO_TRAIN"]
+            labels = np.array(labels)
+            sums = np.zeros(labels.shape)
 
-        for p in self.batches_npz_path:
-            data = np.load(p)
-            y = data['y']
+            for p in self.batches_npz_path:
+                data = np.load(p)
+                y = data['y']
+                for i, l in enumerate(labels):
+                    sums[i] += np.flatnonzero(y == l).shape[0]
+
+            total = np.sum(sums)
+
+            weights = {}
             for i, l in enumerate(labels):
-                sums[i] += np.flatnonzero(y == l).shape[0]
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    weights[l] = (1 / sums[i]) * total / len(CONFIG_DATALOADER["LABELS_TO_TRAIN"])
+                if weights[l] == np.inf:
+                    weights[l] = 0.0
 
-        total = np.sum(sums)
-
-        weights = {}
-        for i, l in enumerate(labels):
-            with np.errstate(divide="ignore", invalid="ignore"):
-                weights[l] = (1 / sums[i]) * total / len(CONFIG_DATALOADER["LABELS_TO_TRAIN"])
-            if weights[l] == np.inf:
-                weights[l] = 0.0
-
-        self.class_weight = weights
+            self.class_weight = weights
 
         return self.class_weight
 
