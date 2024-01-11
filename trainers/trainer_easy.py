@@ -82,8 +82,9 @@ class TrainerEasy(Trainer):
         return model, initial_epoch
 
     def get_new_model(self) -> keras.Model:
-        model = self.CONFIG_TRAINER[TK.MODEL](shape=self.get_output_shape(), conf=self.CONFIG_TRAINER[TK.MODEL_CONFIG],
-                                              num_of_labels=len(self.labels_to_train))
+        model = self.CONFIG_TRAINER[TK.MODEL](input_shape=self.get_output_shape(),
+                                              config=self.CONFIG_TRAINER[TK.MODEL_CONFIG],
+                                              num_of_output=len(self.labels_to_train)).get_model()
         model = self.compile_model(model)
         return model
 

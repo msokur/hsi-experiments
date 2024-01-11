@@ -38,7 +38,7 @@ def test_get_trainer_with_model(trainer_data_name: str, data_dir: str, get_train
     trainer = get_trainer(file_name=trainer_data_name, section="NORMAL", d3=True, classes=[0, 1, 2], main_dir=data_dir)
     trainer_model = trainer.pop("MODEL")
     result_model = get_trainer_result.pop("MODEL")
-    assert trainer_model.__code__.co_code == result_model.__code__.co_code
+    assert trainer_model == result_model
 
 
 def test_get_cv(cv_data_name: str, data_dir: str, cv_result):

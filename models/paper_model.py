@@ -3,20 +3,15 @@ import abc
 import tensorflow as tf
 import tensorflow.keras as keras
 
-from models.model_randomness import get_dropout, get_initializers, set_tf_seed
+from models.model_base import ModelBase
+from models.model_randomness import get_dropout
 
 from configuration.keys import ModelKeys as MK
 
 
-class PaperModelBase:
-    def __init__(self):
-        self.conf = None
-        self.num_of_labels = None
-        self.kernel_initializer, self.bias_initializer = get_initializers()
-        set_tf_seed()
-
+class PaperModelBase(ModelBase):
     @abc.abstractmethod
-    def get_model(self, shape: tuple, conf: dict, num_of_labels: int):
+    def get_model(self):
         pass
 
     def paper_model_base(self, input_, net, conv_round):
@@ -24,13 +19,13 @@ class PaperModelBase:
 
         net = tf.keras.layers.Flatten()(net)
 
-        net = get_dropout(net=net, dropout_value=self.conf[MK.DROPOUT])
+        net = get_dropout(net=net, dropout_value=self.config[MK.DROPOUT])
 
         activation = 'sigmoid'
         number = 1
-        if self.num_of_labels > 2:
+        if self.num_of_output > 2:
             activation = None
-            number = self.num_of_labels
+            number = self.num_of_output
 
         result = tf.keras.layers.Dense(number, activation=activation, kernel_initializer=self.kernel_initializer,
                                        bias_initializer=self.bias_initializer)(net)
@@ -64,10 +59,8 @@ class PaperModelBase:
 
 
 class PaperModel1D(PaperModelBase):
-    def get_model(self, shape: tuple, conf: dict, num_of_labels: int):
-        self.conf = conf
-        self.num_of_labels = num_of_labels
-        input_ = tf.keras.layers.Input(shape=shape, name="title")
+    def get_model(self):
+        input_ = tf.keras.layers.Input(shape=self.input_shape, name="title")
 
         net = tf.expand_dims(input_, axis=-1)
         conv_round = range(4)
@@ -76,12 +69,10 @@ class PaperModel1D(PaperModelBase):
 
 
 class PaperModel3D(PaperModelBase):
-    def get_model(self, shape: tuple, conf: dict, num_of_labels: int):
-        self.conf = conf
-        self.num_of_labels = num_of_labels
-        input_ = tf.keras.layers.Input(shape=shape, name="title")
+    def get_model(self):
+        input_ = tf.keras.layers.Input(shape=self.input_shape, name="title")
 
-        conv_round = range(int(shape[0] / 2))
+        conv_round = range(int(self.input_shape[0] / 2))
 
         net = tf.expand_dims(input_, axis=-1)
 
@@ -116,6 +107,6 @@ if __name__ == "__main__":
         "DROPOUT": 0.1
     }
     labels = 3
-    model1 = PaperModel3D()
-    model_ = model1.get_model(shape=shape_, conf=conf_, num_of_labels=labels)
+    model1 = PaperModel3D(input_shape=shape_, config=conf_, num_of_output=labels)
+    model_ = model1.get_model()
     model_.summary()

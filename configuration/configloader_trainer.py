@@ -16,12 +16,12 @@ CUSTOM_OBJECTS_MULTI = {"F1_score": tf_metric_multiclass.F1_score}
 CUSTOM_OBJECTS_BINARY = {"F1_score": tf_metrics_binary.F1_score}
 
 # --- Models for patch sized data
-MODELS_3D = {"paper_model": PaperModel3D().get_model,
-             "inception_model": InceptionModel3D().get_model}
+MODELS_3D = {"paper_model": PaperModel3D,
+             "inception_model": InceptionModel3D}
 
 # --- Models for data without patches
-MODELS_1D = {"paper_model": PaperModel1D().get_model,
-             "inception_model": InceptionModel1D().get_model}
+MODELS_1D = {"paper_model": PaperModel1D,
+             "inception_model": InceptionModel1D}
 
 
 def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dict:

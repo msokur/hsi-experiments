@@ -92,7 +92,11 @@ def folder_sort(paths: List[str], depth: int = 1) -> Dict[str, List[str]]:
 
     names_and_paths = {}
     for p in paths:
-        folder = os.path.split(p=p)[0]
+        if "\\" in p:
+            folder = p.replace("\\", "/")
+        else:
+            folder = p
+        folder = os.path.split(p=folder)[0]
         for i in range(depth - 1):
             folder = os.path.split(p=folder)[0]
         folder_name = os.path.split(p=folder)[-1]

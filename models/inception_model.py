@@ -3,7 +3,8 @@ import abc
 import tensorflow as tf
 from tensorflow.keras import activations
 
-from models.model_randomness import get_dropout, get_initializers, set_tf_seed
+from models.model_base import ModelBase
+from models.model_randomness import get_dropout
 
 from configuration.keys import ModelKeys as MK
 
@@ -15,23 +16,14 @@ POOL_SIZE = 3
 POOL_STRIDES = 1
 
 
-class InceptionModelBase:
-    def __init__(self):
-        self.conf = None
-        self.num_of_labels = None
-        self.kernel_initializer, self.bias_initializer = get_initializers()
-        set_tf_seed()
-
-    def get_model(self, shape: tuple, conf: dict, num_of_labels: int):
-        self.conf = conf
-        self.num_of_labels = num_of_labels
-
+class InceptionModelBase(ModelBase):
+    def get_model(self):
         input_ = tf.keras.layers.Input(
-            shape=shape, name="title"
+            shape=self.input_shape, name="title"
         )
 
-        net = self.inception_block(input_=input_, factor=conf[MK.INCEPTION_FACTOR],
-                                   with_batch_norm=conf[MK.WITH_BATCH_NORM])
+        net = self.inception_block(input_=input_, factor=self.config[MK.INCEPTION_FACTOR],
+                                   with_batch_norm=self.config[MK.WITH_BATCH_NORM])
 
         return self.inception_base(input_=input_, net=net)
 
@@ -70,13 +62,13 @@ class InceptionModelBase:
 
     def inception_base(self, input_, net):
         net = tf.keras.layers.Flatten()(net)
-        net = get_dropout(net=net, dropout_value=self.conf["DROPOUT"])
+        net = get_dropout(net=net, dropout_value=self.config["DROPOUT"])
 
         activation = 'sigmoid'
         number = 1
-        if self.num_of_labels > 2:
+        if self.num_of_output > 2:
             activation = None
-            number = self.num_of_labels
+            number = self.num_of_output
         result = tf.keras.layers.Dense(number, activation=activation, kernel_initializer=self.kernel_initializer,
                                        bias_initializer=self.bias_initializer)(net)
 
@@ -135,6 +127,6 @@ if __name__ == "__main__":
         "DROPOUT": 0.1
     }
     labels = 3
-    model1 = InceptionModel3D()
-    model_ = model1.get_model(shape=shape_, conf=conf_, num_of_labels=labels)
+    model1 = InceptionModel3D(input_shape=shape_, config=conf_, num_of_output=labels)
+    model_ = model1.get_model()
     model_.summary()

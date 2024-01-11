@@ -43,7 +43,7 @@ def test_read_trainer_only_model(trainer_data_dir: str, trainer_result: tuple):
     trainer_model = trainer_normal.pop("MODEL")
     result_model = result.pop("MODEL")
     if section == "NORMAL":
-        assert trainer_model.__code__.co_code == result_model.__code__.co_code
+        assert trainer_model == result_model
     else:
         assert trainer_model == result_model
 
@@ -115,6 +115,6 @@ def test_get_model(get_model_result: tuple):
     model = get_model(d3=d3, typ=typ)
     if typ == "Normal":
         for (k_m, v_m), (k_r, v_r) in zip(model.items(), result.items()):
-            assert k_m == k_r and v_m.__code__.co_code == v_r.__code__.co_code
+            assert k_m == k_r and v_m == v_r
     else:
         assert model == result

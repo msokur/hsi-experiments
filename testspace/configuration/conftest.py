@@ -203,10 +203,10 @@ def model_tuner() -> dict:
 # result trainer data
 @pytest.fixture
 def model_normal() -> dict:
-    return {"1D": {"paper_model": PaperModel1D().get_model,
-                   "inception_model": InceptionModel1D.get_model},
-            "3D": {"paper_model": PaperModel3D.get_model,
-                   "inception_model": InceptionModel3D.get_model}}
+    return {"1D": {"paper_model": PaperModel1D,
+                   "inception_model": InceptionModel1D},
+            "3D": {"paper_model": PaperModel3D,
+                   "inception_model": InceptionModel3D}}
 
 
 @pytest.fixture

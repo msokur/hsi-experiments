@@ -63,7 +63,7 @@ GET_MODEL_DATA = [(PaperModel1D, (92,), 2, PAPER_MODEL_CONFIGURATION,
 
 @pytest.mark.parametrize("model_class,spec,labels,config,result_layers", GET_MODEL_DATA)
 def test_get_model_input(model_class, spec, labels, config, result_layers):
-    model = model_class().get_model(shape=spec, conf=config, num_of_labels=labels)
+    model = model_class(input_shape=spec, config=config, num_of_output=labels).get_model()
 
     assert len(model.inputs) == 1
     assert model.input_shape == ((None,) + spec)
@@ -71,7 +71,7 @@ def test_get_model_input(model_class, spec, labels, config, result_layers):
 
 @pytest.mark.parametrize("model_class,spec,labels,config,result_layers", GET_MODEL_DATA)
 def test_get_model_layer(model_class, spec, labels, config, result_layers):
-    model = model_class().get_model(shape=spec, conf=config, num_of_labels=labels)
+    model = model_class(input_shape=spec, config=config, num_of_output=labels).get_model()
 
     assert len(model.layers) == len(result_layers)
     for layer, result_layer in zip(model.layers, result_layers):
@@ -80,7 +80,7 @@ def test_get_model_layer(model_class, spec, labels, config, result_layers):
 
 @pytest.mark.parametrize("model_class,spec,labels,config,result_layers", GET_MODEL_DATA)
 def test_get_model_output(model_class, spec, labels, config, result_layers):
-    model = model_class().get_model(shape=spec, conf=config, num_of_labels=labels)
+    model = model_class(input_shape=spec, config=config, num_of_output=labels).get_model()
 
     assert len(model.outputs) == 1
     assert model.output_shape == (None, 1 if labels == 2 else labels)
