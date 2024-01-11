@@ -1,9 +1,4 @@
 import numpy as np
-# import cv2
-from scipy.ndimage import gaussian_filter1d
-
-# import sklearn
-# from sklearn.preprocessing import StandardScaler
 # import joblib   # (version 0.14.1)
 backend = "threading"
 
