@@ -36,3 +36,5 @@ jupyter/*.png
 jupyter/*.jpg
 yarn.lock
 node_modules/
+archive_logs
+jupyter/*/*.png

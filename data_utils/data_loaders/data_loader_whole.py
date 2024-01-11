@@ -20,6 +20,7 @@ class DataLoaderWhole(DataLoader):
         spectrum, mask = self.file_read_mask_and_spectrum(path, mask_path=mask_path)
         mask = self.set_mask_with_label(mask)
 
+        background_mask = self.background_get_mask(spectrum, mask.shape[:2])
         spectrum = self.smooth(spectrum)
 
         if self.CONFIG_DATALOADER["3D"]:
@@ -29,8 +30,10 @@ class DataLoaderWhole(DataLoader):
         X = reshape(spectrum)
         y = reshape(mask)
         indexes_in_datacube = list(np.array(DataLoaderWhole.get_all_indexes(mask)).T)
-        values = [X, y, indexes_in_datacube, size]
-        values = {n: v for n, v in zip(self.dict_names, values)}
+        values = [X, y, indexes_in_datacube]
+        values = {n: v for n, v in zip(self.dict_names[:3], values)}
+        values["size"] = size
+        values["background_mask"] = background_mask
 
         return values
 

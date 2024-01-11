@@ -20,7 +20,7 @@
   },
   "Win_Mariia": {
     "MODE": "LOCAL_NO_GPU",
-    "PREFIX": "C:\\Users\\tkachenko\\Desktop\\HSI\\archive\\bea\\databases",
+    "PREFIX": "C:\\Users\\tkachenko\\Desktop\\HSI\\colon",
     "MODEL_NAME_PATHS": ["C:\\Users\\tkachenko\\Desktop\\HSI\\for_merging\\hsi-experiments\\logs"]
   },
   "HNO_Database": {

@@ -1,7 +1,6 @@
 import abc
 
 import numpy as np
-import pandas as pd
 import os
 import pickle
 from glob import glob
@@ -17,7 +16,10 @@ from data_utils.data_loaders.path_splits import get_splits
 class DataLoader:
     def __init__(self, dict_names=None):
         if dict_names is None:
-            dict_names = ["X", "y", "indexes_in_datacube"]
+            dict_names = ["X", "y", "indexes_in_datacube", "background_mask"]
+        if 'background_mask' not in dict_names:
+            dict_names.append('background_mask')
+
         self.CONFIG_DATALOADER = CONFIG_DATALOADER
         self.CONFIG_PATHS = CONFIG_PATHS
         self.data_reader = provider.get_extension_loader(typ=self.CONFIG_DATALOADER["FILE_EXTENSION"],
@@ -35,7 +37,7 @@ class DataLoader:
     def get_paths_and_splits(self, root_path=None):
         if root_path is None:
             root_path = self.CONFIG_PATHS["RAW_NPZ_PATH"]
-        
+
         paths = glob(os.path.join(root_path, "*.npz"))
         paths = self.data_reader.sort(paths)
 
@@ -110,7 +112,8 @@ class DataLoader:
         indexes_np = self.indexes_get_np_from_bool_indexes(*indexes)
 
         values = self.X_y_concatenate_from_spectrum(spectra, indexes_np)
-        values = {n: v for n, v in zip(self.dict_names, values)}
+        values = {n: v for n, v in zip(self.dict_names[:3], values)}
+        values["background_mask"] = background_mask
 
         return values
 
@@ -189,6 +192,7 @@ class DataLoader:
         mask = np.full(shape, True)
         contamination_pht = os.path.join(path, self.get_contamination_filename())
         if os.path.exists(contamination_pht):
+            import pandas as pd
             c_in = pd.read_csv(contamination_pht, names=["x-start", "x-end", "y-start", "y-end"], header=0, dtype=int)
             for idx in range(c_in.shape[0]):
                 mask[c_in["y-start"][idx]:c_in["y-end"][idx], c_in["x-start"][idx]:c_in["x-end"][idx]] = False
@@ -201,9 +205,13 @@ class DataLoader:
         return self.CONFIG_DATALOADER["CONTAMINATION_FILENAME"]
 
     def background_get_mask(self, spectrum, shapes):
-        background_mask = np.ones(shapes).astype(np.bool)
-        if self.CONFIG_DATALOADER["WITH_BACKGROUND_EXTRACTION"]:
-            background_mask = detect_background(spectrum)
+        background_mask = np.ones(shapes).astype(bool)
+        if self.CONFIG_DATALOADER["BACKGROUND"]["WITH_BACKGROUND_EXTRACTION"]:
+            blood_threshold = self.CONFIG_DATALOADER["BACKGROUND"]["BLOOD_THRESHOLD"]
+            lights_reflections_threshold = self.CONFIG_DATALOADER["BACKGROUND"]["LIGHT_REFLECTION_THRESHOLD"]
+            background_mask = detect_background(spectrum,
+                                                blood_threshold=blood_threshold,
+                                                lights_reflections_threshold=lights_reflections_threshold)
             background_mask = np.reshape(background_mask, shapes)
 
         return background_mask
