@@ -6,13 +6,14 @@ import numpy as np
 from glob import glob
 import matplotlib.pyplot as plt
 
-from archive import config
-from evaluation.validator import Validator
+#from archive import config
+from configuration.get_config import CONFIG_PATHS
 
 
 class Experiment:
     def __init__(self, name, config_for_experiment):
         self.name = name
+        print(CONFIG_PATHS)
         
         #-------------create root folder---------------
         config.MODEL_NAME_PATHS.append(self.name)
@@ -20,7 +21,7 @@ class Experiment:
         if not os.path.exists(self.root_folder):
             os.mkdir(self.root_folder)
 
-        self.config_for_experiment = config_for_experiment
+        '''self.config_for_experiment = config_for_experiment
         self.combinations_keys = config_for_experiment.keys()
         self.combinations = list(itertools.product(*config_for_experiment.values()))
         
@@ -34,7 +35,7 @@ class Experiment:
         self.test_path = test_path
 
         self.save_combinations()
-        # self.run_experiment()
+        # self.run_experiment()'''
              
 
     def save_combinations(self):
@@ -52,6 +53,8 @@ class Experiment:
         return
 
     def get_results(self):
+        from evaluation.validator import Validator   #totally old
+        
         folders = sorted(glob(os.path.join(self.test_path, '*/')),
                          key=lambda x: int(x.split('_C')[-1].split('_')[0]))
 
@@ -89,7 +92,6 @@ class HowManyValidPatExcludeExperiment(Experiment):
     def run_experiment(self):
         # config.MODEL_NAME = config.get_model_name(config.MODEL_NAME_PATHS)
 
-        # for i, exclude in enumerate(range(4, 42, 2)):
         for i, comb in enumerate(self.combinations):
             sample_dict = {name: c for name, c in zip(self.combinations_keys, comb)}
             print(sample_dict)
@@ -117,6 +119,26 @@ class HowManyValidPatExcludeExperiment(Experiment):
 
 
 if __name__ == '__main__':
+    
+    config_for_experiment = {
+        'Dataloader': {
+            '3D_SIZE': [[3, 3], [5, 5]]
+        },
+        'Preprocessor': {
+            "NORMALIZATION_TYPE": ["svn_T", 'l2_norm'],
+        }
+        
+    }
+
+    exp = HowManyValidPatExcludeExperiment('ExperimentRevival', config_for_experiment)
+    exp.run_experiment()
+    #print(exp.get_results())
+    
+    
+    
+    
+    
+    #---------------------------------------------------------------------------------------------
     '''combinations = {
         'normalization': ['svn_T', 'l2_norm'],
         'patch_size': [3, 5, 7, 11],
@@ -127,22 +149,14 @@ if __name__ == '__main__':
         'with_background': [True, False],
         'background_threshold': []
     }'''
-    config_for_experiment = {
-        'WITH_SMALLER_DATASET': [False],
-        'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [10],
-        # [1, 3, 10, 20, 40]#[1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
-        # 'CV_FIRST_SPLIT': [33]
-    }
-
+    
     '''config_for_experiment = {
         'WITH_SMALLER_DATASET': [True],
         'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
+        #'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [10],
+        # [1, 3, 10, 20, 40]#[1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
+        # 'CV_FIRST_SPLIT': [33]
     }'''
-
-    exp = HowManyValidPatExcludeExperiment('ExperimentHowManyValidPatExclude', config_for_experiment)
-    # exp.run_experiment()
-
-    print(exp.get_results())
 
     '''config_for_experiment = {
         'WITH_SMALLER_DATASET': [False],

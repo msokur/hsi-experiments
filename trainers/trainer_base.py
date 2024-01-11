@@ -77,7 +77,7 @@ class Trainer:
 
             copy_files(self.log_dir, self.CONFIG_TRAINER["FILES_TO_COPY"], self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
     
-    def if_split_dataset(self)
+    def if_split_dataset(self):
         split_train=True
         batches = glob(os.path.join(self.batch_path, '*.npz'))
         if self.CONFIG_CV["MODE"] == 'DEBUG' and len(batches) > 0:
