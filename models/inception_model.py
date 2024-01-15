@@ -1,6 +1,7 @@
 import abc
 
 import tensorflow as tf
+import tensorflow.keras as keras
 from tensorflow.keras import activations
 
 from models.model_base import ModelBase
@@ -18,8 +19,11 @@ POOL_STRIDES = 1
 
 class InceptionModelBase(ModelBase):
     def get_model(self):
-        input_ = tf.keras.layers.Input(
-            shape=self.input_shape, name="title"
+        if self.name is None:
+            self.name = "InceptionModel"
+
+        input_ = keras.layers.Input(
+            shape=self.input_shape, name=self.name
         )
 
         net = self.inception_block(input_=input_, factor=self.config[MK.INCEPTION_FACTOR],
@@ -33,46 +37,49 @@ class InceptionModelBase(ModelBase):
         branches = []
         for idx, filter_, kernel_size in zip(range(len(FILTERS)), FILTERS, KERNEL_SIZE):
             if isinstance(filter_, int):
-                branch = self.get_conv_layer(filters=factor * filter_, kernel_size=kernel_size, net=input_,
-                                             name=f"CONV_{idx}")
+                name = f"conv_{idx}"
+                branch = self._get_conv_layer(filters=factor * filter_, kernel_size=kernel_size, net=input_,
+                                              name=name)
 
                 if with_batch_norm:
-                    branch = self.get_batch_norm(branch)
+                    branch = self.get_batch_norm(branch=branch, name=name)
             else:
                 branch = input_
                 for sub_idx, filter_sub, kernel_size_sub in zip(range(len(FILTERS)), filter_, kernel_size):
-                    branch = self.get_conv_layer(filters=factor * filter_sub, kernel_size=kernel_size_sub, net=branch,
-                                                 name=f"CONV_{idx}.{sub_idx}")
+                    name = f"conv_{idx}.{sub_idx}"
+                    branch = self._get_conv_layer(filters=factor * filter_sub, kernel_size=kernel_size_sub, net=branch,
+                                                  name=name)
 
                     if with_batch_norm:
-                        branch = self.get_batch_norm(branch)
+                        branch = self.get_batch_norm(branch=branch, name=name)
             branches.append(branch)
 
-        branch = self.get_max_pooling_layer(input_=input_)
-        branch = self.get_conv_layer(filters=factor * FILTERS_LAST, kernel_size=KERNEL_SIZE_LAST, net=branch,
-                                     name="CONV_MAX")
+        branch = self._get_max_pooling_layer(input_=input_)
+        max_name = "conv_after_max_pooling"
+        branch = self._get_conv_layer(filters=factor * FILTERS_LAST, kernel_size=KERNEL_SIZE_LAST, net=branch,
+                                      name=max_name)
 
         if with_batch_norm:
-            branch = self.get_batch_norm(branch)
+            branch = self.get_batch_norm(branch=branch, name=max_name)
         branches.append(branch)
 
-        net = tf.keras.layers.concatenate(branches)
+        net = keras.layers.concatenate(branches)
 
         return net
 
     def inception_base(self, input_, net):
-        net = tf.keras.layers.Flatten()(net)
-        net = get_dropout(net=net, dropout_value=self.config["DROPOUT"])
+        net = keras.layers.Flatten(name="flatten_layer")(net)
+        net = get_dropout(net=net, dropout_value=self.config["DROPOUT"], name="last_dropout_layer")
 
         activation = 'sigmoid'
         number = 1
         if self.num_of_output > 2:
             activation = None
             number = self.num_of_output
-        result = tf.keras.layers.Dense(number, activation=activation, kernel_initializer=self.kernel_initializer,
-                                       bias_initializer=self.bias_initializer)(net)
+        result = keras.layers.Dense(number, activation=activation, kernel_initializer=self.kernel_initializer,
+                                    bias_initializer=self.bias_initializer, name="predictions")(net)
 
-        model = tf.keras.Model(
+        model = keras.Model(
             inputs=[input_],
             outputs=[result]
         )
@@ -80,53 +87,58 @@ class InceptionModelBase(ModelBase):
         return model
 
     @abc.abstractmethod
-    def get_conv_layer(self, filters, kernel_size, net, name):
+    def _get_conv_layer(self, filters, kernel_size, net, name):
         pass
 
     @abc.abstractmethod
-    def get_max_pooling_layer(self, input_):
+    def _get_max_pooling_layer(self, input_):
         pass
 
-    @staticmethod
-    def get_batch_norm(branch):
-        branch = tf.keras.layers.BatchNormalization()(branch)
-        branch = tf.keras.layers.Activation(activations.relu)(branch)
+    def get_batch_norm(self, branch, name: str):
+        if len(self.input_shape) > 1:
+            name = "3D_" + name
+        else:
+            name = "1D_" + name
+        branch = keras.layers.BatchNormalization(name=f"{name}_batch_normalization")(branch)
+        branch = keras.layers.Activation(activation=activations.relu, name=f"{name}_activation")(branch)
         return branch
 
 
 class InceptionModel3D(InceptionModelBase):
-    def get_conv_layer(self, filters, kernel_size, net, name):
-        return tf.keras.layers.Conv3D(filters=filters, kernel_size=kernel_size, padding="same", activation='relu',
-                                      kernel_initializer=self.kernel_initializer,
-                                      bias_initializer=self.bias_initializer,
-                                      name=name)(net)
+    def _get_conv_layer(self, filters, kernel_size, net, name):
+        return keras.layers.Conv3D(filters=filters, kernel_size=kernel_size, padding="same", activation='relu',
+                                   kernel_initializer=self.kernel_initializer,
+                                   bias_initializer=self.bias_initializer,
+                                   name=f"3D_{name}")(net)
 
-    def get_max_pooling_layer(self, input_):
-        return tf.keras.layers.MaxPooling3D(pool_size=POOL_SIZE, strides=POOL_STRIDES, padding="same")(input_)
+    def _get_max_pooling_layer(self, input_):
+        return keras.layers.MaxPooling3D(pool_size=POOL_SIZE, strides=POOL_STRIDES, padding="same",
+                                         name="3D_max_pooling_layer")(input_)
 
 
 class InceptionModel1D(InceptionModelBase):
-    def get_conv_layer(self, filters, kernel_size, net, name):
-        return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, padding="same", activation='relu',
-                                      kernel_initializer=self.kernel_initializer,
-                                      bias_initializer=self.bias_initializer,
-                                      name=name)(net)
+    def _get_conv_layer(self, filters, kernel_size, net, name):
+        return keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, padding="same", activation='relu',
+                                   kernel_initializer=self.kernel_initializer,
+                                   bias_initializer=self.bias_initializer,
+                                   name=f"1D_{name}")(net)
 
-    def get_max_pooling_layer(self, input_):
-        return tf.keras.layers.MaxPooling1D(pool_size=POOL_SIZE, strides=POOL_STRIDES, padding="same")(input_)
+    def _get_max_pooling_layer(self, input_):
+        return keras.layers.MaxPooling1D(pool_size=POOL_SIZE, strides=POOL_STRIDES, padding="same",
+                                         name="1D_max_pooling_layer")(input_)
 
 
 if __name__ == "__main__":
     import os
 
     os.environ['TF_DETERMINISTIC_OPS'] = '1'
-    shape_ = (3, 3, 92)
+    shape_ = (92,)
     conf_ = {
         "WITH_BATCH_NORM": True,
         "INCEPTION_FACTOR": 8,
         "DROPOUT": 0.1
     }
     labels = 3
-    model1 = InceptionModel3D(input_shape=shape_, config=conf_, num_of_output=labels)
+    model1 = InceptionModel1D(input_shape=shape_, config=conf_, num_of_output=labels)
     model_ = model1.get_model()
     model_.summary()

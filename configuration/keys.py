@@ -114,6 +114,8 @@ class ModelKeys:
     DROPOUT = "DROPOUT"
     WITH_BATCH_NORM = "WITH_BATCH_NORM"
     INCEPTION_FACTOR = "INCEPTION_FACTOR"
+    PAPER_MODEL_NAME = "PaperModel"
+    INCEPTION_MODEL_NAME = "InceptionModel"
 
 
 class TunerModelKeys:

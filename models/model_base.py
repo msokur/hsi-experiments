@@ -4,11 +4,12 @@ import abc
 
 
 class ModelBase:
-    def __init__(self, input_shape: tuple, config: dict, num_of_output: int):
+    def __init__(self, input_shape: tuple, config: dict, num_of_output: int, name: str = None):
         self.input_shape = input_shape
         self.config = config
         self.num_of_output = num_of_output
         self.kernel_initializer, self.bias_initializer = get_initializers()
+        self.name = name
         set_tf_seed()
 
     @abc.abstractmethod

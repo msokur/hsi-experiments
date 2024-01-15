@@ -10,16 +10,24 @@ from configuration.keys import ModelKeys as MK
 
 
 class PaperModelBase(ModelBase):
+    def get_model(self) -> keras.Model:
+        if self.name is None:
+            self.name = MK.PAPER_MODEL_NAME
+
+        input_ = keras.layers.Input(shape=self.input_shape, name=self.name)
+
+        return self._create_model(input_layer=input_)
+
     @abc.abstractmethod
-    def get_model(self):
+    def _create_model(self, input_layer: keras.layers.Input) -> keras.Model:
         pass
 
-    def paper_model_base(self, input_, net, conv_round):
+    def paper_model_base(self, input_, net, conv_round) -> keras.Model:
         net = self.get_1D_block(net=net, conv_round=conv_round)
 
-        net = tf.keras.layers.Flatten()(net)
+        net = keras.layers.Flatten(name="flatten_layer")(net)
 
-        net = get_dropout(net=net, dropout_value=self.config[MK.DROPOUT])
+        net = get_dropout(net=net, dropout_value=self.config[MK.DROPOUT], name="last_dropout_layer")
 
         activation = 'sigmoid'
         number = 1
@@ -27,10 +35,10 @@ class PaperModelBase(ModelBase):
             activation = None
             number = self.num_of_output
 
-        result = tf.keras.layers.Dense(number, activation=activation, kernel_initializer=self.kernel_initializer,
-                                       bias_initializer=self.bias_initializer)(net)
+        result = keras.layers.Dense(number, activation=activation, kernel_initializer=self.kernel_initializer,
+                                    bias_initializer=self.bias_initializer, name="predictions")(net)
 
-        model = tf.keras.Model(
+        model = keras.Model(
             inputs=[input_],
             outputs=[result]
         )
@@ -49,51 +57,47 @@ class PaperModelBase(ModelBase):
     def get_conv1d(self, net, name, kernel_size=3, strides=2):
         net = keras.layers.Conv1D(filters=35, kernel_size=kernel_size, padding='valid', activation='relu',
                                   kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
-                                  name=f"{name}_1")(net)
+                                  name=f"{name}_conv_1")(net)
         net = keras.layers.Conv1D(filters=35, kernel_size=kernel_size, strides=strides,
                                   padding='valid', activation='relu',
                                   kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
-                                  name=f"{name}_2")(net)
+                                  name=f"{name}_conv_2")(net)
 
         return net
 
 
 class PaperModel1D(PaperModelBase):
-    def get_model(self):
-        input_ = tf.keras.layers.Input(shape=self.input_shape, name="title")
-
-        net = tf.expand_dims(input_, axis=-1)
+    def _create_model(self, input_layer: keras.layers.Input) -> keras.Model:
+        net = tf.expand_dims(input_layer, axis=-1)
         conv_round = range(4)
 
-        return self.paper_model_base(input_=input_, net=net, conv_round=conv_round)
+        return self.paper_model_base(input_=input_layer, net=net, conv_round=conv_round)
 
 
 class PaperModel3D(PaperModelBase):
-    def get_model(self):
-        input_ = tf.keras.layers.Input(shape=self.input_shape, name="title")
-
+    def _create_model(self, input_layer: keras.layers.Input) -> keras.Model:
         conv_round = range(int(self.input_shape[0] / 2))
 
-        net = tf.expand_dims(input_, axis=-1)
+        net = tf.expand_dims(input_layer, axis=-1)
 
         for r in conv_round:
             if net.shape[-2] < 6:
                 break
             else:
-                net = self.get_conv3d(net=net, name=f"3D_{r}")
+                net = self._get_conv3d(net=net, name=f"3D_{r}")
 
-        net = tf.keras.layers.Reshape((net.shape[-4] * net.shape[-3] * net.shape[-2], net.shape[-1]))(net)
+        net = keras.layers.Reshape((net.shape[-4] * net.shape[-3] * net.shape[-2], net.shape[-1]))(net)
 
-        return self.paper_model_base(input_=input_, net=net, conv_round=conv_round)
+        return self.paper_model_base(input_=input_layer, net=net, conv_round=conv_round)
 
-    def get_conv3d(self, net, name, kernel_size=3, stride=2):
+    def _get_conv3d(self, net, name, kernel_size=3, stride=2):
         net = keras.layers.Conv3D(filters=20, kernel_size=kernel_size, padding='valid', activation='relu',
                                   kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
-                                  name=f"{name}_1")(net)
+                                  name=f"{name}_conv_1")(net)
         net = keras.layers.Conv3D(filters=20, kernel_size=(1, 1, kernel_size), strides=(1, 1, stride), padding='valid',
                                   activation='relu', kernel_initializer=self.kernel_initializer,
                                   bias_initializer=self.bias_initializer,
-                                  name=f"{name}_2")(net)
+                                  name=f"{name}_conv_2")(net)
 
         return net
 
