@@ -127,22 +127,6 @@ class NormalizerScaler(Scaler):
         return self.scaler.fit_transform(X)
     
 
-class StandardScaler(Scaler):
-    def __init__(self, *args, **kwargs):
-        print('StandardScaler is created')
-        super().__init__(*args, **kwargs)
-        
-    def get_data_for_fit(self):
-        X, _, _ = self.X_y_concatenate()
-        return X
-    
-    def fit(self, X):
-        return preprocessing.StandardScaler().fit(X)
-    
-    def transform(self, X):
-        return self.scaler.transform(X)
-    
-
 class StandardScalerTransposed(Scaler):
     def __init__(self, *args, **kwargs):
         print('StandardScalerTransposed is created')
