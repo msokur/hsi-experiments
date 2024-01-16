@@ -2,6 +2,7 @@ import sys
 import inspect
 import os
 import psutil
+from datetime import datetime
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
@@ -52,6 +53,9 @@ class Preprocessor:
         }
 
     def pipeline(self, root_path=None, preprocessed_path=None, execution_flags=None):
+        dt_string = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+        print("Time before the start of preprocessing", dt_string)
+
         process = psutil.Process(os.getpid())
 
         if execution_flags is None:
@@ -84,6 +88,8 @@ class Preprocessor:
                                                               self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][4]])
             dataloader.files_read_and_save_to_archive(root_path, preprocessed_path)
 
+        print('-------------------------------------------------Memory, preprocessor 1, after reading of origin files', process.memory_info().rss)
+
         # ----------weights part------------------
         if execution_flags['add_sample_weights']:
             weight_calc = Weights(filename=self.weights_filename,
@@ -93,6 +99,8 @@ class Preprocessor:
                                   weight_dict_name=self.dict_names[-1])
             weights = weight_calc.weights_get_or_save(preprocessed_path)
             weight_calc.weighted_data_save(preprocessed_path, weights)
+
+        print('-------------------------------------------------Memory, preprocessor 2, after sample weights', process.memory_info().rss)
 
         # ----------scaler part ------------------
         if execution_flags['scale'] and self.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE] is not None:
@@ -105,8 +113,8 @@ class Preprocessor:
                                          dict_names=[self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][x] for x in [0, 1, 4]])
             scaler.iterate_over_archives_and_save_scaled_X(destination_path=preprocessed_path)
 
-        print('-------------------------------------------------Memory, preprocessor 3', process.memory_info().rss)
-
+        print('-------------------------------------------------Memory, preprocessor 3, after scaling', process.memory_info().rss)
+        
         # ----------shuffle part------------------
         if execution_flags['shuffle']:
             shuffle = Shuffle(data_archive=data_archive, raw_path=preprocessed_path, dict_names=self.dict_names,
@@ -115,8 +123,8 @@ class Preprocessor:
                               augmented=self.CONFIG_AUG[AK.ENABLE],
                               files_to_copy=self.CONFIG_PREPROCESSOR["FILES_TO_COPY"])
             shuffle.shuffle()
-
-        print('-------------------------------------------------Memory, preprocessor 4', process.memory_info().rss)
+        
+        print('-------------------------------------------------Memory, preprocessor 4, after shuffling', process.memory_info().rss)
 
 
 if __name__ == '__main__':

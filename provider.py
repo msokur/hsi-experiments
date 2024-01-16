@@ -13,7 +13,7 @@ def get_trainer(typ: str, **kwargs):
         print('TrainerEasy')
         return TrainerEasy(**kwargs)
     elif typ == "SeveralOutput":
-        print("TrainerEasySeveralOutputs")
+        print('TrainerEasySeveralOutputs')
         return TrainerEasySeveralOutputs(**kwargs)
 
     value_error("Trainer", typ)
@@ -82,17 +82,13 @@ def get_smoother(typ: str, *args, **kwargs):
 
 
 def get_scaler(typ: str, *args, **kwargs):
-    from data_utils.scaler import NormalizerScaler, StandardScaler, StandardScalerTransposed, SNV
+    from data_utils.scaler import NormalizerScaler, StandardScalerTransposed
 
     if typ == 'l2_norm':
         return NormalizerScaler(*args, **kwargs)
     elif typ == 'svn':
-        return StandardScaler(*args, **kwargs)
-    elif typ == 'svn_T':
         return StandardScalerTransposed(*args, **kwargs)
-    elif typ == "svn_2":
-        return SNV(*args, **kwargs)
-
+    
     value_error("scaler", typ)
 
 

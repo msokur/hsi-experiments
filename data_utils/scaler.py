@@ -37,7 +37,7 @@ class Scaler:
     @abc.abstractmethod
     def get_data_for_fit(self):
         pass
-
+    
     @abc.abstractmethod
     def fit(self, X):
         pass
@@ -128,85 +128,6 @@ class NormalizerScaler(Scaler):
     
     def transform(self, X):
         return self.scaler.fit_transform(X)
-
-
-class SNV(Scaler):
-    def __init__(self, *args, **kwargs):
-        print('StandardScaler is created')
-        super().__init__(*args, **kwargs)
-
-    def get_data_for_fit(self):
-        return []
-
-    def fit(self, X):
-        scaler = preprocessing.StandardScaler()
-        samples, features, shape = self.get_samples_features_shape()
-        mean = self.get_mean(samples=samples, features=features, shape=shape)
-        var = self.get_var(mean=mean, samples=samples, features=features, shape=shape)
-        std = self.get_std(var)
-        scaler.n_samples_seen_ = samples
-        scaler.n_features_in_ = features
-        scaler.mean_ = mean
-        scaler.var_ = var
-        scaler.scale_ = std
-        return scaler
-
-    def transform(self, X) -> np.ndarray:
-        return self.scaler.transform(X)
-
-    def get_samples_features_shape(self) -> Tuple[np.int64, int, tuple]:
-        samples = np.int64(0)
-        features = 0
-        shape = (0, 0)
-        for data in self.data_archive.all_data_generator(archive_path=self.preprocessed_path):
-            shape = data[self.dict_names[0]].shape
-            features = shape[-1]
-            samples += shape[0]
-
-        return samples, features, shape
-
-    def get_mean(self, samples: np.int64, features: int, shape: tuple) -> np.ndarray:
-        mean_ = np.zeros(shape=features)
-        for data in self.data_archive.all_data_generator(archive_path=self.preprocessed_path):
-            if len(shape) > 2:
-                X = DistributionsChecker.get_centers(data=data[self.dict_names[0]])
-            else:
-                X = data[self.dict_names[0]][...]
-
-            mean_ += X.sum(axis=0)
-
-        return mean_ / samples
-
-    def get_var(self, mean: np.ndarray, samples: np.int64, features: int, shape: tuple) -> np.ndarray:
-        var_ = np.zeros(shape=features)
-        for data in self.data_archive.all_data_generator(archive_path=self.preprocessed_path):
-            if len(shape) > 2:
-                X = DistributionsChecker.get_centers(data=data[self.dict_names[0]])
-            else:
-                X = data[self.dict_names[0]][...]
-            var_ += np.sum(a=(X - mean) ** 2, axis=0)
-
-        return var_ / samples
-
-    @staticmethod
-    def get_std(var: np.ndarray) -> np.ndarray:
-        return np.sqrt(var)
-
-
-class StandardScaler(Scaler):
-    def __init__(self, *args, **kwargs):
-        print('StandardScaler is created')
-        super().__init__(*args, **kwargs)
-        
-    def get_data_for_fit(self):
-        X, _, _ = self.X_y_concatenate()
-        return X
-    
-    def fit(self, X):
-        return preprocessing.StandardScaler().fit(X)
-    
-    def transform(self, X):
-        return self.scaler.transform(X)
 
 
 class StandardScalerTransposed(Scaler):
