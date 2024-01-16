@@ -17,7 +17,7 @@ from evaluation.evaluation_multiclass import EvaluationMulticlass
 
 from data_utils.smoothing import MedianFilter, GaussianFilter
 
-from data_utils.scaler import NormalizerScaler, StandardScaler, StandardScalerTransposed
+from data_utils.scaler import NormalizerScaler, StandardScalerTransposed
 
 from data_utils.border import detect_border, detect_core
 
@@ -111,8 +111,7 @@ def test_get_smoother(typ, path, size, result):
 
 
 GET_SCALER_DATA = [("l2_norm", NormalizerScaler),
-                   ("svn", StandardScaler),
-                   ("svn_T", StandardScalerTransposed)]
+                   ("svn", StandardScalerTransposed)]
 
 
 @pytest.fixture

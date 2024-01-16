@@ -2,6 +2,7 @@ import inspect
 import os
 import sys
 import platform
+import warnings
 
 WITHOUT_RANDOMNESS = True
 if WITHOUT_RANDOMNESS:
@@ -88,6 +89,9 @@ CONFIG_TELEGRAM = get_config(file_name=tg_config, section=tg_section)
 CONFIG_TELEGRAM["FILE"] = os.path.join(parent_dir, CONFIG_TELEGRAM["FILE"])
 telegram = None
 if CONFIG_TELEGRAM["SENDING"]:
-    from utils import Telegram
+    try:
+        from utils import Telegram
 
-    telegram = Telegram(tg_config=CONFIG_TELEGRAM, mode=CONFIG_PATHS["MODE"])
+        telegram = Telegram(tg_config=CONFIG_TELEGRAM, mode=CONFIG_PATHS["MODE"])
+    except Exception as e:
+        warnings.warn("Some problems by loading Telegram. Telegram will not be used!")
