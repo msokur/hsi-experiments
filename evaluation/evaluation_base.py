@@ -6,16 +6,17 @@ import inspect
 import matplotlib.pylab as plt
 import abc
 
-from configuration.get_config import CONFIG_PATHS, CONFIG_CV
+# from configuration.get_config import CONFIG_PATHS, CONFIG_CV
 from evaluation.metrics import Metrics
 from evaluation.predictor import Predictor
 
 
 class EvaluationBase(Metrics):
 
-    def __init__(self, npz_folder=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        name = CONFIG_CV['NAME']
+    def __init__(self, config, npz_folder=None, *args, **kwargs):
+        super().__init__(config, *args, **kwargs)
+        self.config = config
+        name = self.config.CONFIG_CV['NAME']
 
         current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         parent_dir = os.path.dirname(current_dir)
@@ -32,9 +33,9 @@ class EvaluationBase(Metrics):
 
         self.name = name
         if npz_folder is None:
-            self.npz_folder = CONFIG_PATHS["RAW_NPZ_PATH"]
+            self.npz_folder = self.config.CONFIG_PATHS["RAW_NPZ_PATH"]
         self.npz_folder = npz_folder
-        
+
         self.additional_columns = {}
 
     @abc.abstractmethod
@@ -61,15 +62,14 @@ class EvaluationBase(Metrics):
 
         return metrics_
 
-    @staticmethod
-    def check_checkpoints_for_evaluation(checkpoints):
+    def check_checkpoints_for_evaluation(self, checkpoints):
         print(f'checkpoints: {checkpoints}')
-        if CONFIG_CV["GET_CHECKPOINT_FROM_VALID"] and (checkpoints is not None):
+        if self.config.CONFIG_CV["GET_CHECKPOINT_FROM_VALID"] and (checkpoints is not None):
             raise ValueError("Error! config.CV_GET_CHECKPOINT_FROM_VALID is True (it means that the last checkpoint "
                              "will be taken for each patient from EarlyStopping) and checkpoints are "
                              "specified. Please don't specify checkpoints or set "
                              "CV_GET_CHECKPOINT_FROM_VALID to False")
-        if CONFIG_CV["GET_CHECKPOINT_FROM_VALID"]:
+        if self.config.CONFIG_CV["GET_CHECKPOINT_FROM_VALID"]:
             return [0]
 
         return checkpoints
@@ -95,7 +95,7 @@ class EvaluationBase(Metrics):
             fieldnames += list(self.additional_columns.keys())
             fieldnames = np.array(fieldnames)
         return np.array(fieldnames)
-    
+
     def evaluate(self, checkpoints=None,
                  thresholds=None,
                  save_curves=False,
@@ -111,11 +111,12 @@ class EvaluationBase(Metrics):
 
         predictions_npy_filename = self.check_predictions_npy_filename(predictions_npy_filename)
 
-        checkpoints = EvaluationBase.check_checkpoints_for_evaluation(checkpoints)
+        checkpoints = self.check_checkpoints_for_evaluation(checkpoints)
         thresholds = self.check_thresholds_for_evaluation(thresholds)
 
         for cp in checkpoints:
-            save_evaluation_folder_with_checkpoint = os.path.join(self.save_evaluation_folder, f'{self.checkpoint_basename}{cp:04d}')
+            save_evaluation_folder_with_checkpoint = os.path.join(self.save_evaluation_folder,
+                                                                  f'{self.checkpoint_basename}{cp:04d}')
 
             for threshold in thresholds:
                 comparable_characteristics_csv_path = os.path.join(save_evaluation_folder_with_checkpoint,
@@ -126,14 +127,14 @@ class EvaluationBase(Metrics):
                     fieldnames = ['Time', 'Checkpoint', 'Threshold', 'Sensitivity_mean', 'Specificity_mean']
                     if self.additional_columns:
                         fieldnames += list(self.additional_columns.keys())
-                        #print(fieldnames)
+                        # print(fieldnames)
                     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                     if not compare_file_exists:
                         writer.writeheader()
 
                     print(f'-----------------Checkpoint: {cp}, Threshold: {threshold}------------------- ')
                     cp = int(cp)
-                    
+
                     data = np.load(
                         os.path.join(save_evaluation_folder_with_checkpoint, predictions_npy_filename),
                         allow_pickle=True)
@@ -152,7 +153,7 @@ class EvaluationBase(Metrics):
                         writer_cp.writeheader()
 
                         # -------- evaluation
-                        
+
                         for patient in data:
                             name = patient['name']
                             gt = np.array(patient['gt'])
@@ -174,7 +175,8 @@ class EvaluationBase(Metrics):
                     sensitivity_mean = np.nanmean(metrics_all['Sensitivity'], axis=0)
                     specificity_mean = np.nanmean(metrics_all['Specificity'], axis=0)
 
-                    self.plot_sensitivity_specificity(sensitivity_mean, specificity_mean, save_evaluation_folder_with_checkpoint)
+                    self.plot_sensitivity_specificity(sensitivity_mean, specificity_mean,
+                                                      save_evaluation_folder_with_checkpoint)
                     self.write_row_to_comparison_file(cp, threshold, sensitivity_mean, specificity_mean, writer)
 
     def write_total_metrics(self, writer_cp, metrics_all):
@@ -183,11 +185,11 @@ class EvaluationBase(Metrics):
             nan_bool = np.isnan(v).all(axis=0)
             if np.any(nan_bool):
                 mean[k] = [np.nanmean(np.array(v)[:, idx], axis=0) if not nan else float("NaN")
-                                           for idx, nan in enumerate(nan_bool)]
+                           for idx, nan in enumerate(nan_bool)]
                 std[k] = [np.nanstd(np.array(v)[:, idx], axis=0) if not nan else float("NaN")
-                                          for idx, nan in enumerate(nan_bool)]
+                          for idx, nan in enumerate(nan_bool)]
                 median[k] = [np.nanmedian(np.array(v)[:, idx], axis=0) if not nan else float("NaN")
-                                             for idx, nan in enumerate(nan_bool)]
+                             for idx, nan in enumerate(nan_bool)]
             else:
                 mean[k] = np.nanmean(v, axis=0)
                 std[k] = np.nanstd(v, axis=0)
@@ -196,8 +198,9 @@ class EvaluationBase(Metrics):
         self.write_metrics_to_csv(writer_cp, mean, time_string="TOTAL MEAN")
         self.write_metrics_to_csv(writer_cp, std, time_string="TOTAL STD")
         self.write_metrics_to_csv(writer_cp, median, time_string="TOTAL MEDIAN")
-        
-    def plot_sensitivity_specificity(self, sensitivity_mean, specificity_mean, save_evaluation_folder_with_checkpoint):
+
+    @staticmethod
+    def plot_sensitivity_specificity(sensitivity_mean, specificity_mean, save_evaluation_folder_with_checkpoint):
         plt.plot(sensitivity_mean, label="sensitivity mean")
         plt.plot(specificity_mean, label="specificity mean")
         plt.ylabel("Value")
@@ -209,6 +212,7 @@ class EvaluationBase(Metrics):
         plt.clf()
         plt.cla()
         plt.close('all')
+
     def write_row_to_comparison_file(self, cp, threshold, sensitivity_mean, specificity_mean, writer):
         results_row = {'Time': datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
                        'Checkpoint': str(cp),
@@ -220,43 +224,43 @@ class EvaluationBase(Metrics):
 
         writer.writerow(results_row)
 
-
     def check_predictions_npy_filename(self, predictions_npy_filename):
         if predictions_npy_filename is None:
             return self.predictions_npy_filename
         return predictions_npy_filename
-    
-    def calculate_and_save_predictions(self, checkpoints=None, 
-                                       npz_folder=None, 
-                                       training_csv_path=None, 
+
+    def calculate_and_save_predictions(self, checkpoints=None,
+                                       npz_folder=None,
+                                       training_csv_path=None,
                                        predictions_npy_filename=None):
         predictions_npy_filename = self.check_predictions_npy_filename(predictions_npy_filename)
-        checkpoints = EvaluationBase.check_checkpoints_for_evaluation(checkpoints)
+        checkpoints = self.check_checkpoints_for_evaluation(checkpoints)
 
         for checkpoint in checkpoints:
             if type(checkpoint) == int:
                 checkpoint_name = f'cp-{checkpoint:04d}'
 
-            save_folder_with_checkpoint = os.path.join(self.save_evaluation_folder, f'{self.checkpoint_basename}{checkpoint:04d}')
+            save_folder_with_checkpoint = os.path.join(self.save_evaluation_folder,
+                                                       f'{self.checkpoint_basename}{checkpoint:04d}')
             if not os.path.exists(save_folder_with_checkpoint):
                 os.mkdir(save_folder_with_checkpoint)
 
             if npz_folder is None:
                 npz_folder = self.npz_folder
 
-            Predictor.save_predictions(training_csv_path,
-                                       npz_folder,
-                                       save_folder_with_checkpoint,
-                                       predictions_npy_filename,
-                                       checkpoint=checkpoint_name)
+            Predictor(self.config, None).save_predictions(training_csv_path,
+                                                          npz_folder,
+                                                          save_folder_with_checkpoint,
+                                                          predictions_npy_filename,
+                                                          checkpoint=checkpoint_name)
 
     def save_predictions_and_metrics(self, training_csv_path=None,  # for predictions
                                      npz_folder=None,  # for predictions
                                      checkpoints=None,  # for predictions and evaluation
                                      thresholds=None,  # for evaluation of binary classification
                                      save_curves=False,  # for evaluation
-                                     predictions_npy_filename=None # for predictions and evaluation
-                                    ):
+                                     predictions_npy_filename=None  # for predictions and evaluation
+                                     ):
         """
         Save predictions first if save_predictions=True (using training_csv_path, npz_folder
         and predictions_npy_filename)
@@ -275,7 +279,8 @@ class EvaluationBase(Metrics):
             save_curves:
                 if save curves. If True ROC curves for every patient and for all predictions together are saved
             predictions_npy_filename:
-                By default predictions are saved to predictions.npy in metrics/cross_validation_name/cp-checkpoint_number/
+                By default predictions are saved to predictions.npy in
+                metrics/cross_validation_name/cp-checkpoint_number/
                 folder. With this parameter it's possible to give it another name. For general metrics calculation is
                 not necessary
 
@@ -293,11 +298,11 @@ class EvaluationBase(Metrics):
         if thresholds is not None and not all(t > 0 for t in thresholds):
             raise ValueError(f'Error! Some of thresholds are negative: {thresholds}. Please check.')
 
-        self.calculate_and_save_predictions(checkpoints=checkpoints, 
-                                            npz_folder=npz_folder, 
-                                            training_csv_path=training_csv_path, 
+        self.calculate_and_save_predictions(checkpoints=checkpoints,
+                                            npz_folder=npz_folder,
+                                            training_csv_path=training_csv_path,
                                             predictions_npy_filename=predictions_npy_filename)
-        
+
         self.evaluate(checkpoints=checkpoints,
                       thresholds=thresholds,
                       save_curves=save_curves,

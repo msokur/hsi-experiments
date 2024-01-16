@@ -11,8 +11,6 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-from configuration.get_config import CONFIG_DATALOADER, CONFIG_DISTRIBUTION
-
 """
 This class is about choosing a representative small dataset for speed up the training
 Detailed description: https://git.iccas.de/MaktabiM/hsi-experiments/-/wikis/How-to-choose-a-representative-smaller-dataset-for-faster-training-(comparison-of-distributions-of-two-datasets)
@@ -32,16 +30,12 @@ There are several functionality parts:
 
 
 class DistributionsChecker:
-    def __init__(self, path, prints=CONFIG_DISTRIBUTION["PRINTS"]):
-        """
-        Args:
-            path: path with the archives to compare
-            prints (bool): if True, prints intermediate information
-        """
+    def __init__(self, config, path):
+        self.config = config
         self.path = path
         self.test_paths = glob(os.path.join(self.path, '*.npz'))
         self.all_data = np.array(self.get_data(self.test_paths))
-        self.prints = prints
+        self.prints = config.CONFIG_DISTRIBUTION["PRINTS"]
 
     @staticmethod
     def get_centers(data):
@@ -96,12 +90,12 @@ class DistributionsChecker:
         if self.prints:
             print(f'std1 - {std1}, std2 - {std2}')
 
-        if np.abs(std1 - std2) < CONFIG_DISTRIBUTION["Z_TEST_STD_DELTA"]:
+        if np.abs(std1 - std2) < self.config.CONFIG_DISTRIBUTION["Z_TEST_STD_DELTA"]:
             from statsmodels.stats import weightstats
             z, p_value = weightstats.ztest(d1, x2=d2, value=0)
             if self.prints:
                 print('z-score and p_value:', z, p_value)
-            if p_value > CONFIG_DISTRIBUTION["Z_TEST_P_VALUE"]:
+            if p_value > self.config.CONFIG_DISTRIBUTION["Z_TEST_P_VALUE"]:
                 return True
         else:
             print('WARNING! Distributions (std) are too different, Z-test results '
@@ -122,7 +116,7 @@ class DistributionsChecker:
         ks = ks_2samp(d1, d2)
         if self.prints:
             print(ks)
-        if ks.pvalue > CONFIG_DISTRIBUTION["KS_TEST_P_VALUE"]:
+        if ks.pvalue > self.config.CONFIG_DISTRIBUTION["KS_TEST_P_VALUE"]:
             return True
         return False
 
@@ -137,9 +131,9 @@ class DistributionsChecker:
         test_data = self.get_centers(test_archive['X'])
 
         results = []
-        for i in range(CONFIG_DATALOADER["LAST_NM"] - CONFIG_DATALOADER["FIRST_NM"]):
+        for i in range(self.config.CONFIG_DATALOADER["LAST_NM"] - self.config.CONFIG_DATALOADER["FIRST_NM"]):
             z_result = True
-            if CONFIG_DISTRIBUTION["Z_TEST"]:
+            if self.config.CONFIG_DISTRIBUTION["Z_TEST"]:
                 z_result = self.z_test(test_data[:, i], self.all_data[:, i])
 
             ks_result = self.kolmogorov_smirnov_test(self.all_data[:, i], test_data[:, i])
@@ -179,5 +173,6 @@ class DistributionsChecker:
 
 
 if __name__ == '__main__':
-    dc = DistributionsChecker('/work/users/mi186veva/data_3d/raw_3d_svn/shuffled', prints=False)
+    import configuration.get_config as configuration
+    dc = DistributionsChecker(configuration, '/work/users/mi186veva/data_3d/raw_3d_svn/shuffled')
     print(dc.test_all_archives_in_folder())

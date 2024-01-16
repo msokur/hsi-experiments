@@ -3,16 +3,15 @@ from tqdm import tqdm
 import csv
 import numpy as np
 
-import configuration.get_config as config
 from cross_validators.cross_validator_base import CrossValidatorBase
 import utils
 
 
 class CrossValidatorSpain(CrossValidatorBase):
-    def __init__(self, name):
+    def __init__(self, config, name, *args, **kwargs):
         if name == "":
             self.name = config.database_abbreviation
-        super().__init__()
+        super().__init__(config, *args, **kwargs)
 
     def evaluation(self):
         name = self.name

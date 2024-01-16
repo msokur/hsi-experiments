@@ -6,17 +6,17 @@ import trainers.trainer_base as trainer_base
 
 
 class TrainerEasy(trainer_base.Trainer):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def get_parameters_for_compile(self):
         loss = keras.losses.BinaryCrossentropy()
-        metric_dict = self.CONFIG_TRAINER["CUSTOM_OBJECTS"]
+        metric_dict = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS"]
         raw_metrics = []
-        
+
         for key in metric_dict.keys():
             raw_metrics.append(metric_dict[key]["metric"](**metric_dict[key]["args"]))
-                
+
         return loss, raw_metrics
 
     def get_restored_model(self):
@@ -32,24 +32,25 @@ class TrainerEasy(trainer_base.Trainer):
         if self.mirrored_strategy is not None:
             with self.mirrored_strategy.scope():
                 model = keras.models.load_model(all_checkpoints[-1],
-                                                custom_objects=self.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"],
+                                                custom_objects=self.config.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"],
                                                 compile=True)
         else:
-            model = keras.models.load_model(all_checkpoints[-1], self.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"])
+            model = keras.models.load_model(all_checkpoints[-1], self.config.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"])
 
         model = self.compile_model(model)
 
         return model, initial_epoch
 
     def get_easy_model(self):
-        model = self.CONFIG_TRAINER["MODEL"](shape=self.get_output_shape(), conf=self.CONFIG_TRAINER["MODEL_CONFIG"],
-                                      num_of_labels=len(self.CONFIG_DATALOADER["LABELS_TO_TRAIN"]))
+        model = self.config.CONFIG_TRAINER["MODEL"](shape=self.get_output_shape(),
+                                                    local_config=self.config.CONFIG_TRAINER["MODEL_CONFIG"],
+                                                    num_of_labels=len(self.config.CONFIG_DATALOADER["LABELS_TO_TRAIN"]))
         model = self.compile_model(model)
         return model
 
     def get_model(self):
         initial_epoch = 0
-        if self.CONFIG_TRAINER["RESTORE"]:
+        if self.config.CONFIG_TRAINER["RESTORE"]:
             model, initial_epoch = self.get_restored_model()
         else:
             model = self.get_easy_model()

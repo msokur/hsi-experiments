@@ -4,8 +4,8 @@ from data_utils.data_loaders.data_loader import DataLoader
 
 
 class DataLoaderWhole(DataLoader):
-    def __init__(self, dict_names=None):
-        super().__init__(dict_names=dict_names)
+    def __init__(self, config, dict_names=None):
+        super().__init__(config, dict_names=dict_names)
         self.dict_names.append("size")
 
     def file_read(self, path):

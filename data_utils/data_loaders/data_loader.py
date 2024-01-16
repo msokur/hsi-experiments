@@ -8,22 +8,22 @@ from tqdm import tqdm
 from sklearn.feature_extraction import image
 
 import provider
-from configuration.get_config import CONFIG_DATALOADER, CONFIG_PATHS
 from data_utils.background_detection import detect_background
 from data_utils.data_loaders.path_splits import get_splits
 
 
 class DataLoader:
-    def __init__(self, dict_names=None):
+    def __init__(self, config, dict_names=None):
+        self.config = config
         if dict_names is None:
             dict_names = ["X", "y", "indexes_in_datacube", "background_mask"]
         if 'background_mask' not in dict_names:
             dict_names.append('background_mask')
 
-        self.CONFIG_DATALOADER = CONFIG_DATALOADER
-        self.CONFIG_PATHS = CONFIG_PATHS
-        self.data_reader = provider.get_extension_loader(typ=self.CONFIG_DATALOADER["FILE_EXTENSION"],
-                                                         loader_conf=self.CONFIG_DATALOADER)
+        self.CONFIG_DATALOADER = config.CONFIG_DATALOADER
+        self.CONFIG_PATHS = config.CONFIG_PATHS
+        self.data_reader = provider.get_extension_loader(config=self.config,
+                                                         typ=self.CONFIG_DATALOADER["FILE_EXTENSION"])
         self.dict_names = dict_names
 
     def get_labels(self):
@@ -49,7 +49,8 @@ class DataLoader:
 
     def smooth(self, spectrum):
         if self.CONFIG_DATALOADER["SMOOTHING_TYPE"] is not None:
-            smoother = provider.get_smoother(typ=self.CONFIG_DATALOADER["SMOOTHING_TYPE"],
+            smoother = provider.get_smoother(config=self.config,
+                                             typ=self.CONFIG_DATALOADER["SMOOTHING_TYPE"],
                                              path="",
                                              size=self.CONFIG_DATALOADER["SMOOTHING_VALUE"])
             spectrum = smoother.smooth_func(spectrum)
@@ -242,6 +243,7 @@ class DataLoader:
 if __name__ == "__main__":
     from configuration.configloader_dataloader import read_dataloader_config
     from configuration.configloader_paths import read_path_config
+    import configuration.get_config as raw_config
 
     sys_prefix = r"D:\HTWK\WiSe22\Bachelorarbeit\Programm\hsi-experiments"
     loader_config = os.path.join(sys_prefix, "data_utils", "configuration", "DataLoader.json")
@@ -251,5 +253,5 @@ if __name__ == "__main__":
     database_section = "HNO_Database"
     DATALOADER = read_dataloader_config(file=loader_config, section=loader_section)
     PATHS = read_path_config(file=path_config, system_mode=system_section, database=database_section)
-    dyn = DataLoader()
+    dyn = DataLoader(raw_config)
     x = 1

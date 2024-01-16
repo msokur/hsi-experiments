@@ -74,9 +74,11 @@ class MK2(MK_base):
                 s = unpack(datastruct, self.data[idx * (30 + 9) + data_noinfo:29 + idx * (30 + 9) + data_noinfo])
                 if (not math.isnan(s[0]) or s[1] < 690 and s[0] < 0 or s[0] == 1) and (0 < s[4] < 600) and idx == 1:
                     mark = 2
-                if (math.isnan(s[0]) or s[0] > 600 or s[0] < 0) and s[4] != 20 and idx > 0 and mark == 1 and mark != 2 and len(self.data) > (29 + (idx * ((49 * 16) + 25 + 30)) + data_noinfo):
+                if (math.isnan(s[0]) or s[0] > 600 or s[0] < 0) and s[4] != 20 and idx > 0 and mark == 1 and mark != 2 \
+                        and len(self.data) > (29 + (idx * ((49 * 16) + 25 + 30)) + data_noinfo):
                     mark = 1
-                    s = unpack(datastruct, self.data[(idx * (49 * 16 + 25 + 30)) + data_noinfo:(29 + (idx * (49 * 16 + 25 + 30)) + data_noinfo)])
+                    s = unpack(datastruct, self.data[(idx * (49 * 16 + 25 + 30)) +
+                                                     data_noinfo:(29 + (idx * (49 * 16 + 25 + 30)) + data_noinfo)])
 
             index[idx] = s[0]
             left[idx] = s[1]

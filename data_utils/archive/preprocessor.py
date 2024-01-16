@@ -8,7 +8,7 @@ sys.path.insert(0, parentdir)
 sys.path.insert(1, os.path.join(parentdir, 'utils'))
 
 #import config
-import configuration.get_config as conf
+#import configuration.get_config as conf
 import utils
 import provider
 from data_utils.data_loaders.archive.data_loader_base import DataLoader
@@ -30,13 +30,14 @@ Link: https://blog.janestreet.com/how-to-shuffle-a-big-dataset/
 
 
 class Preprocessor:
-    def __init__(self, load_name_for_x='X',
+    def __init__(self, config, load_name_for_x='X',
                  load_name_for_y='y',
                  load_name_for_name='PatientName',
                  piles_number=100,
                  weights_filename='.weights',
                  dict_names=None):
         # dict_names=['PatientIndex', 'indexes_in_datacube']):
+        self.config = config
         self.valid_archives_saving_path = None
         self.archives_of_batch_size_saving_path = None
         self.batch_size = None
@@ -76,7 +77,7 @@ class Preprocessor:
             for pn in range(self.piles_number):
                 piles[pn] = []
 
-            name = p.split(conf.CONFIG_PATHS['SYSTEM_PATHS_DELIMITER'])[-1].split(".")[0]
+            name = p.split(self.config.CONFIG_PATHS['SYSTEM_PATHS_DELIMITER'])[-1].split(".")[0]
             _data = np.load(p)
 
             data = {n: a for n, a in _data.items()}
@@ -254,7 +255,7 @@ class Preprocessor:
 
             # ------------ get only needed classes--------------
             indexes = np.zeros(data['y'].shape).astype(bool)
-            for label in conf.CONFIG_DATALOADER['LABELS_TO_TRAIN']:
+            for label in self.config.CONFIG_DATALOADER['LABELS_TO_TRAIN']:
                 indexes = indexes | (data['y'] == label)
 
             indexes = np.flatnonzero(indexes)
@@ -320,7 +321,7 @@ class Preprocessor:
 
         quantities = np.array(quantities)
 
-        sum_ = np.sum(quantities[:, conf.CONFIG_DATALOADER['LABELS_TO_TRAIN']])
+        sum_ = np.sum(quantities[:, self.config.CONFIG_DATALOADER['LABELS_TO_TRAIN']])
         with np.errstate(divide='ignore', invalid='ignore'):
             weights = sum_ / quantities
 
@@ -362,15 +363,14 @@ class Preprocessor:
             "shuffle": True
         }
 
-    @staticmethod
-    def copy_preprocessor_paths(path):
+    def copy_preprocessor_paths(self, path):
         path_ = os.path.join(path, 'py_Files')
         if not os.path.exists(path_):
             os.mkdir(path_)
 
-        for file in config.P_FILES_TO_COPY:
+        for file in self.config.P_FILES_TO_COPY:
             if os.path.exists(file):
-                copyfile(file, os.path.join(path_, file.split(config.SYSTEM_PATHS_DELIMITER)[-1]))
+                copyfile(file, os.path.join(path_, file.split(self.config.SYSTEM_PATHS_DELIMITER)[-1]))
 
     def pipeline(self, root_path,
                  preprocessed_path,
@@ -398,8 +398,8 @@ class Preprocessor:
             self.weightedData_save(preprocessed_path, weights)
 
         # ----------scaler part ------------------
-        if execution_flags['scale'] and config.NORMALIZATION_TYPE is not None:
-            print('SCALER TYPE', config.NORMALIZATION_TYPE)
+        if execution_flags['scale'] and self.config.NORMALIZATION_TYPE is not None:
+            print('SCALER TYPE', self.config.NORMALIZATION_TYPE)
             self.Scaler = provider.get_scaler(preprocessed_path, scaler_path=scaler_path)
             self.Scaler.iterate_over_archives_and_save_scaled_X(preprocessed_path, preprocessed_path)
 

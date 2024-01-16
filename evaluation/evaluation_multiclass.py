@@ -21,12 +21,12 @@ class EvaluationMulticlass(EvaluationBase):
             for key in list(metrics_from_scores_dict.keys()):
                 names.append(key + '_' + label)
             labels[idx] = np.array(names)
-            
+
         fieldnames = ['Time', 'Accuracy']
         fieldnames = self.add_additional_column_fieldnames(fieldnames).astype(object)
         for m in range(len(metrics_dict) - 1 + len(metrics_from_scores_dict)):
             fieldnames = np.insert(fieldnames, -1, labels[:, m])
-        
+
         return fieldnames
 
     def write_metrics_to_csv(self, writer, metrics, time_string=None):
@@ -49,7 +49,9 @@ class EvaluationMulticlass(EvaluationBase):
 if __name__ == '__main__':
     eval_multiclass = EvaluationMulticlass(config.database_abbreviation)
     config.CV_GET_CHECKPOINT_FROM_VALID = False
-    
-    eval_multiclass.save_predictions_and_metrics(training_csv_path='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/Esophagus_MedFilter/Esophagus_MedFilter_stats_02.02.2022-13_32_30.csv', 
-                                               npz_folder = config.RAW_NPZ_PATH,
-                                               checkpoints=[38])
+
+    eval_multiclass.save_predictions_and_metrics(
+        training_csv_path='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/Esophagus_MedFilter'
+                          '/Esophagus_MedFilter_stats_02.02.2022-13_32_30.csv',
+        npz_folder=config.RAW_NPZ_PATH,
+        checkpoints=[38])

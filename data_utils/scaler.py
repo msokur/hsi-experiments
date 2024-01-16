@@ -12,7 +12,8 @@ from data_utils.data_loaders.data_loader import DataLoader
 
 
 class Scaler:
-    def __init__(self, preprocessed_path, scaler_file=None, scaler_path=None, dict_names=None):
+    def __init__(self, config, preprocessed_path, scaler_file=None, scaler_path=None, dict_names=None):
+        self.config = config
         self.preprocessed_path = preprocessed_path
         self.scaler_path = scaler_path
         self.dict_names = dict_names
@@ -104,7 +105,7 @@ class Scaler:
             X = self.scale_X(X)
             data = {n: a for n, a in data.items()}
             data[self.dict_names[0]] = X.copy()
-            np.savez(os.path.join(destination_path, DataLoader().get_name(path)), **data)
+            np.savez(os.path.join(destination_path, DataLoader(self.config).get_name(path)), **data)
 
     def get_shapes(self, path):
         datas = np.load(path)

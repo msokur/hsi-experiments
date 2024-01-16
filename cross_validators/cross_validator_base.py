@@ -7,16 +7,17 @@ import csv
 import inspect
 
 import utils
-from configuration.get_config import telegram, CONFIG_CV, CONFIG_PATHS, CONFIG_DATALOADER, CONFIG_TRAINER
 import provider
 from data_utils.data_loaders.data_loader import DataLoader
 
+
 class CrossValidatorBase:
-    def __init__(self):
-        self.CONFIG_CV = CONFIG_CV
-        self.CONFIG_PATHS = CONFIG_PATHS
-        self.CONFIG_DATALOADER = CONFIG_DATALOADER
-        self.CONFIG_TRAINER = CONFIG_TRAINER
+    def __init__(self, config):
+        self.config = config
+        self.CONFIG_CV = config.CONFIG_CV
+        self.CONFIG_PATHS = config.CONFIG_PATHS
+        self.CONFIG_DATALOADER = config.CONFIG_DATALOADER
+        self.CONFIG_TRAINER = config.CONFIG_TRAINER
 
         current_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         project_folder = os.path.dirname(current_folder)
@@ -32,14 +33,14 @@ class CrossValidatorBase:
     def pipeline(self, execution_flags=None, **kwargs):
         if execution_flags is None:
             execution_flags = CrossValidatorBase.get_execution_flags()
-            
+
         if execution_flags['cross_validation']:
             self.cross_validation(self.CONFIG_CV["NAME"])
         if execution_flags['evaluation']:
             self.evaluation(**kwargs)
 
-        telegram.send_tg_message(f'operations in cross_validation.py for {self.CONFIG_CV["NAME"]} '
-                                 f'are successfully completed!')
+        self.config.telegram.send_tg_message(f'Operations in cross_validation.py for {self.CONFIG_CV["NAME"]} '
+                                             f'are successfully completed!')
 
     @abc.abstractmethod
     def evaluation(self, **kwargs):  # has to be implemented in child classes
@@ -48,7 +49,8 @@ class CrossValidatorBase:
     def cross_validation_step(self, model_name, except_names=None):
         if except_names is None:
             except_names = []
-        trainer = provider.get_trainer(typ=self.CONFIG_TRAINER["TYPE"], model_name=model_name, except_indexes=except_names)
+        trainer = provider.get_trainer(config=self.config, typ=self.CONFIG_TRAINER["TYPE"], model_name=model_name,
+                                       except_indexes=except_names)
         trainer.train()
 
     def cross_validation(self, root_folder_name: str, csv_filename=None):
@@ -60,7 +62,7 @@ class CrossValidatorBase:
         if not os.path.exists(root_folder):
             os.makedirs(root_folder)
 
-        data_loader = provider.get_data_loader(typ=self.CONFIG_DATALOADER["TYPE"])
+        data_loader = provider.get_data_loader(config=self.config, typ=self.CONFIG_DATALOADER["TYPE"])
         paths, splits = data_loader.get_paths_and_splits()
 
         date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
@@ -82,7 +84,8 @@ class CrossValidatorBase:
                 print(f"In files {paths_patch} are no needed labels for training!")
                 continue
 
-            self.cross_validation_step(model_name, except_names=[DataLoader().get_name(p) for p in paths_patch])
+            self.cross_validation_step(model_name,
+                                       except_names=[DataLoader(self.config).get_name(p) for p in paths_patch])
 
             for i, path_ in enumerate(paths_patch):
                 sensitivity, specificity = 0, 0

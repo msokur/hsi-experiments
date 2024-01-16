@@ -10,8 +10,8 @@ import pickle
 
 
 class TrainerTuner(Trainer):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.tuner_dir = os.path.join(self.log_dir, "tuner")
 
     def restore_tuner(self, directory=''):
@@ -24,10 +24,10 @@ class TrainerTuner(Trainer):
         with open(os.path.join(directory, "params.pickle"), "rb") as handle:
             params = pickle.load(handle)
 
-        return self.trainer["TUNER"](model,
-                                     objective=kt.Objective(**params["objective"]),
-                                     overwrite=False,
-                                     directory=directory)
+        return self.config.CONFIG_TRAINER["TUNER"](model,
+                                                   objective=kt.Objective(**params["objective"]),
+                                                   overwrite=False,
+                                                   directory=directory)
 
     @staticmethod
     def save_tuner_params(model, **kwargs):
@@ -41,15 +41,15 @@ class TrainerTuner(Trainer):
     def compile_model(self, model) -> kt.Tuner:  # in this case - tune model
 
         params = {
-            "objective": self.trainer["TUNER_OBJECTIVE"],
-            "max_trials": self.trainer["TUNER_MAX_TRIALS"],
-            "overwrite": self.trainer["TUNER_OVERWRITE"],
+            "objective": self.config.CONFIG_TRAINER["TUNER_OBJECTIVE"],
+            "max_trials": self.config.CONFIG_TRAINER["TUNER_MAX_TRIALS"],
+            "overwrite": self.config.CONFIG_TRAINER["TUNER_OVERWRITE"],
             "directory": self.tuner_dir,
         }
         params_obj = params.copy()
-        params_obj["objective"] = kt.Objective(**self.trainer["TUNER_OBJECTIVE"])
+        params_obj["objective"] = kt.Objective(**self.config.CONFIG_TRAINER["TUNER_OBJECTIVE"])
 
-        tuner = self.trainer["TUNER"](model, **params_obj)
+        tuner = self.config.CONFIG_TRAINER["TUNER"](model, **params_obj)
 
         tuner.search_space_summary()
 
@@ -57,7 +57,7 @@ class TrainerTuner(Trainer):
         self.valid_except_indexes = train_generator.valid_except_indexes
 
         tuner.search(x=train_dataset_t,
-                     epochs=self.trainer["TUNER_EPOCHS"],
+                     epochs=self.config.CONFIG_TRAINER["TUNER_EPOCHS"],
                      validation_data=valid_dataset_t,
                      class_weight=class_weights_t,
                      callbacks=[keras.callbacks.TensorBoard(self.tuner_dir)])
@@ -70,9 +70,11 @@ class TrainerTuner(Trainer):
 
     def get_model(self):
         print("------ Start search tuning parameter ---------")
-        base_model = self.trainer["MODEL"](shape=self.get_output_shape(), conf=self.trainer["MODEL_CONFIG"],
-                                           num_of_labels=len(self.loader["LABELS_TO_TRAIN"]),
-                                           custom_metrics=self.trainer["CUSTOM_OBJECTS"])
+        length_labels_to_train = len(self.config.CONFIG_DATALOADER["LABELS_TO_TRAIN"])
+        base_model = self.config.CONFIG_TRAINER["MODEL"](shape=self.get_output_shape(),
+                                                         local_config=self.config.CONFIG_TRAINER["MODEL_CONFIG"],
+                                                         num_of_labels=length_labels_to_train,
+                                                         custom_metrics=self.config.CONFIG_TRAINER["CUSTOM_OBJECTS"])
         tuner = self.compile_model(base_model)
         print("------ Finish search tuning parameter ---------")
 
@@ -106,8 +108,8 @@ class TrainerTuner(Trainer):
                                  x=train_dataset,
                                  validation_data=valid_dataset,
                                  verbose=2,
-                                 epochs=self.trainer["EPOCHS"],
-                                 batch_size=self.trainer["BATCH_SIZE"],
+                                 epochs=self.config.CONFIG_TRAINER["EPOCHS"],
+                                 batch_size=self.config.CONFIG_TRAINER["BATCH_SIZE"],
                                  callbacks=callbacks_,
                                  use_multiprocessing=True,
                                  class_weight=class_weights,

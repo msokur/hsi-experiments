@@ -9,7 +9,6 @@ current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfra
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
-from configuration.get_config import telegram, CONFIG_PATHS, CONFIG_PREPROCESSOR, CONFIG_DATALOADER, CONFIG_AUG
 import provider
 from configuration.copy_py_files import copy_files
 from data_utils.shuffle import Shuffle
@@ -24,26 +23,23 @@ Link: https://blog.janestreet.com/how-to-shuffle-a-big-dataset/
 
 
 class Preprocessor:
-    def __init__(self):
-        self.CONFIG_PREPROCESSOR = CONFIG_PREPROCESSOR
-        self.CONFIG_PATHS = CONFIG_PATHS
-        self.CONFIG_DATALOADER = CONFIG_DATALOADER
-        self.dataloader = provider.get_data_loader(typ=self.CONFIG_DATALOADER["TYPE"],
-                                                   dict_names=[self.CONFIG_PREPROCESSOR["DICT_NAMES"][0],
-                                                               self.CONFIG_PREPROCESSOR["DICT_NAMES"][1],
-                                                               self.CONFIG_PREPROCESSOR["DICT_NAMES"][4]])
+    def __init__(self, config):
+        self.config = config
+        self.dataloader = provider.get_data_loader(typ=self.config.CONFIG_DATALOADER["TYPE"], config=self.config,
+                                                   dict_names=[self.config.CONFIG_PREPROCESSOR["DICT_NAMES"][0],
+                                                               self.config.CONFIG_PREPROCESSOR["DICT_NAMES"][1],
+                                                               self.config.CONFIG_PREPROCESSOR["DICT_NAMES"][4]])
         self.valid_archives_saving_path = None
         self.archives_of_batch_size_saving_path = None
         self.batch_size = None
-        self.load_name_for_name = self.CONFIG_PREPROCESSOR["DICT_NAMES"][2]
-        self.load_name_for_X = self.CONFIG_PREPROCESSOR["DICT_NAMES"][0]
-        self.load_name_for_y = self.CONFIG_PREPROCESSOR["DICT_NAMES"][1]
-        self.dict_names = self.CONFIG_PREPROCESSOR["DICT_NAMES"]
-        self.piles_number = self.CONFIG_PREPROCESSOR["PILES_NUMBER"]
-        self.weights_filename = self.CONFIG_PREPROCESSOR["WEIGHT_FILENAME"]
-        
-        self.Weights = Weights(self.CONFIG_DATALOADER, self.dataloader, self.weights_filename)
+        self.load_name_for_name = self.config.CONFIG_PREPROCESSOR["DICT_NAMES"][2]
+        self.load_name_for_X = self.config.CONFIG_PREPROCESSOR["DICT_NAMES"][0]
+        self.load_name_for_y = self.config.CONFIG_PREPROCESSOR["DICT_NAMES"][1]
+        self.dict_names = self.config.CONFIG_PREPROCESSOR["DICT_NAMES"]
+        self.piles_number = self.config.CONFIG_PREPROCESSOR["PILES_NUMBER"]
+        self.weights_filename = self.config.CONFIG_PREPROCESSOR["WEIGHT_FILENAME"]
 
+        self.Weights = Weights(self.config, self.dataloader, self.weights_filename)
 
     @staticmethod
     def get_execution_flags_for_pipeline_with_all_true():
@@ -57,16 +53,16 @@ class Preprocessor:
     def pipeline(self, root_path=None, preprocessed_path=None, execution_flags=None):
         dt_string = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         print("Time before the start of preprocessing", dt_string)
-        
+
         process = psutil.Process(os.getpid())
-        
+
         if execution_flags is None:
             execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
 
         if root_path is None:
-            root_path = self.CONFIG_PATHS["RAW_SOURCE_PATH"]
+            root_path = self.config.CONFIG_PATHS["RAW_SOURCE_PATH"]
         if preprocessed_path is None:
-            preprocessed_path = self.CONFIG_PATHS["RAW_NPZ_PATH"]
+            preprocessed_path = self.config.CONFIG_PATHS["RAW_NPZ_PATH"]
 
         if not os.path.exists(preprocessed_path):
             os.makedirs(preprocessed_path)
@@ -75,50 +71,59 @@ class Preprocessor:
         print('PREPROCESSED PATH', preprocessed_path)
 
         copy_files(preprocessed_path,
-                   self.CONFIG_PREPROCESSOR["FILES_TO_COPY"],
-                   self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
-        
-        print('-------------------------------------------------Memory, preprocessor 0, before preprocessing', process.memory_info().rss)
+                   self.config.CONFIG_PREPROCESSOR["FILES_TO_COPY"],
+                   self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
+
+        print('-------------------------------------------------Memory, preprocessor 0, before preprocessing',
+              process.memory_info().rss)
 
         # ---------Data reading part--------------
         if execution_flags['load_data_with_dataloader']:
             self.dataloader.files_read_and_save_to_npz(root_path, preprocessed_path)
-            
-        print('-------------------------------------------------Memory, preprocessor 1, after reading of origin files', process.memory_info().rss)
+
+        print('-------------------------------------------------Memory, preprocessor 1, after reading of origin files',
+              process.memory_info().rss)
 
         # ----------weights part------------------
         if execution_flags['add_sample_weights']:
             weights = self.Weights.weights_get_or_save(preprocessed_path)
             self.Weights.weightedData_save(preprocessed_path, weights)
-        
-        print('-------------------------------------------------Memory, preprocessor 2, after sample weights', process.memory_info().rss)
+
+        print('-------------------------------------------------Memory, preprocessor 2, after sample weights',
+              process.memory_info().rss)
 
         # ----------scaler part ------------------
-        if execution_flags['scale'] and self.CONFIG_PREPROCESSOR["NORMALIZATION_TYPE"] is not None:
-            print('SCALER TYPE', self.CONFIG_PREPROCESSOR["NORMALIZATION_TYPE"])
-            scaler = provider.get_scaler(typ=self.CONFIG_PREPROCESSOR["NORMALIZATION_TYPE"],
+        if execution_flags['scale'] and self.config.CONFIG_PREPROCESSOR["NORMALIZATION_TYPE"] is not None:
+            print('SCALER TYPE', self.config.CONFIG_PREPROCESSOR["NORMALIZATION_TYPE"])
+            scaler = provider.get_scaler(config=self.config,
+                                         typ=self.config.CONFIG_PREPROCESSOR["NORMALIZATION_TYPE"],
                                          preprocessed_path=preprocessed_path,
-                                         scaler_file=self.CONFIG_PREPROCESSOR["SCALER_FILE"],
-                                         scaler_path=self.CONFIG_PREPROCESSOR["SCALER_PATH"],
-                                         dict_names=[self.CONFIG_PREPROCESSOR["DICT_NAMES"][x] for x in [0, 1, 4]])
+                                         scaler_file=self.config.CONFIG_PREPROCESSOR["SCALER_FILE"],
+                                         scaler_path=self.config.CONFIG_PREPROCESSOR["SCALER_PATH"],
+                                         dict_names=[self.config.CONFIG_PREPROCESSOR["DICT_NAMES"][x] for x in
+                                                     [0, 1, 4]])
             scaler.iterate_over_archives_and_save_scaled_X(preprocessed_path, preprocessed_path)
 
-        print('-------------------------------------------------Memory, preprocessor 3, after scaling', process.memory_info().rss)
-        
+        print('-------------------------------------------------Memory, preprocessor 3, after scaling',
+              process.memory_info().rss)
+
         # ----------shuffle part------------------
         if execution_flags['shuffle']:
-            paths = glob.glob(os.path.join(preprocessed_path, '*.npz'))
-            shuffle = Shuffle(raw_paths=paths,
+            paths = glob(os.path.join(preprocessed_path, '*.npz'))
+            shuffle = Shuffle(self.config,
+                              raw_paths=paths,
                               dict_names=self.dict_names,
-                              preprocessor_conf=self.CONFIG_PREPROCESSOR,
-                              paths_conf=self.CONFIG_PATHS,
-                              augmented=CONFIG_AUG["enable"])
+                              augmented=self.config.CONFIG_AUG["enable"])
             shuffle.shuffle()
-        
-        print('-------------------------------------------------Memory, preprocessor 4, after shuffling', process.memory_info().rss)
+
+        print('-------------------------------------------------Memory, preprocessor 4, after shuffling',
+              process.memory_info().rss)
 
 
 if __name__ == '__main__':
+    from configuration.get_config import telegram, CONFIG_PREPROCESSOR
+    import configuration.get_config as configuration
+
     execution_flags_ = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
     execution_flags_['load_data_with_dataloader'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["LOAD_DATA_WITH_DATALOADER"]
     execution_flags_['add_sample_weights'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["ADD_SAMPLE_WEIGHTS"]
@@ -126,7 +131,7 @@ if __name__ == '__main__':
     execution_flags_['shuffle'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["SHUFFLE"]
 
     try:
-        preprocessor = Preprocessor()
+        preprocessor = Preprocessor(configuration)
         preprocessor.pipeline(execution_flags=execution_flags_)
 
         telegram.send_tg_message("Operations in preprocessor.py are successfully completed!")

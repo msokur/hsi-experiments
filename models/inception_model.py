@@ -15,21 +15,20 @@ POOL_STRIDES = 1
 
 class InceptionModelBase:
     def __init__(self):
-        self.conf = None
         self.num_of_labels = None
         self.kernel_initializer, self.bias_initializer = get_initializers()
         set_tf_seed()
 
-    def get_model(self, shape: tuple, conf: dict, num_of_labels: int):
-        self.conf = conf
+    def get_model(self, shape: tuple, local_config: dict, num_of_labels: int):
+        self.local_config = local_config
         self.num_of_labels = num_of_labels
 
         input_ = tf.keras.layers.Input(
             shape=shape, name="title"
         )
 
-        net = self.inception_block(input_=input_, factor=conf["INCEPTION_FACTOR"],
-                                   with_batch_norm=conf["WITH_BATCH_NORM"])
+        net = self.inception_block(input_=input_, factor=local_config["INCEPTION_FACTOR"],
+                                   with_batch_norm=local_config["WITH_BATCH_NORM"])
 
         return self.inception_base(input_=input_, net=net)
 
@@ -65,7 +64,7 @@ class InceptionModelBase:
 
     def inception_base(self, input_, net):
         net = tf.keras.layers.Flatten()(net)
-        net = get_dropout(net=net, dropout_value=self.conf["DROPOUT"])
+        net = get_dropout(net=net, dropout_value=self.local_config["DROPOUT"])
 
         activation = 'sigmoid'
         number = 1
@@ -129,5 +128,5 @@ if __name__ == "__main__":
     }
     labels = 3
     model1 = InceptionModel3D()
-    model_ = model1.get_model(shape=shape_, conf=conf_, num_of_labels=labels)
+    model_ = model1.get_model(shape=shape_, local_config=conf_, num_of_labels=labels)
     model_.summary()

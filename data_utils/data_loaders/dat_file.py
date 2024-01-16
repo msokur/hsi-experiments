@@ -1,13 +1,12 @@
 import os
 import numpy as np
-#import cv2
 from data_utils.hypercube_data import Cube_Read
 from data_utils.marker import MK2
 
 
 class DatFile:
-    def __init__(self, loader_conf: dict):
-        self.CONFIG_DATALOADER = loader_conf
+    def __init__(self, config):
+        self.CONFIG_DATALOADER = config.CONFIG_DATALOADER
 
     def indexes_get_bool_from_mask(self, mask):
         indexes = []
@@ -69,7 +68,6 @@ class DatFile:
         # add alpha channel
         if mask.shape[-1] == 3:
             mask = cv2.cvtColor(mask, cv2.COLOR_BGR2BGRA)
-            
 
         # [..., -2::-1] - BGR to RGB, [..., -1:] - only transparency, '-1' - concatenate along last axis
         mask = np.r_["-1", mask[..., -2::-1], mask[..., -1:]]
@@ -93,7 +91,7 @@ class DatFile:
             top = topx[idx]
 
             x_ = np.arange(left - radius - 1, left + radius + 1, dtype=int)
-            y_ = np.arange(top - radius -1, top + radius + 1, dtype=int)
+            y_ = np.arange(top - radius - 1, top + radius + 1, dtype=int)
             # alle Pixel aus dem Kreis
             x, y = np.where((x_[:, np.newaxis] - left) ** 2 + (y_ - top) ** 2 <= radius ** 2)
 
@@ -113,7 +111,7 @@ class DatFile:
 
 
 if __name__ == "__main__":
-    from configuration.get_config import DATALOADER
+    from configuration.get_config import CONFIG_DATALOADER
     from glob import glob
     import cv2
     from tqdm import tqdm
@@ -121,12 +119,12 @@ if __name__ == "__main__":
     mk2_path = r"annotation\mk_files"
     dat_paths_ = glob(os.path.join(main_path, "*.dat"))
 
-    dat_loader = DatFile(DATALOADER)
+    dat_loader = DatFile(CONFIG_DATALOADER)
 
     for p in tqdm(dat_paths_):
-        name = p.split("\\")[-1].split(".dat")[0]
+        patient_name = p.split("\\")[-1].split(".dat")[0]
 
         spec, mask_ = dat_loader.file_read_mask_and_spectrum(p, os.path.join(main_path, mk2_path))
         bool_mask = dat_loader.indexes_get_bool_from_mask(mask_)
-        cv2.imwrite(os.path.join(main_path, mk2_path, "png", name + ".png"),
+        cv2.imwrite(os.path.join(main_path, mk2_path, "png", patient_name + ".png"),
                     np.r_["-1", mask_[..., -2::-1], mask_[..., -1:]])

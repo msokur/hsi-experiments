@@ -2,12 +2,11 @@ import os
 import argparse
 import json
 
-import configuration.get_config as config
 from cross_validators.cross_validator_base import CrossValidatorBase
 
 
 class CrossValidatorExperiment(CrossValidatorBase):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
 
         # -------------------------parser
         parser = argparse.ArgumentParser(description='Process some integers.')
@@ -20,7 +19,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
 
         args = parser.parse_args()
         self.args = args
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
         print(f'Hi from CV! with {args.experiment_folder}, {args.cv_name} and config_index {args.config_index}')
         root_folder = args.experiment_folder.split(config.SYSTEM_PATHS_DELIMITER)[-1]

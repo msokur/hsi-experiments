@@ -6,7 +6,7 @@ from data_utils.prediction_to_image.prediction_to_image_base import PredictionTo
 class PredictionToImage_npz(PredictionToImage_base):
     def get_spectrum(self, path: str):
         X, y, idx = self.load_npz(path=path)
-        mask = np.isin(y, self.load_conf["LABELS_TO_TRAIN"])
+        mask = np.isin(y, self.CONFIG_DATALOADER["LABELS_TO_TRAIN"])
 
         return X[mask], idx[mask]
 
@@ -19,7 +19,7 @@ class PredictionToImage_npz(PredictionToImage_base):
     def whole_mask(self, class_list: list, indexes: list) -> np.ndarray:
         class_mask = np.full(self.image_size, -1)
         for idx, class_label in zip(indexes, class_list):
-            if class_label not in self.load_conf["LABELS_TO_TRAIN"]:
+            if class_label not in self.CONFIG_DATALOADER["LABELS_TO_TRAIN"]:
                 continue
 
             class_mask[idx[0]][idx[1]] = class_label
@@ -37,7 +37,7 @@ class PredictionToImage_npz(PredictionToImage_base):
 
 if __name__ == '__main__':
     import os
-    from configuration.get_config import DATALOADER, TRAINER
+    import configuration.get_config as config
 
     os.environ['TF_DETERMINISTIC_OPS'] = '1'
 
@@ -47,12 +47,12 @@ if __name__ == '__main__':
     image_path = os.path.join(main_path, "raw_data", "2019_04_30_15_34_56_SpecCube.png")
     # masks_png = test_png.annotation_mask(image_path)
 
-    test_npz = PredictionToImage_npz(load_conf=DATALOADER, model_conf=TRAINER)
+    test_npz = PredictionToImage_npz(config)
     npz_path = os.path.join(main_path, "raw_data", "2019_04_30_15_34_56_.npz")
     dat_path = r"E:\ICCAS\ESO\EsophagusCancer\2019_04_30_15_34_56_SpecCube.dat"
     anno_masks = test_npz.get_annotation_mask(npz_path)
-    pred_mask = test_npz.get_prediction_mask(spectrum_path=npz_path, model_path=model_path_)
-    diff_mask_ = test_npz.get_diff_mask(annotation_mask=anno_masks, prediction_mask=pred_mask)
+    predictions_mask = test_npz.get_prediction_mask(spectrum_path=npz_path, model_path=model_path_)
+    diff_mask_ = test_npz.get_diff_mask(annotation_mask=anno_masks, prediction_mask=predictions_mask)
     image_save = os.path.join(main_path, "mask.png")
-    # test_npz.save_only_masks(image_save, anno_masks, pred_mask, diff_mask_)
-    test_npz.save_with_background(image_save, dat_path, anno_masks, pred_mask, diff_mask_)
+    # test_npz.save_only_masks(image_save, anno_masks, predictions_mask, diff_mask_)
+    test_npz.save_with_background(image_save, dat_path, anno_masks, predictions_mask, diff_mask_)

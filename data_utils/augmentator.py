@@ -2,7 +2,7 @@ import os
 from multiprocessing import Pool
 import numpy as np
 import time
-from configuration import get_config as conf
+from configuration import get_config as config
 
 '''class Augmentator():
     def __init__(self, pool, percent=None, aug_range=None, new_rows_per_sample=None):
@@ -62,15 +62,15 @@ from configuration import get_config as conf
 
 
 def augment_one(row, row_range=None,
-                percent=conf.CONFIG_AUG['percent'],
-                aug_range=conf.CONFIG_AUG['range'],
-                new_rows_per_sample=conf.CONFIG_AUG['new_rows_per_sample']):
+                percent=config.CONFIG_AUG['percent'],
+                aug_range=config.CONFIG_AUG['range'],
+                new_rows_per_sample=config.CONFIG_AUG['new_rows_per_sample']):
     # print(percent, aug_range, range(new_rows_per_sample))
     if row_range is None:
-        if "LAST_NM" in conf.CONFIG_DATALOADER.keys() and "FIRST_NM" in conf.CONFIG_DATALOADER.keys():
-            row_range = [0, conf.CONFIG_DATALOADER["LAST_NM"] - conf.CONFIG_DATALOADER["FIRST_NM"]]
-        elif "OUTPUT_SIGNATURE_X_FEATURES" in conf.CONFIG_DATALOADER.keys():
-            row_range = [0, conf.CONFIG_DATALOADER["OUTPUT_SIGNATURE_X_FEATURES"]]
+        if "LAST_NM" in config.CONFIG_DATALOADER.keys() and "FIRST_NM" in config.CONFIG_DATALOADER.keys():
+            row_range = [0, config.CONFIG_DATALOADER["LAST_NM"] - config.CONFIG_DATALOADER["FIRST_NM"]]
+        elif "OUTPUT_SIGNATURE_X_FEATURES" in config.CONFIG_DATALOADER.keys():
+            row_range = [0, config.CONFIG_DATALOADER["OUTPUT_SIGNATURE_X_FEATURES"]]
         else:
             raise ValueError("No spectrum size in Dataloader config!")
     row = np.array(row)
@@ -91,9 +91,9 @@ def augment_one(row, row_range=None,
     return result
 
 
-def augment_all(data, percent=conf.CONFIG_AUG['percent'],
-                aug_range=conf.CONFIG_AUG['range'],
-                new_rows_per_sample=conf.CONFIG_AUG['new_rows_per_sample']):
+def augment_all(data, percent=config.CONFIG_AUG['percent'],
+                aug_range=config.CONFIG_AUG['range'],
+                new_rows_per_sample=config.CONFIG_AUG['new_rows_per_sample']):
     print('cpu count', os.cpu_count())
 
     start = time.time()

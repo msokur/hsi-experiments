@@ -1,41 +1,41 @@
 # modules are imported inside functions to avoid circular imports
 
 
-def get_trainer(typ: str, **kwargs):
+def get_trainer(typ: str, config, *args, **kwargs):
     from trainers.trainer_easy import TrainerEasy
     from trainers.trainer_easy_several_outputs import TrainerEasySeveralOutputs
 
     if typ == "Tuner":
         print('TrainerTuner')
         from trainers.trainer_tuner import TrainerTuner
-        return TrainerTuner(**kwargs)
+        return TrainerTuner(config=config, *args, **kwargs)
     elif typ == "Easy":
         print('TrainerEasy')
-        return TrainerEasy(**kwargs)
+        return TrainerEasy(config=config, *args, **kwargs)
     elif typ == "SeveralOutput":
         print('TrainerEasySeveralOutputs')
-        return TrainerEasySeveralOutputs(**kwargs)
+        return TrainerEasySeveralOutputs(config=config, *args, **kwargs)
 
     value_error("Trainer", typ)
 
 
-def get_data_loader(typ: str, **kwargs):
+def get_data_loader(typ: str, config, *args, **kwargs):
     from data_utils.data_loaders.data_loader import DataLoader
     from data_utils.data_loaders.data_loader_whole import DataLoaderWhole
-    #from data_utils.data_loaders.archive.data_loader_colon import DataLoaderColon
-    #from data_utils.data_loaders.archive.data_loader_mat import DataLoaderMat
-    #from data_utils.data_loaders.archive.data_loader_mat_brain import DataLoaderMatBrain
-    #from data_utils.data_loaders.archive.data_loader_mat_colon import DataLoaderMatColon
-    #from data_utils.data_loaders.archive.data_loader_whole_colon import DataLoaderWholeColon
-    #from data_utils.data_loaders.archive.data_loader_whole_mat import DataLoaderWholeMat
-    #from data_utils.data_loaders.archive.data_loader_hno import DataLoaderHNO
-    #from data_utils.data_loaders.archive.data_loader_whole_hno import DataLoaderWholeHNO
-    
+    # from data_utils.data_loaders.archive.data_loader_colon import DataLoaderColon
+    # from data_utils.data_loaders.archive.data_loader_mat import DataLoaderMat
+    # from data_utils.data_loaders.archive.data_loader_mat_brain import DataLoaderMatBrain
+    # from data_utils.data_loaders.archive.data_loader_mat_colon import DataLoaderMatColon
+    # from data_utils.data_loaders.archive.data_loader_whole_colon import DataLoaderWholeColon
+    # from data_utils.data_loaders.archive.data_loader_whole_mat import DataLoaderWholeMat
+    # from data_utils.data_loaders.archive.data_loader_hno import DataLoaderHNO
+    # from data_utils.data_loaders.archive.data_loader_whole_hno import DataLoaderWholeHNO
+
     if typ == "normal":
-        return DataLoader(**kwargs)
+        return DataLoader(config=config, *args, **kwargs)
     elif typ == "whole":
-        return DataLoaderWhole(**kwargs)
-    
+        return DataLoaderWhole(config=config, *args, **kwargs)
+
     '''if typ == 'colon':
         print('DataLoaderColon')
         return DataLoaderColon(**kwargs)
@@ -72,7 +72,7 @@ def get_data_loader(typ: str, **kwargs):
     value_error("Data Loader", typ)
 
 
-def get_whole_analog_of_data_loader(original_database):    # maybe out of date
+def get_whole_analog_of_data_loader(original_database):  # maybe out of date
     analog = ""
     if original_database == 'normal':
         analog = 'whole'
@@ -95,48 +95,48 @@ def get_whole_analog_of_data_loader(original_database):    # maybe out of date
     return analog
 
 
-def get_evaluation(labels: list, *args, **kwargs):
+def get_evaluation(labels: list, config, *args, **kwargs):
     from evaluation.evaluation_binary import EvaluationBinary
     from evaluation.evaluation_multiclass import EvaluationMulticlass
-    
+
     if len(labels) == 2:
         print('Get EvaluationBinary')
-        return EvaluationBinary(*args, **kwargs)
-    
+        return EvaluationBinary(config=config, *args, **kwargs)
+
     print('Get EvaluationMulticlass')
-    return EvaluationMulticlass(*args, **kwargs)
+    return EvaluationMulticlass(config=config, *args, **kwargs)
 
 
-def get_smoother(typ: str, *args, **kwargs):
+def get_smoother(typ: str, config, *args, **kwargs):
     from data_utils.smoothing import MedianFilter, GaussianFilter
-    
+
     if typ == "median_filter":
         print("Smooth spectrum with median filter!")
-        return MedianFilter(*args, **kwargs)
+        return MedianFilter(config=config, *args, **kwargs)
     elif typ == "gaussian_filter":
         print("Smooth spectrum with gaussian filter!")
-        return GaussianFilter(*args, **kwargs)
-    
+        return GaussianFilter(config=config, *args, **kwargs)
+
     value_error("smoother", typ)
 
 
-def get_scaler(typ: str, *args, **kwargs):
+def get_scaler(typ: str, config, *args, **kwargs):
     from data_utils.scaler import NormalizerScaler, StandardScaler, StandardScalerTransposed
 
     if typ == 'l2_norm':
-        return NormalizerScaler(*args, **kwargs)
+        return NormalizerScaler(config=config, *args, **kwargs)
     elif typ == 'svn':
         print('StandardScaler')
-        return StandardScaler(*args, **kwargs)
+        return StandardScaler(config=config, *args, **kwargs)
     elif typ == 'svn_T':
-        return StandardScalerTransposed(*args, **kwargs)
-    
+        return StandardScalerTransposed(config=config, *args, **kwargs)
+
     value_error("scaler", typ)
 
 
 def get_pixel_detection(typ: str):
     from data_utils import border
-    
+
     if typ == "detect_border":
         return border.detect_border
     elif typ == "detect_core":
@@ -144,36 +144,37 @@ def get_pixel_detection(typ: str):
     value_error("pixel detection", typ)
 
 
-def get_cross_validator(typ: str, *args, **kwargs):
+def get_cross_validator(typ: str, config, *args, **kwargs):
     from cross_validators.cross_validator_normal import CrossValidationNormal
     from cross_validators.cross_validator_postprocessing import CrossValidatorPostProcessing
-    
+
     if typ == "normal":
-        return CrossValidationNormal(*args, **kwargs)
+        return CrossValidationNormal(config=config, *args, **kwargs)
     elif typ == "spain":
         from cross_validators.cross_validator_spain import CrossValidatorSpain
-        return CrossValidatorSpain(*args, **kwargs)
+        return CrossValidatorSpain(config=config, *args, **kwargs)
     elif typ == "postprocessing":
-        return CrossValidatorPostProcessing(*args, **kwargs)
+        return CrossValidatorPostProcessing(config=config, *args, **kwargs)
     elif typ == "experiment":
         from cross_validators.cross_validator_experiment import CrossValidatorExperiment
-        return CrossValidatorExperiment(*args, **kwargs)
+        return CrossValidatorExperiment(config=config, *args, **kwargs)
 
     value_error("Cross validator", typ)
 
 
-def get_extension_loader(typ: str, **kwargs):
+def get_extension_loader(typ: str, config, *args, **kwargs):
     from data_utils.data_loaders.dat_file import DatFile
     from data_utils.data_loaders.mat_file import MatFile
 
     if typ == ".dat":
-        return DatFile(**kwargs)
+        return DatFile(config=config, *args, **kwargs)
     elif typ == ".mat":
-        return MatFile(**kwargs)
+        return MatFile(config=config, *args, **kwargs)
     else:
         raise ValueError(f"For file extension {typ} is no implementation!")
-        
-def get_keras_tuner_model(typ: str):  #maybe out of date
+
+
+def get_keras_tuner_model(typ: str):  # maybe out of date
     if typ == 'KerasTunerModel':
         return keras_tuner_model.KerasTunerModel()
     if typ == 'KerasTunerModelOnes':

@@ -8,13 +8,13 @@ from models.model_randomness import get_dropout, get_initializers, set_tf_seed
 
 class PaperModelBase:
     def __init__(self):
-        self.conf = None
+        self.local_config = None
         self.num_of_labels = None
         self.kernel_initializer, self.bias_initializer = get_initializers()
         set_tf_seed()
 
     @abc.abstractmethod
-    def get_model(self, shape: tuple, conf: dict, num_of_labels: int):
+    def get_model(self, shape: tuple, local_config: dict, num_of_labels: int):
         pass
 
     def paper_model_base(self, input_, net, conv_round):
@@ -22,7 +22,7 @@ class PaperModelBase:
 
         net = tf.keras.layers.Flatten()(net)
 
-        net = get_dropout(net=net, dropout_value=self.conf["DROPOUT"])
+        net = get_dropout(net=net, dropout_value=self.local_config["DROPOUT"])
 
         activation = 'sigmoid'
         number = 1
@@ -65,8 +65,8 @@ class PaperModelBase:
 
 
 class PaperModel1D(PaperModelBase):
-    def get_model(self, shape: tuple, conf: dict, num_of_labels: int):
-        self.conf = conf
+    def get_model(self, shape: tuple, local_config: dict, num_of_labels: int):
+        self.local_config = local_config
         self.num_of_labels = num_of_labels
         input_ = tf.keras.layers.Input(shape=shape, name="title")
 
@@ -77,8 +77,8 @@ class PaperModel1D(PaperModelBase):
 
 
 class PaperModel3D(PaperModelBase):
-    def get_model(self, shape: tuple, conf: dict, num_of_labels: int):
-        self.conf = conf
+    def get_model(self, shape: tuple, local_config: dict, num_of_labels: int):
+        self.local_config = local_config
         self.num_of_labels = num_of_labels
         input_ = tf.keras.layers.Input(shape=shape, name="title")
 
@@ -119,5 +119,5 @@ if __name__ == "__main__":
     }
     labels = 3
     model1 = PaperModel1D()
-    model_ = model1.get_model(shape=shape_, conf=conf_, num_of_labels=labels)
+    model_ = model1.get_model(shape=shape_, local_config=conf_, num_of_labels=labels)
     model_.summary()

@@ -6,8 +6,8 @@ from glob import glob
 
 
 class Weights: 
-    def __init__(self, CONFIG_DATALOADER, Dataloader, weights_filename):
-        self.CONFIG_DATALOADER = CONFIG_DATALOADER
+    def __init__(self, config, Dataloader, weights_filename):
+        self.config = config
         self.Dataloader = Dataloader
         self.weights_filename = weights_filename
         
@@ -38,7 +38,7 @@ class Weights:
 
         quantities = np.array(quantities)
 
-        sum_ = np.sum(quantities[:, self.CONFIG_DATALOADER["LABELS"]])
+        sum_ = np.sum(quantities[:, self.config.CONFIG_DATALOADER["LABELS"]])
         with np.errstate(divide='ignore', invalid='ignore'):
             weights = sum_ / quantities
 

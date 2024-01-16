@@ -120,8 +120,8 @@
     "COLON": {
     "DATABASE_ABBREVIATION": ["Colon"],
     "1.CONCAT_WITH_PREFIX": {
-      "RAW_NPZ_PATH": ["data_3d", "svn_T_3x3"],
-      "RAW_SOURCE_PATH": ["data_dat"],
+      "RAW_NPZ_PATH": ["svn_T_3x3"],
+      "RAW_SOURCE_PATH": [""],
       "TEST_NPZ_PATH": ["data_bea_db", "Esophagus_MedFilter", "raw_3d_weighted"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {

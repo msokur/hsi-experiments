@@ -3,8 +3,8 @@ import scipy.io as sio
 
 
 class MatFile:
-    def __init__(self, loader_conf: dict):
-        self.CONFIG_DATALOADER = loader_conf
+    def __init__(self, config):
+        self.CONFIG_DATALOADER = config.CONFIG_DATALOADER
 
     def indexes_get_bool_from_mask(self, mask):
         indexes = []
@@ -25,7 +25,10 @@ class MatFile:
         return result_mask
 
     def get_number(self, elem: str) -> str:
-        return elem.split(self.CONFIG_DATALOADER["NUMBER_SPLIT"][0])[-1].split(".")[0].split(self.CONFIG_DATALOADER["NUMBER_SPLIT"][1])[0]
+        first_split = elem.split(self.CONFIG_DATALOADER["NUMBER_SPLIT"][0])[-1]
+        second_split = first_split.split(".")[0]
+        third_split = second_split.split(self.CONFIG_DATALOADER["NUMBER_SPLIT"][1])[0]
+        return third_split
 
     def sort(self, paths):
         def take_only_number(elem):
@@ -35,7 +38,7 @@ class MatFile:
 
         return paths
 
-    def file_read_mask_and_spectrum(self, path, mask_path=None):
+    def file_read_mask_and_spectrum(self, path):
         data = sio.loadmat(path)
         spectrum, mask = data[self.CONFIG_DATALOADER["SPECTRUM"]], data[self.CONFIG_DATALOADER["MASK"]]
 

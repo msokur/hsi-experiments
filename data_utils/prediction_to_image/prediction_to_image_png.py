@@ -56,8 +56,8 @@ class PredictionToImage_png(PredictionToImage_base):
 
         """
         class_mask = np.full(mask.shape[0:2], -1)
-        for key, value in self.load_conf["MASK_COLOR"].items():
-            if key not in self.load_conf["LABELS_TO_TRAIN"]:
+        for key, value in self.CONFIG_DATALOADER["MASK_COLOR"].items():
+            if key not in self.CONFIG_DATALOADER["LABELS_TO_TRAIN"]:
                 continue
 
             for sub_value in value:

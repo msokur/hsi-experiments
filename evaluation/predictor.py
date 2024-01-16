@@ -6,7 +6,6 @@ from glob import glob
 import os
 import inspect
 
-from configuration import get_config as conf
 from data_utils.data_loaders.data_loader import DataLoader
 from models.model_randomness import set_tf_seed
 
@@ -20,13 +19,15 @@ class Predictor:
     2. give MODEL_FOLDER
     """
 
-    def __init__(self, CHECKPOINT, LOGS_PATH="", MODEL_NAME="", MODEL_FOLDER="",
-                 custom_objects=conf.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"]):
+    def __init__(self, config, CHECKPOINT, LOGS_PATH="", MODEL_NAME="", MODEL_FOLDER=""):
+        self.config = config
+        custom_objects = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"]
 
         if MODEL_NAME != '':
             self.MODEL_NAME = MODEL_NAME
         else:
-            self.MODEL_NAME = MODEL_FOLDER.split(conf.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-1]  # here can be problem
+            # here can be problem
+            self.MODEL_NAME = MODEL_FOLDER.split(self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-1]
 
         if MODEL_FOLDER == '':
             MODEL_FOLDER = os.path.join(LOGS_PATH, self.MODEL_NAME)
@@ -52,12 +53,12 @@ class Predictor:
 
         # get only needed samples
         indexes = np.zeros(gt.shape).astype(bool)
-        if not conf.CONFIG_CV["USE_ALL_LABELS"]:
-            for label in conf.CONFIG_DATALOADER["LABELS_TO_TRAIN"]:
+        if not self.config.CONFIG_CV["USE_ALL_LABELS"]:
+            for label in self.config.CONFIG_DATALOADER["LABELS_TO_TRAIN"]:
                 indexes = indexes | (gt == label)
         else:
             indexes = np.ones(gt.shape).astype(bool)
-        if conf.CONFIG_DATALOADER["WITH_BACKGROUND_EXTRACTION"]:
+        if self.config.CONFIG_DATALOADER["WITH_BACKGROUND_EXTRACTION"]:
             gt = gt[indexes & data["bg_mask"]]
             spectrum = spectrum[indexes & data["bg_mask"]]
 
@@ -68,9 +69,8 @@ class Predictor:
 
         return predictions, gt, size
 
-    @staticmethod
-    def edit_model_path_if_local(model_path):
-        if "LOCAL" in conf.CONFIG_PATHS["MODE"]:
+    def edit_model_path_if_local(self, model_path):
+        if "LOCAL" in self.config.CONFIG_PATHS["MODE"]:
             model_path = model_path.split("hsi-experiments")[-1][1:]
             model_path = model_path.replace("/", "\\")
 
@@ -79,26 +79,23 @@ class Predictor:
             model_path = os.path.join(parent_dir, model_path)
         return model_path
 
-    @staticmethod
-    def get_best_checkpoint_from_csv(model_path):
+    def get_best_checkpoint_from_csv(self, model_path):
         checkpoints_paths = sorted(glob(os.path.join(model_path,
-                                                     conf.CONFIG_PATHS["CHECKPOINT_PATH"], "*"
-                                                     + conf.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])))
+                                                     self.config.CONFIG_PATHS["CHECKPOINT_PATH"], "*"
+                                                     + self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])))
         best_checkpoint_path = checkpoints_paths[-1]
-        return best_checkpoint_path.split(conf.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-2]
+        return best_checkpoint_path.split(self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-2]
 
-    @staticmethod
-    def get_checkpoint(checkpoint, model_path):
+    def get_checkpoint(self, checkpoint, model_path):
         if checkpoint is None:
-            checkpoint = f"cp-{conf.CONFIG_TRAINER['EPOCHS']:04d}"
+            checkpoint = f"cp-{self.config.CONFIG_TRAINER['EPOCHS']:04d}"
 
-        if conf.CONFIG_CV["GET_CHECKPOINT_FROM_VALID"]:
-            return Predictor.get_best_checkpoint_from_csv(model_path)
+        if self.config.CONFIG_CV["GET_CHECKPOINT_FROM_VALID"]:
+            return self.get_best_checkpoint_from_csv(model_path)
         else:
             return checkpoint
 
-    @staticmethod
-    def save_predictions(training_csv_path,
+    def save_predictions(self, training_csv_path,
                          npz_folder,
                          predictions_saving_folder,
                          predictions_npy_filename,
@@ -113,7 +110,6 @@ class Predictor:
             5 - model path
         """
 
-        all_predictions_raw, all_gt = [], []
         results_dictionary = []
 
         with open(training_csv_path, newline='') as csvfile:
@@ -121,14 +117,14 @@ class Predictor:
             for row in tqdm(report_reader):
                 print(', '.join(row))
 
-                model_path = Predictor.edit_model_path_if_local(row[5])
+                model_path = self.edit_model_path_if_local(row[5])
 
                 if checkpoint is not None:
-                    checkpoint = Predictor.get_checkpoint(checkpoint, model_path)
-                name = DataLoader().get_name(row[4], delimiter='/')
+                    checkpoint = self.get_checkpoint(checkpoint, model_path)
+                name = DataLoader(self.config).get_name(row[4], delimiter='/')
                 print(f'We get checkpoint {checkpoint} for {model_path}')
 
-                predictor = Predictor(checkpoint, MODEL_FOLDER=model_path)
+                predictor = Predictor(self.config, checkpoint, MODEL_FOLDER=model_path)
                 predictions, gt, size = predictor.get_predictions_for_npz(os.path.join(npz_folder, name + ".npz"))
 
                 results_dictionary.append({
@@ -143,6 +139,7 @@ class Predictor:
 
 
 if __name__ == "__main__":
-    predictor_ = Predictor(f'cp-0020',
+    import configuration.get_config as configuration
+    predictor_ = Predictor(configuration, f'cp-0020',
                            MODEL_FOLDER='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_inception'
                                         '/3d_0_1_2_3')
