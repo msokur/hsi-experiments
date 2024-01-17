@@ -28,28 +28,28 @@ class Scaler:
         if self.scaler_path is not None: 
             self.scaler = Scaler.scaler_restore(self.scaler_path)
         else:
-            X = self.get_data_for_fit()
-            self.scaler = self.fit(X)
+            X = self._get_data_for_fit()
+            self.scaler = self._fit(X)
             if scaler_file is None:
                 scaler_file = SCALER_FILE
             self.scaler_save(self.scaler, os.path.join(self.preprocessed_path, scaler_file))
             
     @abc.abstractmethod
-    def get_data_for_fit(self):
+    def _get_data_for_fit(self):
         pass
     
     @abc.abstractmethod
-    def fit(self, X):
+    def _fit(self, X):
         pass
     
     @abc.abstractmethod
-    def transform(self, X):
+    def _transform(self, X):
         pass
             
     def X_y_concatenate(self):
         paths = self.data_archive.get_paths(archive_path=self.preprocessed_path)
         print(paths)
-        X_s, y_s, indexes_s = self.get_shapes(paths[0])
+        X_s, y_s, indexes_s = self._get_shapes(paths[0])
         X, y, indexes = np.empty(shape=X_s), np.empty(shape=y_s), np.empty(shape=indexes_s)
         for data in tqdm(self.data_archive.all_data_generator(archive_path=self.preprocessed_path)):
             _X, _y, _i = data[self.dict_names[0]], data[self.dict_names[1]], data[self.dict_names[2]]
@@ -89,7 +89,7 @@ class Scaler:
                 shapes = X.shape
                 X = np.reshape(X, (np.prod(X.shape[:-1]), X.shape[-1]))
                 
-            X = self.transform(X)
+            X = self._transform(X)
 
             # reshape back if 3d
             if _3d:
@@ -109,7 +109,7 @@ class Scaler:
                                         data_name=self.dict_names[0],
                                         data=X)
 
-    def get_shapes(self, path):
+    def _get_shapes(self, path):
         datas = self.data_archive.get_datas(data_path=path)
         X, y, idx = datas[self.dict_names[0]].shape, datas[self.dict_names[1]].shape, datas[self.dict_names[2]].shape
         return [0, X[-1]], [0] if len(y) == 1 else [0, y[-1]], [0, idx[-1]]
@@ -120,13 +120,13 @@ class NormalizerScaler(Scaler):
         print('NormalizerScaler is created')
         super().__init__(*args, **kwargs)
         
-    def get_data_for_fit(self):
+    def _get_data_for_fit(self):
         return []
     
-    def fit(self, X):
+    def _fit(self, X):
         return preprocessing.Normalizer()
     
-    def transform(self, X):
+    def _transform(self, X):
         return self.scaler.fit_transform(X)
 
 
@@ -135,13 +135,13 @@ class StandardScalerTransposed(Scaler):
         print('StandardScalerTransposed is created')
         super().__init__(*args, **kwargs)
         
-    def get_data_for_fit(self):
+    def _get_data_for_fit(self):
         return []
     
-    def fit(self, X):
+    def _fit(self, X):
         return preprocessing.StandardScaler()
     
-    def transform(self, X):
+    def _transform(self, X):
         return self.scaler.fit_transform(X.T).T
     
     
