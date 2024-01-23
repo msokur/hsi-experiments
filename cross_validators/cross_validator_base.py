@@ -12,7 +12,7 @@ import utils
 from configuration.get_config import telegram, CONFIG_CV, CONFIG_PATHS, CONFIG_DATALOADER, CONFIG_TRAINER, \
     CONFIG_PREPROCESSOR, CONFIG_DISTRIBUTION
 import provider
-from data_utils.batches import ChoiceNames
+from data_utils.dataset.choice_names import ChoiceNames
 
 from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, \
     PreprocessorKeys as PPK

@@ -3,8 +3,8 @@ import pytest
 import os
 from glob import glob
 
-from data_utils.tfrecord import TFRDatasets
-from testspace.data_utils.tfrecord.conftest import (
+from data_utils.dataset.tfrecord import TFRDatasets
+from testspace.data_utils.dataset.tfrecord.conftest import (
     TF_DATA_1D_X_0, TF_DATA_3D_X_0, TF_DATA_y_0, TF_DATA_WEIGHTS_0, TF_NAMES_IDX
 )
 from configuration.parameter import (
@@ -23,7 +23,8 @@ GET_DATASETS_RANK = [("1d", False, [2, 1]), ("1d", True, [2, 1, 1]),
 def get_test_datasets(shape: str, with_sw: bool, file_dir: str):
     tfr_datasets = TFRDatasets(batch_size=BATCH_SIZE, d3=True if shape == "3d" else False, with_sample_weights=with_sw)
     paths = glob(os.path.join(file_dir, shape, "*" + TFR_FILE_EXTENSION))
-    return tfr_datasets.get_datasets(ds_paths=paths, train_names=USE_NAMES, valid_names=[], labels=LABELS)
+    return tfr_datasets.get_datasets(ds_paths=paths, train_names=USE_NAMES, valid_names=[], labels=LABELS,
+                                     batch_path="")
 
 
 @pytest.mark.parametrize("shape,with_sw,ranks", GET_DATASETS_RANK)
@@ -31,6 +32,12 @@ def test_get_datasets_rank(tfr_data_dir: str, shape: str, with_sw: bool, ranks: 
     dataset = get_test_datasets(shape=shape, with_sw=with_sw, file_dir=tfr_data_dir)[0]
     for element, rank in zip(dataset.element_spec, ranks):
         assert element.shape.rank == rank
+
+
+@pytest.mark.parametrize("shape,with_sw,ranks", GET_DATASETS_RANK)
+def test_get_datasets_len(tfr_data_dir: str, shape: str, with_sw: bool, ranks: list):
+    dataset = get_test_datasets(shape=shape, with_sw=with_sw, file_dir=tfr_data_dir)[0]
+    assert len(dataset.element_spec) == len(ranks)
 
 
 RES_MASK = np.isin(TF_DATA_y_0, LABELS) * np.isin(TF_NAMES_IDX, [0, 1, 2, 3])

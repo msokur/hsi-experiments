@@ -45,6 +45,7 @@ class TrainerTuner(Trainer):
                                  )
 
         self.save_history(history)
+        self.dataset.delete_batches(batch_path=self.batch_path)
 
         return best_model, history
 
@@ -96,6 +97,8 @@ class TrainerTuner(Trainer):
 
         best_hp = tuner.get_best_hyperparameters()[0]
         best_model = tuner.get_best_models()[0]
+
+        self.dataset.delete_batches(batch_path=self.batch_path)
 
         return best_hp, best_model
 

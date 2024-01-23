@@ -47,6 +47,9 @@ class TrainerEasy(Trainer):
 
         self.save_history(history)
 
+        if self.mode == "RUN":
+            self.dataset.delete_batches(batch_path=self.batch_path)
+
         return model, history
 
     def compile_model(self, model: keras.Model) -> keras.Model:

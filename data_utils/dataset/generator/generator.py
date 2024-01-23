@@ -6,7 +6,7 @@ import numpy as np
 from data_utils.data_archive import DataArchive
 
 
-class DataGenerator:
+class GeneratorDataset:
     """Dataset for tensorflow"""
 
     def __init__(self, data_archive: DataArchive, batch_paths: List[str], X_name: str, y_name: str, weights_name: str,

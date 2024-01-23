@@ -1,32 +1,25 @@
+from typing import List, Tuple
+
+import numpy as np
 import tensorflow as tf
+import os
 
-from data_utils.tfrecord.tfr_parser import tfr_1d_train_parser, tfr_3d_train_parser
-from data_utils.tfrecord.tfr_utils import parse_names_to_int, filter_name_idx_and_labels
+from glob import glob
+from data_utils.dataset.dataset_interface import Dataset
+from data_utils.dataset.meta_files import get_shape_from_meta
+from data_utils.dataset.tfrecord.tfr_utils import get_numpy_X
+from data_utils.dataset.tfrecord.tfr_parser import tfr_1d_train_parser, tfr_3d_train_parser
+from data_utils.dataset.tfrecord.tfr_utils import parse_names_to_int, filter_name_idx_and_labels
+
+from configuration.parameter import (
+    TFR_FILE_EXTENSION, TFR_TYP
+)
 
 
-class TFRDatasets:
-    def __init__(self, batch_size: int, d3: bool, with_sample_weights: bool):
-        """TFRecords dataset from a shuffled dataset
-
-        :param batch_size: Size from batches
-        :param d3: True -> data with patches, False -> data without patches
-        :param with_sample_weights: True -> use sample weights, False -> don't use sample weights
-        """
-        self.batch_size = batch_size
-        self.d3 = d3
-        self.with_sample_weights = with_sample_weights
-        self.options = self.__get_tf_options()
-
-    def get_datasets(self, ds_paths: list, train_names: list, valid_names: list, labels: list):
-        """Loads a parsed training and validation TFRecord datasets.
-        
-        :param ds_paths: Paths for the Dataset
-        :param train_names: List with names for training data
-        :param valid_names: list with names for validation data
-        :param labels: List with labels to use for training and validation
-
-        :return: A tuple with the parsed training and validation dataset
-        """
+class TFRDatasets(Dataset):
+    def get_datasets(self, ds_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
+                     batch_path: str):
+        self.options = self.__get_ds_options()
         train_ints = self.__get_names_int_list(ds_paths=ds_paths, names=train_names)
         valid_ints = self.__get_names_int_list(ds_paths=ds_paths, names=valid_names)
         tf_labels = tf.Variable(initial_value=labels, dtype=tf.int64)
@@ -42,6 +35,18 @@ class TFRDatasets:
         valid_dataset = self.__get_dataset(dataset=dataset, names_int=valid_ints, labels=tf_labels)
 
         return train_dataset, valid_dataset
+
+    def get_paths(self, root_paths: str) -> List[str]:
+        return sorted(glob(os.path.join(root_paths, "*" + TFR_FILE_EXTENSION)))
+
+    def get_meta_shape(self, paths: List[str]) -> Tuple[int]:
+        return get_shape_from_meta(files=paths, dataset_type=TFR_TYP)
+
+    def get_X(self, path: str, shape: Tuple[int]) -> np.ndarray:
+        return get_numpy_X(tfr_path=path, shape=shape)
+
+    def delete_batches(self, batch_path: str):
+        pass
 
     @staticmethod
     def __get_names_int_list(ds_paths: list, names: list) -> tf.Variable:
@@ -60,7 +65,7 @@ class TFRDatasets:
 
         return tf.Variable(initial_value=names_int, dtype=tf.int64)
 
-    def __get_dataset(self, dataset: tf.data.TFRecordDataset, names_int: tf.Variable, labels: tf.Variable):
+    def __get_dataset(self, dataset, names_int: tf.Variable, labels: tf.Variable):
         """Load a TFRecord dataset and pares the date.
 
         :param dataset: TFRDataset with X, y, sample weights and name indexes
@@ -73,19 +78,16 @@ class TFRDatasets:
         dataset = dataset.map(lambda X, y, sw, pat_idx: filter_name_idx_and_labels(X=X, y=y, sw=sw, pat_idx=pat_idx,
                                                                                    use_pat_idx=names_int,
                                                                                    use_labels=labels))
-        # --- make every sample able to slice over
-        dataset = dataset.flat_map(map_func=lambda X, y, sw: tf.data.Dataset.from_tensor_slices(
-            tensors=(X, y, sw)))
 
         if self.with_sample_weights:
-            dataset = dataset.map(lambda X, y, sw: (X, y))
+            dataset = dataset.flat_map(map_func=lambda X, y, sw: tf.data.Dataset.from_tensor_slices(tensors=(X, y, sw)))
         else:
-            dataset = dataset.map(lambda X, y, sw: (X, y, sw))
+            dataset = dataset.flat_map(map_func=lambda X, y, sw: tf.data.Dataset.from_tensor_slices(tensors=(X, y)))
 
         return dataset.batch(batch_size=self.batch_size).with_options(options=self.options)
 
     @staticmethod
-    def __get_tf_options():
+    def __get_ds_options():
         """Get TF data options"""
         options = tf.data.Options()
         options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA

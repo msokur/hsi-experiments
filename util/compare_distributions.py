@@ -11,7 +11,7 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-from data_utils.tfrecord import get_shape_from_meta, get_numpy_X
+from data_utils.dataset import Dataset
 from configuration.keys import DistroCheckKeys as DCK
 
 """
@@ -34,7 +34,7 @@ There are several functionality parts:
 
 
 class DistributionsChecker:
-    def __init__(self, paths: List[str], config_distribution: dict):
+    def __init__(self, paths: List[str], dataset: Dataset, config_distribution: dict):
         """
         Args:
             paths: paths with the archives to compare
@@ -42,6 +42,7 @@ class DistributionsChecker:
         """
         self.test_paths = paths
         self.path = os.path.split(paths[0])[0]
+        self.dataset = dataset
         self.CONFIG_DISTRIBUTION = config_distribution
         self.all_data = np.array(self.get_all_data(paths=self.test_paths))
         self.prints = self.CONFIG_DISTRIBUTION[DCK.PRINTS]
@@ -88,8 +89,8 @@ class DistributionsChecker:
         Returns:
             data with shapes (number_of_samples, feature(s)). For 3d data only the centered patches will be used.
         """
-        shape = get_shape_from_meta(tfr_files=[path])
-        data = get_numpy_X(tfr_path=path, shape=shape)
+        shape = self.dataset.get_meta_shape(paths=[path])
+        data = self.dataset.get_X(path=path, shape=shape)
         if shape.__len__() > 2:
             data_1d = self.get_centers(data=data)
         else:

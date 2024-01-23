@@ -2,7 +2,6 @@ from typing import List, Tuple
 
 import tensorflow as tf
 import tensorflow.keras as keras
-from glob import glob
 import os
 import numpy as np
 import abc
@@ -10,7 +9,8 @@ import pickle
 import psutil
 
 from util.compare_distributions import DistributionsChecker
-from data_utils.tfrecord import TFRDatasets, get_cw_from_meta, get_shape_from_meta
+from data_utils.dataset.meta_files import get_cw_from_meta
+from provider import get_dataset
 
 from callbacks import CustomTensorboardCallback
 from data_utils.data_archive import DataArchive
@@ -18,7 +18,7 @@ from configuration.copy_py_files import copy_files
 from configuration.get_config import telegram
 from configuration.keys import TrainerKeys as TK, PathKeys as PK
 from configuration.parameter import (
-    VALID_LOG, HISTORY_FILE, TUNE, TFR_FILE_EXTENSION
+    DATASET_TYPE, VALID_LOG, HISTORY_FILE, TUNE
 )
 
 
@@ -40,6 +40,9 @@ class Trainer:
         self.mode = mode
         self.batch_path = None
         self.mirrored_strategy = None
+        self.dataset = get_dataset(typ=DATASET_TYPE, batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE], d3=self.d3,
+                                   with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS],
+                                   data_archive=self.data_archive, dict_names=self.dict_names)
 
     @abc.abstractmethod
     def train_process(self):
@@ -57,22 +60,25 @@ class Trainer:
             copy_files(self.log_dir, self.CONFIG_TRAINER["FILES_TO_COPY"])
 
     def get_datasets(self, for_tuning=False):
-        root_data_paths = sorted(glob(os.path.join(self.CONFIG_PATHS[PK.SHUFFLED_PATH], "*" + TFR_FILE_EXTENSION)))
+        root_data_paths = self.dataset.get_datasets(self.CONFIG_PATHS[PK.SHUFFLED_PATH])
+        self.batch_path = self.CONFIG_PATHS[PK.BATCHED_PATH]
+        if len(self.except_cv_names) > 0:
+            self.batch_path += "_" + self.except_cv_names[0]
         if for_tuning:
-            ds = DistributionsChecker(paths=root_data_paths,
+            self.batch_path += "_" + TUNE
+            ds = DistributionsChecker(paths=root_data_paths, dataset=self.dataset,
                                       config_distribution=self.CONFIG_DISTRIBUTION)
             tuning_index = ds.get_small_database_for_tuning()
             root_data_paths = [root_data_paths[tuning_index]]
 
         self.save_except_names(except_names=self.except_valid_names)
 
-        tfr_datasets = TFRDatasets(batch_size=self.CONFIG_TRAINER[TK.BATCH_SIZE], d3=self.d3,
-                                   with_sample_weights=self.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS])
-        train_ds, valid_ds = tfr_datasets.get_datasets(ds_paths=root_data_paths, train_names=self.except_train_names,
-                                                       valid_names=self.except_valid_names, labels=self.labels_to_train)
+        train_ds, valid_ds = self.dataset.get_datasets(ds_paths=root_data_paths, train_names=self.except_train_names,
+                                                       valid_names=self.except_valid_names, labels=self.labels_to_train,
+                                                       batch_path=self.batch_path)
 
         print("--- Calc class weights ---")
-        class_weights = get_cw_from_meta(tfr_files=root_data_paths, labels=self.labels_to_train,
+        class_weights = get_cw_from_meta(files=root_data_paths, labels=self.labels_to_train,
                                          names=self.except_train_names)
         print(f"---Class weights---\n{class_weights}")
         # TODO class_weights dirty fix
@@ -147,8 +153,9 @@ class Trainer:
 
         return model, history
 
-    def get_output_shape(self) -> Tuple[int, ...]:
-        return get_shape_from_meta(glob(os.path.join(self.CONFIG_PATHS[PK.SHUFFLED_PATH], "*" + TFR_FILE_EXTENSION)))
+    def get_output_shape(self) -> Tuple[int]:
+        paths = self.dataset.get_paths(root_paths=self.CONFIG_PATHS[PK.SHUFFLED_PATH])
+        return self.dataset.get_meta_shape(paths=paths)
 
 
 if __name__ == '__main__':

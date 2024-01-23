@@ -22,7 +22,7 @@ def get_trainer(typ: str, **kwargs):
 def get_data_loader(typ: str, **kwargs):
     from data_utils.data_loaders.data_loader import DataLoader
     from data_utils.data_loaders.data_loader_whole import DataLoaderWhole
-    
+
     if typ == "normal":
         return DataLoader(**kwargs)
     elif typ == "whole":
@@ -31,7 +31,7 @@ def get_data_loader(typ: str, **kwargs):
     value_error("Data Loader", typ)
 
 
-def get_whole_analog_of_data_loader(original_database):    # maybe out of date
+def get_whole_analog_of_data_loader(original_database):  # maybe out of date
     analog = ""
     if original_database == 'normal':
         analog = 'whole'
@@ -57,7 +57,7 @@ def get_whole_analog_of_data_loader(original_database):    # maybe out of date
 def get_evaluation(labels: list, *args, **kwargs):
     from evaluation.evaluation_binary import EvaluationBinary
     from evaluation.evaluation_multiclass import EvaluationMulticlass
-    
+
     if len(labels) == 2:
         print('Get EvaluationBinary')
         return EvaluationBinary(*args, **kwargs)
@@ -70,14 +70,14 @@ def get_evaluation(labels: list, *args, **kwargs):
 
 def get_smoother(typ: str, *args, **kwargs):
     from data_utils.smoothing import MedianFilter, GaussianFilter
-    
+
     if typ == "median_filter":
         print("Smooth spectrum with median filter!")
         return MedianFilter(*args, **kwargs)
     elif typ == "gaussian_filter":
         print("Smooth spectrum with gaussian filter!")
         return GaussianFilter(*args, **kwargs)
-    
+
     value_error("smoother", typ)
 
 
@@ -88,13 +88,13 @@ def get_scaler(typ: str, *args, **kwargs):
         return NormalizerScaler(*args, **kwargs)
     elif typ == 'svn':
         return StandardScalerTransposed(*args, **kwargs)
-    
+
     value_error("scaler", typ)
 
 
 def get_pixel_detection(typ: str):
     from data_utils import border
-    
+
     if typ == "detect_border":
         return border.detect_border
     elif typ == "detect_core":
@@ -105,7 +105,7 @@ def get_pixel_detection(typ: str):
 def get_cross_validator(typ: str, *args, **kwargs):
     from cross_validators.cross_validator_normal import CrossValidationNormal
     from cross_validators.cross_validator_postprocessing import CrossValidatorPostProcessing
-    
+
     if typ == "normal":
         return CrossValidationNormal()
     elif typ == "spain":
@@ -150,7 +150,35 @@ def get_prediction_to_image(typ: str, **kwargs):
     elif typ == "png":
         return PredictionToImage_png(**kwargs)
     else:
-        value_error(modul=" prediction to image", typ=typ)
+        value_error(modul="prediction to image", typ=typ)
+
+
+def get_dataset(typ: str, batch_size: int, d3: bool, with_sample_weights: bool, data_archive=None, dict_names=None):
+    from data_utils.dataset import TFRDatasets, GeneratorDatasets
+    if typ == "tfr":
+        return TFRDatasets(batch_size=batch_size, d3=d3, with_sample_weights=with_sample_weights)
+    elif typ == "generator":
+        return GeneratorDatasets(batch_size=batch_size, d3=d3, with_sample_weights=with_sample_weights,
+                                 data_archive=data_archive, dict_names=dict_names)
+    else:
+        value_error(modul="dataset", typ=typ)
+
+
+def get_shuffle(typ: str, data_archive, raw_path: str, dict_names: list, piles_number: int,
+                shuffle_saving_path: str, augmented: bool = None, files_to_copy: list = None,
+                set_seed: bool = None):
+    from data_utils.shuffle import TFRShuffle, GeneratorShuffle
+    if typ == "tfr":
+        return TFRShuffle(data_archive=data_archive, raw_path=raw_path, dict_names=dict_names,
+                          piles_number=piles_number, shuffle_saving_path=shuffle_saving_path, dataset_typ=typ,
+                          augmented=augmented, files_to_copy=files_to_copy, set_seed=set_seed)
+    elif typ == "generator":
+        return GeneratorShuffle(data_archive=data_archive, raw_path=raw_path, dict_names=dict_names,
+                                piles_number=piles_number, shuffle_saving_path=shuffle_saving_path,
+                                dataset_typ=typ, augmented=augmented, files_to_copy=files_to_copy,
+                                set_seed=set_seed)
+    else:
+        value_error(modul="shuffle", typ=typ)
 
 
 def value_error(modul: str, typ: str):

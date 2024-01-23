@@ -1,4 +1,5 @@
 ARCHIVE_TYPE = "npz"                # type for data archive management
+DATASET_TYPE = "generator"          # type of dataset, choose between generator and tfr
 
 # --- ZARR params
 BLOCK_SIZE = 10000                  # max number of samples per chunk
@@ -9,10 +10,13 @@ SHUFFLE_GROUP_NAME = "shuffled"     # prefix for shuffled dataset
 PILE_NAME = ".pile"                 # data extension for piles
 MAX_SIZE_PER_PILE = 2.0             # maximal size per pile/shuffle file in GB
 
-# --- TFR meta files
+# --- Meta files
 SAMPLES_PER_NAME = "samples_per_patient_name"
 TOTAL_SAMPLES = "total_samples"
-TFR_META_EXTENSION = ".tfrmeta"
+TFR_TYP = "tfr"                     # key for tfr meta file
+GEN_TYP = "generator"               # key for generator meta file
+TFR_META_EXTENSION = ".tfrmeta"     # extension for tfr meta file
+GEN_META_EXTENSION = ".meta"        # extension for generator dataset meta file
 
 
 # --- Data archive names

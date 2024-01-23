@@ -1,7 +1,8 @@
+import abc
 import os
 import random
 import pickle
-from typing import List
+from typing import List, Dict
 
 import numpy as np
 
@@ -11,7 +12,8 @@ import warnings
 
 from configuration.copy_py_files import copy_files
 from data_utils.data_archive import DataArchive
-from data_utils.tfrecord import write_meta_info, save_tfr_file
+from data_utils.dataset import save_tfr_file
+from data_utils.dataset.meta_files import write_meta_info
 
 from configuration.parameter import (
     SHUFFLE_GROUP_NAME, PILE_NAME, MAX_SIZE_PER_PILE
@@ -20,14 +22,18 @@ from configuration.parameter import (
 
 class Shuffle:
     def __init__(self, data_archive: DataArchive, raw_path: str, dict_names: list, piles_number: int,
-                 shuffle_saving_path: str, augmented=False, files_to_copy: list = None):
+                 shuffle_saving_path: str, dataset_typ: str, augmented=False, files_to_copy: list = None,
+                 set_seed: bool = True):
         self.data_archive = data_archive
         self.raw_path = raw_path
         self.dict_names = dict_names
         self.piles_number = piles_number
         self.shuffle_saving_path = shuffle_saving_path
+        self.dataset_typ = dataset_typ
         self.augmented = augmented
         self.files_to_copy = files_to_copy
+        if set_seed:
+            random.seed(a=42)
 
     def shuffle(self):
         print("--------Shuffling started--------")
@@ -157,12 +163,29 @@ class Shuffle:
             os.remove(pp)
 
             # save shuffled date and meta information
-            write_meta_info(save_dir=self.shuffle_saving_path, file_name=f"{SHUFFLE_GROUP_NAME}_{i}",
+            sh_name = f"{SHUFFLE_GROUP_NAME}_{i}"
+            write_meta_info(save_dir=self.shuffle_saving_path, file_name=sh_name,
                             labels=sh_data[self.dict_names[1]], names=sh_data[self.dict_names[2]],
-                            names_idx=sh_data[self.dict_names[3]], X_shape=sh_data[self.dict_names[0]].shape)
-            save_tfr_file(save_path=self.shuffle_saving_path, file_name=f"{SHUFFLE_GROUP_NAME}_{i}",
-                          X=sh_data[self.dict_names[0]], y=sh_data[self.dict_names[1]],
-                          pat_names=sh_data[self.dict_names[2]], pat_idx=sh_data[self.dict_names[3]],
-                          idx_in_cube=sh_data[self.dict_names[4]], sw=sh_data[self.dict_names[5]])
+                            names_idx=sh_data[self.dict_names[3]], X_shape=sh_data[self.dict_names[0]].shape,
+                            typ=self.dataset_typ)
+
+            self._save_file(file_name=sh_name, sh_data=sh_data)
 
         print("----Shuffling of piles finished----")
+
+    @abc.abstractmethod
+    def _save_file(self, file_name: str, sh_data: Dict[str, np.ndarray]):
+        pass
+
+
+class TFRShuffle(Shuffle):
+    def _save_file(self, file_name: str, sh_data: Dict[str, np.ndarray]):
+        save_tfr_file(save_path=self.shuffle_saving_path, file_name=file_name,
+                      X=sh_data[self.dict_names[0]], y=sh_data[self.dict_names[1]],
+                      pat_names=sh_data[self.dict_names[2]], pat_idx=sh_data[self.dict_names[3]],
+                      idx_in_cube=sh_data[self.dict_names[4]], sw=sh_data[self.dict_names[5]])
+
+
+class GeneratorShuffle(Shuffle):
+    def _save_file(self, file_name: str, sh_data: Dict[str, np.ndarray]):
+        self.data_archive.save_group(save_path=self.shuffle_saving_path, group_name=file_name, datas=sh_data)

@@ -5,8 +5,8 @@ import os
 import numpy as np
 from glob import glob
 
-from data_utils.batches import ChoiceNames
-from data_utils.data_archive import DataArchive, DataArchiveNPZ, DataArchiveZARR
+from data_utils.dataset.choice_names import ChoiceNames
+from data_utils.data_archive import DataArchiveNPZ, DataArchiveZARR
 
 
 def get_paths(data_dir: str, archive_typ: str, not_use: list) -> Tuple[list, list]:
