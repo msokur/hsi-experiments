@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Dict, Tuple, List
 import numpy as np
 
@@ -76,7 +77,7 @@ def get_meta_files(paths: List[str], typ: str) -> List[str]:
         extension = TFR_META_EXTENSION
     else:
         raise ValueError("Wrong meta file typ to load!")
-    return [p.split(".")[0] + extension for p in paths]
+    return [os.path.splitext(p)[0] + extension for p in paths]
 
 
 def _get_samples_per_label(paths: List[str], names: list):

@@ -29,7 +29,8 @@ def test_cw_from_meta_error():
 
 
 GET_META_FILES_DATA = [(["test_0.tfrecords", "test_1.tfrecords"], "tfr", ["test_0.tfrmeta", "test_1.tfrmeta"]),
-                       (["test_0.npz", "test_1.npz"], "generator", ["test_0.meta", "test_1.meta"])]
+                       (["test_0.npz", "test_1.npz"], "generator", ["test_0.meta", "test_1.meta"]),
+                       (["test.0/data_0.npz", "data_1.npz"], "generator", ["test.0/data_0.meta", "data_1.meta"])]
 
 
 @pytest.mark.parametrize("paths,dataset_typ,results", GET_META_FILES_DATA)
