@@ -50,18 +50,18 @@ class PaperModelBase(ModelBase):
             if net.shape[-2] < 6:
                 break
             else:
-                net = self.get_conv1d(net=net, name=f"1D_{r}")
+                net = self.get_conv1d(net=net, name=f"1D_{r + 1}")
 
         return net
 
     def get_conv1d(self, net, name, kernel_size=3, strides=2):
         net = keras.layers.Conv1D(filters=35, kernel_size=kernel_size, padding='valid', activation='relu',
                                   kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
-                                  name=f"{name}_conv_1")(net)
+                                  name=f"{name}.1_conv")(net)
         net = keras.layers.Conv1D(filters=35, kernel_size=kernel_size, strides=strides,
                                   padding='valid', activation='relu',
                                   kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
-                                  name=f"{name}_conv_2")(net)
+                                  name=f"{name}.2_conv")(net)
 
         return net
 
@@ -84,7 +84,7 @@ class PaperModel3D(PaperModelBase):
             if net.shape[-2] < 6:
                 break
             else:
-                net = self._get_conv3d(net=net, name=f"3D_{r}")
+                net = self._get_conv3d(net=net, name=f"3D_{r + 1}")
 
         net = keras.layers.Reshape((net.shape[-4] * net.shape[-3] * net.shape[-2], net.shape[-1]))(net)
 
@@ -93,11 +93,11 @@ class PaperModel3D(PaperModelBase):
     def _get_conv3d(self, net, name, kernel_size=3, stride=2):
         net = keras.layers.Conv3D(filters=20, kernel_size=kernel_size, padding='valid', activation='relu',
                                   kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
-                                  name=f"{name}_conv_1")(net)
+                                  name=f"{name}.1_conv")(net)
         net = keras.layers.Conv3D(filters=20, kernel_size=(1, 1, kernel_size), strides=(1, 1, stride), padding='valid',
                                   activation='relu', kernel_initializer=self.kernel_initializer,
                                   bias_initializer=self.bias_initializer,
-                                  name=f"{name}_conv_2")(net)
+                                  name=f"{name}.2_conv")(net)
 
         return net
 

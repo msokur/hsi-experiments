@@ -175,7 +175,8 @@ class DistributionsChecker:
         """
         idx = 0
         result = False
-        for i in range(len(self.test_paths)):
+        print("--- Test dataset ---")
+        for i in tqdm(range(len(self.test_paths))):
             result = self.compare_shuffled_distributions(test_archive_index=i)
             if result:
                 idx = i

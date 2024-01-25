@@ -84,6 +84,7 @@ class TrainerTuner(Trainer):
 
     def search(self, tuner: kt.Tuner) -> tuple[kt.HyperParameters, keras.Model]:
         print("------ Start search tuning parameter ---------")
+        print("---- Get tuning datasets ----")
         train_dataset_t, valid_dataset_t, class_weights_t = self.get_datasets(for_tuning=True)
 
         tuner.search(x=train_dataset_t,

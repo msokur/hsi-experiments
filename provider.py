@@ -166,7 +166,7 @@ def get_dataset(typ: str, batch_size: int, d3: bool, with_sample_weights: bool, 
 
 def get_shuffle(typ: str, data_archive, raw_path: str, dict_names: list, piles_number: int,
                 shuffle_saving_path: str, augmented: bool = None, files_to_copy: list = None,
-                set_seed: bool = None):
+                set_seed: bool = True):
     from data_utils.shuffle import TFRShuffle, GeneratorShuffle
     if typ == "tfr":
         return TFRShuffle(data_archive=data_archive, raw_path=raw_path, dict_names=dict_names,

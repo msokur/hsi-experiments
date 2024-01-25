@@ -27,7 +27,7 @@ class GeneratorDatasets(Dataset):
     def get_datasets(self, ds_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
                      batch_path: str):
         if not os.path.exists(path=batch_path):
-            os.mkdir(path=batch_path)
+            os.makedirs(name=batch_path)
 
         self.options = self.__get_ds_options()
 

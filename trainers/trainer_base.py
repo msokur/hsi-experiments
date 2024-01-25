@@ -60,10 +60,12 @@ class Trainer:
             copy_files(self.log_dir, self.CONFIG_TRAINER["FILES_TO_COPY"])
 
     def get_datasets(self, for_tuning=False):
-        root_data_paths = self.dataset.get_datasets(self.CONFIG_PATHS[PK.SHUFFLED_PATH])
-        self.batch_path = self.CONFIG_PATHS[PK.BATCHED_PATH]
+        root_data_paths = self.dataset.get_paths(root_paths=self.CONFIG_PATHS[PK.SHUFFLED_PATH])
+        self.batch_path = os.path.join(self.CONFIG_PATHS[PK.BATCHED_PATH], "")
         if len(self.except_cv_names) > 0:
-            self.batch_path += "_" + self.except_cv_names[0]
+            self.batch_path += self.except_cv_names[0]
+        else:
+            self.batch_path += "batches"
         if for_tuning:
             self.batch_path += "_" + TUNE
             ds = DistributionsChecker(paths=root_data_paths, dataset=self.dataset,

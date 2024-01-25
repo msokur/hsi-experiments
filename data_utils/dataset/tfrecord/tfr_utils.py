@@ -75,7 +75,7 @@ def get_numpy_X(tfr_path: str, shape: tuple) -> np.ndarray:
     data = tf.data.TFRecordDataset(filenames=tfr_path).map(map_func=lambda record: tfr_X_parser(record=record,
                                                                                                 shape=shape_))
 
-    return data.as_numpy_iterator().get_next()
+    return data.as_numpy_iterator().__next__()
 
 
 def _select(data: tf.Variable, allowed: tf.Variable):

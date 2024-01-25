@@ -37,7 +37,7 @@ class InceptionModelBase(ModelBase):
         branches = []
         for idx, filter_, kernel_size in zip(range(len(FILTERS)), FILTERS, KERNEL_SIZE):
             if isinstance(filter_, int):
-                name = f"conv_{idx}"
+                name = f"{idx + 1}_conv"
                 branch = self._get_conv_layer(filters=factor * filter_, kernel_size=kernel_size, net=input_,
                                               name=name)
 
@@ -46,7 +46,7 @@ class InceptionModelBase(ModelBase):
             else:
                 branch = input_
                 for sub_idx, filter_sub, kernel_size_sub in zip(range(len(FILTERS)), filter_, kernel_size):
-                    name = f"conv_{idx}.{sub_idx}"
+                    name = f"{idx + 1}.{sub_idx + 1}_conv"
                     branch = self._get_conv_layer(filters=factor * filter_sub, kernel_size=kernel_size_sub, net=branch,
                                                   name=name)
 
