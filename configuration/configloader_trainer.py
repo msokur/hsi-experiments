@@ -3,32 +3,31 @@ from configuration.configloader_base import read_config
 
 def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dict:
     from util import tf_metric_multiclass, tf_metrics_binary
-    
+
     from tensorflow.keras.optimizers import Adadelta, Adagrad, Adam, Adamax, Ftrl, Nadam, RMSprop, SGD
     from tensorflow.keras.activations import relu, tanh, selu, exponential, elu
-    
+
     CUSTOM_OBJECTS_MULTI = {
         "F1_score": tf_metric_multiclass.F1_score
     }
     CUSTOM_OBJECTS_BINARY = {
         "F1_score": tf_metrics_binary.F1_score
     }
-    
-    OPTIMIZER = {"adadelta": Adadelta,
-             "adagrad": Adagrad,
-             "adam": Adam,
-             "adamax": Adamax,
-             "ftrl": Ftrl,
-             "nadam": Nadam,
-             "rms": RMSprop,
-             "sgd": SGD
-             }
-    ACTIVATION = {"relu": relu,
-              "tanh": tanh,
-              "selu": selu,
-              "exponential": exponential,
-              "elu": elu}
 
+    OPTIMIZER = {"adadelta": Adadelta,
+                 "adagrad": Adagrad,
+                 "adam": Adam,
+                 "adamax": Adamax,
+                 "ftrl": Ftrl,
+                 "nadam": Nadam,
+                 "rms": RMSprop,
+                 "sgd": SGD
+                 }
+    ACTIVATION = {"relu": relu,
+                  "tanh": tanh,
+                  "selu": selu,
+                  "exponential": exponential,
+                  "elu": elu}
 
     trainer = read_config(file=file, section=section)
     if len(classes) > 2:
@@ -80,7 +79,7 @@ def get_trainer(d3: bool, typ: str):
         "paper_model": PaperModel1D().get_model,
         "inception_model": InceptionModel1D().get_model
     }
-    
+
     if d3:
         if typ == "Tuner":
             from configuration.configloader_tuner import TUNER_MODEL_3D
@@ -93,7 +92,3 @@ def get_trainer(d3: bool, typ: str):
             return TUNER_MODEL_1D
         else:
             return MODELS_1D
-
-
-
-

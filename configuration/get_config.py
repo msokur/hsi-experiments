@@ -3,8 +3,6 @@ import os
 import sys
 import platform
 
-
-
 WITHOUT_RANDOMNESS = True
 if WITHOUT_RANDOMNESS:
     os.environ['TF_DETERMINISTIC_OPS'] = '1'
@@ -83,10 +81,10 @@ if CONFIG_AUG["enable"]:
     print("Augmentation is enabled!!!")
     CONFIG_TRAINER["BATCH_SIZE"] = int(CONFIG_TRAINER["BATCH_SIZE"] / CONFIG_AUG[CONFIG_AUG["use"]])
 
-
 # -------- Telegram --------
 tg_config = "Telegram.json"
 CONFIG_TELEGRAM = get_config(file_name=tg_config, section=tg_section)
 CONFIG_TELEGRAM["FILE"] = os.path.join(parent_dir, CONFIG_TELEGRAM["FILE"])
 from utils import Telegram
+
 telegram = Telegram(tg_config=CONFIG_TELEGRAM, mode=CONFIG_PATHS["MODE"])
