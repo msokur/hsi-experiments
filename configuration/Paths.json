@@ -1,30 +1,31 @@
 {
   "BASE_PATH": {
-    "CHECKPOINT_PATH": "checkpoints",
-    "MODEL_PATH": "model"
+    "CHECKPOINT_FOLDER": "checkpoints"
   },
   "Cluster_Benny": {
     "MODE": "CLUSTER",
-    "PREFIX": "/work/users/bn322dcei",
-    "MODEL_NAME_PATHS": ["/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs"]
+    "DATABASE_ROOT_FOLDER": "/work/users/bn322dcei",
+    "LOGS_FOLDER": ["/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs"]
   },
   "Win_Benny": {
     "MODE": "LOCAL_NO_GPU",
-    "PREFIX": "E:\\ICCAS\\Gastric",
-    "MODEL_NAME_PATHS": ["logs"]
+    "DATABASE_ROOT_FOLDER": "E:\\ICCAS\\Gastric",
+    "LOGS_FOLDER": ["logs"]
   },
   "Cluster_Mariia": {
     "MODE": "CLUSTER",
-    "PREFIX": "/work/users/mi186veva",
-    "MODEL_NAME_PATHS": ["/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs"]
+    "DATABASE_ROOT_FOLDER": "/work/users/mi186veva",
+    "LOGS_FOLDER": ["/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs"],
+    "RESULTS_FOLDER": "/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/results"
   },
   "Win_Mariia": {
     "MODE": "LOCAL_NO_GPU",
-    "PREFIX": "C:\\Users\\tkachenko\\Desktop\\HSI\\colon",
-    "MODEL_NAME_PATHS": ["C:\\Users\\tkachenko\\Desktop\\HSI\\for_merging\\hsi-experiments\\logs"]
+    "DATABASE_ROOT_FOLDER": "C:\\Users\\tkachenko\\Desktop\\HSI\\colon_for_debug",
+    "LOGS_FOLDER": ["C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\logs"],
+    "RESULTS_FOLDER": "C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\results"
   },
   "HNO_Database": {
-    "1.CONCAT_WITH_PREFIX": {
+    "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
       "RAW_NPZ_PATH": ["data_3d", "hno", "3x3", "svn", "median"],
       "RAW_SOURCE_PATH": ["Parotis-Faelle_unsorted", "data"],
       "TEST_NPZ_PATH": ["data_3d", "hno", "3x3", "svn", "median"]
@@ -35,7 +36,7 @@
     }
   },
   "ESO_Database": {
-    "1.CONCAT_WITH_PREFIX": {
+    "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
       "RAW_NPZ_PATH": ["data_3d", "eso", "3x3", "svn", "median2"],
       "RAW_SOURCE_PATH": ["EsophagusCancer"],
       "TEST_NPZ_PATH": ["data_3d", "eso", "3x3", "svn", "median2"]
@@ -46,7 +47,7 @@
     }
   },
   "GASTRIC_Database_mk": {
-    "1.CONCAT_WITH_PREFIX": {
+    "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
       "RAW_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "mk2"],
       "RAW_SOURCE_PATH": ["Gastric"],
       "TEST_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "mk2"]
@@ -60,7 +61,7 @@
     }
   },
   "GASTRIC_Database_png": {
-    "1.CONCAT_WITH_PREFIX": {
+    "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
       "RAW_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "png"],
       "RAW_SOURCE_PATH": ["Gastric"],
       "TEST_NPZ_PATH": ["data_3d", "gastric", "3x3", "svn", "median", "png"]
@@ -74,7 +75,7 @@
     }
   },
   "MAT_BRAIN_Database": {
-    "1.CONCAT_WITH_PREFIX": {
+    "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
       "RAW_NPZ_PATH": ["data_3d", "mat_brain", "3x3", "svn", "gauss"],
       "RAW_SOURCE_PATH": ["DatabaseBrainSNV"],
       "TEST_NPZ_PATH": ["data_3d", "mat_brain", "3x3", "svn", "gauss"]
@@ -86,7 +87,7 @@
   },
     "MAT_ESO": {
     "DATABASE_ABBREVIATION": ["Esophagus_MedFilter"],
-    "1.CONCAT_WITH_PREFIX": {
+    "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
       "RAW_NPZ_PATH": ["data_bea_db", "Esophagus_MedFilter", "raw_3d_weighted"],
       "RAW_SOURCE_PATH": ["data_bea_db", "Esophagus_MedFilter"]
     },
@@ -97,7 +98,7 @@
   },
   "MAT_ESO_LOCAL": {
     "DATABASE_ABBREVIATION": ["Esophagus_MedFilter"],
-    "1.CONCAT_WITH_PREFIX": {
+    "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
       "RAW_NPZ_PATH": ["Esophagus_MedFilter", "raw_3d_weighted"],
       "RAW_SOURCE_PATH": ["Esophagus_MedFilter"]
     },
@@ -108,7 +109,7 @@
   },
   "MAT_COLON_LOCAL": {
     "DATABASE_ABBREVIATION": ["Colon_MedianFilter"],
-    "1.CONCAT_WITH_PREFIX": {
+    "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
       "RAW_NPZ_PATH": ["Colon_MedianFilter", "raw_3d_weighted"],
       "RAW_SOURCE_PATH": ["Colon_MedianFilter"]
     },
@@ -118,11 +119,9 @@
     }
   },
     "COLON": {
-    "DATABASE_ABBREVIATION": ["Colon"],
-    "1.CONCAT_WITH_PREFIX": {
-      "RAW_NPZ_PATH": ["svn_T_3x3"],
-      "RAW_SOURCE_PATH": [""],
-      "TEST_NPZ_PATH": ["data_bea_db", "Esophagus_MedFilter", "raw_3d_weighted"]
+    "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
+      "RAW_NPZ_PATH": ["experiment"],
+      "RAW_SOURCE_PATH": [""]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
       "SHUFFLED_PATH": ["shuffled"],

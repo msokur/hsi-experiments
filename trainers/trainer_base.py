@@ -40,7 +40,6 @@ class Trainer:
     def compile_model(self, model):
         loss, raw_metrics = self.get_parameters_for_compile()
         METRICS, WEIGHTED_METRICS = self.fill_metrics(raw_metrics)
-        print(loss, METRICS, WEIGHTED_METRICS)
 
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=self.config.CONFIG_TRAINER["LEARNING_RATE"]),
@@ -144,7 +143,7 @@ class Trainer:
         return train_dataset, valid_dataset, train_generator, class_weights
 
     def get_callbacks(self):
-        checkpoint_path = os.path.join(self.log_dir, self.config.CONFIG_PATHS["CHECKPOINT_PATH"], "cp-{epoch:04d}")
+        checkpoint_path = os.path.join(self.log_dir, self.config.CONFIG_PATHS["CHECKPOINT_FOLDER"], "cp-{epoch:04d}")
 
         checkpoints_callback = keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,

@@ -18,9 +18,8 @@ def out_of_the_box(config):
     # you can pass any parameters from save_predictions_and_metrics() except training_csv_path and npz_folder,
     # because they passed automatically
     cross_validator.pipeline(execution_flags=execution_flags,
-                             thresholds_range=[[0.0001, 0.001, 20]],  # specify thresholds if classification is binary
-                             save_predictions=config.CONFIG_CV["SAVE_PREDICTION"],
-                             save_curves=config.CONFIG_CV["SAVE_CURVES"])
+                             # specify thresholds if classification is binary
+                             thresholds=np.round(np.linspace(0.1, 0.5, 5), 4))
 
 
 def postprocessing_for_one_model(config):

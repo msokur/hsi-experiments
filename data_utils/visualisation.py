@@ -35,7 +35,7 @@ def get_prediction_to_image(mode: str):
 
 
 def get_model_path(path: str) -> str:
-    paths = sorted(glob(os.path.join(path, CONFIG_PATHS["CHECKPOINT_PATH"], "cp-*")))
+    paths = sorted(glob(os.path.join(path, CONFIG_PATHS["CHECKPOINT_FOLDER"], "cp-*")))
 
     return paths[-1]
 
@@ -65,7 +65,7 @@ def get_dat_path(raw_path: str, name: str) -> str:
 
 if __name__ == "__main__":
     pred_to_img = get_prediction_to_image(mode="npz")
-    csv_path = get_csv_path(log_path=CONFIG_PATHS["MODEL_NAME_PATHS"], folder=CONFIG_CV["NAME"])
+    csv_path = get_csv_path(log_path=CONFIG_PATHS["LOGS_FOLDER"], folder=CONFIG_CV["NAME"])
     csv_data = pd.read_csv(csv_path, delimiter=",", header=None, names=["Date", "x", "y", "z", "npz", "model"])
 
     for idx, row in tqdm(csv_data.iterrows()):

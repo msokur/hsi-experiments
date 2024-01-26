@@ -9,7 +9,6 @@ from sklearn.feature_extraction import image
 
 import provider
 from data_utils.background_detection import detect_background
-from data_utils.data_loaders.path_splits import get_splits
 
 
 class DataLoader:
@@ -20,45 +19,30 @@ class DataLoader:
         if 'background_mask' not in dict_names:
             dict_names.append('background_mask')
 
-        self.CONFIG_DATALOADER = config.CONFIG_DATALOADER
-        self.CONFIG_PATHS = config.CONFIG_PATHS
         self.data_reader = provider.get_extension_loader(config=self.config,
-                                                         typ=self.CONFIG_DATALOADER["FILE_EXTENSION"])
+                                                         typ=self.config.CONFIG_DATALOADER["FILE_EXTENSION"])
         self.dict_names = dict_names
 
     def get_labels(self):
-        return self.CONFIG_DATALOADER["LABELS"]
+        return self.config.CONFIG_DATALOADER["LABELS"]
 
     def get_name(self, path: str, delimiter=None) -> str:
         if delimiter is None:
-            delimiter = self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"]
-        return path.split(delimiter)[-1].split(".")[0].split(self.CONFIG_DATALOADER["NAME_SPLIT"])[0]
-
-    def get_paths_and_splits(self, root_path=None):
-        if root_path is None:
-            root_path = self.CONFIG_PATHS["RAW_NPZ_PATH"]
-
-        paths = glob(os.path.join(root_path, "*.npz"))
-        paths = self.data_reader.sort(paths)
-
-        splits = get_splits(typ=self.CONFIG_DATALOADER["SPLIT_PATHS_BY"], paths=paths,
-                            values=self.CONFIG_DATALOADER["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"],
-                            delimiter=self.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
-
-        return paths, splits
+            delimiter = self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"]
+        return path.split(delimiter)[-1].split(".")[0].split(self.config.CONFIG_DATALOADER["NAME_SPLIT"])[0]
 
     def smooth(self, spectrum):
-        if self.CONFIG_DATALOADER["SMOOTHING_TYPE"] is not None:
+        if self.config.CONFIG_DATALOADER["SMOOTHING_TYPE"] is not None:
             smoother = provider.get_smoother(config=self.config,
-                                             typ=self.CONFIG_DATALOADER["SMOOTHING_TYPE"],
+                                             typ=self.config.CONFIG_DATALOADER["SMOOTHING_TYPE"],
                                              path="",
-                                             size=self.CONFIG_DATALOADER["SMOOTHING_VALUE"])
+                                             size=self.config.CONFIG_DATALOADER["SMOOTHING_VALUE"])
             spectrum = smoother.smooth_func(spectrum)
         return spectrum
 
     def pixel_detection(self, masks, conf=None):
         if conf is None:
-            conf = self.CONFIG_DATALOADER["BORDER_CONFIG"]
+            conf = self.config.CONFIG_DATALOADER["BORDER_CONFIG"]
 
         if conf["enable"]:
             pixel_detect = provider.get_pixel_detection(conf["methode"])
@@ -86,8 +70,8 @@ class DataLoader:
     @abc.abstractmethod
     def file_read(self, path):
         print(f'Reading {path}')
-        if "MASK_PATH" in self.CONFIG_PATHS.keys():
-            mask_path = self.CONFIG_PATHS["MASK_PATH"]
+        if "MASK_PATH" in self.config.CONFIG_PATHS.keys():
+            mask_path = self.config.CONFIG_PATHS["MASK_PATH"]
         else:
             mask_path = None
         spectrum, mask = self.file_read_mask_and_spectrum(path=path, mask_path=mask_path)
@@ -97,7 +81,7 @@ class DataLoader:
         background_mask = self.background_get_mask(spectrum, mask.shape[:2])
         contamination_mask = self.get_contamination_mask(os.path.split(path)[0], mask.shape[:2])
 
-        if self.CONFIG_DATALOADER["3D"]:
+        if self.config.CONFIG_DATALOADER["3D"]:
             spectrum = self.patches3d_get_from_spectrum(spectrum)
 
         indexes = self.data_reader.indexes_get_bool_from_mask(mask)
@@ -121,7 +105,7 @@ class DataLoader:
     def files_read_and_save_to_npz(self, root_path, destination_path):
         print('----Saving of .npz archives is started----')
 
-        paths = glob(os.path.join(root_path, "*" + self.CONFIG_DATALOADER["FILE_EXTENSION"]))
+        paths = glob(os.path.join(root_path, "*" + self.config.CONFIG_DATALOADER["FILE_EXTENSION"]))
         with open(os.path.join(destination_path, self.get_labels_filename()), 'wb') as f:
             pickle.dump(self.get_labels(), f, pickle.HIGHEST_PROTOCOL)
 
@@ -133,7 +117,7 @@ class DataLoader:
 
     def patches3d_get_from_spectrum(self, spectrum):
         spectrum_ = np.array([])
-        size = self.CONFIG_DATALOADER["3D_SIZE"]
+        size = self.config.CONFIG_DATALOADER["3D_SIZE"]
         # Better not to use non even sizes
         pad = [int((s - 1) / 2) for s in size]
         if size[0] % 2 == 1 and size[1] % 2 == 1:
@@ -200,16 +184,16 @@ class DataLoader:
         return mask
 
     def get_labels_filename(self):
-        return self.CONFIG_DATALOADER["LABELS_FILENAME"]
+        return self.config.CONFIG_DATALOADER["LABELS_FILENAME"]
 
     def get_contamination_filename(self):
-        return self.CONFIG_DATALOADER["CONTAMINATION_FILENAME"]
+        return self.config.CONFIG_DATALOADER["CONTAMINATION_FILENAME"]
 
     def background_get_mask(self, spectrum, shapes):
         background_mask = np.ones(shapes).astype(bool)
-        if self.CONFIG_DATALOADER["BACKGROUND"]["WITH_BACKGROUND_EXTRACTION"]:
-            blood_threshold = self.CONFIG_DATALOADER["BACKGROUND"]["BLOOD_THRESHOLD"]
-            lights_reflections_threshold = self.CONFIG_DATALOADER["BACKGROUND"]["LIGHT_REFLECTION_THRESHOLD"]
+        if self.config.CONFIG_DATALOADER["BACKGROUND"]["WITH_BACKGROUND_EXTRACTION"]:
+            blood_threshold = self.config.CONFIG_DATALOADER["BACKGROUND"]["BLOOD_THRESHOLD"]
+            lights_reflections_threshold = self.config.CONFIG_DATALOADER["BACKGROUND"]["LIGHT_REFLECTION_THRESHOLD"]
             background_mask = detect_background(spectrum,
                                                 blood_threshold=blood_threshold,
                                                 lights_reflections_threshold=lights_reflections_threshold)

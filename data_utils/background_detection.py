@@ -31,7 +31,7 @@ def detect_background(cube, blood_threshold=0.1, lights_reflections_threshold=0.
     sub1[sub1 < 0] = 0
     mean_value3[mean_value3 < blood_threshold] = 0
 
-    bg_mask = mean_value1 * sub1 * mean_value3
-    bg_mask[bg_mask != 0] = 1
+    background_mask = mean_value1 * sub1 * mean_value3
+    background_mask[background_mask != 0] = 1
 
-    return bg_mask.astype(bool)
+    return background_mask.astype(bool)

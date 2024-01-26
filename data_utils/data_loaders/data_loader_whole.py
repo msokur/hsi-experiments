@@ -13,8 +13,8 @@ class DataLoaderWhole(DataLoader):
             return np.reshape(arr, tuple([arr.shape[0] * arr.shape[1]]) + tuple(arr.shape[2:]))
 
         print(f'Reading {path}')
-        if "MASK_PATH" in self.CONFIG_PATHS.keys():
-            mask_path = self.CONFIG_PATHS["MASK_PATH"]
+        if "MASK_PATH" in self.config.CONFIG_PATHS.keys():
+            mask_path = self.config.CONFIG_PATHS["MASK_PATH"]
         else:
             mask_path = None
         spectrum, mask = self.file_read_mask_and_spectrum(path, mask_path=mask_path)
@@ -23,7 +23,7 @@ class DataLoaderWhole(DataLoader):
         background_mask = self.background_get_mask(spectrum, mask.shape[:2])
         spectrum = self.smooth(spectrum)
 
-        if self.CONFIG_DATALOADER["3D"]:
+        if self.config.CONFIG_DATALOADER["3D"]:
             spectrum = self.patches3d_get_from_spectrum(spectrum)
 
         size = spectrum.shape[:2]
