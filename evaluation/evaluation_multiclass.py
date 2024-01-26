@@ -53,5 +53,5 @@ if __name__ == '__main__':
     eval_multiclass.save_predictions_and_metrics(
         training_csv_path='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/Esophagus_MedFilter'
                           '/Esophagus_MedFilter_stats_02.02.2022-13_32_30.csv',
-        npz_folder=config.RAW_NPZ_PATH,
+        data_folder=config.RAW_NPZ_PATH,
         checkpoints=[38])

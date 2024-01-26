@@ -8,10 +8,10 @@ from provider import get_data_loader
 from data_utils.data_loaders.archive.data_loader_base import DataLoader
 
 def cross_validation_starter(root_folder_name, csv_filename=None):
-    config.MODEL_NAME_PATHS.append(root_folder_name)
+    config.LOGS_FOLDER.append(root_folder_name)
 
-    root_folder = os.path.join(*config.MODEL_NAME_PATHS)
-    config.MODEL_NAME = config.get_model_name(config.MODEL_NAME_PATHS)
+    root_folder = os.path.join(*config.LOGS_FOLDER)
+    config.MODEL_NAME = config.get_model_name(config.LOGS_FOLDER)
 
     if not os.path.exists(root_folder):
         os.mkdir(root_folder)

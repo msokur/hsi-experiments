@@ -145,13 +145,13 @@ def get_pixel_detection(typ: str):
 
 
 def get_cross_validator(typ: str, config, *args, **kwargs):
-    from cross_validators.cross_validator_normal import CrossValidationNormal
+    from cross_validators.cross_validator_base import CrossValidatorBase
     from cross_validators.cross_validator_postprocessing import CrossValidatorPostProcessing
 
     if typ == "normal":
-        return CrossValidationNormal(config=config, *args, **kwargs)
+        return CrossValidatorBase(config=config, *args, **kwargs)
     elif typ == "spain":
-        from cross_validators.cross_validator_spain import CrossValidatorSpain
+        from archive.cross_validator_spain import CrossValidatorSpain
         return CrossValidatorSpain(config=config, *args, **kwargs)
     elif typ == "postprocessing":
         return CrossValidatorPostProcessing(config=config, *args, **kwargs)
