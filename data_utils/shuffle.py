@@ -32,8 +32,7 @@ class Shuffle:
         self.dataset_typ = dataset_typ
         self.augmented = augmented
         self.files_to_copy = files_to_copy
-        if set_seed:
-            random.seed(a=42)
+        self.set_seed = set_seed
 
     def shuffle(self):
         print("--------Shuffling started--------")
@@ -42,6 +41,9 @@ class Shuffle:
 
         if self.files_to_copy is not None:
             copy_files(self.shuffle_saving_path, self.files_to_copy)
+
+        if self.set_seed:
+            random.seed(a=42)
 
         self.__check_piles_number()
         piles = self.__create_piles()

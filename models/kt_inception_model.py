@@ -26,7 +26,7 @@ class InceptionTunerModelBase(KtModelBase):
 
             if self.hp.Boolean(f"fc_{fc}_dropout"):
                 net = get_dropout(net=net,
-                                  dropout_value=self.hp.Float(f"fc_{fc}_dropout_value", **self.config["DROPOUT"]),
+                                  dropout_value=self.hp.Float(f"fc_{fc}_dropout_value", **self.config[TMK.DROPOUT]),
                                   name=f"fc_{fc}_dropout")
 
         activation = "sigmoid"
