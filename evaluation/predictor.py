@@ -2,9 +2,9 @@ import csv
 from tqdm import tqdm
 import tensorflow as tf
 import numpy as np
-from glob import glob
 import os
 import inspect
+from glob import glob
 
 from data_utils.data_loaders.data_loader import DataLoader
 from models.model_randomness import set_tf_seed
@@ -13,35 +13,56 @@ tf.random.set_seed(1)
 
 
 class Predictor:
-    """
-    there are two variants:
-    1. give LOGS_PATH and MODEL_PATH separately
-    2. give MODEL_FOLDER
-    """
 
-    def __init__(self, config, CHECKPOINT, LOGS_PATH="", MODEL_NAME="", MODEL_FOLDER=""):
+    def __init__(self, config):
         self.config = config
-        custom_objects = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"]
-
-        if MODEL_NAME != '':
-            self.MODEL_NAME = MODEL_NAME
-        else:
-            # here can be problem
-            self.MODEL_NAME = MODEL_FOLDER.split(self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-1]
-
-        if MODEL_FOLDER == '':
-            MODEL_FOLDER = os.path.join(LOGS_PATH, self.MODEL_NAME)
-
-        CHECKPOINTS_FOLDER_NAME = os.path.join(MODEL_FOLDER, "checkpoints")
-        MODEL_PATH = os.path.join(CHECKPOINTS_FOLDER_NAME, CHECKPOINT)
-        self.CHECKPOINT = CHECKPOINT
-
         set_tf_seed()
-        self.model = tf.keras.models.load_model(MODEL_PATH, custom_objects=custom_objects)
 
-        print("--------------------PARAMS----------------------")
-        print(", \n".join("%s: %s" % item for item in vars(self).items()))
-        print("------------------------------------------------")
+    def save_predictions(self, training_csv_path,
+                         npz_folder,
+                         predictions_saving_folder,
+                         predictions_npy_filename,
+                         checkpoint=None):
+        """
+            param rows of training_csv_path:
+            0 - date
+            1 - index
+            2 - sensitivity
+            3 - specificity
+            4 - .dat path
+            5 - model path
+        """
+        custom_objects = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"]
+        results_dictionary = []
+
+        with open(training_csv_path, newline='') as csvfile:
+            report_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
+            for row in tqdm(report_reader):
+                print(', '.join(row))
+
+                model_path = self.edit_model_path_if_local(row[5])
+                checkpoint = self.get_checkpoint(checkpoint, model_path=model_path)
+
+                name = DataLoader(self.config).get_name(row[4], delimiter='/')
+                print(f'We get checkpoint {checkpoint} for {model_path}')
+
+                self.model = tf.keras.models.load_model(os.path.join(model_path,
+                                                                     self.config.CONFIG_PATHS["CHECKPOINT_FOLDER"],
+                                                                     checkpoint),
+                                                        custom_objects=custom_objects)
+                # predictor = Predictor(self.config, checkpoint, MODEL_FOLDER=model_path)
+                predictions, gt, size = self.get_predictions_for_npz(os.path.join(npz_folder, name + ".npz"))
+
+                results_dictionary.append({
+                    'name': name,
+                    'predictions': predictions,
+                    'gt': gt,
+                    'size': size,
+                    'checkpoint': checkpoint
+                })
+
+        # saving of predictions
+        np.save(os.path.join(predictions_saving_folder, predictions_npy_filename), results_dictionary)
 
     def get_predictions_for_npz(self, path):
         data = np.load(path)
@@ -58,14 +79,11 @@ class Predictor:
                 indexes = indexes | (gt == label)
         else:
             indexes = np.ones(gt.shape).astype(bool)
-        if self.config.CONFIG_DATALOADER["WITH_BACKGROUND_EXTRACTION"]:
-            gt = gt[indexes & data["bg_mask"]]
-            spectrum = spectrum[indexes & data["bg_mask"]]
 
         gt = gt[indexes]
         spectrum = spectrum[indexes]
 
-        predictions = self.model.predict(spectrum)
+        predictions = self.model.predict(spectrum, verbose=0)
 
         return predictions, gt, size
 
@@ -79,67 +97,31 @@ class Predictor:
             model_path = os.path.join(parent_dir, model_path)
         return model_path
 
+    def get_checkpoint(self, checkpoint, model_path=None):
+        if type(checkpoint) == int:
+            return f"cp-{checkpoint:04d}"
+        if self.config.CONFIG_CV["GET_CHECKPOINT_FROM_EARLYSTOPPING"]:
+            return self.get_best_checkpoint_from_csv(model_path)
+        if checkpoint is None:
+            return f"cp-{self.config.CONFIG_TRAINER['EPOCHS']:04d}"
+
+        return checkpoint
+
     def get_best_checkpoint_from_csv(self, model_path):
+        if model_path is None:
+            raise ValueError('Please specify model path!')
+
         checkpoints_paths = sorted(glob(os.path.join(model_path,
-                                                     self.config.CONFIG_PATHS["CHECKPOINT_PATH"], "*"
+                                                     self.config.CONFIG_PATHS["CHECKPOINT_FOLDER"], "*"
                                                      + self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])))
+
         best_checkpoint_path = checkpoints_paths[-1]
         return best_checkpoint_path.split(self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-2]
-
-    def get_checkpoint(self, checkpoint, model_path):
-        if checkpoint is None:
-            checkpoint = f"cp-{self.config.CONFIG_TRAINER['EPOCHS']:04d}"
-
-        if self.config.CONFIG_CV["GET_CHECKPOINT_FROM_VALID"]:
-            return self.get_best_checkpoint_from_csv(model_path)
-        else:
-            return checkpoint
-
-    def save_predictions(self, training_csv_path,
-                         npz_folder,
-                         predictions_saving_folder,
-                         predictions_npy_filename,
-                         checkpoint=None):
-        """
-            param rows of training_csv_path:
-            0 - date
-            1 - index
-            2 - sensitivity
-            3 - specificity
-            4 - .dat path
-            5 - model path
-        """
-
-        results_dictionary = []
-
-        with open(training_csv_path, newline='') as csvfile:
-            report_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
-            for row in tqdm(report_reader):
-                print(', '.join(row))
-
-                model_path = self.edit_model_path_if_local(row[5])
-
-                if checkpoint is not None:
-                    checkpoint = self.get_checkpoint(checkpoint, model_path)
-                name = DataLoader(self.config).get_name(row[4], delimiter='/')
-                print(f'We get checkpoint {checkpoint} for {model_path}')
-
-                predictor = Predictor(self.config, checkpoint, MODEL_FOLDER=model_path)
-                predictions, gt, size = predictor.get_predictions_for_npz(os.path.join(npz_folder, name + ".npz"))
-
-                results_dictionary.append({
-                    'name': name,
-                    'predictions': predictions,
-                    'gt': gt,
-                    'size': size
-                })
-
-        # saving of predictions
-        np.save(os.path.join(predictions_saving_folder, predictions_npy_filename), results_dictionary)
 
 
 if __name__ == "__main__":
     import configuration.get_config as configuration
+
     predictor_ = Predictor(configuration, f'cp-0020',
                            MODEL_FOLDER='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/CV_3d_inception'
                                         '/3d_0_1_2_3')
