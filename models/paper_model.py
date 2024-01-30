@@ -22,8 +22,8 @@ class PaperModelBase(ModelBase):
     def _create_model(self, input_layer: keras.layers.Input) -> keras.Model:
         pass
 
-    def paper_model_base(self, input_, net, conv_round) -> keras.Model:
-        net = self.get_1D_block(net=net, conv_round=conv_round)
+    def _paper_model_base(self, input_, net, conv_round) -> keras.Model:
+        net = self.__get_1D_block(net=net, conv_round=conv_round)
 
         net = keras.layers.Flatten(name="flatten_layer")(net)
 
@@ -45,16 +45,16 @@ class PaperModelBase(ModelBase):
 
         return model
 
-    def get_1D_block(self, net, conv_round):
+    def __get_1D_block(self, net, conv_round):
         for r in conv_round:
             if net.shape[-2] < 6:
                 break
             else:
-                net = self.get_conv1d(net=net, name=f"1D_{r + 1}")
+                net = self.__get_conv1d(net=net, name=f"1D_{r + 1}")
 
         return net
 
-    def get_conv1d(self, net, name, kernel_size=3, strides=2):
+    def __get_conv1d(self, net, name, kernel_size=3, strides=2):
         net = keras.layers.Conv1D(filters=35, kernel_size=kernel_size, padding='valid', activation='relu',
                                   kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
                                   name=f"{name}.1_conv")(net)
@@ -71,7 +71,7 @@ class PaperModel1D(PaperModelBase):
         net = tf.expand_dims(input_layer, axis=-1)
         conv_round = range(4)
 
-        return self.paper_model_base(input_=input_layer, net=net, conv_round=conv_round)
+        return self._paper_model_base(input_=input_layer, net=net, conv_round=conv_round)
 
 
 class PaperModel3D(PaperModelBase):
@@ -84,13 +84,13 @@ class PaperModel3D(PaperModelBase):
             if net.shape[-2] < 6:
                 break
             else:
-                net = self._get_conv3d(net=net, name=f"3D_{r + 1}")
+                net = self.__get_conv3d(net=net, name=f"3D_{r + 1}")
 
         net = keras.layers.Reshape((net.shape[-4] * net.shape[-3] * net.shape[-2], net.shape[-1]))(net)
 
-        return self.paper_model_base(input_=input_layer, net=net, conv_round=conv_round)
+        return self._paper_model_base(input_=input_layer, net=net, conv_round=conv_round)
 
-    def _get_conv3d(self, net, name, kernel_size=3, stride=2):
+    def __get_conv3d(self, net, name, kernel_size=3, stride=2):
         net = keras.layers.Conv3D(filters=20, kernel_size=kernel_size, padding='valid', activation='relu',
                                   kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
                                   name=f"{name}.1_conv")(net)

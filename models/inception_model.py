@@ -20,18 +20,18 @@ POOL_STRIDES = 1
 class InceptionModelBase(ModelBase):
     def get_model(self):
         if self.name is None:
-            self.name = "InceptionModel"
+            self.name = MK.INCEPTION_MODEL_NAME
 
         input_ = keras.layers.Input(
             shape=self.input_shape, name=self.name
         )
 
-        net = self.inception_block(input_=input_, factor=self.config[MK.INCEPTION_FACTOR],
-                                   with_batch_norm=self.config[MK.WITH_BATCH_NORM])
+        net = self.__inception_block(input_=input_, factor=self.config[MK.INCEPTION_FACTOR],
+                                     with_batch_norm=self.config[MK.WITH_BATCH_NORM])
 
-        return self.inception_base(input_=input_, net=net)
+        return self.__inception_base(input_=input_, net=net)
 
-    def inception_block(self, input_, factor=16, with_batch_norm=False):
+    def __inception_block(self, input_, factor=16, with_batch_norm=False):
         input_ = tf.expand_dims(input_, axis=-1)
 
         branches = []
@@ -42,7 +42,7 @@ class InceptionModelBase(ModelBase):
                                               name=name)
 
                 if with_batch_norm:
-                    branch = self.get_batch_norm(branch=branch, name=name)
+                    branch = self.__get_batch_norm(branch=branch, name=name)
             else:
                 branch = input_
                 for sub_idx, filter_sub, kernel_size_sub in zip(range(len(FILTERS)), filter_, kernel_size):
@@ -51,7 +51,7 @@ class InceptionModelBase(ModelBase):
                                                   name=name)
 
                     if with_batch_norm:
-                        branch = self.get_batch_norm(branch=branch, name=name)
+                        branch = self.__get_batch_norm(branch=branch, name=name)
             branches.append(branch)
 
         branch = self._get_max_pooling_layer(input_=input_)
@@ -60,14 +60,14 @@ class InceptionModelBase(ModelBase):
                                       name=max_name)
 
         if with_batch_norm:
-            branch = self.get_batch_norm(branch=branch, name=max_name)
+            branch = self.__get_batch_norm(branch=branch, name=max_name)
         branches.append(branch)
 
         net = keras.layers.concatenate(branches)
 
         return net
 
-    def inception_base(self, input_, net):
+    def __inception_base(self, input_, net):
         net = keras.layers.Flatten(name="flatten_layer")(net)
         net = get_dropout(net=net, dropout_value=self.config["DROPOUT"], name="last_dropout_layer")
 
@@ -94,7 +94,7 @@ class InceptionModelBase(ModelBase):
     def _get_max_pooling_layer(self, input_):
         pass
 
-    def get_batch_norm(self, branch, name: str):
+    def __get_batch_norm(self, branch, name: str):
         if len(self.input_shape) > 1:
             name = "3D_" + name
         else:

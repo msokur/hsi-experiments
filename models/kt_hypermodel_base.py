@@ -4,7 +4,7 @@ import keras_tuner as kt
 import tensorflow.keras as keras
 from keras import layers
 
-from models.model_randomness import set_tf_seed
+from models.model_randomness import set_tf_seed, get_initializers
 
 from configuration.keys import TunerModelKeys as TMK
 
@@ -17,11 +17,12 @@ class KtModelBase(kt.HyperModel):
         self.config = conf
         self.num_of_classes = num_of_labels
         self.custom_metrics = custom_metrics
+        self.kernel_initializer, self.bias_initializer = get_initializers()
         set_tf_seed()
 
     def build(self, hp):
         self.hp = hp
-        model = self.model()
+        model = self._model()
 
         if self.num_of_classes == 2:
             loss = keras.losses.BinaryCrossentropy(),
@@ -40,7 +41,7 @@ class KtModelBase(kt.HyperModel):
         print("Keras tuner model metrics:", metrics)
 
         model.compile(
-            optimizer=self.get_optimizer(),
+            optimizer=self._get_optimizer(),
             loss=loss,
             metrics=metrics
         )
@@ -57,42 +58,42 @@ class KtModelBase(kt.HyperModel):
         )
 
     @abc.abstractmethod
-    def model(self):
+    def _model(self):
         pass
 
-    def get_activations(self, name):
-        return self.hp.Choice(self.wrap_name(name, "activation"), [key for key in self.config[TMK.ACTIVATION].keys()])
+    def _get_activations(self, name):
+        return self.hp.Choice(self._wrap_name(name, "activation"), [key for key in self.config[TMK.ACTIVATION].keys()])
 
-    def get_optimizer(self):
+    def _get_optimizer(self):
         optimizer = self.hp.Choice("optimizer", [key for key in self.config[TMK.OPTIMIZER].keys()])
         lr = self.hp.Float("lr", **self.config[TMK.LEARNING_RATE])
         return self.config[TMK.OPTIMIZER][optimizer](learning_rate=lr)
 
-    def wrap_layer(self, layer, name):
-        order_activation_batch_norm = self.hp.Choice(self.wrap_name(name, "mode"), ['without_batch_norm',
-                                                                                    'batch_norm_activation',
-                                                                                    'activation_batch_norm'])
+    def _wrap_layer(self, layer, name):
+        order_activation_batch_norm = self.hp.Choice(self._wrap_name(name, "mode"), ["without_batch_norm",
+                                                                                     "batch_norm_activation",
+                                                                                     "activation_batch_norm"])
 
-        batch_name = self.wrap_name(name, 'batch_norm')
-        activation_name = self.wrap_name(name, 'activation')
-        dropout_name = self.wrap_name(name, 'dropout')
+        batch_name = self._wrap_name(name, "batch_norm")
+        activation_name = self._wrap_name(name, "activation")
+        dropout_name = self._wrap_name(name, "dropout")
 
         if order_activation_batch_norm == "batch_norm_activation":
             layer = layers.BatchNormalization(name=batch_name)(layer)
 
-        layer = layers.Activation(self.get_activations(name), name=activation_name)(layer)
+        layer = layers.Activation(self._get_activations(name), name=activation_name)(layer)
 
         if order_activation_batch_norm == "activation_batch_norm":
             layer = layers.BatchNormalization(name=batch_name)(layer)
 
-        if self.hp.Boolean(self.wrap_name(name, "dr")):
-            layer = layers.Dropout(self.hp.Float(self.wrap_name(name, "dr_val"), **self.config[TMK.DROPOUT]),
+        if self.hp.Boolean(self._wrap_name(name, "dr")):
+            layer = layers.Dropout(self.hp.Float(self._wrap_name(name, "dr_val"), **self.config[TMK.DROPOUT]),
                                    name=dropout_name)(layer)
 
         return layer
 
     @staticmethod
-    def wrap_name(layer_name, name):
+    def _wrap_name(layer_name, name):
         return layer_name + "." + name
 
     def declare_hyperparameters(self, hp):

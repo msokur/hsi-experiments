@@ -6,28 +6,24 @@ from keras import layers
 import numpy as np
 
 from models.kt_hypermodel_base import KtModelBase
-from models.model_randomness import get_initializers, get_dropout
+from models.model_randomness import get_dropout
 
 from configuration.keys import TunerModelKeys as TMK
 
 
 class PaperTunerModelBase(KtModelBase):
-    def __init__(self, shape: tuple, conf: dict, num_of_labels: int, custom_metrics=None, name=None, tunable=True):
-        super().__init__(shape, conf, num_of_labels, custom_metrics, name, tunable)
-        self.kernel_initializer, self.bias_initializer = get_initializers()
-
-    def model(self):
+    def _model(self):
         input_ = layers.Input(shape=self.shape, name="input")
 
         net = tf.expand_dims(input_, axis=-1)
 
-        net = self.get_block(net=net)
+        net = self._get_block(net=net)
 
         net = layers.Flatten(name="flatt")(net)
 
         for fc in range(self.hp.Int("num_fc", **self.config[TMK.NUM_DENSE])):
             net = layers.Dense(self.hp.Int(f"fc_{fc}", **self.config[TMK.DENSE_UNITS]),
-                               activation=self.get_activations(name=f"fc_{fc}"), name=f"fc_{fc}")(net)
+                               activation=self._get_activations(name=f"fc_{fc}"), name=f"fc_{fc}")(net)
 
             if self.hp.Boolean(f"fc_{fc}_dropout"):
                 net = get_dropout(net=net,
@@ -51,10 +47,10 @@ class PaperTunerModelBase(KtModelBase):
         return model
 
     @abc.abstractmethod
-    def get_block(self, net):
+    def _get_block(self, net):
         pass
 
-    def get_conv1d(self, net, name, kernel_size=3, strides=2):
+    def _get_conv1d(self, net, name, kernel_size=3, strides=2):
         net = layers.Conv1D(filters=self.hp.Int(f"{name}_1", **self.config[TMK.CONV_1D_FILTERS]),
                             kernel_size=kernel_size, padding='valid', activation='relu',
                             kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
@@ -69,19 +65,19 @@ class PaperTunerModelBase(KtModelBase):
 
 
 class PaperTunerModel3D(PaperTunerModelBase):
-    def get_block(self, net):
+    def _get_block(self, net):
         max_conv_layer = int(self.shape[0] / 2)
 
         for r in range(self.hp.Int("num_conv3d", min_value=1, max_value=max_conv_layer)):
             if net.shape[-3] == 1:
                 break
             elif net.shape[-3] == 2:
-                net = self.get_conv3d(net=net, name=f"conv_3d_{r}", kernel_size=2, strides=1)
+                net = self.__get_conv3d(net=net, name=f"conv_3d_{r}", kernel_size=2, strides=1)
                 break
             else:
-                net = self.get_conv3d(net=net, name=f"conv_3d_{r}")
+                net = self.__get_conv3d(net=net, name=f"conv_3d_{r}")
 
-            net = self.wrap_layer(layer=net, name=f"conv_3d_{r}")
+            net = self._wrap_layer(layer=net, name=f"conv_3d_{r}")
 
         net = layers.Reshape((np.prod(net.shape[-4:-1]), net.shape[-1]))(net)
 
@@ -89,16 +85,16 @@ class PaperTunerModel3D(PaperTunerModelBase):
             if net.shape[-2] == 1:
                 break
             elif net.shape[-2] == 2:
-                net = self.get_conv1d(net=net, name=f"conv_1d_{r}", kernel_size=2, strides=1)
+                net = self._get_conv1d(net=net, name=f"conv_1d_{r}", kernel_size=2, strides=1)
                 break
             else:
-                net = self.get_conv1d(net=net, name=f"conv_1d_{r}")
+                net = self._get_conv1d(net=net, name=f"conv_1d_{r}")
 
-            net = self.wrap_layer(layer=net, name=f"conv_1d_{r}")
+            net = self._wrap_layer(layer=net, name=f"conv_1d_{r}")
 
         return net
 
-    def get_conv3d(self, net, name, kernel_size=3, strides=2):
+    def __get_conv3d(self, net, name, kernel_size=3, strides=2):
         net = layers.Conv3D(filters=self.hp.Int(f"{name}_1", **self.config[TMK.CONV_3D_FILTERS]),
                             kernel_size=kernel_size, padding='valid', activation='relu',
                             kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
@@ -113,12 +109,12 @@ class PaperTunerModel3D(PaperTunerModelBase):
 
 
 class PaperTunerModel1D(PaperTunerModelBase):
-    def get_block(self, net):
+    def _get_block(self, net):
         for r in range(self.hp.Int("num_conv1d", min_value=1, max_value=5)):
             if net.shape[-2] == 2:
-                net = self.get_conv1d(net=net, name=f"1D_{r}", kernel_size=2, strides=1)
+                net = self._get_conv1d(net=net, name=f"1D_{r}", kernel_size=2, strides=1)
                 break
             else:
-                net = self.get_conv1d(net=net, name=f"1D_{r}")
+                net = self._get_conv1d(net=net, name=f"1D_{r}")
 
         return net
