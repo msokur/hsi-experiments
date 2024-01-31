@@ -42,11 +42,11 @@ class DataArchiveZARR(DataArchive):
         root = zarr.open_group(store=save_path, mode="a")
         pat = root.create_group(name=group_name, overwrite=True)
         for k, v in datas.items():
-            pat.array(name=k, data=v, chunks=self.__get_chunks__(v.shape))
+            pat.array(name=k, data=v, chunks=self.__get_chunks(v.shape))
 
     def save_data(self, save_path: str, data_name: str, data: np.ndarray) -> None:
         root = zarr.open_group(store=save_path, mode="r+")
-        root.array(name=data_name, data=data, chunks=self.__get_chunks__(data.shape), overwrite=True)
+        root.array(name=data_name, data=data, chunks=self.__get_chunks(data.shape), overwrite=True)
 
     def append_data(self, file_path: str, append_datas: Dict[str, np.ndarray]) -> None:
         if not os.path.exists(path=file_path):
@@ -59,7 +59,7 @@ class DataArchiveZARR(DataArchive):
             v.append(append_datas[k], axis=0)
 
     @staticmethod
-    def __get_chunks__(data_shape: tuple) -> tuple:
+    def __get_chunks(data_shape: tuple) -> tuple:
         block_count = -(-data_shape[0] // BLOCK_SIZE)
         chunk = -(-data_shape[0] // block_count)
         if len(data_shape) < 3:

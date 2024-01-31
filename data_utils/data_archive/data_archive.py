@@ -53,11 +53,9 @@ class DataArchive:
                 name = path.split("\\")[-1]
             if "/" in name:
                 name = path.split("/")[-1]
-        # remove data extension
-        if "." in name:
-            return name.split(".")[0]
-        else:
-            return name
+            # remove data extension
+
+        return os.path.splitext(name)[0]
 
     @abc.abstractmethod
     def all_data_generator(self, archive_path: str) -> Iterable:

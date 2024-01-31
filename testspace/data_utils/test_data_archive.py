@@ -47,7 +47,11 @@ def test_get_paths(data_dir: str, data_archive: DataArchive, typ: str, patch: st
 GET_NAME_TEST_DATA = [(DataArchiveNPZ(), r"C:\folder0\folder1\data.npz", "data"),
                       (DataArchiveNPZ(), "/folder0/folder1/data.npz", "data"),
                       (DataArchiveZARR(), r"C:\folder0\folder1\data", "data"),
-                      (DataArchiveZARR(), "/folder0/folder1/data", "data")]
+                      (DataArchiveZARR(), "/folder0/folder1/data", "data"),
+                      (DataArchiveZARR(), "/folder0/folder1/data.png.npz", "data.png"),
+                      (DataArchiveZARR(), "/folder0.1/folder1/data", "data"),
+                      (DataArchiveNPZ(), r"C:\folder0\folder1\data.png.npz", "data.png"),
+                      (DataArchiveNPZ(), r"C:\folder0.1\folder1\data", "data")]
 
 
 @pytest.mark.parametrize("data_archive,path,result", GET_NAME_TEST_DATA)
