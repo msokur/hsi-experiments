@@ -15,7 +15,7 @@ class Dataset:
         self.batch_size = batch_size
         self.d3 = d3
         self.with_sample_weights = with_sample_weights
-        self.options = None
+        self.options = self._get_ds_options()
 
     @abc.abstractmethod
     def get_datasets(self, ds_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
@@ -50,5 +50,5 @@ class Dataset:
 
     @staticmethod
     @abc.abstractmethod
-    def __get_ds_options():
+    def _get_ds_options():
         pass

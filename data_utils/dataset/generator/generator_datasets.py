@@ -29,8 +29,6 @@ class GeneratorDatasets(Dataset):
         if not os.path.exists(path=batch_path):
             os.makedirs(name=batch_path)
 
-        self.options = self.__get_ds_options()
-
         batch_split = NameBatchSplit(data_archive=self.data_archive, batch_size=self.batch_size, use_labels=labels,
                                      dict_names=self.dict_names, with_sample_weights=self.with_sample_weights)
         train_paths, valid_paths = batch_split.split(data_paths=ds_paths, batch_save_path=batch_path,
@@ -62,7 +60,7 @@ class GeneratorDatasets(Dataset):
         return tf_dataset.with_options(options=options)
 
     @staticmethod
-    def __get_ds_options():
+    def _get_ds_options():
         """Get TF data options"""
         options = tf.data.Options()
         options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA

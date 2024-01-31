@@ -1,5 +1,5 @@
-ARCHIVE_TYPE = "npz"                # type for data archive management
-DATASET_TYPE = "generator"          # type of dataset, choose between generator and tfr
+ARCHIVE_TYPE = "zarr"                # type for data archive management choose between npz or zarr
+DATASET_TYPE = "generator"          # type of dataset, choose between generator or tfr
 
 # --- ZARR params
 BLOCK_SIZE = 10000                  # max number of samples per chunk

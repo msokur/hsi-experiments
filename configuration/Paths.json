@@ -37,11 +37,11 @@
   "HNO_COMBINED_Database": {
     "1.CONCAT_WITH_PREFIX": {
       "ROOT_PATH": ["data_3d", "hno", "3x3", "svn_T", "no_smooth"],
-      "RAW_SOURCE_PATH": ["Parotis-Faelle", "*"]
+      "RAW_SOURCE_PATH": ["HNO", "Parotis-Faelle", "*"]
     },
     "2.CONCAT_WITH_ROOT_PATH": {
-      "RAW_NPZ_PATH": ["patient_data"],
-      "SHUFFLED_PATH": ["shuffled"],
+      "RAW_NPZ_PATH": ["patient_data_zarr"],
+      "SHUFFLED_PATH": ["shuffled_zarr"],
       "BATCHED_PATH": ["batch_sized"],
       "TEST_NPZ_PATH": ["patient_data"]
     }

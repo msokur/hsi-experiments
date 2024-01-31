@@ -3,6 +3,7 @@ import os
 import glob
 import numpy as np
 import inspect
+import psutil
 
 from configuration.keys import TelegramKeys as TGK
 
@@ -47,3 +48,22 @@ def print_function_signature(func, name, printing=False):
         for param in signature.parameters.values():
             print(param)
         print('------------------------------------------------')
+
+
+def get_used_memory(process_id: int, unit: str = "GB") -> str:
+    unit = unit.upper()
+    exponent = 0
+
+    if unit == "KB":
+        exponent = 1
+    elif unit == "MB":
+        exponent = 2
+    elif unit == "GB":
+        exponent = 3
+    else:
+        unit = "BYTES"
+
+    process = psutil.Process(process_id)
+    memory = process.memory_info().rss
+    memory /= 1024 ** exponent
+    return f"{round(memory, 3)} {unit}"

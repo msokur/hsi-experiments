@@ -19,7 +19,6 @@ from configuration.parameter import (
 class TFRDatasets(Dataset):
     def get_datasets(self, ds_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
                      batch_path: str):
-        self.options = self.__get_ds_options()
         train_ints = self.__get_names_int_list(ds_paths=ds_paths, names=train_names)
         valid_ints = self.__get_names_int_list(ds_paths=ds_paths, names=valid_names)
         tf_labels = tf.Variable(initial_value=labels, dtype=tf.int64)
@@ -84,10 +83,12 @@ class TFRDatasets(Dataset):
         else:
             dataset = dataset.flat_map(map_func=lambda X, y, sw: tf.data.Dataset.from_tensor_slices(tensors=(X, y)))
 
+        dataset = dataset.cache().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+
         return dataset.batch(batch_size=self.batch_size).with_options(options=self.options)
 
     @staticmethod
-    def __get_ds_options():
+    def _get_ds_options():
         """Get TF data options"""
         options = tf.data.Options()
         options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA

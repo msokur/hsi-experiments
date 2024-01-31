@@ -1,7 +1,6 @@
 import sys
 import inspect
 import os
-import psutil
 from datetime import datetime
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -9,6 +8,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
 import provider
+from utils import get_used_memory
 from configuration.copy_py_files import copy_files
 from data_utils.weights import Weights
 
@@ -55,7 +55,7 @@ class Preprocessor:
         dt_string = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         print("Time before the start of preprocessing", dt_string)
 
-        process = psutil.Process(os.getpid())
+        process_id = os.getpid()
 
         if execution_flags is None:
             execution_flags = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
@@ -87,8 +87,8 @@ class Preprocessor:
                                                               self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][4]])
             dataloader.files_read_and_save_to_archive(root_path, preprocessed_path)
 
-        print('-------------------------------------------------Memory, preprocessor 1, after reading of origin files',
-              process.memory_info().rss)
+        print(f'---- Memory, preprocessor 1, after reading of origin files '
+              f'{get_used_memory(process_id=process_id)} ----')
 
         # ----------weights part------------------
         if execution_flags['add_sample_weights']:
@@ -100,8 +100,7 @@ class Preprocessor:
             weights = weight_calc.weights_get_or_save(preprocessed_path)
             weight_calc.weighted_data_save(preprocessed_path, weights)
 
-        print('-------------------------------------------------Memory, preprocessor 2, after sample weights',
-              process.memory_info().rss)
+        print(f'---- Memory, preprocessor 2, after sample weights {get_used_memory(process_id=process_id)} ----')
 
         # ----------scaler part ------------------
         if execution_flags['scale'] and self.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE] is not None:
@@ -114,8 +113,7 @@ class Preprocessor:
                                          dict_names=[self.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][x] for x in [0, 1, 4]])
             scaler.iterate_over_archives_and_save_scaled_X(destination_path=preprocessed_path)
 
-        print('-------------------------------------------------Memory, preprocessor 3, after scaling',
-              process.memory_info().rss)
+        print(f'---- Memory, preprocessor 3, after scaling {get_used_memory(process_id=process_id)}----')
 
         # ----------shuffle part------------------
         if execution_flags['shuffle']:
@@ -127,8 +125,7 @@ class Preprocessor:
                                            files_to_copy=self.CONFIG_PREPROCESSOR["FILES_TO_COPY"])
             shuffle.shuffle()
 
-        print('-------------------------------------------------Memory, preprocessor 4, after shuffling',
-              process.memory_info().rss)
+        print(f'---- Memory, preprocessor 4, after shuffling {get_used_memory(process_id=process_id)} ----')
 
 
 if __name__ == '__main__':

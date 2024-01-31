@@ -14,7 +14,7 @@
   },
   "CV_HNO_NORMAL": {
     "TYPE": "normal",
-    "NAME": "2024-01-10_CV_HNO_COMBINED_3x3_snv_NO_SMOOTH",
+    "NAME": "2024-01-31_CV_HNO_COMBINED_3x3_snv_NO_SMOOTH",
     "DATABASE_ABBREVIATION": "2024-01-10_CV_HNO_COMBINED_3x3_snv_NO_SMOOTH",
     "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
     "RESTORE_VALID_SEQUENCE": "",
