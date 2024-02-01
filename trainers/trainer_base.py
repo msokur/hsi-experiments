@@ -26,7 +26,7 @@ from configuration.parameter import (
 
 class Trainer:
     def __init__(self, config, data_archive: DataArchive, model_name: str, except_cv_names: List[str],
-                 except_train_names: List[str], except_valid_names: List[str],):
+                 except_train_names: List[str], except_valid_names: List[str]):
         self.config = config
         self.data_archive = data_archive
         self.except_cv_names = except_cv_names
@@ -120,7 +120,8 @@ class Trainer:
                                                        batch_path=self.batch_path)
 
         print("--- Calc class weights ---")
-        class_weights = get_cw_from_meta(files=root_data_paths, labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
+        class_weights = get_cw_from_meta(files=root_data_paths,
+                                         labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
                                          names=self.except_train_names)
         print(f"---Class weights---\n{class_weights}")
         # TODO class_weights dirty fix
