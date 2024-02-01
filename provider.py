@@ -120,17 +120,15 @@ def get_smoother(typ: str, config, *args, **kwargs):
     value_error("smoother", typ)
 
 
-def get_scaler(typ: str, config, *args, **kwargs):
+def get_scaler(typ: str, *args, **kwargs):
     from data_utils.scaler import NormalizerScaler, StandardScaler, StandardScalerTransposed
 
     if typ == 'l2_norm':
         return NormalizerScaler(config=config, *args, **kwargs)
     elif typ == 'svn':
         print('StandardScaler')
-        return StandardScaler(config=config, *args, **kwargs)
-    elif typ == 'svn_T':
         return StandardScalerTransposed(config=config, *args, **kwargs)
-
+    
     value_error("scaler", typ)
 
 

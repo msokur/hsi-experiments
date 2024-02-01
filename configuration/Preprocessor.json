@@ -43,7 +43,7 @@
     "WEIGHT_FILENAME": "weights.weights",
     "FILES_TO_COPY": [["data_utils", "*.py"], ["data_utils", "data_loaders", "*.py"],
       ["configuration", "*.py"], ["configuration", "*.json"]],
-    "NORMALIZATION_TYPE": "svn_T",
+    "NORMALIZATION_TYPE": "svn",
     "SCALER_FILE": "scaler.scaler",
     "SCALER_PATH": null
     }
