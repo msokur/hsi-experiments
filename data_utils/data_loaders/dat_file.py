@@ -8,7 +8,7 @@ from configuration.keys import DataLoaderKeys as DLK
 
 
 class DatFile:
-    def __init__(self, dataloader_config: dict):
+    def __init__(self, config):
         """ Class to load .dat files and annotations masks
 
         This class can load a HSI spectrum from a .dat file and annotation masks from .png, .jpg, .jpeg, .jpe or .mk2
@@ -36,9 +36,9 @@ class DatFile:
 
         see also: https://git.iccas.de/MaktabiM/hsi-experiments/-/wikis/Configuration/DataLoader-Configuration
 
-        :param dataloader_config: Dictionary with configuration parameter
+        :param config: configuration
         """
-        self.CONFIG_DATALOADER = dataloader_config
+        self.CONFIG_DATALOADER = config.CONFIG_DATALOADER
 
     def indexes_get_bool_from_mask(self, mask: np.ndarray) -> List[np.ndarray]:
         """ Create for every classification a boolean array

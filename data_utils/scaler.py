@@ -1,5 +1,4 @@
 import abc
-from typing import Tuple
 
 import numpy as np
 import os
@@ -16,8 +15,9 @@ from configuration.parameter import (
 
 
 class Scaler:
-    def __init__(self, preprocessed_path, data_archive: DataArchive, scaler_file=None, scaler_path=None,
+    def __init__(self, config, preprocessed_path, data_archive: DataArchive, scaler_file=None, scaler_path=None,
                  dict_names=None):
+        self.config = config
         self.preprocessed_path = preprocessed_path
         self.scaler_path = scaler_path
         self.dict_names = dict_names
@@ -48,7 +48,7 @@ class Scaler:
             
     def X_y_concatenate(self):
         paths = self.data_archive.get_paths(archive_path=self.preprocessed_path)
-        print(paths)
+
         X_s, y_s, indexes_s = self._get_shapes(paths[0])
         X, y, indexes = np.empty(shape=X_s), np.empty(shape=y_s), np.empty(shape=indexes_s)
         for data in tqdm(self.data_archive.all_data_generator(archive_path=self.preprocessed_path)):

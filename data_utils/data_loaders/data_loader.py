@@ -2,7 +2,6 @@ import abc
 from typing import List
 
 import numpy as np
-import pandas as pd
 import os
 import pickle
 from glob import glob
@@ -10,33 +9,34 @@ from tqdm import tqdm
 from sklearn.feature_extraction import image
 
 import provider
+from data_utils.background_detection import detect_background
+from data_utils.data_loaders.path_splits import get_splits
+from data_utils.data_loaders.path_sort import get_sort, folder_sort
+
 from data_utils.data_archive import DataArchive
 
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK
 from configuration.parameter import (
     DICT_X, DICT_y, DICT_IDX, ORG_NAME
 )
-from data_utils.background_detection import detect_background
-from data_utils.data_loaders.path_splits import get_splits
-from data_utils.data_loaders.path_sort import get_sort, folder_sort
-
 
 class DataLoader:
-    def __init__(self, data_archive: DataArchive, config_dataloader: dict, config_paths: dict, dict_names=None):
+    def __init__(self, config, data_archive: DataArchive, dict_names=None):
+        self.config = config
         if dict_names is None:
             dict_names = [DICT_X, DICT_y, DICT_IDX]
+        if 'background_mask' not in dict_names:
+            dict_names.append('background_mask')
         self.data_archive = data_archive
-        self.CONFIG_DATALOADER = config_dataloader
-        self.CONFIG_PATHS = config_paths
-        self.data_reader = provider.get_extension_loader(typ=self.CONFIG_DATALOADER[DLK.FILE_EXTENSION],
-                                                         dataloader_config=self.CONFIG_DATALOADER)
+        self.data_reader = provider.get_extension_loader(typ=self.config.CONFIG_DATALOADER[DLK.FILE_EXTENSION],
+                                                         config=config)
         self.dict_names = dict_names
 
     def get_labels(self):
-        return self.CONFIG_DATALOADER[DLK.LABELS]
+        return self.config.CONFIG_DATALOADER[DLK.LABELS]
 
     def get_cube_name(self, path: str) -> str:
-        return os.path.split(p=path)[-1].split(".")[0].split(self.CONFIG_DATALOADER[DLK.NAME_SPLIT])[0]
+        return os.path.split(p=path)[-1].split(".")[0].split(self.config.CONFIG_DATALOADER[DLK.NAME_SPLIT])[0]
 
     def get_name(self, path: str) -> str:
         return self.data_archive.get_name(path=path)
@@ -46,27 +46,28 @@ class DataLoader:
 
     def get_paths_and_splits(self, root_path=None):
         if root_path is None:
-            root_path = self.CONFIG_PATHS[PK.RAW_NPZ_PATH]
+            root_path = self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH]
         paths = self.get_paths(root_path=root_path)
-        number = DLK.NUMBER_SORT in self.CONFIG_DATALOADER.keys()
-        paths = get_sort(paths=paths, number=number, split=self.CONFIG_DATALOADER[DLK.NUMBER_SORT] if number else None)
+        number = DLK.NUMBER_SORT in self.config.CONFIG_DATALOADER.keys()
+        paths = get_sort(paths=paths, number=number, split=self.config.CONFIG_DATALOADER[DLK.NUMBER_SORT] if number else None)
 
-        splits = get_splits(typ=self.CONFIG_DATALOADER[DLK.SPLIT_PATHS_BY], paths=paths,
-                            values=self.CONFIG_DATALOADER[DLK.PATIENTS_EXCLUDE_FOR_TEST])
+        splits = get_splits(typ=self.config.CONFIG_DATALOADER[DLK.SPLIT_PATHS_BY], paths=paths,
+                            values=self.config.CONFIG_DATALOADER[DLK.PATIENTS_EXCLUDE_FOR_TEST])
 
         return paths, splits
 
     def smooth(self, spectrum):
-        if self.CONFIG_DATALOADER[DLK.SMOOTHING_TYPE] is not None:
-            smoother = provider.get_smoother(typ=self.CONFIG_DATALOADER[DLK.SMOOTHING_TYPE],
+        if self.config.CONFIG_DATALOADER[DLK.SMOOTHING_TYPE] is not None:
+            smoother = provider.get_smoother(config=self.config,
+                                             typ=self.config.CONFIG_DATALOADER[DLK.SMOOTHING_TYPE],
                                              path="",
-                                             size=self.CONFIG_DATALOADER[DLK.SMOOTHING_VALUE])
+                                             size=self.config.CONFIG_DATALOADER[DLK.SMOOTHING_VALUE])
             spectrum = smoother.smooth_func(spectrum)
         return spectrum
 
     def pixel_detection(self, masks, conf=None):
         if conf is None:
-            conf = self.CONFIG_DATALOADER[DLK.BORDER_CONFIG]
+            conf = self.config.CONFIG_DATALOADER[DLK.BORDER_CONFIG]
 
         if conf[DLK.BC_ENABLE]:
             pixel_detect = provider.get_pixel_detection(conf[DLK.BC_METHODE])
@@ -94,8 +95,8 @@ class DataLoader:
     @abc.abstractmethod
     def file_read(self, path):
         print(f'Reading {path}')
-        if PK.MASK_PATH in self.CONFIG_PATHS.keys():
-            mask_path = self.CONFIG_PATHS[PK.MASK_PATH]
+        if PK.MASK_PATH in self.config.CONFIG_PATHS.keys():
+            mask_path = self.config.CONFIG_PATHS[PK.MASK_PATH]
         else:
             mask_path = None
         spectrum, mask = self.file_read_mask_and_spectrum(path=path, mask_path=mask_path)
@@ -105,7 +106,7 @@ class DataLoader:
         background_mask = self.background_get_mask(spectrum, mask.shape[:2])
         contamination_mask = self.get_contamination_mask(os.path.split(path)[0], mask.shape[:2])
 
-        if self.CONFIG_DATALOADER[DLK.D3]:
+        if self.config.CONFIG_DATALOADER[DLK.D3]:
             spectrum = self.patches3d_get_from_spectrum(spectrum)
 
         indexes = self.data_reader.indexes_get_bool_from_mask(mask)
@@ -121,7 +122,8 @@ class DataLoader:
         indexes_np = self.indexes_get_np_from_bool_indexes(*indexes)
 
         values = self.X_y_concatenate_from_spectrum(spectra, indexes_np)
-        values = {n: v for n, v in zip(self.dict_names, values)}
+        values = {n: v for n, v in zip(self.dict_names[:3], values)}
+        values["background_mask"] = background_mask
 
         return values
 
@@ -134,8 +136,8 @@ class DataLoader:
 
         read_and_save_func = self.read_and_save_base
 
-        if DLK.COMBINE_DATA in self.CONFIG_DATALOADER:
-            if self.CONFIG_DATALOADER[DLK.COMBINE_DATA]:
+        if DLK.COMBINE_DATA in self.config.CONFIG_DATALOADER:
+            if self.config.CONFIG_DATALOADER[DLK.COMBINE_DATA]:
                 read_and_save_func = self.read_and_save_folder
 
         read_and_save_func(paths=paths, destination_path=destination_path)
@@ -165,7 +167,7 @@ class DataLoader:
                                                   append_datas=values)
 
     def patches3d_get_from_spectrum(self, spectrum: np.ndarray):
-        size = self.CONFIG_DATALOADER[DLK.D3_SIZE]
+        size = self.config.CONFIG_DATALOADER[DLK.D3_SIZE]
         # Better not to use non even sizes
         pad = [int((s - 1) / 2) for s in size]
         pad_width = [[pad[idx], pad[idx]] if s % 2 == 1 else [pad[idx], pad[idx] + 1] for idx, s in enumerate(size)]
@@ -220,21 +222,26 @@ class DataLoader:
         mask = np.full(shape, True)
         contamination_pht = os.path.join(path, self.get_contamination_filename())
         if os.path.exists(contamination_pht):
+            import pandas as pd
             c_in = pd.read_csv(contamination_pht, names=["x-start", "x-end", "y-start", "y-end"], header=0, dtype=int)
             for idx in range(c_in.shape[0]):
                 mask[c_in["y-start"][idx]:c_in["y-end"][idx], c_in["x-start"][idx]:c_in["x-end"][idx]] = False
         return mask
 
     def get_labels_filename(self):
-        return self.CONFIG_DATALOADER[DLK.LABELS_FILENAME]
+        return self.config.CONFIG_DATALOADER[DLK.LABELS_FILENAME]
 
     def get_contamination_filename(self):
-        return self.CONFIG_DATALOADER[DLK.CONTAMINATION_FILENAME]
+        return self.config.CONFIG_DATALOADER[DLK.CONTAMINATION_FILENAME]
 
     def background_get_mask(self, spectrum, shapes):
-        background_mask = np.ones(shapes).astype(np.bool_)
-        if self.CONFIG_DATALOADER[DLK.WITH_BACKGROUND_EXTRACTION]:
-            background_mask = detect_background(spectrum)
+        background_mask = np.ones(shapes).astype(bool)
+        if self.config.CONFIG_DATALOADER["BACKGROUND"]["WITH_BACKGROUND_EXTRACTION"]:
+            blood_threshold = self.config.CONFIG_DATALOADER["BACKGROUND"]["BLOOD_THRESHOLD"]
+            lights_reflections_threshold = self.config.CONFIG_DATALOADER["BACKGROUND"]["LIGHT_REFLECTION_THRESHOLD"]
+            background_mask = detect_background(spectrum,
+                                                blood_threshold=blood_threshold,
+                                                lights_reflections_threshold=lights_reflections_threshold)
             background_mask = np.reshape(background_mask, shapes)
 
         return background_mask
@@ -261,10 +268,11 @@ class DataLoader:
         return labeled_spectrum
 
     def __get_raw_paths(self, root_path: str) -> List[str]:
-        if DLK.DATA_NAMES_FROM_FILE in self.CONFIG_DATALOADER:
-            if self.CONFIG_DATALOADER[DLK.DATA_NAMES_FROM_FILE] is not None:
-                file_name = os.path.join(root_path, self.CONFIG_DATALOADER[DLK.DATA_NAMES_FROM_FILE])
+        if DLK.DATA_NAMES_FROM_FILE in self.config.CONFIG_DATALOADER:
+            if self.config.CONFIG_DATALOADER[DLK.DATA_NAMES_FROM_FILE] is not None:
+                file_name = os.path.join(root_path, self.config.CONFIG_DATALOADER[DLK.DATA_NAMES_FROM_FILE])
                 try:
+                    import pandas as pd
                     df_names = pd.read_csv(filepath_or_buffer=file_name, header=None)
                     paths = []
                     for name in df_names[0]:
@@ -272,14 +280,15 @@ class DataLoader:
                     return paths
                 except FileNotFoundError:
                     print(f"File '{file_name}' not found! "
-                          f"All files with extension '{self.CONFIG_DATALOADER[DLK.FILE_EXTENSION]}' will be used.")
+                          f"All files with extension '{self.config.CONFIG_DATALOADER[DLK.FILE_EXTENSION]}' will be used.")
 
-        return glob(os.path.join(root_path, "*" + self.CONFIG_DATALOADER[DLK.FILE_EXTENSION]))
+        return glob(os.path.join(root_path, "*" + self.config.CONFIG_DATALOADER[DLK.FILE_EXTENSION]))
 
 
 if __name__ == "__main__":
     from configuration.configloader_dataloader import read_dataloader_config
     from configuration.configloader_paths import read_path_config
+    import configuration.get_config as raw_config
 
     sys_prefix = r"D:\HTWK\WiSe22\Bachelorarbeit\Programm\hsi-experiments"
     loader_config = os.path.join(sys_prefix, "data_utils", "configuration", "DataLoader.json")
@@ -289,5 +298,5 @@ if __name__ == "__main__":
     database_section = "HNO_Database"
     DATALOADER = read_dataloader_config(file=loader_config, section=loader_section)
     PATHS = read_path_config(file=path_config, system_mode=system_section, database=database_section)
-    # dyn = DataLoader()
+    dyn = DataLoader(raw_config)
     x = 1

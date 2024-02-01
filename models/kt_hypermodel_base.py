@@ -10,11 +10,11 @@ from configuration.keys import TunerModelKeys as TMK
 
 
 class KtModelBase(kt.HyperModel):
-    def __init__(self, shape: tuple, conf: dict, num_of_labels: int, custom_metrics=None, name=None, tunable=True):
+    def __init__(self, config, shape: tuple, num_of_labels: int, custom_metrics=None, name=None, tunable=True):
         super().__init__(name, tunable)
         self.hp = None
         self.shape = shape
-        self.config = conf
+        self.config = config
         self.num_of_classes = num_of_labels
         self.custom_metrics = custom_metrics
         self.kernel_initializer, self.bias_initializer = get_initializers()
@@ -62,12 +62,13 @@ class KtModelBase(kt.HyperModel):
         pass
 
     def _get_activations(self, name):
-        return self.hp.Choice(self._wrap_name(name, "activation"), [key for key in self.config[TMK.ACTIVATION].keys()])
+        return self.hp.Choice(self._wrap_name(name, "activation"),
+                              [key for key in self.config.CONFIG_TRAINER[TMK.ACTIVATION].keys()])
 
     def _get_optimizer(self):
-        optimizer = self.hp.Choice("optimizer", [key for key in self.config[TMK.OPTIMIZER].keys()])
-        lr = self.hp.Float("lr", **self.config[TMK.LEARNING_RATE])
-        return self.config[TMK.OPTIMIZER][optimizer](learning_rate=lr)
+        optimizer = self.hp.Choice("optimizer", [key for key in self.config.CONFIG_TRAINER[TMK.OPTIMIZER].keys()])
+        lr = self.hp.Float("lr", **self.config.CONFIG_TRAINER[TMK.LEARNING_RATE])
+        return self.config.CONFIG_TRAINER[TMK.OPTIMIZER][optimizer](learning_rate=lr)
 
     def _wrap_layer(self, layer, name):
         order_activation_batch_norm = self.hp.Choice(self._wrap_name(name, "mode"), ["without_batch_norm",
@@ -87,7 +88,8 @@ class KtModelBase(kt.HyperModel):
             layer = layers.BatchNormalization(name=batch_name)(layer)
 
         if self.hp.Boolean(self._wrap_name(name, "dr")):
-            layer = layers.Dropout(self.hp.Float(self._wrap_name(name, "dr_val"), **self.config[TMK.DROPOUT]),
+            layer = layers.Dropout(self.hp.Float(self._wrap_name(name, "dr_val"),
+                                                 **self.config.CONFIG_TRAINER[TMK.DROPOUT]),
                                    name=dropout_name)(layer)
 
         return layer

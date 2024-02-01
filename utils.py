@@ -10,17 +10,17 @@ from configuration.keys import TelegramKeys as TGK
 
 class Telegram:
     def __init__(self, tg_config: dict, mode: str):
-        self.tg = tg_config
+        self.tg_config = tg_config
         self.mode = mode
 
     def send_tg_message(self, message):
-        import telegram_send
-        if self.tg[TGK.SENDING]:
+        if self.tg_config[TGK.SENDING]:
             if self.mode == "CLUSTER":
                 message = "CLUSTER " + message
             try:
-                message = f"{self.tg[TGK.USER]}, " + message
-                telegram_send.send(messages=[message], conf=self.tg[TGK.FILE])
+                import telegram_send
+                message = f"{self.tg_config[TGK.USER]}, " + message
+                telegram_send.send(messages=[message], conf=self.tg_config[TGK.FILE])
             except Exception as e:
                 print("Some problems with telegram! Messages could not be delivered")
                 print(e)
@@ -28,9 +28,10 @@ class Telegram:
     def send_tg_message_history(self, log_dir, history):
         if history is not None:
             self.send_tg_message(
-                f"{self.tg[TGK.USER]}, training {log_dir} has finished after {len(history.history['loss'])} epochs")
+                f"{self.tg_config[TGK.USER]}, training {log_dir} "
+                f"has finished after {len(history.history['loss'])} epochs")
         else:
-            self.send_tg_message(f"{self.tg[TGK.USER]}, training {log_dir} has finished")
+            self.send_tg_message(f"{self.tg_config[TGK.USER]}, training {log_dir} has finished")
 
 
 def glob_multiple_file_types(path, *patterns):

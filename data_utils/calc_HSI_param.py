@@ -1,17 +1,9 @@
-import sys
 import cv2
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import numpy as np
 from scipy.ndimage import gaussian_filter1d, convolve1d
-from scipy.signal import savgol_filter
-import matplotlib.pyplot as plt
-import socket
-import struct
-import psutil
-from numba import cuda
-import time
 
 
 def read_cube_dat(filename):
@@ -42,7 +34,7 @@ def calc_rgb(cube, LUT_gamma, minWL=500, maxWL=995, WLsteps=5):
     green_range_end = int((590 - minWL) / WLsteps)
     RGB_image[:, :, 1] = cube[:, :, green_range_start:green_range_end].mean(axis=2)
 
-    # for the red pixel take 585-725nm
+    # for the red pixel take 585 - 725 nm
     red_range_start = int((585 - minWL) / WLsteps)
     red_range_end = int((725 - minWL) / WLsteps)
     RGB_image[:, :, 0] = cube[:, :, red_range_start:red_range_end].mean(axis=2)
@@ -60,7 +52,7 @@ def calc_rgb(cube, LUT_gamma, minWL=500, maxWL=995, WLsteps=5):
 
 def calc_sto2(cube, gaussFkt, minWL=500, maxWL=995, WLsteps=5):
     # gaussian window for smoothing
-    sigma = 2.66  # to be definded
+    sigma = 2.66  # to be defined
     cube = gaussian_filter1d(cube, sigma, axis=2)
     #cube = convolve1d(cube, gaussFkt, axis=2, origin=0)
 
@@ -177,5 +169,3 @@ def param2rgb(param, color_map):
     param_rgb[:, :, 2] = cv2.LUT(param_255, color_map[:, 2])    # blue
 
     return param_rgb
-
-

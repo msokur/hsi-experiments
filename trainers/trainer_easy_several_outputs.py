@@ -1,6 +1,6 @@
 import tensorflow.keras as keras
 from trainers.trainer_easy import TrainerEasy
-from configuration.keys import TrainerKeys as TK
+from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
 
 
 class TrainerEasySeveralOutputs(TrainerEasy):
@@ -8,18 +8,29 @@ class TrainerEasySeveralOutputs(TrainerEasy):
         super().__init__(**kwargs)
 
     def compile_model(self, model: keras.Model) -> keras.Model:
-        metric_dict = self.CONFIG_TRAINER[TK.CUSTOM_OBJECTS]
+        metric_dict = self.config.CONFIG_TRAINER[TK.CUSTOM_OBJECTS]
         METRICS = [
             keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
         ]
         for key in metric_dict.keys():
-            METRICS.append(metric_dict[key]["metric"](num_classes=len(self.labels_to_train),
+            METRICS.append(metric_dict[key]["metric"](num_classes=len(self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]),
                                                       **metric_dict[key]["args"]))
 
         model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=self.CONFIG_TRAINER[TK.LEARNING_RATE]),
+            optimizer=keras.optimizers.Adam(learning_rate=self.config.CONFIG_TRAINER[TK.LEARNING_RATE]),
             loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
             metrics=METRICS
         )
 
         return model
+
+    def get_parameters_for_compile(self):
+        loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True)  # TODO, check if from logits?
+        metric_dict = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS"]
+        raw_metrics = []
+
+        for key in metric_dict.keys():
+            raw_metrics.append(metric_dict[key]["metric"](
+                num_classes=len(self.config.CONFIG_DATALOADER["LABELS_TO_TRAIN"]), **metric_dict[key]["args"]))
+
+        return loss, raw_metrics

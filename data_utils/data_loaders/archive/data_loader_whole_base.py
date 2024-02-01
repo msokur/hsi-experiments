@@ -2,7 +2,6 @@ import abc
 import numpy as np
 
 from data_utils.data_loaders.archive.data_loader_base import DataLoader
-from data_utils.data_loaders.archive.data_loader_colon import DataLoaderColon
 
 
 class DataLoaderWholeBase(DataLoader):

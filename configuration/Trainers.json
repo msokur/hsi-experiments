@@ -2,9 +2,7 @@
   "HNO": {
     "TYPE":  "SeveralOutput",
     "RESTORE": false,
-    "FILES_TO_COPY": [["*.py"], ["data_utils", ",*.py"], ["models", "*.py"], ["data_utils", "*", "*.py"],
-      ["scrips", "start_cv.job"], ["trainers", "*.py"], ["util", "*.py"], ["evaluation", "*.py"],
-      ["cross_validators", "*.py"], ["configuration", "*.py"], ["configuration", "*.json"]],
+    "FILES_TO_COPY": [["*.py"], ["data_utils", "*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"], ["scripts", "*.job"], ["trainers", "*.py"], ["util", "*.py"], ["evaluation", "*.py"], ["cross_validators", "*.py"], ["configuration", "*.py"], ["configuration", "*.json"]],
     "WITH_SAMPLE_WEIGHTS": false,
     "MODEL": "paper_model",
     "MODEL_PARAMS": "paper_model",
@@ -33,9 +31,7 @@
   "HNO_TUNER": {
     "TYPE":  "Tuner",
     "RESTORE": false,
-    "FILES_TO_COPY": [["*.py"], ["data_utils", ",*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"],
-                 ["scrips", "start_cv.job"], ["trainers", "*.py"], ["utils", "*.py"], ["evaluation", "*.py"], ["cross_validators", "*.py"],
-                     ["data_utils", "configuration", "*.py"], ["data_utils", "configuration", "*.json"]],
+    "FILES_TO_COPY": [["*.py"], ["data_utils", "*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"], ["scripts", "*.job"], ["trainers", "*.py"], ["util", "*.py"], ["evaluation", "*.py"], ["cross_validators", "*.py"], ["configuration", "*.py"], ["configuration", "*.json"]],
     "WITH_SAMPLE_WEIGHTS": false,
     "MODEL": "paper_model",
     "MODEL_PARAMS": "paper_model_tuner",
@@ -43,7 +39,7 @@
     "CUSTOM_OBJECTS": {
       "F1_score": [{"name":  "f1_score_weighted", "average": "weighted"}]
     },
-    "BATCH_SIZE": 2500,
+    "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 50,
     "SMALLER_DATASET": false,
@@ -102,10 +98,8 @@
     "INCEPTION_BINARY": {
     "TYPE":  "Easy",
     "RESTORE": false,
-    "FILES_TO_COPY": [["*.py"], ["data_utils", ",*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"],
-                 ["scrips", "start_cv.job"], ["trainers", "*.py"], ["utils", "*.py"], ["evaluation", "*.py"], ["cross_validators", "*.py"],
-                     ["data_utils", "configuration", "*.py"], ["data_utils", "configuration", "*.json"]],
-    "WITH_SAMPLE_WEIGHTS": false,
+    "FILES_TO_COPY": [["*.py"], ["data_utils", "*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"], ["scripts", "*.job"], ["trainers", "*.py"], ["util", "*.py"], ["evaluation", "*.py"], ["cross_validators", "*.py"], ["configuration", "*.py"], ["configuration", "*.json"]],
+    "WITH_SAMPLE_WEIGHTS": true,
     "MODEL": "inception_model",
     "MODEL_PARAMS": "inception_model",
     "LEARNING_RATE": 1e-4,

@@ -3,13 +3,16 @@ import numpy as np
 import os
 
 from trainers.trainer_base import Trainer
-from configuration.keys import TrainerKeys as TK
+from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK, CrossValidationKeys as CVK
 from configuration.parameter import (
     MODEL_BATCH_SIZE,
 )
 
 
 class TrainerEasy(Trainer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def train_process(self):
         self.logging_and_copying()
 
@@ -27,7 +30,7 @@ class TrainerEasy(Trainer):
         '''-------DATASET---------'''
 
         train_dataset, valid_dataset, class_weights = self.get_datasets(
-            for_tuning=self.CONFIG_TRAINER[TK.SMALLER_DATASET])
+            for_tuning=self.config.CONFIG_TRAINER[TK.SMALLER_DATASET])
 
         '''-------TRAINING---------'''
 
@@ -36,7 +39,7 @@ class TrainerEasy(Trainer):
             # validation_data=valid_generator,
             x=train_dataset,
             validation_data=valid_dataset,
-            epochs=self.CONFIG_TRAINER[TK.EPOCHS],
+            epochs=self.config.CONFIG_TRAINER[TK.EPOCHS],
             verbose=2,
             initial_epoch=initial_epoch,
             batch_size=MODEL_BATCH_SIZE,
@@ -47,13 +50,13 @@ class TrainerEasy(Trainer):
 
         self.save_history(history)
 
-        if self.mode == "RUN":
+        if self.config.CONFIG_CV[CVK.MODE] == "RUN":
             self.dataset.delete_batches(batch_path=self.batch_path)
 
         return model, history
 
     def compile_model(self, model: keras.Model) -> keras.Model:
-        metric_dict = self.CONFIG_TRAINER[TK.CUSTOM_OBJECTS]
+        metric_dict = self.config.CONFIG_TRAINER[TK.CUSTOM_OBJECTS]
         METRICS = [
             keras.metrics.BinaryAccuracy(name="accuracy"),
         ]
@@ -61,12 +64,22 @@ class TrainerEasy(Trainer):
             METRICS.append(metric_dict[key]["metric"](**metric_dict[key]["args"]))
 
         model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=self.CONFIG_TRAINER[TK.LEARNING_RATE]),
+            optimizer=keras.optimizers.Adam(learning_rate=self.config.CONFIG_TRAINER[TK.LEARNING_RATE]),
             loss=keras.losses.BinaryCrossentropy(),
             metrics=METRICS,
         )
 
         return model
+
+    def get_parameters_for_compile(self):
+        loss = keras.losses.BinaryCrossentropy()
+        metric_dict = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS"]
+        raw_metrics = []
+
+        for key in metric_dict.keys():
+            raw_metrics.append(metric_dict[key]["metric"](**metric_dict[key]["args"]))
+
+        return loss, raw_metrics
 
     def get_restored_model(self) -> tuple[keras.Model, int]:
         print('!!!!!!!!!!!!We restore model!!!!!!!!!!!!')
@@ -79,21 +92,22 @@ class TrainerEasy(Trainer):
         initial_epoch = int(all_checkpoints[-1].split('-')[-1])
 
         model = keras.models.load_model(all_checkpoints[-1],
-                                        custom_objects=self.CONFIG_TRAINER[TK.CUSTOM_OBJECTS_LOAD],
+                                        custom_objects=self.config.CONFIG_TRAINER[TK.CUSTOM_OBJECTS_LOAD],
                                         compile=True)
 
         return model, initial_epoch
 
     def get_new_model(self) -> keras.Model:
-        model = self.CONFIG_TRAINER[TK.MODEL](input_shape=self.get_output_shape(),
-                                              config=self.CONFIG_TRAINER[TK.MODEL_CONFIG],
-                                              num_of_output=len(self.labels_to_train)).get_model()
+        model = self.config.CONFIG_TRAINER[TK.MODEL](input_shape=self.get_output_shape(),
+                                                     config=self.config.CONFIG_TRAINER[TK.MODEL_CONFIG],
+                                                     num_of_output=len(self.config.CONFIG_DATALOADER[
+                                                                           DLK.LABELS_TO_TRAIN])).get_model()
         model = self.compile_model(model)
         return model
 
     def get_model(self) -> tuple[keras.Model, int]:
         initial_epoch = 0
-        if self.CONFIG_TRAINER[TK.RESTORE]:
+        if self.config.CONFIG_TRAINER[TK.RESTORE]:
             model, initial_epoch = self.get_restored_model()
         else:
             model = self.get_new_model()

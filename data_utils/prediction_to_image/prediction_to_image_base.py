@@ -12,10 +12,10 @@ from configuration.keys import DataLoaderKeys as DLK, TrainerKeys as TK
 
 
 class PredictionToImage_base:
-    def __init__(self, data_archive: DataArchive, dataloader_conf: dict, model_conf: dict, image_size=(480, 640)):
+    def __init__(self, config, data_archive: DataArchive, image_size=(480, 640)):
+        self.CONFIG_DATALOADER = config.CONFIG_DATALOADER
+        self.CONFIG_TRAINER = config.CONFIG_TRAINER
         self.data_archive = data_archive
-        self.CONFIG_DATALOADER = dataloader_conf
-        self.CONFIG_MODEL = model_conf
         self.image_size = image_size
 
     def get_name(self, path):
@@ -29,7 +29,7 @@ class PredictionToImage_base:
 
     def get_prediction_mask(self, spectrum_path: str, model_path: str) -> np.ndarray:
         spectrum, indexes = self.get_spectrum(path=spectrum_path)
-        model = self.load_model(model_path=model_path, custom_objects=self.CONFIG_MODEL[TK.CUSTOM_OBJECTS_LOAD])
+        model = self.load_model(model_path=model_path, custom_objects=self.CONFIG_TRAINER[TK.CUSTOM_OBJECTS_LOAD])
         predict = model.predict(spectrum)
         predict_max = np.argmax(predict, axis=-1)
         predict_mask = np.full(self.image_size, -1)

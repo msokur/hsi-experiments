@@ -1,63 +1,88 @@
 import os
 import argparse
 import json
+import numpy as np
 
-import configuration.get_config as config
 from cross_validators.cross_validator_base import CrossValidatorBase
+from data_utils.preprocessor import Preprocessor
 
 
 class CrossValidatorExperiment(CrossValidatorBase):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        self.parse_args()
 
-        # -------------------------parser
+        import configuration.get_config as config  # we need config from scratch every time
+        self.config = config
+
+        print(f'Hi from CV! with {self.args.experiment_folder}, {self.args.cv_name} and config_index='
+              f'{self.args.config_index}')
+
+        print(self.config.CONFIG_PATHS)
+        print(self.config.CONFIG_CV)
+        self.config.CONFIG_CV["TYPE"] = 'experiment'
+        self.config.CONFIG_CV["NAME"] = self.args.abbreviation
+        self.config.CONFIG_PATHS['RESULTS_FOLDER'] = self.args.results_folder
+        self.config.CONFIG_PATHS['LOGS_FOLDER'] = [self.args.experiment_folder]
+
+        # TODO, so far could be removed, because folder is already created in  run_experiments.py
+        # self.create_folder_for_results()
+
+        self.set_configs()
+        self.set_preprocessor_paths()
+        self.generate_data()
+
+        super().__init__(self.config, *args, **kwargs)
+
+        self.pipeline(thresholds=np.round(np.linspace(0.1, 0.5, 5), 4))
+
+    def parse_args(self):
         parser = argparse.ArgumentParser(description='Process some integers.')
 
         parser.add_argument('--experiment_folder', type=str)
         parser.add_argument('--cv_name', type=str)
         parser.add_argument('--config_index', type=str)
-        parser.add_argument('--test_path', type=str)
+        parser.add_argument('--results_folder', type=str)
         parser.add_argument('--abbreviation', type=str)
 
         args = parser.parse_args()
         self.args = args
-        super().__init__()
+        print('Parsed args:', self.args)
 
-        print(f'Hi from CV! with {args.experiment_folder}, {args.cv_name} and config_index {args.config_index}')
-        root_folder = args.experiment_folder.split(config.SYSTEM_PATHS_DELIMITER)[-1]
-        self.root_folder = root_folder
+    def create_folder_for_results(self):
+        results_folder = os.path.join(self.args.results_folder, self.args.abbreviation)
+        if not os.path.exists(results_folder):
+            os.mkdir(results_folder)
+        self.results_folder = results_folder
+        print(f"Folder for results: {self.results_folder}")
 
-        # -------------------------metrics path
-
-        metrics_saving_path = os.path.join(args.test_path, args.cv_name)
-        if not os.path.exists(metrics_saving_path):
-            os.mkdir(metrics_saving_path)
-        self.metrics_saving_path = metrics_saving_path
-
-        # -------------------------configs
-
-        config.MODEL_NAME_PATHS.append(root_folder)
-
+    def set_configs(self):
         configs = None
-        with open(os.path.join(args.experiment_folder, 'combinations.json'), 'r') as json_file:
+        with open(os.path.join(self.args.experiment_folder, 'combinations.json'), 'r') as json_file:
             data = json.load(json_file)
-            configs = data[int(args.config_index)]
+            configs = data[int(self.args.config_index)]
             print(configs)
 
+        print(configs)
         for key, value in configs.items():
-            setattr(config, key, value)
-        config.CV_RESTORE_VALID_PATIENTS_SEQUENCE = args.abbreviation.replace('WF', 'WT')
+            print(key, value)
+            config_section = getattr(self.config, key)
+            config_section[value[0]] = value[1]
 
-        config.BATCHED_PATH += '_' + args.cv_name
+            #print('--------------', self.config.CONFIG_DATALOADER)
+            #print('--------------', self.config.CONFIG_PREPROCESSOR)
+        #config.CV_RESTORE_VALID_PATIENTS_SEQUENCE = self.args.abbreviation.replace('WF', 'WT') # TODO
 
-    def evaluation(self):
-        # ------------------------testing
+        self.config.CONFIG_PATHS['BATCHED_PATH'] += '_' + self.args.cv_name
 
-        search_path = os.path.join(self.project_folder, 'logs', self.root_folder, self.args.cv_name, '*.csv')
-        csv_path = CrossValidatorBase.get_csv(search_path)
+    def set_preprocessor_paths(self):
+        self.config.CONFIG_PATHS['RAW_NPZ_PATH'] += '_' + self.args.abbreviation
+        self.config.CONFIG_PATHS['SHUFFLED_PATH'] = os.path.join(self.config.CONFIG_PATHS['RAW_NPZ_PATH'], 'shuffled')
+        self.config.CONFIG_PATHS['BATCHED_PATH'] = os.path.join(self.config.CONFIG_PATHS['RAW_NPZ_PATH'], 'batch_sized')
 
-        self.save_predictions_and_metrics_for_checkpoint(0,
-                                                         self.metrics_saving_path,
-                                                         csv_path,
-                                                         thr_ranges=[  # [0.1, 0.6, 10],
-                                                             [0.4, 0.5, 100]],
-                                                         execution_flags=[True])
+    def generate_data(self):
+        preprocessor = Preprocessor(self.config)
+        preprocessor.pipeline()
+
+
+if __name__ == '__main__':
+    CrossValidatorExperiment()

@@ -42,7 +42,7 @@ class PredictionToImage_npz(PredictionToImage_base):
 if __name__ == '__main__':
     import os
     from provider import get_data_archive
-    from configuration.get_config import CONFIG_DATALOADER, CONFIG_TRAINER
+    import configuration.get_config as config
     from configuration.parameter import ARCHIVE_TYPE
 
     os.environ['TF_DETERMINISTIC_OPS'] = '1'
@@ -53,13 +53,12 @@ if __name__ == '__main__':
     image_path = os.path.join(main_path, "raw_data", "2019_04_30_15_34_56_SpecCube.png")
     # masks_png = test_png.annotation_mask(image_path)
 
-    test_npz = PredictionToImage_npz(data_archive=get_data_archive(typ=ARCHIVE_TYPE), dataloader_conf=CONFIG_DATALOADER,
-                                     model_conf=CONFIG_TRAINER)
+    test_npz = PredictionToImage_npz(config, data_archive=get_data_archive(typ=ARCHIVE_TYPE))
     npz_path = os.path.join(main_path, "raw_data", "2019_04_30_15_34_56_.npz")
     dat_path = r"E:\ICCAS\ESO\EsophagusCancer\2019_04_30_15_34_56_SpecCube.dat"
     anno_masks = test_npz.get_annotation_mask(npz_path)
-    pred_mask = test_npz.get_prediction_mask(spectrum_path=npz_path, model_path=model_path_)
-    diff_mask_ = test_npz.get_diff_mask(annotation_mask=anno_masks, prediction_mask=pred_mask)
+    predictions_mask = test_npz.get_prediction_mask(spectrum_path=npz_path, model_path=model_path_)
+    diff_mask_ = test_npz.get_diff_mask(annotation_mask=anno_masks, prediction_mask=predictions_mask)
     image_save = os.path.join(main_path, "mask.png")
-    # test_npz.save_only_masks(image_save, anno_masks, pred_mask, diff_mask_)
-    test_npz.save_with_background(image_save, dat_path, anno_masks, pred_mask, diff_mask_)
+    # test_npz.save_only_masks(image_save, anno_masks, predictions_mask, diff_mask_)
+    test_npz.save_with_background(image_save, dat_path, anno_masks, predictions_mask, diff_mask_)

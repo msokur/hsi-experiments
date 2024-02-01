@@ -37,15 +37,15 @@ class EvaluationBinary(EvaluationBase):
 
 
 if __name__ == '__main__':
-    
     eval_binary = EvaluationBinary('Colon_MedianFilter')
-    # config.CV_GET_CHECKPOINT_FROM_VALID = False
-    
-    eval_binary.evaluate(#training_csv_path='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/Colon_MedianFilter/Colon_MedianFilter_stats_02.02.2022-13_15_36.csv', 
-                                               #npz_folder = os.path.join('/work/users/mi186veva', 'data_bea_db', 'Colon_MedianFilter', 'raw_3d_weighted'),
-                                               checkpoints=[38],
-                                                thresholds=np.round(np.linspace(0.001, 0.3, 10), 4))
-    
+    config.CV_GET_CHECKPOINT_FROM_VALID = False
+
+    eval_binary.evaluate(
+        # training_csv_path='/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs/Colon_MedianFilter/Colon_MedianFilter_stats_02.02.2022-13_15_36.csv',
+        # npz_folder = os.path.join('/work/users/mi186veva', 'data_bea_db', 'Colon_MedianFilter', 'raw_3d_weighted'),
+        checkpoints=[38],
+        thresholds=np.round(np.linspace(0.001, 0.3, 10), 4))
+
     '''try:
     
         for folder, checkpoint, threshold, scaling_type in zip(['CV_3d_inception', 
@@ -75,7 +75,8 @@ if __name__ == '__main__':
                                                 'svn_T',
                                                 'l2_norm']):
 
-            training_csv_paths = glob(os.path.join('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs', folder, '*.csv'))
+            training_csv_paths = glob(os.path.join('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs', folder, 
+            '*.csv'))
             if len(training_csv_paths) == 0:
                 print(f'ERROR!! No training_csv_paths in {folder}')
                 continue
@@ -92,7 +93,8 @@ if __name__ == '__main__':
 
             eval_binary.save_predictions_and_metrics(training_csv_path=training_csv_path,
                                                      save_predictions=False,
-                                                     npz_folder=os.path.join('/work/users/mi186veva/data_3d', scaling_type),
+                                                     npz_folder=os.path.join('/work/users/mi186veva/data_3d', 
+                                                     scaling_type),
                                                      thresholds_raw_list=[threshold],
                                                      checkpoints_raw_list=[checkpoint],
                                                      save_curves=False)

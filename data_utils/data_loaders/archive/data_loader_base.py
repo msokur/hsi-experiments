@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import numpy as np
 from sklearn.feature_extraction import image
 import abc
@@ -8,30 +6,29 @@ from glob import glob
 from tqdm import tqdm
 import pickle
 from scipy.ndimage import gaussian_filter, median_filter
-import pandas as pd
 
-#import config
-import configuration.get_config as conf
+# import configuration.get_config as conf
 from data_utils.background_detection import detect_background
 import data_utils.border as border
 from data_utils.data_loaders.path_splits import get_splits
 
-print('DATALOADER', conf.CONFIG_DATALOADER)
-print('PATHS', conf.CONFIG_PATHS)
-print('PREPRO', conf.PREPRO)
-print('CV', conf.CONFIG_CV)
-print('TRAINER', conf.CONFIG_TRAINER)
-print('DISTRO', conf.CONFIG_DISTRIBUTION)
-print('TG_CONF', conf.CONFIG_TELEGRAM)
-
 
 class DataLoader:
-    def __init__(self, dict_names=None, _3d=conf.CONFIG_DATALOADER['3D'], _3d_size=conf.CONFIG_DATALOADER['3D']):
+    def __init__(self, config, dict_names=None, _3d=None, _3d_size=None):
+        self.config = config
         if dict_names is None:
             dict_names = ['X', 'y', 'indexes_in_datacube']
         self.dict_names = dict_names
         self._3d = _3d
         self._3d_size = _3d_size
+        self.fill_3d_params()
+
+    def fill_3d_params(self):
+        if self._3d is None:
+            self._3d = self.config.CONFIG_DATALOADER['3D']
+
+        if self._3d_size is None:
+            self._3d_size = self.config.CONFIG_DATALOADER['3D']
 
     @abc.abstractmethod
     def get_labels(self):
@@ -48,22 +45,24 @@ class DataLoader:
     @abc.abstractmethod
     def get_name(self, path):
         pass
-    
-    def get_paths_and_splits(self, root_path=conf.CONFIG_PATHS['RAW_NPZ_PATH']):
+
+    def get_paths_and_splits(self, root_path=None):
+        if root_path is None:
+            root_path = self.config.CONFIG_PATHS['RAW_NPZ_PATH']
+
         paths = glob(os.path.join(root_path, '*.npz'))
         paths = sorted(paths)
 
-        splits = get_splits(typ=conf.CONFIG_DATALOADER["SPLIT_PATHS_BY"], paths=paths,
-                            values=conf.CONFIG_DATALOADER["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"],
-                            delimiter=conf.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
-        #splits = np.array_split(range(len(paths)), config.CROSS_VALIDATION_SPLIT)
-        
+        splits = get_splits(typ=self.config.CONFIG_DATALOADER["SPLIT_PATHS_BY"], paths=paths,
+                            values=self.config.CONFIG_DATALOADER["CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"],
+                            delimiter=self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
+        # splits = np.array_split(range(len(paths)), config.CROSS_VALIDATION_SPLIT)
+
         return paths, splits
-    
-    @staticmethod
-    def smooth(spectrum):
-        smoothing_type = conf.CONFIG_DATALOADER['SMOOTHING_TYPE']
-        smoothing_value = conf.CONFIG_DATALOADER['SMOOTHING_VALUE']
+
+    def smooth(self, spectrum):
+        smoothing_type = self.config.CONFIG_DATALOADER['SMOOTHING_TYPE']
+        smoothing_value = self.config.CONFIG_DATALOADER['SMOOTHING_VALUE']
         if smoothing_type is not None:
             if smoothing_type == 'median_filter':
                 spectrum = median_filter(spectrum, size=smoothing_value)
@@ -71,19 +70,22 @@ class DataLoader:
                 spectrum = gaussian_filter(spectrum, sigma=smoothing_value)
         return spectrum
 
-    @staticmethod
-    def remove_border(masks, conf=conf.CONFIG_DATALOADER['BORDER_CONFIG']):
-        if conf['enable']:
+    def remove_border(self, masks, border_config=None):
+        if border_config is None:
+            border_config = self.config.CONFIG_DATALOADER['BORDER_CONFIG']
+
+        if border_config['enable']:
             border_masks = []
             for idx, mask in enumerate(masks):
-                if idx not in conf['not_used_labels']:
-                    if len(conf['axis']) == 0:
-                        border_mask = getattr(border, conf.BORDERS_CONFIG['methode'])(in_arr=masks[idx],
-                                                                                      d=conf['depth'])
+                if idx not in border_config['not_used_labels']:
+                    border_method = border_config.BORDERS_CONFIG['methode']
+                    if len(border_config['axis']) == 0:
+                        border_mask = getattr(border, border_method)(in_arr=masks[idx],
+                                                                     d=border_config['depth'])
                     else:
-                        border_mask = getattr(border, conf.BORDERS_CONFIG['methode'])(in_arr=masks[idx],
-                                                                                      d=conf['depth'],
-                                                                                      axis=conf['axis'])
+                        border_mask = getattr(border, border_method)(in_arr=masks[idx],
+                                                                     d=border_config['depth'],
+                                                                     axis=border_config['axis'])
                     border_masks.append(border_mask)
                 else:
                     border_masks.append(masks[idx])
@@ -95,11 +97,11 @@ class DataLoader:
     def file_read(self, path):
         print(f'Reading {path}')
         spectrum, mask = self.file_read_mask_and_spectrum(path)
-        
-        spectrum = DataLoader.smooth(spectrum)
 
-        background_mask = DataLoader.background_get_mask(spectrum, mask.shape[:2])
-        contamination_mask = DataLoader.get_contamination_mask(os.path.split(path)[0], mask.shape[:2])
+        spectrum = self.smooth(spectrum)
+
+        background_mask = self.background_get_mask(spectrum, mask.shape[:2])
+        contamination_mask = self.get_contamination_mask(os.path.split(path)[0], mask.shape[:2])
 
         if self._3d:
             spectrum = self.patches3d_get_from_spectrum(spectrum)
@@ -107,7 +109,7 @@ class DataLoader:
         indexes = self.indexes_get_bool_from_mask(mask)
         indexes = [i * background_mask for i in indexes]
         indexes = [i * contamination_mask for i in indexes]
-        border_masks = DataLoader.remove_border(indexes)
+        border_masks = self.remove_border(indexes)
         indexes = [indexes[i] * border_masks[i] for i in range(len(indexes))]
 
         spectra = []
@@ -124,7 +126,7 @@ class DataLoader:
     def files_read_and_save_to_npz(self, root_path, destination_path):
         print('----Saving of .npz archives is started----')
 
-        paths = glob(os.path.join(root_path, "*" + conf.CONFIG_DATALOADER['FILE_EXTENSION']))
+        paths = glob(os.path.join(root_path, "*" + self.config.CONFIG_DATALOADER['FILE_EXTENSION']))
 
         with open(os.path.join(destination_path, DataLoader.get_labels_filename()), 'wb') as f:
             pickle.dump(self.get_labels(), f, pickle.HIGHEST_PROTOCOL)
@@ -195,6 +197,7 @@ class DataLoader:
         mask = np.full(shape, True)
         contamination_pht = os.path.join(path, DataLoader.get_contamination_filename())
         if os.path.exists(contamination_pht):
+            import pandas as pd
             c_in = pd.read_csv(contamination_pht, names=['x-start', 'x-end', 'y-start', 'y-end'], header=0, dtype=int)
             for idx in range(c_in.shape[0]):
                 mask[c_in['y-start'][idx]:c_in['y-end'][idx], c_in['x-start'][idx]:c_in['x-end'][idx]] = False
@@ -208,9 +211,11 @@ class DataLoader:
     def get_contamination_filename():
         return 'contamination.csv'
 
-    @staticmethod
-    def get_name_easy(path, delimiter=conf.CONFIG_PATHS['SYSTEM_PATHS_DELIMITER']):
+    def get_name_easy(self, path, delimiter=None):
+        if delimiter is None:
+            delimiter = self.config.CONFIG_PATHS['SYSTEM_PATHS_DELIMITER']
         return path.split(delimiter)[-1].split(".")[0].split('SpecCube')[0]  # Comments, look at this code:
+
     # f = 'fff'
     # f.split('v')
     # Out: ['fff'], so if string is split by char that isn't in string than it returns string itself, so an extra check
@@ -236,10 +241,9 @@ class DataLoader:
     def labeled_spectrum_get_from_X_y(X, y):
         pass
 
-    @staticmethod
-    def background_get_mask(spectrum, shapes):
+    def background_get_mask(self, spectrum, shapes):
         background_mask = np.ones(shapes).astype(np.bool)
-        if conf.CONFIG_DATALOADER['WITH_BACKGROUND_EXTRACTION']:
+        if self.config.CONFIG_DATALOADER['WITH_BACKGROUND_EXTRACTION']:
             background_mask = detect_background(spectrum)
             background_mask = np.reshape(background_mask, shapes)
 

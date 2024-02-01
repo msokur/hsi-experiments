@@ -1,26 +1,26 @@
-# import cross_calidation
 import glob
 import csv
 import os
 import numpy as np
 from tqdm import tqdm
-import pandas as pd
 
 import inspect
 import sys
+
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-from configuration.get_config import CONFIG_PATHS
-from configuration.keys import PathKeys as PK
-
 
 class OptimalThreshold:
-    def __init__(self, root_path,
-                 checkpoints_regex='cp-0000' + CONFIG_PATHS[PK.SYS_DELIMITER],
+    def __init__(self, config, root_path,
+                 checkpoints_regex=None,
                  thresholds_filename='compare_all_thresholds.csv',
                  prints=True):
+        self.config = config
+        if checkpoints_regex is None:
+            checkpoints_regex = 'cp-0000' + self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"]
+
         self.root_path = root_path
         self.checkpoints_regex = checkpoints_regex
         self.thresholds_filename = thresholds_filename
@@ -61,7 +61,8 @@ class OptimalThreshold:
 
         return data, sensitivity_column, specificity_column, threshold_column
 
-    def get_thresholds_sens_spec(self, data, sensitivity_column, specificity_column, threshold_column):
+    @staticmethod
+    def get_thresholds_sens_spec(data, sensitivity_column, specificity_column, threshold_column):
         thr = data[:, threshold_column].astype(np.float32)
         sens = data[:, sensitivity_column].astype(np.float32)
         spec = data[:, specificity_column].astype(np.float32)
@@ -81,7 +82,7 @@ class OptimalThreshold:
 
         # sort data for case if threshold are not sorted
         sorted_arrays = list(zip(list(thr), list(sens), list(spec)))
-        sorted_arrays = sorted(sorted_arrays)  # by default it sorts by the first column
+        sorted_arrays = sorted(sorted_arrays)  # by default, it sorts by the first column
         sorted_arrays = np.array(sorted_arrays)
         thr = sorted_arrays[:, 0]
         sens = sorted_arrays[:, 1]
@@ -142,7 +143,8 @@ class OptimalCheckpoint(OptimalThreshold):
 
         if self.prints:
             print(
-                f'optimal index: {optimal_idx}, optimal checkpoint: {optimal_checkpoint}, optimal_threshold: {optimal_threshold}')
+                f'optimal index: {optimal_idx}, optimal checkpoint: {optimal_checkpoint}, '
+                f'optimal_threshold: {optimal_threshold}')
             print('Means:', means)
             print('------------------------------------------------------')
 
@@ -153,4 +155,7 @@ class OptimalCheckpoint(OptimalThreshold):
 if __name__ == '__main__':
     from evaluation.metrics_csvreader import MetricsCsvReader
     reader = MetricsCsvReader()
-    reader.read_metrics('/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/metrics/Esophagus_MedFilter/cp-0038/metrics_by_threshold_None.csv', names=['Sensitivity', 'Specificity'])
+    reader.read_metrics(
+        '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/metrics/Esophagus_MedFilter/cp-0038'
+        '/metrics_by_threshold_None.csv',
+        names=['Sensitivity', 'Specificity'])

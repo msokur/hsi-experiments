@@ -6,7 +6,6 @@ from tensorflow import keras
 import pickle
 
 from data_utils.batch_split import BatchSplit
-from configuration.get_config import CONFIG_PATHS, CONFIG_CV, CONFIG_TRAINER, CONFIG_DATALOADER, CONFIG_PREPROCESSOR
 from configuration.keys import PathKeys as PK, CrossValidationKeys as CVK, TrainerKeys as TK, DataLoaderKeys as DLK, \
     PreprocessorKeys as PPK
 from util.compare_distributions import DistributionsChecker
@@ -17,6 +16,7 @@ class DataGenerator(keras.utils.Sequence):
 
     # modes: 'train', 'valid', 'all'
     def __init__(self,
+                 config,
                  mode: str,
                  shuffled_npz_path: str,
                  batches_npz_path: str,
@@ -43,6 +43,9 @@ class DataGenerator(keras.utils.Sequence):
         self.for_tuning = for_tuning
         self.log_dir = log_dir
 
+        """Configs"""
+        self.config = config
+
         self.shuffled_npz_paths = glob.glob(os.path.join(shuffled_npz_path, "shuffl*.npz"))
 
         self.batch_size = batch_size
@@ -51,8 +54,8 @@ class DataGenerator(keras.utils.Sequence):
         self.valid_except_indexes = self.get_valid_except_names()
         self.index = 0
 
-        self.batch_split = BatchSplit(labels_to_train=CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
-                                      dict_names=CONFIG_PREPROCESSOR[PPK.DICT_NAMES],
+        self.batch_split = BatchSplit(labels_to_train=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
+                                      dict_names=self.config.CONFIG_PREPROCESSOR[PPK.DICT_NAMES],
                                       batch_size=self.batch_size)
 
         print("--------------------PARAMS----------------------")
@@ -72,7 +75,7 @@ class DataGenerator(keras.utils.Sequence):
         data = np.load(self.batches_npz_path[index])
         X, y = data["X"], data["y"]
 
-        if CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS] and "weights" in data.keys():
+        if self.config.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS] and "weights" in data.keys():
             return X, y, data["weights"]
 
         return X, y.astype(np.float)
@@ -87,7 +90,7 @@ class DataGenerator(keras.utils.Sequence):
             self.except_indexes = except_indexes
 
         if self.for_tuning and self.split_flag:
-            ds = DistributionsChecker(self.shuffled_npz_path)
+            ds = DistributionsChecker(self.config, self.shuffled_npz_path)
             tuning_index = ds.get_small_database_for_tuning()
             self.shuffled_npz_paths = [self.shuffled_npz_paths[tuning_index]]
 
@@ -103,7 +106,7 @@ class DataGenerator(keras.utils.Sequence):
         valid_batches_paths = glob.glob(os.path.join(self.batches_npz_path,
                                                      "valid", "*.npz"))
 
-        if CONFIG_CV["MODE"] == 'DEBUG':
+        if self.config.CONFIG_CV[CVK.MODE] == 'DEBUG':
             batches_paths = batches_paths[::100]
             valid_batches_paths = valid_batches_paths[::100]
 
@@ -117,17 +120,18 @@ class DataGenerator(keras.utils.Sequence):
     # refactored in choice_names
     def get_valid_except_names(self):
         if len(self.valid_except_indexes) == 0:
-            if CONFIG_CV[CVK.CHOOSE_EXCLUDED_VALID] == "restore":
+            delimiter = self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"]
+            if self.config.CONFIG_CV["CHOOSE_EXCLUDED_VALID"] == "restore":
                 print("Restore names of patients that will be used for validation dataset")
-                restore_paths = glob.glob(os.path.join(CONFIG_CV[CVK.RESTORE_VALID_PATH],
-                                                       f"*{CONFIG_PATHS[PK.SYS_DELIMITER]}"))
+                restore_paths = glob.glob(os.path.join(self.config.CONFIG_CV["RESTORE_VALID_PATH"],
+                                                       f"*{delimiter}"))
                 restore_path = restore_paths[np.flatnonzero(
-                    np.core.defchararray.find(restore_paths, CONFIG_CV[CVK.RESTORE_VALID_SEQUENCE]) != -1)[0]]
+                    np.core.defchararray.find(restore_paths, self.config.CONFIG_CV["RESTORE_VALID_SEQUENCE"]) != -1)[0]]
 
-                log_name = self.log_dir.split(CONFIG_PATHS[PK.SYS_DELIMITER])[-1]
+                log_name = self.log_dir.split(delimiter)[-1]
                 log_index = log_name.split("_")[1]  # can be problems
 
-                restore_log_paths = glob.glob(os.path.join(restore_path, f"*{CONFIG_PATHS[PK.SYS_DELIMITER]}"))
+                restore_log_paths = glob.glob(os.path.join(restore_path, f"*{delimiter}"))
                 restore_log_path = restore_log_paths[
                     np.flatnonzero(np.core.defchararray.find(restore_log_paths, "3d_" + str(log_index) + "_") != -1)[0]]
 
@@ -135,29 +139,28 @@ class DataGenerator(keras.utils.Sequence):
                     open(os.path.join(restore_log_path, "valid.valid_except_names"), "rb"))
                 print(
                     f"We restore {valid_except_indexes} from {restore_log_path} "
-                    f"with {CONFIG_CV[CVK.RESTORE_VALID_SEQUENCE]}")
+                    f"with {self.config.CONFIG_CV['RESTORE_VALID_SEQUENCE']}")
                 return valid_except_indexes
 
             raw_paths = glob.glob(os.path.join(self.raw_npz_path, '*.npz'))
-            raw_paths_names = [r.split(CONFIG_PATHS[PK.SYS_DELIMITER])[-1].split('.')[0] for r in raw_paths]
+            raw_paths_names = [r.split(delimiter)[-1].split('.')[0] for r in raw_paths]
+            how_many_patients_to_exclude = self.config.CONFIG_CV["HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID"]
 
             print('Getting new validation patients')
-            if CONFIG_CV[CVK.CHOOSE_EXCLUDED_VALID] == "randomly":
+            if self.config.CONFIG_CV["CHOOSE_EXCLUDED_VALID"] == "randomly":
                 return DataGenerator.get_random_choice(paths=raw_paths_names,
                                                        excepts=self.except_indexes,
-                                                       size=CONFIG_CV[CVK.HOW_MANY_VALID_EXCLUDE])
+                                                       size=how_many_patients_to_exclude)
 
-            elif CONFIG_CV[CVK.CHOOSE_EXCLUDED_VALID] == "by_class":
-                return DataGenerator.choose_path(paths=raw_paths,
-                                                 paths_names=raw_paths_names,
-                                                 excepts=self.except_indexes)
+            elif self.config.CONFIG_CV["CHOOSE_EXCLUDED_VALID"] == "by_class":
+                return self.choose_path(paths=raw_paths,
+                                        paths_names=raw_paths_names,
+                                        excepts=self.except_indexes)
 
         print('Return existing validation patients')
         return self.valid_except_indexes
 
-    # refactored in choice_names
-    @staticmethod
-    def choose_path(paths, paths_names, excepts, classes=None) -> ndarray:
+    def choose_path(self, paths, paths_names, excepts, classes=None) -> ndarray:
         if classes is None:
             classes = np.array([])
         valid = DataGenerator.get_random_choice(paths_names, excepts)
@@ -166,19 +169,19 @@ class DataGenerator(keras.utils.Sequence):
         data = np.load(paths[path_idx])
         unique_classes = np.unique(data['y'])
         con_classes = np.concatenate((classes, unique_classes))
-        con_unique_classes = np.intersect1d(con_classes, CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
-        if len(con_unique_classes) >= len(CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]):
+        con_unique_classes = np.intersect1d(con_classes, self.config.CONFIG_DATALOADER["LABELS_TO_TRAIN"])
+        if len(con_unique_classes) >= len(self.config.CONFIG_DATALOADER["LABELS_TO_TRAIN"]):
             return valid
         elif len(con_unique_classes) - len(classes) >= 1:
-            return np.concatenate((valid, DataGenerator.choose_path(paths,
-                                                                    paths_names,
-                                                                    np.concatenate((excepts, valid)),
-                                                                    con_unique_classes)))
+            return np.concatenate((valid, self.choose_path(paths,
+                                                           paths_names,
+                                                           np.concatenate((excepts, valid)),
+                                                           con_unique_classes)))
         else:
-            return DataGenerator.choose_path(paths,
-                                             paths_names,
-                                             np.concatenate((excepts, valid)),
-                                             classes)
+            return self.choose_path(paths,
+                                    paths_names,
+                                    np.concatenate((excepts, valid)),
+                                    classes)
 
     # refactored in choice_names
     @staticmethod
@@ -189,27 +192,30 @@ class DataGenerator(keras.utils.Sequence):
 
     # refactored in weights class
     def get_class_weights(self, labels=None):
-        if labels is None:
-            labels = CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]
-        labels = np.array(labels)
-        sums = np.zeros(labels.shape)
+        # if sample weights will be used, we shouldn't use class_weights
+        # (and should return None as class_weights respectively)
+        if not self.config.CONFIG_TRAINER["WITH_SAMPLE_WEIGHTS"]:
+            if labels is None:
+                labels = self.config.CONFIG_DATALOADER["LABELS_TO_TRAIN"]
+            labels = np.array(labels)
+            sums = np.zeros(labels.shape)
 
-        for p in self.batches_npz_path:
-            data = np.load(p)
-            y = data['y']
+            for p in self.batches_npz_path:
+                data = np.load(p)
+                y = data['y']
+                for i, l in enumerate(labels):
+                    sums[i] += np.flatnonzero(y == l).shape[0]
+
+            total = np.sum(sums)
+
+            weights = {}
             for i, l in enumerate(labels):
-                sums[i] += np.flatnonzero(y == l).shape[0]
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    weights[l] = (1 / sums[i]) * total / len(self.config.CONFIG_DATALOADER["LABELS_TO_TRAIN"])
+                if weights[l] == np.inf:
+                    weights[l] = 0.0
 
-        total = np.sum(sums)
-
-        weights = {}
-        for i, l in enumerate(labels):
-            with np.errstate(divide="ignore", invalid="ignore"):
-                weights[l] = (1 / sums[i]) * total / len(CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
-            if weights[l] == np.inf:
-                weights[l] = 0.0
-
-        self.class_weight = weights
+            self.class_weight = weights
 
         return self.class_weight
 

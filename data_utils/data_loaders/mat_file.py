@@ -7,8 +7,8 @@ from configuration.keys import DataLoaderKeys as DLK
 
 
 class MatFile:
-    def __init__(self, dataloader_config: dict):
-        self.CONFIG_DATALOADER = dataloader_config
+    def __init__(self, config):
+        self.CONFIG_DATALOADER = config.CONFIG_DATALOADER
 
     def indexes_get_bool_from_mask(self, mask: np.ndarray) -> List[np.ndarray]:
         """ Create for every classification a boolean array

@@ -1,17 +1,14 @@
 import os
 from glob import glob
-import abc
 import datetime
 from typing import List
 
 import numpy as np
 import csv
-import inspect
 
 import utils
-from configuration.get_config import telegram, CONFIG_CV, CONFIG_PATHS, CONFIG_DATALOADER, CONFIG_TRAINER, \
-    CONFIG_PREPROCESSOR, CONFIG_DISTRIBUTION
 import provider
+
 from data_utils.dataset.choice_names import ChoiceNames
 
 from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, \
@@ -22,16 +19,9 @@ from configuration.parameter import (
 
 
 class CrossValidatorBase:
-    def __init__(self):
-        self.CONFIG_CV = CONFIG_CV
-        self.CONFIG_PATHS = CONFIG_PATHS
-        self.CONFIG_DATALOADER = CONFIG_DATALOADER
-        self.CONFIG_TRAINER = CONFIG_TRAINER
+    def __init__(self, config):
+        self.config = config
         self.data_archive = provider.get_data_archive(typ=ARCHIVE_TYPE)
-
-        current_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-        project_folder = os.path.dirname(current_folder)
-        self.project_folder = project_folder
 
     @staticmethod
     def get_execution_flags():
@@ -45,25 +35,32 @@ class CrossValidatorBase:
             execution_flags = CrossValidatorBase.get_execution_flags()
 
         if execution_flags[CVK.EF_CROSS_VALIDATION]:
-            self.cross_validation(self.CONFIG_CV[CVK.NAME])
+            self.cross_validation()
         if execution_flags[CVK.EF_EVALUATION]:
             self.evaluation(**kwargs)
 
-        telegram.send_tg_message(f'operations in cross_validation.py for {self.CONFIG_CV["NAME"]} '
-                                 f'are successfully completed!')
+        self.config.telegram.send_tg_message(f'Operations in cross_validation.py for {self.config.CONFIG_CV["NAME"]} '
+                                             f'are successfully completed!')
 
-    @abc.abstractmethod
-    def evaluation(self, **kwargs):  # has to be implemented in child classes
-        pass
+    def evaluation(self, **kwargs):
+        training_csv_path = self.get_csv(os.path.join(self.config.CONFIG_PATHS[CVK.LOGS_FOLDER][0],
+                                                      self.config.CONFIG_CV[CVK.NAME]))
+        print('training_csv_path', training_csv_path)
+
+        evaluator = provider.get_evaluation(config=self.config, labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
+
+        evaluator.save_predictions_and_metrics(training_csv_path=training_csv_path,
+                                               data_folder=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
+                                               **kwargs)
 
     def cross_validation_step(self, model_name: str, except_names: List[str], except_cv_names=None):
         if except_cv_names is None:
             except_cv_names = []
-        choice_names = ChoiceNames(data_archive=self.data_archive, config_cv=self.CONFIG_CV,
-                                   labels=self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
-                                   y_dict_name=CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1],
+        choice_names = ChoiceNames(data_archive=self.data_archive, config_cv=self.config.CONFIG_CV,
+                                   labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
+                                   y_dict_name=self.config.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1],
                                    log_dir=model_name)
-        except_valid_names = choice_names.get_valid_except_names(raw_path=self.CONFIG_PATHS[PK.RAW_NPZ_PATH],
+        except_valid_names = choice_names.get_valid_except_names(raw_path=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
                                                                  except_names=except_cv_names)
         except_train_names = list(set(except_names) - set(except_cv_names) - set(except_valid_names))
 
@@ -71,37 +68,48 @@ class CrossValidatorBase:
         print(f"We except for train data: {', '.join(n for n in except_train_names)}.\n")
         print(f"We except for valid data: {', '.join(n for n in except_valid_names)}.\n")
 
-        trainer = provider.get_trainer(typ=self.CONFIG_TRAINER[CVK.TYPE], data_archive=self.data_archive,
-                                       config_trainer=self.CONFIG_TRAINER, config_paths=self.CONFIG_PATHS,
-                                       labels_to_train=self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
-                                       model_name=model_name, except_cv_names=except_cv_names,
-                                       except_train_names=except_train_names, except_valid_names=except_valid_names,
-                                       dict_names=CONFIG_PREPROCESSOR[PPK.DICT_NAMES],
-                                       config_distribution=CONFIG_DISTRIBUTION, d3=self.CONFIG_DATALOADER[DLK.D3],
-                                       mode=self.CONFIG_CV[CVK.MODE])
+        trainer = provider.get_trainer(config=self.config, data_archive=self.data_archive,
+                                       typ=self.config.CONFIG_TRAINER["TYPE"],
+                                       model_name=model_name,
+                                       except_indexes=except_names)
         trainer.train()
 
-    def cross_validation(self, root_folder_name: str, csv_filename=None):
-        self.CONFIG_PATHS[PK.MODEL_NAME_PATHS].append(root_folder_name)
+    """def get_paths_and_splits(self, root_path=None):
+        if root_path is None:
+            root_path = self.config.CONFIG_PATHS["RAW_NPZ_PATH"]
 
-        root_folder = os.path.join(*self.CONFIG_PATHS[PK.MODEL_NAME_PATHS])
-        self.CONFIG_PATHS[PK.MODEL_NAME_PATHS] = self.get_model_name(self.CONFIG_PATHS[PK.MODEL_NAME_PATHS])
+        paths = glob(os.path.join(root_path, "*.npz"))
+        extension = provider.get_extension_loader(config=self.config,
+                                                  typ=self.config.CONFIG_DATALOADER["FILE_EXTENSION"])
+        paths = extension.sort(paths)
+
+        splits = get_splits(typ=self.config.CONFIG_DATALOADER["SPLIT_PATHS_BY"], paths=paths,
+                            values=self.config.CONFIG_CV["HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"],
+                            delimiter=self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
+
+        return paths, splits"""
+
+    def cross_validation(self, csv_filename=None):
+        name = self.config.CONFIG_CV[CVK.NAME]
+        self.config.CONFIG_PATHS[PK.LOGS_FOLDER].append(name)
+
+        root_folder = os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER])
+        path_template = os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER], 'step')
 
         if not os.path.exists(root_folder):
             os.makedirs(root_folder)
 
-        data_loader = provider.get_data_loader(typ=self.CONFIG_DATALOADER[DLK.TYPE],
-                                               data_archive=self.data_archive,
-                                               config_dataloader=CONFIG_DATALOADER, config_paths=CONFIG_PATHS)
+        data_loader = provider.get_data_loader(config=self.config, typ=self.config.CONFIG_DATALOADER[DLK.TYPE],
+                                               data_archive=self.data_archive)
         paths, splits = data_loader.get_paths_and_splits()
 
         date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
 
         if csv_filename is None:
-            csv_filename = os.path.join(root_folder, root_folder_name + "_stats" + date_ + ".csv")
+            csv_filename = os.path.join(root_folder, name + "_stats" + date_ + ".csv")
 
-        for indexes in splits[self.CONFIG_CV[CVK.FIRST_SPLIT]:]:
-            model_name = self.CONFIG_PATHS[PK.MODEL_NAME_PATHS]
+        for indexes in splits[self.config.CONFIG_CV[CVK.FIRST_SPLIT]:]:
+            model_name = path_template
             if len(indexes) > 1:
                 for i in indexes:
                     model_name += "_" + str(i)
@@ -136,7 +144,7 @@ class CrossValidatorBase:
         checkpoints_folders = glob(os.path.join(folder, 'cp-*'))
         checkpoints_folders = sorted(checkpoints_folders)
 
-        return int(checkpoints_folders[0].split(self.CONFIG_PATHS[PK.SYS_DELIMITER])[-1].split('-')[-1])
+        return int(checkpoints_folders[0].split(self.config.CONFIG_PATHS[PK.SYS_DELIMITER])[-1].split('-')[-1])
 
     def __check_data_label__(self, paths) -> bool:
         label_not_to_train = True
@@ -147,8 +155,8 @@ class CrossValidatorBase:
 
     def __check_label__(self, path: str) -> bool:
         data = self.data_archive.get_datas(data_path=path)
-        unique_y = np.unique(data[CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1]])
-        intersect = np.intersect1d(unique_y, self.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
+        unique_y = np.unique(data[self.config.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1]])
+        intersect = np.intersect1d(unique_y, self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
 
         return True if intersect.__len__() == 0 else False
 
@@ -181,7 +189,3 @@ class CrossValidatorBase:
         if len(history.shape) == 0:
             history = history.item()
         return history, history_path
-
-    @staticmethod
-    def get_model_name(model_name_path, model_name='3d'):
-        return os.path.join(*model_name_path, model_name)

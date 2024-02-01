@@ -1,53 +1,73 @@
 import os
-import abc
 import json
 import itertools
 import numpy as np
 from glob import glob
 import matplotlib.pyplot as plt
 
-from archive import config
-from evaluation.validator import Validator
-
 
 class Experiment:
-    def __init__(self, name, config_for_experiment):
+    def __init__(self, name, parameters_for_experiment):
+        self.experiment_results_root_folder = None
+        self.root_folder = None
+
+        import configuration.get_config as config
+        self.config = config
         self.name = name
-        config.MODEL_NAME_PATHS.append(self.name)
-        self.root_folder = os.path.join(*config.MODEL_NAME_PATHS)
+
+        self.create_experiment_folder()
+
+        self.parameters_for_experiment = parameters_for_experiment
+        self.combinations_keys = parameters_for_experiment.keys()
+        self.config_sections = [v['config_section'] for v in self.parameters_for_experiment.values()]
+        self.combinations = self.create_combinations()
+        print(f"Input parameters for experiment: {self.parameters_for_experiment}")
+        print(f"Combinations keys: {self.combinations_keys}")
+        print(f"Combinations: {self.combinations}")
+        print(f"Config sections: {self.config_sections}")
+
+        self.create_folder_for_results()
+
+        self.save_combinations()
+
+    def create_experiment_folder(self):
+        self.root_folder = os.path.join(self.config.CONFIG_PATHS['LOGS_FOLDER'][0], self.name)
+        print(f"Experiment root folder: {self.root_folder}")
         if not os.path.exists(self.root_folder):
             os.mkdir(self.root_folder)
 
-        self.config_for_experiment = config_for_experiment
-        self.combinations_keys = config_for_experiment.keys()
-        self.combinations = list(itertools.product(*config_for_experiment.values()))
+    def create_combinations(self):
+        parameters = [v['parameters'] for v in self.parameters_for_experiment.values()]
+        combinations = list(itertools.product(*parameters))
 
-        prefix = '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments'
-        test_root_path = os.path.join(prefix, 'metrics')
-        test_path = os.path.join(test_root_path, name)
-        if not os.path.exists(test_path):
-            os.mkdir(test_path)
-        self.test_path = test_path
+        return combinations
 
-        self.save_combinations()
-        # self.run_experiment()
+    def create_folder_for_results(self):
+        results_root_folder = self.config.CONFIG_PATHS['RESULTS_FOLDER']
+
+        experiment_results_root_folder = os.path.join(results_root_folder, self.name)
+        if not os.path.exists(experiment_results_root_folder):
+            os.mkdir(experiment_results_root_folder)
+
+        self.experiment_results_root_folder = experiment_results_root_folder
+        print('Folder where metrics will be saved', self.experiment_results_root_folder)
 
     def save_combinations(self):
         self.json_name = os.path.join(self.root_folder, 'combinations.json')
 
         result_json = []
-        for comb in self.combinations:
-            result_json.append({name: c for name, c in zip(self.combinations_keys, comb)})
+        for combination in self.combinations:
+            result_json.append({section: [name, value] for section, name, value in zip(self.config_sections,
+                                                                                       self.combinations_keys,
+                                                                                       combination)})
 
         with open(self.json_name, 'w') as outfile:
             outfile.write(json.dumps(result_json))
 
-    @abc.abstractmethod
-    def run_experiment(self):
-        return
-
     def get_results(self):
-        folders = sorted(glob(os.path.join(self.test_path, '*/')),
+        from evaluation.validator import Validator  # totally old
+
+        folders = sorted(glob(os.path.join(self.experiment_results_root_folder, '*/')),
                          key=lambda x: int(x.split('_C')[-1].split('_')[0]))
 
         means_all = []
@@ -67,7 +87,7 @@ class Experiment:
         x = np.arange(len(means_all))
         plt.xticks(x, ticks, rotation=90)
         plt.plot(means_all)
-        plt.savefig(os.path.join(self.test_path, 'means.png'))
+        plt.savefig(os.path.join(self.experiment_results_root_folder, 'means.png'))
 
         '''print(folder)
         checkpoints = glob(os.path.join(folder, 'cp-0000'))
@@ -76,42 +96,78 @@ class Experiment:
             continue
         checkpoint = checkpoints[0]'''
 
-
-class HowManyValidPatExcludeExperiment(Experiment):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def run_experiment(self):
-        # config.MODEL_NAME = config.get_model_name(config.MODEL_NAME_PATHS)
-
-        # for i, exclude in enumerate(range(4, 42, 2)):
-        for i, comb in enumerate(self.combinations):
-            sample_dict = {name: c for name, c in zip(self.combinations_keys, comb)}
+        for i, combination in enumerate(self.combinations):
+            print(combination)
+            sample_dict = {name: c for name, c in zip(self.combinations_keys, combination)}
             print(sample_dict)
 
-            # combine short name
-            short_name = ''
-            for key, value in sample_dict.items():
-                short_name += key[0]
-                if 'bool' in str(type(value)):
-                    if value:
-                        short_name += "T"
-                    else:
-                        short_name += "F"
-                if 'str' in str(type(value)):
-                    short_name += value[0]
-                if 'int' in str(type(value)):
-                    short_name += str(value)
-                short_name += '_'
+            short_name = self.combine_short_name(sample_dict)
+            print(short_name)
+            print('-----------------')
 
-            stream = os.popen(
+            print(self.root_folder)
+            print(self.name + "_" + short_name)
+            print(short_name)
+            print(i)
+            print(self.experiment_results_root_folder)
+
+            print('-----------------')
+            '''stream = os.popen(
                 f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv.sh {self.root_folder} '
-                f'{self.name + "_" + short_name} {short_name} {i} {self.test_path}')
+                f'{self.name + "_" + short_name} {short_name} {i} {self.experiment_metrics_root_folder}')
             output = stream.read()
-            print(output)
+            print(output)'''
+
+    @staticmethod
+    def combine_short_name(sample_dict):
+        short_name = ''
+        for key, value in sample_dict.items():
+            short_name += key[0]
+            if key[0].isdigit():
+                short_name += key[1]
+
+            dtype = str(type(value))
+            if 'list' in dtype:
+                short_name += str(value[0])
+            if 'bool' in dtype:
+                if value:
+                    short_name += "T"
+                else:
+                    short_name += "F"
+            if 'str' in dtype:
+                short_name += value[0]
+            if 'int' in dtype:
+                short_name += str(value)
+            short_name += '_'
+
+        return short_name
 
 
 if __name__ == '__main__':
+
+    config_for_experiment = {
+        '3D_SIZE': {
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': [[3, 3], [5, 5]]
+        },
+        "NORMALIZATION_TYPE": {
+            'config_section': 'CONFIG_PREPROCESSOR',
+            'parameters': ["svn_T", 'l2_norm']
+        },
+    }
+
+    experiment = Experiment('ExperimentRevival', config_for_experiment)
+    experiment.run_experiment()
+    # print(exp.get_results())
+
+
+
+    '''config_for_experiment = {
+        '3D_SIZE':  [[3, 3], [5, 5]],
+        "NORMALIZATION_TYPE": ["svn_T", 'l2_norm']
+    }'''
+    # ---------------------------------------------------------------------------------------------
     '''combinations = {
         'normalization': ['svn_T', 'l2_norm'],
         'patch_size': [3, 5, 7, 11],
@@ -122,22 +178,14 @@ if __name__ == '__main__':
         'with_background': [True, False],
         'background_threshold': []
     }'''
-    config_for_experiment = {
-        'WITH_SMALLER_DATASET': [False],
-        'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [10],
-        # [1, 3, 10, 20, 40]#[1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
-        # 'CV_FIRST_SPLIT': [33]
-    }
 
     '''config_for_experiment = {
         'WITH_SMALLER_DATASET': [True],
         'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
+        #'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [10],
+        # [1, 3, 10, 20, 40]#[1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
+        # 'CV_FIRST_SPLIT': [33]
     }'''
-
-    exp = HowManyValidPatExcludeExperiment('ExperimentHowManyValidPatExclude', config_for_experiment)
-    # exp.run_experiment()
-
-    print(exp.get_results())
 
     '''config_for_experiment = {
         'WITH_SMALLER_DATASET': [False],

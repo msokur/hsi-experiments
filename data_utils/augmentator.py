@@ -2,7 +2,7 @@ import os
 from multiprocessing import Pool
 import numpy as np
 import time
-from configuration import get_config as conf
+from configuration import get_config as config
 
 from configuration.keys import DataLoaderKeys as DLK, AugKeys as AK
 
@@ -64,15 +64,15 @@ from configuration.keys import DataLoaderKeys as DLK, AugKeys as AK
 
 
 def augment_one(row, row_range=None,
-                percent=conf.CONFIG_AUG[AK.ENABLE],
-                aug_range=conf.CONFIG_AUG[AK.RANGE],
-                new_rows_per_sample=conf.CONFIG_AUG[AK.NEW_ROWS_PER_SAMPLE]):
+                percent=config.CONFIG_AUG[AK.ENABLE],
+                aug_range=config.CONFIG_AUG[AK.RANGE],
+                new_rows_per_sample=config.CONFIG_AUG[AK.NEW_ROWS_PER_SAMPLE]):
     # print(percent, aug_range, range(new_rows_per_sample))
     if row_range is None:
-        if DLK.LAST_NM in conf.CONFIG_DATALOADER.keys() and DLK.FIRST_NM in conf.CONFIG_DATALOADER.keys():
-            row_range = [0, conf.CONFIG_DATALOADER[DLK.LAST_NM] - conf.CONFIG_DATALOADER[DLK.FIRST_NM]]
-        elif DLK.OUTPUT_SIGNATURE in conf.CONFIG_DATALOADER.keys():
-            row_range = [0, conf.CONFIG_DATALOADER[DLK.OUTPUT_SIGNATURE]]
+        if DLK.LAST_NM in config.CONFIG_DATALOADER.keys() and DLK.FIRST_NM in config.CONFIG_DATALOADER.keys():
+            row_range = [0, config.CONFIG_DATALOADER[DLK.LAST_NM] - config.CONFIG_DATALOADER[DLK.FIRST_NM]]
+        elif DLK.OUTPUT_SIGNATURE in config.CONFIG_DATALOADER.keys():
+            row_range = [0, config.CONFIG_DATALOADER[DLK.OUTPUT_SIGNATURE]]
         else:
             raise ValueError("No spectrum size in Dataloader config!")
     row = np.array(row)
@@ -93,9 +93,9 @@ def augment_one(row, row_range=None,
     return result
 
 
-def augment_all(data, percent=conf.CONFIG_AUG[AK.ENABLE],
-                aug_range=conf.CONFIG_AUG[AK.RANGE],
-                new_rows_per_sample=conf.CONFIG_AUG[AK.NEW_ROWS_PER_SAMPLE]):
+def augment_all(data, percent=config.CONFIG_AUG[AK.ENABLE],
+                aug_range=config.CONFIG_AUG[AK.RANGE],
+                new_rows_per_sample=config.CONFIG_AUG[AK.NEW_ROWS_PER_SAMPLE]):
     print('cpu count', os.cpu_count())
 
     start = time.time()

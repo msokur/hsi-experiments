@@ -21,17 +21,16 @@ from configuration.parameter import (
 
 
 class Shuffle:
-    def __init__(self, data_archive: DataArchive, raw_path: str, dict_names: list, piles_number: int,
-                 shuffle_saving_path: str, dataset_typ: str, augmented=False, files_to_copy: list = None,
-                 set_seed: bool = True):
+    def __init__(self, config, data_archive: DataArchive, raw_path,  dict_names: list, dataset_typ: str,
+                 augmented=False, set_seed: bool = True):
         self.data_archive = data_archive
         self.raw_path = raw_path
+        self.config = config
         self.dict_names = dict_names
-        self.piles_number = piles_number
-        self.shuffle_saving_path = shuffle_saving_path
+        self.piles_number = self.config.CONFIG_PREPROCESSOR["PILES_NUMBER"]
+        self.shuffle_saving_path = self.config.CONFIG_PATHS["SHUFFLED_PATH"]
         self.dataset_typ = dataset_typ
         self.augmented = augmented
-        self.files_to_copy = files_to_copy
         self.set_seed = set_seed
 
     def shuffle(self):
@@ -39,8 +38,8 @@ class Shuffle:
         if not os.path.exists(self.shuffle_saving_path):
             os.mkdir(self.shuffle_saving_path)
 
-        if self.files_to_copy is not None:
-            copy_files(self.shuffle_saving_path, self.files_to_copy)
+        copy_files(self.shuffle_saving_path,
+                   self.config.CONFIG_PREPROCESSOR["FILES_TO_COPY"])
 
         if self.set_seed:
             random.seed(a=42)

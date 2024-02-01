@@ -9,8 +9,9 @@ current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfra
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
-from provider import get_data_archive, get_prediction_to_image
+from provider import get_data_archive
 from configuration.get_config import CONFIG_DATALOADER, CONFIG_TRAINER, CONFIG_PATHS, CONFIG_CV
+import configuration.get_config as config
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK, CrossValidationKeys as CVK
 from configuration.parameter import (
     ARCHIVE_TYPE, PRED_TO_IMG_TYP
@@ -25,6 +26,17 @@ def get_csv_path(log_path: str, folder: str):
         raise ValueError(f'Too many .csv files in "{path}"!')
 
     return csv_file[0]
+
+
+def get_prediction_to_image(mode: str, data_archive):
+    from data_utils.prediction_to_image.prediction_to_image_npz import PredictionToImage_npz
+    from data_utils.prediction_to_image.prediction_to_image_png import PredictionToImage_png
+    if mode == "npz":
+        return PredictionToImage_npz(config, data_archive)
+    elif mode == "png":
+        return PredictionToImage_png(config, data_archive)
+    else:
+        raise ValueError(f'No Mode "{mode}" found for visualisation!')
 
 
 def get_model_path(path: str) -> str:
@@ -56,10 +68,9 @@ def get_dat_path(raw_path: str, name: str) -> str:
 
 
 if __name__ == "__main__":
-    pred_to_img = get_prediction_to_image(typ=PRED_TO_IMG_TYP, data_archive=get_data_archive(typ=ARCHIVE_TYPE),
-                                          dataloader_conf=CONFIG_DATALOADER, model_conf=CONFIG_TRAINER)
-    csv_path = get_csv_path(log_path=CONFIG_PATHS[PK.MODEL_NAME_PATHS], folder=CONFIG_CV[CVK.NAME])
-    csv_data = pd.read_csv(csv_path, delimiter=",", header=None, names=["Date", "x", "y", "z", "archive", "model"])
+    pred_to_img = get_prediction_to_image(mode="npz", data_archive=get_data_archive(typ=ARCHIVE_TYPE))
+    csv_path = get_csv_path(log_path=CONFIG_PATHS["MODEL_NAME_PATHS"], folder=CONFIG_CV["NAME"])
+    csv_data = pd.read_csv(csv_path, delimiter=",", header=None, names=["Date", "x", "y", "z", "npz", "model"])
 
     for idx, row in tqdm(csv_data.iterrows()):
         file_name = pred_to_img.get_name(path=row["archive"])

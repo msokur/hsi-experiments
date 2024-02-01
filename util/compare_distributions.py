@@ -34,18 +34,18 @@ There are several functionality parts:
 
 
 class DistributionsChecker:
-    def __init__(self, paths: List[str], dataset: Dataset, config_distribution: dict):
+    def __init__(self, config, paths: List[str], dataset: Dataset):
         """
         Args:
+            config: configuration parameters
             paths: paths with the archives to compare
-            config_distribution: configuration parameters
         """
+        self.config = config
         self.test_paths = paths
         self.path = os.path.split(paths[0])[0]
         self.dataset = dataset
-        self.CONFIG_DISTRIBUTION = config_distribution
         self.all_data = np.array(self.get_all_data(paths=self.test_paths))
-        self.prints = self.CONFIG_DISTRIBUTION[DCK.PRINTS]
+        self.prints = config.CONFIG_DISTRIBUTION[DCK.PRINTS]
 
     @staticmethod
     def get_centers(data: np.ndarray) -> np.ndarray:
@@ -116,12 +116,12 @@ class DistributionsChecker:
         if self.prints:
             print(f'std1 - {std1}, std2 - {std2}')
 
-        if np.abs(std1 - std2) < self.CONFIG_DISTRIBUTION[DCK.Z_TEST_STD_DELTA]:
+        if np.abs(std1 - std2) < self.config.CONFIG_DISTRIBUTION[DCK.Z_TEST_STD_DELTA]:
             from statsmodels.stats import weightstats
             z, p_value = weightstats.ztest(d1, x2=d2, value=0)
             if self.prints:
                 print('z-score and p_value:', z, p_value)
-            if p_value > self.CONFIG_DISTRIBUTION[DCK.Z_TEST_P_VALUE]:
+            if p_value > self.config.CONFIG_DISTRIBUTION[DCK.Z_TEST_P_VALUE]:
                 return True
         else:
             print('WARNING! Distributions (std) are too different, Z-test results '
@@ -142,7 +142,7 @@ class DistributionsChecker:
         ks = ks_2samp(d1, d2)
         if self.prints:
             print(ks)
-        if ks.pvalue > self.CONFIG_DISTRIBUTION[DCK.KS_TEST_P_VALUE]:
+        if ks.pvalue > self.config.CONFIG_DISTRIBUTION[DCK.KS_TEST_P_VALUE]:
             return True
         return False
 
@@ -158,7 +158,7 @@ class DistributionsChecker:
         results = []
         for i in range(test_data.shape[-1]):
             z_result = True
-            if self.CONFIG_DISTRIBUTION[DCK.Z_TEST]:
+            if self.config.CONFIG_DISTRIBUTION[DCK.Z_TEST]:
                 z_result = self.z_test(test_data[:, i], self.all_data[:, i])
 
             ks_result = self.kolmogorov_smirnov_test(self.all_data[:, i], test_data[:, i])
@@ -199,5 +199,6 @@ class DistributionsChecker:
 
 
 if __name__ == '__main__':
-    dc = DistributionsChecker('/work/users/mi186veva/data_3d/raw_3d_svn/shuffled')
+    import configuration.get_config as configuration
+    dc = DistributionsChecker(configuration, '/work/users/mi186veva/data_3d/raw_3d_svn/shuffled')
     print(dc.test_all_archives_in_folder())
