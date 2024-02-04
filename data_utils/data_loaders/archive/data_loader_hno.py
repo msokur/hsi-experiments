@@ -23,7 +23,7 @@ class DataLoaderHNO(DataLoader):
         subcutaneous_tissue_indexes = (mask[:, :, 0] == 255) & (mask[:, :, 1] == 255) & (mask[:, :, 2] == 255)  # white
         muscle_indexes = (mask[:, :, 0] == 0) & (mask[:, :, 1] == 255) & (mask[:, :, 2] == 0)  # green
         vein_indexes = (mask[:, :, 0] == 128) & (mask[:, :, 1] == 128) & (mask[:, :, 2] == 128)  # grey
-        cartilage_indexes = (mask[:, :, 0] == 12) & (mask[:, :, 1] == 27) & (mask[:, :, 2] == 12)   # black
+        cartilage_indexes = (mask[:, :, 0] == 12) & (mask[:, :, 1] == 27) & (mask[:, :, 2] == 12)  # black
         not_certain_indexes = (mask[:, :, 0] == 26) & (mask[:, :, 1] == 255) & (mask[:, :, 2] == 255)  # light blue
 
         return nerve_indexes, tumour_indexes, parotis_indexes, subcutaneous_tissue_indexes, muscle_indexes, \

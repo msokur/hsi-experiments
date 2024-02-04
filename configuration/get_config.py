@@ -2,7 +2,6 @@ import inspect
 import os
 import sys
 import platform
-import warnings
 
 WITHOUT_RANDOMNESS = True
 if WITHOUT_RANDOMNESS:
@@ -11,7 +10,7 @@ else:
     os.environ['TF_DETERMINISTIC_OPS'] = '0'
 
 # change here the name of the .py file for configuration import
-from configuration.meta_configs.Benny import *
+from configuration.meta_configs.Mariia import *
 
 from configuration.configloader_base import read_config
 from configuration.configloader_paths import read_path_config
@@ -77,11 +76,11 @@ distro_config = "DistributionsCheck.json"
 CONFIG_DISTRIBUTION = get_config(file_name=distro_config, section=distro_section)
 
 # ----------- Augmentation
-aug_config = "Augmentation.json"
+'''aug_config = "Augmentation.json"
 CONFIG_AUG = get_config(file_name=aug_config, section=aug_section)
 if CONFIG_AUG["enable"]:
     print("Augmentation is enabled!!!")
-    CONFIG_TRAINER["BATCH_SIZE"] = int(CONFIG_TRAINER["BATCH_SIZE"] / CONFIG_AUG[CONFIG_AUG["use"]])
+    CONFIG_TRAINER["BATCH_SIZE"] = int(CONFIG_TRAINER["BATCH_SIZE"] / CONFIG_AUG[CONFIG_AUG["use"]])'''
 
 # -------- Telegram --------
 tg_config = "Telegram.json"

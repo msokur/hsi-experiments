@@ -12,7 +12,7 @@ from evaluation.predictor import Predictor
 class EvaluationBase(Metrics):
 
     def __init__(self, config, *args, **kwargs):
-        super().__init__(config, *args, **kwargs)
+        super().__init__(config)
         self.config = config
 
         self.results_folder = self.create_joint_folder(self.config.CONFIG_PATHS['RESULTS_FOLDER'],

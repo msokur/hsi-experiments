@@ -113,8 +113,7 @@ class Preprocessor:
         if execution_flags['shuffle']:
             shuffle = provider.get_shuffle(config=self.config, typ=DATASET_TYPE, data_archive=data_archive,
                                            raw_path=preprocessed_path,
-                                           dict_names=self.dict_names,
-                                           augmented=self.config.CONFIG_AUG[AK.ENABLE])
+                                           dict_names=self.dict_names)
             shuffle.shuffle()
 
         print(f'---- Memory, preprocessor 4, after shuffling {get_used_memory(process_id=process_id)} ----')

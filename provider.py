@@ -155,7 +155,7 @@ def get_cross_validator(typ: str, config, *args, **kwargs):
     elif typ == "postprocessing":
         return CrossValidatorPostProcessing(config=config, *args, **kwargs)
     elif typ == "experiment":
-        from cross_validators.cross_validator_experiment import CrossValidatorExperiment
+        from cross_validator_experiment import CrossValidatorExperiment
         return CrossValidatorExperiment(config=config, *args, **kwargs)
 
     value_error("Cross validator", typ)
@@ -205,15 +205,14 @@ def get_dataset(typ: str, batch_size: int, d3: bool, with_sample_weights: bool, 
         value_error(modul="dataset", typ=typ)
 
 
-def get_shuffle(typ: str, config, data_archive, raw_path: str, dict_names: list,
-                augmented: bool = None, set_seed: bool = True):
+def get_shuffle(typ: str, config, data_archive, raw_path: str, dict_names: list, set_seed: bool = True):
     from data_utils.shuffle import TFRShuffle, GeneratorShuffle
     if typ == "tfr":
         return TFRShuffle(config=config, data_archive=data_archive, raw_path=raw_path, dict_names=dict_names,
-                          dataset_typ=typ, augmented=augmented, set_seed=set_seed)
+                          dataset_typ=typ, set_seed=set_seed)
     elif typ == "generator":
         return GeneratorShuffle(config=config, data_archive=data_archive, raw_path=raw_path, dict_names=dict_names,
-                                dataset_typ=typ, augmented=augmented, set_seed=set_seed)
+                                dataset_typ=typ, set_seed=set_seed)
     else:
         value_error(modul="shuffle", typ=typ)
 

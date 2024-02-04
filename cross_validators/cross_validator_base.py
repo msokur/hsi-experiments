@@ -43,11 +43,12 @@ class CrossValidatorBase:
                                              f'are successfully completed!')
 
     def evaluation(self, **kwargs):
-        training_csv_path = self.get_csv(os.path.join(self.config.CONFIG_PATHS[CVK.LOGS_FOLDER][0],
+        training_csv_path = self.get_csv(os.path.join(self.config.CONFIG_PATHS[PK.LOGS_FOLDER][0],
                                                       self.config.CONFIG_CV[CVK.NAME]))
         print('training_csv_path', training_csv_path)
 
-        evaluator = provider.get_evaluation(config=self.config, labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
+        evaluator = provider.get_evaluation(config=self.config,
+                                            labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
 
         evaluator.save_predictions_and_metrics(training_csv_path=training_csv_path,
                                                data_folder=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],

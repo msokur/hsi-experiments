@@ -42,7 +42,7 @@ class ChoiceNames:
         """Choose a random value form an array.
 
         :param paths: Array with the values
-        :param excepts: This values are not allowed to take
+        :param excepts: These values are not allowed to take
         :param size: How many values should be taken
 
         :return: A numpy array with the chosen values

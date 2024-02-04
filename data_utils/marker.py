@@ -81,7 +81,7 @@ class MK2(MK_base):
     there classification number.
     1. 4 byte integer with classification number.
 
-    In the last part there are 10 strings. Every string has following structure:
+    In the last part there are 10 strings. Every string has the following structure:
     1. 4 byte integer with the length of the string.
     2. 1 byte char for every letter in the string. (Value from 1. * 1 byte)
     """

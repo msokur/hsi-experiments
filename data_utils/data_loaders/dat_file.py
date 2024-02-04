@@ -150,7 +150,8 @@ class DatFile:
         spectrum = self.spectrum_read_from_dat(path)
 
         path_parts = os.path.split(path)
-        name = path_parts[1].split(self.CONFIG_DATALOADER[DLK.MASK_DIFF][0])[0] + self.CONFIG_DATALOADER[DLK.MASK_DIFF][1]
+        name = path_parts[1].split(self.CONFIG_DATALOADER[DLK.MASK_DIFF][0])[0] \
+               + self.CONFIG_DATALOADER[DLK.MASK_DIFF][1]
 
         if mask_path is None:
             mask_path = os.path.join(path_parts[0], name)

@@ -117,14 +117,14 @@ class DataArchive:
     @abc.abstractmethod
     def append_data(self, file_path: str, append_datas: Dict[str, np.ndarray]) -> None:
         """
-        Appends datas to a existing data archive.
+        Appends datas to an existing data archive.
 
         :param file_path: The path to the file to append
         :param append_datas: The data to append
 
-        :raises ValueError: When the append data has not all data from the data archive
+        :raises ValueError: When the appended data has not all data from the data archive
         :raises FileNorFoundError: If the file to append not exist
-        :raises UserWarning: If more data in the append data then in the data archive
+        :raises UserWarning: If more data in the appended data then in the data archive
         """
         pass
 

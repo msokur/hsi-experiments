@@ -15,7 +15,7 @@ from configuration.parameter import (
 
 
 class Weights:
-    def __init__(self, filename: str, data_archive: DataArchive, labels: list = None, label_file = None,
+    def __init__(self, filename: str, data_archive: DataArchive, labels: list = None, label_file=None,
                  y_dict_name: str = None, weight_dict_name: str = None):
         self.filename = filename
         self.data_archive = data_archive

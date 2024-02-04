@@ -22,7 +22,7 @@ from configuration.parameter import (
 
 class Shuffle:
     def __init__(self, config, data_archive: DataArchive, raw_path, dict_names: list, dataset_typ: str,
-                 augmented=False, set_seed: bool = True):
+                 set_seed: bool = True):
         self.data_archive = data_archive
         self.raw_path = raw_path
         self.config = config
@@ -30,7 +30,6 @@ class Shuffle:
         self.piles_number = self.config.CONFIG_PREPROCESSOR["PILES_NUMBER"]
         self.shuffle_saving_path = self.config.CONFIG_PATHS["SHUFFLED_PATH"]
         self.dataset_typ = dataset_typ
-        self.augmented = augmented
         self.set_seed = set_seed
 
     def shuffle(self):
@@ -104,12 +103,6 @@ class Shuffle:
             _data = self.data_archive.get_datas(data_path=p)
 
             data = {n: a for n, a in _data.items()}
-
-            if self.augmented:
-                X, y = data[self.dict_names[0]][...], data[self.dict_names[1]][...]
-                y = [[_y_] * X.shape[1] for _y_ in y]
-                data[self.dict_names[0]] = np.concatenate(X, axis=0)
-                data[self.dict_names[1]] = np.concatenate(y, axis=0)
 
             # fill random distribution to files
             for it in range(data[self.dict_names[0]].shape[0]):

@@ -119,7 +119,7 @@ class Trainer:
                                                        labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
                                                        batch_path=self.batch_path)
 
-        print("--- Calc class weights ---")
+        print("--- Calculate class weights ---")
         class_weights = get_cw_from_meta(files=root_data_paths,
                                          labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
                                          names=self.except_train_names)

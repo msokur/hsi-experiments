@@ -6,7 +6,7 @@ import os
 import inspect
 from glob import glob
 
-from configuration.keys import PathKeys as PK, TrainerKeys as TK, CrossValidationKeys as CVK, DataLoaderKeys as DLK
+from configuration.keys import DataLoaderKeys as DLK
 from models.model_randomness import set_tf_seed
 from provider import get_data_loader, get_data_archive
 from configuration.parameter import (

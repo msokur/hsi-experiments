@@ -20,6 +20,7 @@ from configuration.parameter import (
     DICT_X, DICT_y, DICT_IDX, ORG_NAME
 )
 
+
 class DataLoader:
     def __init__(self, config, data_archive: DataArchive, dict_names=None):
         self.config = config
@@ -49,7 +50,8 @@ class DataLoader:
             root_path = self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH]
         paths = self.get_paths(root_path=root_path)
         number = DLK.NUMBER_SORT in self.config.CONFIG_DATALOADER.keys()
-        paths = get_sort(paths=paths, number=number, split=self.config.CONFIG_DATALOADER[DLK.NUMBER_SORT] if number else None)
+        number_sort = self.config.CONFIG_DATALOADER[DLK.NUMBER_SORT] if number else None
+        paths = get_sort(paths=paths, number=number, split=number_sort)
 
         splits = get_splits(typ=self.config.CONFIG_DATALOADER[DLK.SPLIT_PATHS_BY], paths=paths,
                             values=self.config.CONFIG_DATALOADER[DLK.PATIENTS_EXCLUDE_FOR_TEST])
@@ -280,7 +282,8 @@ class DataLoader:
                     return paths
                 except FileNotFoundError:
                     print(f"File '{file_name}' not found! "
-                          f"All files with extension '{self.config.CONFIG_DATALOADER[DLK.FILE_EXTENSION]}' will be used.")
+                          f"All files with extension '{self.config.CONFIG_DATALOADER[DLK.FILE_EXTENSION]}' "
+                          f"will be used.")
 
         return glob(os.path.join(root_path, "*" + self.config.CONFIG_DATALOADER[DLK.FILE_EXTENSION]))
 

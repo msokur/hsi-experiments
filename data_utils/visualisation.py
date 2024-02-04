@@ -10,11 +10,11 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
 from provider import get_data_archive
-from configuration.get_config import CONFIG_DATALOADER, CONFIG_TRAINER, CONFIG_PATHS, CONFIG_CV
+from configuration.get_config import CONFIG_DATALOADER, CONFIG_PATHS, CONFIG_CV
 import configuration.get_config as config
-from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK, CrossValidationKeys as CVK
+from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK
 from configuration.parameter import (
-    ARCHIVE_TYPE, PRED_TO_IMG_TYP
+    ARCHIVE_TYPE
 )
 
 
