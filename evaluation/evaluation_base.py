@@ -8,6 +8,8 @@ import abc
 from evaluation.metrics import Metrics
 from evaluation.predictor import Predictor
 
+from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK
+
 
 class EvaluationBase(Metrics):
 
@@ -15,8 +17,8 @@ class EvaluationBase(Metrics):
         super().__init__(config)
         self.config = config
 
-        self.results_folder = self.create_joint_folder(self.config.CONFIG_PATHS['RESULTS_FOLDER'],
-                                                       self.config.CONFIG_CV['NAME'])
+        self.results_folder = self.create_joint_folder(self.config.CONFIG_PATHS[PK.RESULTS_FOLDER],
+                                                       self.config.CONFIG_CV[CVK.NAME])
         self.results_folder_with_checkpoint = None
 
         self.comparison_csvname = "compare_all_thresholds.csv"
@@ -189,12 +191,12 @@ class EvaluationBase(Metrics):
 
     def check_and_convert_checkpoints(self, checkpoints):
         print(f'Specified checkpoints: {checkpoints}')
-        if self.config.CONFIG_CV["GET_CHECKPOINT_FROM_EARLYSTOPPING"] and (checkpoints is not None):
-            raise ValueError("Error! CONFIG_CV['GET_CHECKPOINT_FROM_VALID'] is True (it means that the last checkpoint "
-                             "will be taken for each patient from EarlyStopping) and checkpoints are "
+        if self.config.CONFIG_CV[CVK.GET_CHECKPOINT_FROM_EARLYSTOPPING] and (checkpoints is not None):
+            raise ValueError("Error! CONFIG_CV['GET_CHECKPOINT_FROM_EARLYSTOPPING'] is True (it means that the last "
+                             "checkpoint will be taken for each patient from EarlyStopping) and checkpoints are "
                              "specified. Please don't specify checkpoints or set "
-                             "GET_CHECKPOINT_FROM_VALID to False")
-        if self.config.CONFIG_CV["GET_CHECKPOINT_FROM_EARLYSTOPPING"]:
+                             "GET_CHECKPOINT_FROM_EARLYSTOPPING to False")
+        if self.config.CONFIG_CV[CVK.GET_CHECKPOINT_FROM_EARLYSTOPPING]:
             return [None]
 
         return [f'{self.checkpoint_basename}{checkpoint:04d}' for checkpoint in checkpoints]

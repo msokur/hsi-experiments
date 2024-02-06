@@ -21,7 +21,7 @@ from configuration.parameter import (
 
 
 class Shuffle:
-    def __init__(self, config, data_archive: DataArchive, raw_path, dict_names: list, dataset_typ: str,
+    def __init__(self, config, data_archive: DataArchive, raw_path: str, dict_names: list, dataset_typ: str,
                  set_seed: bool = True):
         self.data_archive = data_archive
         self.raw_path = raw_path

@@ -27,7 +27,7 @@ class PaperModelBase(ModelBase):
 
         net = keras.layers.Flatten(name="flatten_layer")(net)
 
-        net = get_dropout(net=net, dropout_value=self.config[MK.DROPOUT], name="last_dropout_layer")
+        net = get_dropout(net=net, dropout_value=self.model_config[MK.DROPOUT], name="last_dropout_layer")
 
         activation = 'sigmoid'
         number = 1
@@ -111,6 +111,6 @@ if __name__ == "__main__":
         "DROPOUT": 0.1
     }
     labels = 3
-    model1 = PaperModel3D(input_shape=shape_, config=conf_, num_of_output=labels)
+    model1 = PaperModel3D(input_shape=shape_, model_config=conf_, num_of_output=labels)
     model_ = model1.get_model()
     model_.summary()

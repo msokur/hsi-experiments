@@ -12,7 +12,7 @@
       },
     "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
-    "EPOCHS": 50,
+    "EPOCHS": 1,
     "SMALLER_DATASET": false,
     "MODEL_CHECKPOINT": {
       "monitor": "val_f1_score_weighted",
@@ -41,15 +41,15 @@
     },
     "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
-    "EPOCHS": 50,
+    "EPOCHS": 1,
     "SMALLER_DATASET": false,
     "TUNER": "BayesianOptimization",
     "TUNER_PARAMS": {
       "objective": {"name": "f1_score_weighted", "direction":  "max"},
-      "max_trials": 20,
+      "max_trials": 1,
       "overwrite": true
     },
-    "TUNER_EPOCHS": 10,
+    "TUNER_EPOCHS": 1,
     "MODEL_CHECKPOINT": {
       "monitor": "val_f1_score_weighted",
       "save_best_only": true,

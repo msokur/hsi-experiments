@@ -1,4 +1,4 @@
-ARCHIVE_TYPE = "zarr"                # type for data archive management choose between npz or zarr
+ARCHIVE_TYPE = "npz"                # type for data archive management choose between npz or zarr
 DATASET_TYPE = "generator"          # type of dataset, choose between generator or tfr
 
 # --- ZARR params

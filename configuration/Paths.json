@@ -5,12 +5,14 @@
   "Cluster_Benny": {
     "MODE": "WITH_GPU",
     "DATABASE_ROOT_FOLDER": "/work/users/bn322dcei",
-    "LOGS_FOLDER": ["/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs"]
+    "LOGS_FOLDER": ["/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs"],
+    "RESULTS_FOLDER": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/results"
   },
   "Win_Benny": {
     "MODE": "WITHOUT_GPU",
-    "DATABASE_ROOT_FOLDER": "E:\\ICCAS\\Gastric",
-    "LOGS_FOLDER": ["logs"]
+    "DATABASE_ROOT_FOLDER": "C:\\Users\\benny\\Desktop\\Arbeit\\data",
+    "LOGS_FOLDER": ["C:\\Users\\benny\\Desktop\\Arbeit\\data\\logs"],
+    "RESULTS_FOLDER": "C:\\Users\\benny\\Desktop\\Arbeit\\data\\results"
   },
   "Cluster_Mariia": {
     "MODE": "WITH_GPU",
@@ -40,9 +42,9 @@
       "RAW_SOURCE_PATH": ["HNO", "Parotis-Faelle", "*"]
     },
     "2.CONCAT_WITH_ROOT_PATH": {
-      "RAW_NPZ_PATH": ["patient_data_zarr"],
-      "SHUFFLED_PATH": ["shuffled_zarr"],
-      "BATCHED_PATH": ["batch_sized"]
+      "RAW_NPZ_PATH": ["patient_data"],
+      "SHUFFLED_PATH": ["shuffled_npz"],
+      "BATCHED_PATH": ["batch_sized_npz"]
     }
   },
   "ESO_Database": {

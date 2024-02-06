@@ -87,7 +87,7 @@ class NameBatchSplit:
 
     def __split_and_save_batches__(self, save_path: str, data, data_indexes: np.ndarray) -> Dict[str, np.ndarray]:
         # ---------------splitting into archives----------
-        chunks = data_indexes.shape[0] // self.batch_size
+        chunks = data_indexes.sum() // self.batch_size
         chunks_max = chunks * self.batch_size
 
         if chunks > 0:

@@ -99,7 +99,7 @@ class TrainerEasy(Trainer):
 
     def get_new_model(self) -> keras.Model:
         model = self.config.CONFIG_TRAINER[TK.MODEL](input_shape=self.get_output_shape(),
-                                                     config=self.config.CONFIG_TRAINER[TK.MODEL_CONFIG],
+                                                     model_config=self.config.CONFIG_TRAINER[TK.MODEL_CONFIG],
                                                      num_of_output=len(self.config.CONFIG_DATALOADER[
                                                                            DLK.LABELS_TO_TRAIN])).get_model()
         model = self.compile_model(model)

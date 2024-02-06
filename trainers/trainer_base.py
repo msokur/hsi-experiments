@@ -108,7 +108,7 @@ class Trainer:
         if for_tuning:
             self.batch_path += "_" + TUNE
             ds = DistributionsChecker(paths=root_data_paths, dataset=self.dataset,
-                                      config=self.config.CONFIG_DISTRIBUTION)
+                                      local_config=self.config.CONFIG_DISTRIBUTION)
             tuning_index = ds.get_small_database_for_tuning()
             root_data_paths = [root_data_paths[tuning_index]]
 
@@ -129,7 +129,7 @@ class Trainer:
         return train_ds, valid_ds, class_weights
 
     def get_callbacks(self):
-        checkpoint_path = os.path.join(self.log_dir, self.config.CONFIG_PATHS[PK.CHECKPOINT_PATH], "cp-{epoch:04d}")
+        checkpoint_path = os.path.join(self.log_dir, self.config.CONFIG_PATHS[PK.CHECKPOINT_FOLDER], "cp-{epoch:04d}")
 
         checkpoints_callback = keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,
@@ -183,7 +183,7 @@ class Trainer:
 
         model, history = self.train_process()
 
-        checkpoints_paths = os.path.join(self.log_dir, self.config.CONFIG_PATHS[PK.CHECKPOINT_PATH])
+        checkpoints_paths = os.path.join(self.log_dir, self.config.CONFIG_PATHS[PK.CHECKPOINT_FOLDER])
         if not os.path.exists(checkpoints_paths):
             os.mkdir(checkpoints_paths)
 

@@ -5,7 +5,7 @@ import os
 
 from trainers.trainer_base import Trainer
 import pickle
-from configuration.keys import TrainerKeys as TK
+from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
 from configuration.parameter import (
     MODEL_BATCH_SIZE
 )
@@ -31,8 +31,8 @@ class TrainerTuner(Trainer):
 
         '''-------TRAINING---------'''
 
-        history = base_model.fit(best_hp,
-                                 best_model,
+        history = base_model.fit(hp=best_hp,
+                                 model=best_model,
                                  x=train_dataset,
                                  validation_data=valid_dataset,
                                  verbose=2,
@@ -115,10 +115,11 @@ class TrainerTuner(Trainer):
                                                                 distribution_strategy=mirrored_strategy)
 
     def get_model(self) -> kt.HyperModel:
-        base_model = self.config.CONFIG_TRAINER[TK.MODEL](shape=self.get_output_shape(),
-                                                   conf=self.config.CONFIG_TRAINER[TK.MODEL_CONFIG],
-                                                   num_of_labels=len(self.labels_to_train),
-                                                   custom_metrics=self.config.CONFIG_TRAINER[TK.CUSTOM_OBJECTS])
+        base_model = self.config.CONFIG_TRAINER[TK.MODEL](input_shape=self.get_output_shape(),
+                                                          model_config=self.config.CONFIG_TRAINER[TK.MODEL_CONFIG],
+                                                          num_of_labels=len(self.config.CONFIG_DATALOADER[
+                                                                                DLK.LABELS_TO_TRAIN]),
+                                                          custom_metrics=self.config.CONFIG_TRAINER[TK.CUSTOM_OBJECTS])
 
         return base_model
 

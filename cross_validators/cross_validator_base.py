@@ -12,7 +12,7 @@ import provider
 from data_utils.dataset.choice_names import ChoiceNames
 
 from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, \
-    PreprocessorKeys as PPK
+    PreprocessorKeys as PPK, TrainerKeys as TK
 from configuration.parameter import (
     ARCHIVE_TYPE,
 )
@@ -39,7 +39,7 @@ class CrossValidatorBase:
         if execution_flags[CVK.EF_EVALUATION]:
             self.evaluation(**kwargs)
 
-        self.config.telegram.send_tg_message(f'Operations in cross_validation.py for {self.config.CONFIG_CV["NAME"]} '
+        self.config.telegram.send_tg_message(f'Operations in cross_validation.py for {self.config.CONFIG_CV[CVK.NAME]} '
                                              f'are successfully completed!')
 
     def evaluation(self, **kwargs):
@@ -69,10 +69,10 @@ class CrossValidatorBase:
         print(f"We except for train data: {', '.join(n for n in except_train_names)}.\n")
         print(f"We except for valid data: {', '.join(n for n in except_valid_names)}.\n")
 
-        trainer = provider.get_trainer(config=self.config, data_archive=self.data_archive,
-                                       typ=self.config.CONFIG_TRAINER["TYPE"],
-                                       model_name=model_name,
-                                       except_indexes=except_names)
+        trainer = provider.get_trainer(typ=self.config.CONFIG_TRAINER[TK.TYPE], config=self.config,
+                                       data_archive=self.data_archive, model_name=model_name,
+                                       except_cv_names=except_cv_names, except_train_names=except_train_names,
+                                       except_valid_names=except_valid_names)
         trainer.train()
 
     """def get_paths_and_splits(self, root_path=None):

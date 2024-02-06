@@ -41,7 +41,7 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
                 '"algorithm_plain" for multiclass classification')
 
         super().__init__(config)
-        self.LABELED_NPZ_FOLDER = self.config.CONFIG_PATHS["RAW_NPZ_PATH"]
+        self.LABELED_NPZ_FOLDER = self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH]
         self.cross_validation_type = cross_validation_type
 
         self.whole_database = get_whole_analog_of_data_loader(self.config.CONFIG_DATALOADER[DLK.TYPE])
@@ -61,10 +61,10 @@ class CrossValidatorPostProcessing(CrossValidatorBase):
 
         print('Post-processing configuration:', self.configuration)
 
-        search_folder = os.path.join(self.config.CONFIG_PATHS["LOGS_FOLDER"], self.config.CONFIG_CV[CVK.NAME])
+        search_folder = os.path.join(self.config.CONFIG_PATHS[PK.LOGS_FOLDER], self.config.CONFIG_CV[CVK.NAME])
         self.training_csv_path = CrossValidatorBase.get_csv(search_folder)
 
-        self.saving_folder = os.path.join(self.config.CONFIG_PATHS['RESULTS_FOLDER'], self.config.CONFIG_CV[CVK.NAME])
+        self.saving_folder = os.path.join(self.config.CONFIG_PATHS[PK.RESULTS_FOLDER], self.config.CONFIG_CV[CVK.NAME])
         if not os.path.exists(self.saving_folder):
             os.mkdir(self.saving_folder)
 

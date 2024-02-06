@@ -26,8 +26,8 @@ class InceptionModelBase(ModelBase):
             shape=self.input_shape, name=self.name
         )
 
-        net = self.__inception_block(input_=input_, factor=self.config[MK.INCEPTION_FACTOR],
-                                     with_batch_norm=self.config[MK.WITH_BATCH_NORM])
+        net = self.__inception_block(input_=input_, factor=self.model_config[MK.INCEPTION_FACTOR],
+                                     with_batch_norm=self.model_config[MK.WITH_BATCH_NORM])
 
         return self.__inception_base(input_=input_, net=net)
 
@@ -69,7 +69,7 @@ class InceptionModelBase(ModelBase):
 
     def __inception_base(self, input_, net):
         net = keras.layers.Flatten(name="flatten_layer")(net)
-        net = get_dropout(net=net, dropout_value=self.config["DROPOUT"], name="last_dropout_layer")
+        net = get_dropout(net=net, dropout_value=self.model_config["DROPOUT"], name="last_dropout_layer")
 
         activation = 'sigmoid'
         number = 1
@@ -139,6 +139,6 @@ if __name__ == "__main__":
         "DROPOUT": 0.1
     }
     labels = 3
-    model1 = InceptionModel1D(input_shape=shape_, config=conf_, num_of_output=labels)
+    model1 = InceptionModel1D(input_shape=shape_, model_config=conf_, num_of_output=labels)
     model_ = model1.get_model()
     model_.summary()

@@ -40,7 +40,7 @@ def get_prediction_to_image(mode: str, data_archive):
 
 
 def get_model_path(path: str) -> str:
-    paths = sorted(glob(os.path.join(path, CONFIG_PATHS[PK.CHECKPOINT_PATH], "cp-*")))
+    paths = sorted(glob(os.path.join(path, CONFIG_PATHS[PK.CHECKPOINT_FOLDER], "cp-*")))
 
     return paths[-1]
 

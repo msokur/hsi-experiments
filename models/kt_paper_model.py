@@ -13,7 +13,7 @@ from configuration.keys import TunerModelKeys as TMK
 
 class PaperTunerModelBase(KtModelBase):
     def _model(self):
-        input_ = layers.Input(shape=self.shape, name="input")
+        input_ = layers.Input(shape=self.input_shape, name="input")
 
         net = tf.expand_dims(input_, axis=-1)
 
@@ -21,14 +21,14 @@ class PaperTunerModelBase(KtModelBase):
 
         net = layers.Flatten(name="flatt")(net)
 
-        for fc in range(self.hp.Int("num_fc", **self.config.CONFIG_TRAINER[TMK.NUM_DENSE])):
-            net = layers.Dense(self.hp.Int(f"fc_{fc}", **self.config.CONFIG_TRAINER[TMK.DENSE_UNITS]),
+        for fc in range(self.hp.Int("num_fc", **self.model_config[TMK.NUM_DENSE])):
+            net = layers.Dense(self.hp.Int(f"fc_{fc}", **self.model_config[TMK.DENSE_UNITS]),
                                activation=self._get_activations(name=f"fc_{fc}"), name=f"fc_{fc}")(net)
 
             if self.hp.Boolean(f"fc_{fc}_dropout"):
                 net = get_dropout(net=net,
                                   dropout_value=self.hp.Float(f"fc_{fc}_dropout_value",
-                                                              **self.config.CONFIG_TRAINER[TMK.DROPOUT]),
+                                                              **self.model_config[TMK.DROPOUT]),
                                   name=f"fc_{fc}_dropout")
 
         activation = "sigmoid"
@@ -52,11 +52,11 @@ class PaperTunerModelBase(KtModelBase):
         pass
 
     def _get_conv1d(self, net, name, kernel_size=3, strides=2):
-        net = layers.Conv1D(filters=self.hp.Int(f"{name}_1", **self.config.CONFIG_TRAINER[TMK.CONV_1D_FILTERS]),
+        net = layers.Conv1D(filters=self.hp.Int(f"{name}_1", **self.model_config[TMK.CONV_1D_FILTERS]),
                             kernel_size=kernel_size, padding='valid', activation='relu',
                             kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
                             name=f"{name}_1")(net)
-        net = layers.Conv1D(filters=self.hp.Int(f"{name}_2", **self.config.CONFIG_TRAINER[TMK.CONV_1D_FILTERS]),
+        net = layers.Conv1D(filters=self.hp.Int(f"{name}_2", **self.model_config[TMK.CONV_1D_FILTERS]),
                             kernel_size=kernel_size if net.shape[-2] > 1 else 1, strides=strides,
                             padding='valid', activation='relu',
                             kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
@@ -67,7 +67,7 @@ class PaperTunerModelBase(KtModelBase):
 
 class PaperTunerModel3D(PaperTunerModelBase):
     def _get_block(self, net):
-        max_conv_layer = int(self.shape[0] / 2)
+        max_conv_layer = int(self.input_shape[0] / 2)
 
         for r in range(self.hp.Int("num_conv3d", min_value=1, max_value=max_conv_layer)):
             if net.shape[-3] == 1:
@@ -96,11 +96,11 @@ class PaperTunerModel3D(PaperTunerModelBase):
         return net
 
     def __get_conv3d(self, net, name, kernel_size=3, strides=2):
-        net = layers.Conv3D(filters=self.hp.Int(f"{name}_1", **self.config.CONFIG_TRAINER[TMK.CONV_3D_FILTERS]),
+        net = layers.Conv3D(filters=self.hp.Int(f"{name}_1", **self.model_config[TMK.CONV_3D_FILTERS]),
                             kernel_size=kernel_size, padding='valid', activation='relu',
                             kernel_initializer=self.kernel_initializer, bias_initializer=self.bias_initializer,
                             name=f"{name}_1")(net)
-        net = layers.Conv3D(filters=self.hp.Int(f"{name}_2", **self.config.CONFIG_TRAINER[TMK.CONV_3D_FILTERS]),
+        net = layers.Conv3D(filters=self.hp.Int(f"{name}_2", **self.model_config[TMK.CONV_3D_FILTERS]),
                             kernel_size=(1, 1, kernel_size), strides=(1, 1, strides), padding='valid',
                             activation='relu', kernel_initializer=self.kernel_initializer,
                             bias_initializer=self.bias_initializer,

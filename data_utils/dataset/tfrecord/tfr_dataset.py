@@ -85,7 +85,7 @@ class TFRDatasets(Dataset):
 
         dataset = dataset.cache().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
-        return dataset.batch(batch_size=self.batch_size).with_options(options=self.options)
+        return dataset.batch(batch_size=self.batch_size, drop_remainder=True).with_options(options=self.options)
 
     @staticmethod
     def _get_ds_options():

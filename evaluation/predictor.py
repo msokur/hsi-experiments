@@ -6,7 +6,7 @@ import os
 import inspect
 from glob import glob
 
-from configuration.keys import DataLoaderKeys as DLK
+from configuration.keys import DataLoaderKeys as DLK, CrossValidationKeys as CVK
 from models.model_randomness import set_tf_seed
 from provider import get_data_loader, get_data_archive
 from configuration.parameter import (
@@ -48,7 +48,7 @@ class Predictor:
                 model_path = self.edit_model_path_if_local(row[5])
                 checkpoint = self.get_checkpoint(checkpoint, model_path=model_path)
 
-                name = data_loader.get_name(row[4], delimiter='/')
+                name = data_loader.get_name(row[4])
                 print(f'We get checkpoint {checkpoint} for {model_path}')
 
                 self.model = tf.keras.models.load_model(os.path.join(model_path,
@@ -105,7 +105,7 @@ class Predictor:
     def get_checkpoint(self, checkpoint, model_path=None):
         if type(checkpoint) == int:
             return f"cp-{checkpoint:04d}"
-        if self.config.CONFIG_CV["GET_CHECKPOINT_FROM_EARLYSTOPPING"]:
+        if self.config.CONFIG_CV[CVK.GET_CHECKPOINT_FROM_EARLYSTOPPING]:
             return self.get_best_checkpoint_from_csv(model_path)
         if checkpoint is None:
             return f"cp-{self.config.CONFIG_TRAINER['EPOCHS']:04d}"
