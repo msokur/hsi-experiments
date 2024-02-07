@@ -5,7 +5,7 @@ from shutil import rmtree
 import numpy as np
 
 from data_utils.data_loaders.data_loader import DataLoader
-from data_utils.data_archive.data_archive_zarr import DataArchiveZARR
+from data_utils.data_storage.data_storage_zarr import DataStorageZARR
 
 ARR_DATA_1 = {"X": np.array([[0, 1], [2, 3], [4, 5]]), "y": np.array([0, 1, 2]),
               "indexes_in_datacube": np.array([(0, 0), (1, 1), (2, 2)])}
@@ -33,8 +33,8 @@ def zarr_test_dir(zarr_data_dir: str) -> str:
 
 @pytest.fixture
 def dataloader(test_config) -> DataLoader:
-    data_archive = DataArchiveZARR()
-    return DataLoader(config=test_config, data_archive=data_archive)
+    data_storage = DataStorageZARR()
+    return DataLoader(config=test_config, data_storage=data_storage)
 
 
 def test_get_name(zarr_test_dir: str, dataloader):

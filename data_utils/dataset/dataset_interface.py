@@ -15,14 +15,14 @@ class Dataset:
         self.batch_size = batch_size
         self.d3 = d3
         self.with_sample_weights = with_sample_weights
-        self.options = self._get_ds_options()
+        self.options = self._get_dataset_options()
 
     @abc.abstractmethod
-    def get_datasets(self, ds_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
+    def get_datasets(self, dataset_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
                      batch_path: str):
         """Loads a parsed training and validation datasets.
 
-        :param ds_paths: Paths for the Dataset
+        :param dataset_paths: Paths for the Dataset
         :param train_names: List with names for training data
         :param valid_names: list with names for validation data
         :param labels: List with labels to use for training and validation
@@ -33,7 +33,7 @@ class Dataset:
         pass
 
     @abc.abstractmethod
-    def get_paths(self, root_paths: str) -> List[str]:
+    def get_dataset_paths(self, root_paths: str) -> List[str]:
         pass
 
     @abc.abstractmethod
@@ -50,5 +50,5 @@ class Dataset:
 
     @staticmethod
     @abc.abstractmethod
-    def _get_ds_options():
+    def _get_dataset_options():
         pass

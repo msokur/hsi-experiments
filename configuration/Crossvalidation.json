@@ -1,7 +1,7 @@
 {
   "BASE":{
     "EXECUTION_FLAGS": {
-      "cross_validation": false,
+      "cross_validation": true,
       "evaluation": true
     },
     "FIRST_SPLIT": 0,

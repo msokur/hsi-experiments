@@ -173,15 +173,15 @@ def get_extension_loader(typ: str, config, *args, **kwargs):
         value_error(modul="file extension", typ=typ)
 
 
-def get_data_archive(typ: str):
-    from data_utils.data_archive import DataArchiveNPZ, DataArchiveZARR
+def get_data_storage(typ: str):
+    from data_utils.data_storage import DataStorageNPZ, DataStorageZARR
 
     if typ == "npz":
-        return DataArchiveNPZ()
+        return DataStorageNPZ()
     elif typ == "zarr":
-        return DataArchiveZARR()
+        return DataStorageZARR()
     else:
-        value_error(modul="data archive", typ=typ)
+        value_error(modul="data storage", typ=typ)
 
 
 def get_prediction_to_image(typ: str, **kwargs):
@@ -194,24 +194,24 @@ def get_prediction_to_image(typ: str, **kwargs):
         value_error(modul="prediction to image", typ=typ)
 
 
-def get_dataset(typ: str, batch_size: int, d3: bool, with_sample_weights: bool, data_archive=None, dict_names=None):
+def get_dataset(typ: str, batch_size: int, d3: bool, with_sample_weights: bool, data_storage=None, dict_names=None):
     from data_utils.dataset import TFRDatasets, GeneratorDatasets
     if typ == "tfr":
         return TFRDatasets(batch_size=batch_size, d3=d3, with_sample_weights=with_sample_weights)
     elif typ == "generator":
         return GeneratorDatasets(batch_size=batch_size, d3=d3, with_sample_weights=with_sample_weights,
-                                 data_archive=data_archive, dict_names=dict_names)
+                                 data_storage=data_storage, dict_names=dict_names)
     else:
         value_error(modul="dataset", typ=typ)
 
 
-def get_shuffle(typ: str, config, data_archive, raw_path: str, dict_names: list, set_seed: bool = True):
+def get_shuffle(typ: str, config, data_storage, raw_path: str, dict_names: list, set_seed: bool = True):
     from data_utils.shuffle import TFRShuffle, GeneratorShuffle
     if typ == "tfr":
-        return TFRShuffle(config=config, data_archive=data_archive, raw_path=raw_path, dict_names=dict_names,
+        return TFRShuffle(config=config, data_storage=data_storage, raw_path=raw_path, dict_names=dict_names,
                           dataset_typ=typ, set_seed=set_seed)
     elif typ == "generator":
-        return GeneratorShuffle(config=config, data_archive=data_archive, raw_path=raw_path, dict_names=dict_names,
+        return GeneratorShuffle(config=config, data_storage=data_storage, raw_path=raw_path, dict_names=dict_names,
                                 dataset_typ=typ, set_seed=set_seed)
     else:
         value_error(modul="shuffle", typ=typ)

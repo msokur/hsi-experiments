@@ -8,7 +8,7 @@ import platform
 import os
 
 
-class DataArchive:
+class DataStorage:
     def __init__(self):
         self.system = platform.system()
 
@@ -26,11 +26,11 @@ class DataArchive:
 
     @staticmethod
     @abc.abstractmethod
-    def get_paths(archive_path: str) -> List[str]:
+    def get_paths(storage_path: str) -> List[str]:
         """
         Returns a list with all group paths in the giving path.
 
-        :param archive_path: String with the data archive groups
+        :param storage_path: String with the data archive groups
 
         :return: A list with the absolute path from every group
         """
@@ -58,11 +58,11 @@ class DataArchive:
         return os.path.splitext(name)[0]
 
     @abc.abstractmethod
-    def all_data_generator(self, archive_path: str) -> Iterable:
+    def all_data_generator(self, storage_path: str) -> Iterable:
         """
         Get a generator with all Groups in the data archive.
 
-        :param archive_path: The path with the data to load
+        :param storage_path: The path with the data to load
 
         :return: A Generator with a loaded group
         """

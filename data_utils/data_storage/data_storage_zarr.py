@@ -7,26 +7,26 @@ import zarr
 from configuration.parameter import (
     BLOCK_SIZE, D3_CHUNK
 )
-from data_utils.data_archive import DataArchive
+from data_utils.data_storage import DataStorage
 
 
-class DataArchiveZARR(DataArchive):
+class DataStorageZARR(DataStorage):
     @staticmethod
     def get_path(file: zarr.Group) -> str:
         return file.attrs.store.path
 
     @staticmethod
-    def get_paths(archive_path: str) -> List[str]:
+    def get_paths(storage_path: str) -> List[str]:
         paths = []
-        data = zarr.open_group(store=archive_path)
-        root_path = os.path.abspath(archive_path)
+        data = zarr.open_group(store=storage_path)
+        root_path = os.path.abspath(storage_path)
         for group in data.group_keys():
             paths.append(os.path.join(root_path, data[group].path))
 
         return sorted(paths)
 
-    def all_data_generator(self, archive_path: str) -> Iterable:
-        paths = self.get_paths(archive_path=archive_path)
+    def all_data_generator(self, storage_path: str) -> Iterable:
+        paths = self.get_paths(storage_path=storage_path)
         for path in paths:
             yield zarr.open_group(store=path, mode="r")
 

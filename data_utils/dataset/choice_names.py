@@ -5,7 +5,7 @@ import numpy as np
 import pickle
 import os
 
-from data_utils.data_archive import DataArchive
+from data_utils.data_storage import DataStorage
 from configuration.keys import CrossValidationKeys as CVK
 from configuration.parameter import (
     VALID_LOG,
@@ -13,7 +13,7 @@ from configuration.parameter import (
 
 
 class ChoiceNames:
-    def __init__(self, data_archive: DataArchive, config_cv: dict, labels: List[Union[int, str]], y_dict_name: str,
+    def __init__(self, data_storage: DataStorage, config_cv: dict, labels: List[Union[int, str]], y_dict_name: str,
                  log_dir: str = None, set_seed=True):
         """Class to choose file names.
 
@@ -23,13 +23,13 @@ class ChoiceNames:
         - Random Choice -> take a random chose
         - Class Choice -> take a selection and looks if every label is in this selection
 
-        :param data_archive: Object to load files
+        :param data_storage: Object to load files
         :param config_cv: Configuration for typ of selection
         :param labels: The labels that should be in the selection (Class choice)
         :param y_dict_name: The array name in the file with the labels
         :param log_dir: Path to restore names (Restore)
         :param set_seed: If True it will set a seed for the randomness"""
-        self.data_archive = data_archive
+        self.data_storage = data_storage
         self.CONFIG_CV = config_cv
         self.labels = labels
         self.y_dict_name = y_dict_name
@@ -72,7 +72,7 @@ class ChoiceNames:
         valid = self.random_choice(paths_names, excepts)
 
         path_idx = paths_names.index(valid[0])
-        y = self.data_archive.get_data(data_path=paths[path_idx], data_name=self.y_dict_name)
+        y = self.data_storage.get_data(data_path=paths[path_idx], data_name=self.y_dict_name)
         unique_classes = np.unique(y)
         con_classes = np.concatenate((classes, unique_classes))
         con_unique_classes = np.intersect1d(con_classes, self.labels)
@@ -110,7 +110,7 @@ class ChoiceNames:
                 f"with {self.CONFIG_CV[CVK.RESTORE_VALID_SEQUENCE]}")
             return valid_except_indexes
 
-        raw_paths = self.data_archive.get_paths(archive_path=raw_path)
+        raw_paths = self.data_storage.get_paths(storage_path=raw_path)
         raw_paths_names = [os.path.split(r)[-1].split(".")[0] for r in raw_paths]
 
         print('Getting new validation patients')

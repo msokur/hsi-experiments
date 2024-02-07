@@ -8,9 +8,9 @@ from glob import glob
 
 from configuration.keys import DataLoaderKeys as DLK, CrossValidationKeys as CVK
 from models.model_randomness import set_tf_seed
-from provider import get_data_loader, get_data_archive
+from provider import get_data_loader, get_data_storage
 from configuration.parameter import (
-    ARCHIVE_TYPE
+    STORAGE_TYPE
 )
 
 tf.random.set_seed(1)
@@ -39,7 +39,7 @@ class Predictor:
         custom_objects = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"]
         results_dictionary = []
         data_loader = get_data_loader(typ=self.config.CONFIG_DATALOADER[DLK.TYPE], config=self.config,
-                                      data_archive=get_data_archive(typ=ARCHIVE_TYPE))
+                                      data_storage=get_data_storage(typ=STORAGE_TYPE))
         with open(training_csv_path, newline='') as csvfile:
             report_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
             for row in tqdm(report_reader):

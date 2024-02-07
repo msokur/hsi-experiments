@@ -7,7 +7,7 @@ from sklearn import preprocessing
 import pickle
 
 from util.compare_distributions import DistributionsChecker
-from data_utils.data_archive import DataArchive
+from data_utils.data_storage import DataStorage
 from configuration.parameter import (
     DICT_X, DICT_y, DICT_IDX,
     SCALER_FILE
@@ -15,13 +15,13 @@ from configuration.parameter import (
 
 
 class Scaler:
-    def __init__(self, config, preprocessed_path, data_archive: DataArchive, scaler_file=None, scaler_path=None,
+    def __init__(self, config, preprocessed_path, data_storage: DataStorage, scaler_file=None, scaler_path=None,
                  dict_names=None):
         self.config = config
         self.preprocessed_path = preprocessed_path
         self.scaler_path = scaler_path
         self.dict_names = dict_names
-        self.data_archive = data_archive
+        self.data_storage = data_storage
         if self.dict_names is None:
             self.dict_names = [DICT_X, DICT_y, DICT_IDX]
         
@@ -47,11 +47,11 @@ class Scaler:
         pass
             
     def X_y_concatenate(self):
-        paths = self.data_archive.get_paths(archive_path=self.preprocessed_path)
+        paths = self.data_storage.get_paths(storage_path=self.preprocessed_path)
 
         X_s, y_s, indexes_s = self._get_shapes(paths[0])
         X, y, indexes = np.empty(shape=X_s), np.empty(shape=y_s), np.empty(shape=indexes_s)
-        for data in tqdm(self.data_archive.all_data_generator(archive_path=self.preprocessed_path)):
+        for data in tqdm(self.data_storage.all_data_generator(storage_path=self.preprocessed_path)):
             _X, _y, _i = data[self.dict_names[0]], data[self.dict_names[1]], data[self.dict_names[2]]
 
             # check if data 3D
@@ -101,16 +101,16 @@ class Scaler:
         if not os.path.exists(destination_path):
             os.mkdir(destination_path)
 
-        for data in tqdm(self.data_archive.all_data_generator(archive_path=self.preprocessed_path)):
+        for data in tqdm(self.data_storage.all_data_generator(storage_path=self.preprocessed_path)):
             X = data[self.dict_names[0]]
             X = self.scale_X(X)
 
-            self.data_archive.save_data(save_path=self.data_archive.get_path(file=data),
+            self.data_storage.save_data(save_path=self.data_storage.get_path(file=data),
                                         data_name=self.dict_names[0],
                                         data=X)
 
     def _get_shapes(self, path):
-        datas = self.data_archive.get_datas(data_path=path)
+        datas = self.data_storage.get_datas(data_path=path)
         X, y, idx = datas[self.dict_names[0]].shape, datas[self.dict_names[1]].shape, datas[self.dict_names[2]].shape
         return [0, X[-1]], [0] if len(y) == 1 else [0, y[-1]], [0, idx[-1]]
             

@@ -14,7 +14,7 @@ class PaperModelBase(ModelBase):
         if self.name is None:
             self.name = MK.PAPER_MODEL_NAME
 
-        input_ = keras.layers.Input(shape=self.input_shape, name=self.name)
+        input_ = keras.layers.Input(shape=self.input_shape, name="input")
 
         return self._create_model(input_layer=input_)
 
@@ -40,7 +40,8 @@ class PaperModelBase(ModelBase):
 
         model = keras.Model(
             inputs=[input_],
-            outputs=[result]
+            outputs=[result],
+            name=self.name
         )
 
         return model

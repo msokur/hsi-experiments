@@ -2,7 +2,7 @@ import pytest
 import os
 import numpy as np
 
-from data_utils.data_archive import DataArchiveZARR, DataArchiveNPZ
+from data_utils.data_storage import DataStorageZARR, DataStorageNPZ
 from data_utils.scaler import StandardScalerTransposed, NormalizerScaler
 from testspace.data_utils.conftest import (
     DATA_1D_X_0, DATA_1D_X_1, DATA_3D_X_0, DATA_y_0, DATA_y_1, DATA_i
@@ -37,11 +37,11 @@ def delete_scaler_file(data_dir: str):
         os.remove(os.path.join(data_dir, SCALER_FILE))
 
 
-def get_data_archive(typ: str):
+def get_data_storage(typ: str):
     if typ == "zarr":
-        return DataArchiveZARR()
+        return DataStorageZARR()
     else:
-        return DataArchiveNPZ()
+        return DataStorageNPZ()
 
 
 X_Y_CONCATENATE_DATA = [(NormalizerScaler, "npz", "1d"), (NormalizerScaler, "npz", "3d"),
@@ -52,7 +52,7 @@ X_Y_CONCATENATE_DATA = [(NormalizerScaler, "npz", "1d"), (NormalizerScaler, "npz
 
 @pytest.mark.parametrize("scaler_class,data_typ,data_shape", X_Y_CONCATENATE_DATA)
 def test_X_y_concatenate(test_config, delete_scaler_file, data_dir: str, scaler_class, data_typ: str, data_shape: str):
-    scaler = scaler_class(config=test_config, preprocessed_path=data_dir, data_archive=get_data_archive(typ=data_typ),
+    scaler = scaler_class(config=test_config, preprocessed_path=data_dir, data_storage=get_data_storage(typ=data_typ),
                           scaler_file=SCALER_FILE)
     scaler.preprocessed_path = os.path.join(data_dir, data_typ + "_file", data_shape)
 
@@ -69,7 +69,7 @@ SCALE_X_DATA = [(NormalizerScaler, DATA_1D_X_0, L2_NORM_1D_SCALD), (NormalizerSc
 
 @pytest.mark.parametrize("scaler_class,x_raw,x_result", SCALE_X_DATA)
 def test_scale_X(delete_scaler_file, test_config, data_dir: str, scaler_class, x_raw: np.ndarray, x_result: np.ndarray):
-    scaler = scaler_class(config=test_config, preprocessed_path=data_dir, data_archive=DataArchiveNPZ,
+    scaler = scaler_class(config=test_config, preprocessed_path=data_dir, data_storage=DataStorageNPZ,
                           scaler_file=SCALER_FILE)
     X = scaler.scale_X(X=x_raw)
     assert (x_result == X).all()

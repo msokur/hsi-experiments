@@ -14,7 +14,7 @@ from data_utils.dataset.meta_files import get_cw_from_meta
 from provider import get_dataset
 
 from callbacks import CustomTensorboardCallback
-from data_utils.data_archive import DataArchive
+from data_utils.data_storage import DataStorage
 from configuration.copy_py_files import copy_files
 from configuration.keys import (
     TrainerKeys as TK, PathKeys as PK, DataLoaderKeys as DLK, PreprocessorKeys as PPK,
@@ -25,20 +25,20 @@ from configuration.parameter import (
 
 
 class Trainer:
-    def __init__(self, config, data_archive: DataArchive, model_name: str, except_cv_names: List[str],
-                 except_train_names: List[str], except_valid_names: List[str]):
+    def __init__(self, config, data_storage: DataStorage, model_name: str, leave_out_names: List[str],
+                 train_names: List[str], valid_names: List[str]):
         self.config = config
-        self.data_archive = data_archive
-        self.except_cv_names = except_cv_names
-        self.except_train_names = except_train_names
-        self.except_valid_names = except_valid_names
+        self.data_storage = data_storage
+        self.leave_out_names = leave_out_names
+        self.train_names = train_names
+        self.valid_names = valid_names
         self.batch_path = None
         self.mirrored_strategy = None
         self.log_dir = model_name
         self.dataset = get_dataset(typ=DATASET_TYPE, batch_size=config.CONFIG_TRAINER[TK.BATCH_SIZE],
                                    d3=config.CONFIG_DATALOADER[DLK.D3],
                                    with_sample_weights=config.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS],
-                                   data_archive=self.data_archive,
+                                   data_storage=self.data_storage,
                                    dict_names=config.CONFIG_PREPROCESSOR[PPK.DICT_NAMES])
 
     @abc.abstractmethod
@@ -99,10 +99,10 @@ class Trainer:
         return METRICS, WEIGHTED_METRICS
 
     def get_datasets(self, for_tuning=False):
-        root_data_paths = self.dataset.get_paths(root_paths=self.config.CONFIG_PATHS[PK.SHUFFLED_PATH])
+        root_data_paths = self.dataset.get_dataset_paths(root_paths=self.config.CONFIG_PATHS[PK.SHUFFLED_PATH])
         self.batch_path = os.path.join(self.config.CONFIG_PATHS[PK.BATCHED_PATH], "")
-        if len(self.except_cv_names) > 0:
-            self.batch_path += self.except_cv_names[0]
+        if len(self.leave_out_names) > 0:
+            self.batch_path += self.leave_out_names[0]
         else:
             self.batch_path += "batches"
         if for_tuning:
@@ -112,17 +112,17 @@ class Trainer:
             tuning_index = ds.get_small_database_for_tuning()
             root_data_paths = [root_data_paths[tuning_index]]
 
-        self.save_except_names(except_names=self.except_valid_names)
+        self.save_except_names(except_names=self.valid_names)
 
-        train_ds, valid_ds = self.dataset.get_datasets(ds_paths=root_data_paths, train_names=self.except_train_names,
-                                                       valid_names=self.except_valid_names,
+        train_ds, valid_ds = self.dataset.get_datasets(dataset_paths=root_data_paths, train_names=self.train_names,
+                                                       valid_names=self.valid_names,
                                                        labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
                                                        batch_path=self.batch_path)
 
         print("--- Calculate class weights ---")
         class_weights = get_cw_from_meta(files=root_data_paths,
                                          labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
-                                         names=self.except_train_names)
+                                         names=self.train_names)
         print(f"---Class weights---\n{class_weights}")
         # TODO class_weights dirty fix
         class_weights = {k: v for k, v in enumerate(class_weights.values())}
@@ -196,7 +196,7 @@ class Trainer:
         return model, history
 
     def get_output_shape(self) -> Tuple[int]:
-        paths = self.dataset.get_paths(root_paths=self.config.CONFIG_PATHS[PK.SHUFFLED_PATH])
+        paths = self.dataset.get_dataset_paths(root_paths=self.config.CONFIG_PATHS[PK.SHUFFLED_PATH])
         return self.dataset.get_meta_shape(paths=paths)
 
 

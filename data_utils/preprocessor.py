@@ -1,6 +1,6 @@
-import sys
 import inspect
 import os
+import sys
 from datetime import datetime
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -12,9 +12,9 @@ from utils import get_used_memory
 from configuration.copy_py_files import copy_files
 from data_utils.weights import Weights
 
-from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK, PreprocessorKeys as PPK, AugKeys as AK
+from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK, PreprocessorKeys as PPK
 from configuration.parameter import (
-    ARCHIVE_TYPE, DATASET_TYPE
+    STORAGE_TYPE, DATASET_TYPE
 )
 
 '''
@@ -64,7 +64,7 @@ class Preprocessor:
         if not os.path.exists(preprocessed_path):
             os.makedirs(preprocessed_path)
 
-        data_archive = provider.get_data_archive(typ=ARCHIVE_TYPE)
+        data_storage = provider.get_data_storage(typ=STORAGE_TYPE)
 
         print('ROOT PATH', root_path)
         print('PREPROCESSED PATH', preprocessed_path)
@@ -75,7 +75,7 @@ class Preprocessor:
         # ---------Data reading part--------------
         if execution_flags['load_data_with_dataloader']:
             dataloader = provider.get_data_loader(config=self.config, typ=self.config.CONFIG_DATALOADER[DLK.TYPE],
-                                                  data_archive=data_archive)
+                                                  data_storage=data_storage)
             dataloader.files_read_and_save_to_archive(root_path, preprocessed_path)
 
         print(f'---- Memory, preprocessor 1, after reading of origin files '
@@ -84,7 +84,7 @@ class Preprocessor:
         # ----------weights part------------------
         if execution_flags['add_sample_weights']:
             weight_calc = Weights(filename=self.weights_filename,
-                                  data_archive=data_archive,
+                                  data_storage=data_storage,
                                   label_file=os.path.join(preprocessed_path,
                                                           self.config.CONFIG_DATALOADER[DLK.LABELS_FILENAME]),
                                   y_dict_name=self.load_name_for_y,
@@ -99,7 +99,7 @@ class Preprocessor:
             print('SCALER TYPE', self.config.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE])
             scaler = provider.get_scaler(config=self.config,
                                          typ=self.config.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE],
-                                         data_archive=data_archive,
+                                         data_storage=data_storage,
                                          preprocessed_path=preprocessed_path,
                                          scaler_file=self.config.CONFIG_PREPROCESSOR[PPK.SCALER_FILE],
                                          scaler_path=self.config.CONFIG_PREPROCESSOR[PPK.SCALER_PATH],
@@ -111,7 +111,7 @@ class Preprocessor:
 
         # ----------shuffle part------------------
         if execution_flags['shuffle']:
-            shuffle = provider.get_shuffle(config=self.config, typ=DATASET_TYPE, data_archive=data_archive,
+            shuffle = provider.get_shuffle(config=self.config, typ=DATASET_TYPE, data_storage=data_storage,
                                            raw_path=preprocessed_path,
                                            dict_names=self.dict_names)
             shuffle.shuffle()

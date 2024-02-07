@@ -31,7 +31,7 @@ class PredictionToImage_npz(PredictionToImage_base):
         return class_mask
 
     def load_datas(self, path: str):
-        data = self.data_archive.get_datas(data_path=path)
+        data = self.data_storage.get_datas(data_path=path)
         X = data[DICT_X]
         y = data[DICT_y]
         idx = data[DICT_IDX]
@@ -41,9 +41,9 @@ class PredictionToImage_npz(PredictionToImage_base):
 
 if __name__ == '__main__':
     import os
-    from provider import get_data_archive
+    from provider import get_data_storage
     import configuration.get_config as config
-    from configuration.parameter import ARCHIVE_TYPE
+    from configuration.parameter import STORAGE_TYPE
 
     os.environ['TF_DETERMINISTIC_OPS'] = '1'
 
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     image_path = os.path.join(main_path, "raw_data", "2019_04_30_15_34_56_SpecCube.png")
     # masks_png = test_png.annotation_mask(image_path)
 
-    test_npz = PredictionToImage_npz(config, data_archive=get_data_archive(typ=ARCHIVE_TYPE))
+    test_npz = PredictionToImage_npz(config, data_storage=get_data_storage(typ=STORAGE_TYPE))
     npz_path = os.path.join(main_path, "raw_data", "2019_04_30_15_34_56_.npz")
     dat_path = r"E:\ICCAS\ESO\EsophagusCancer\2019_04_30_15_34_56_SpecCube.dat"
     anno_masks = test_npz.get_annotation_mask(npz_path)

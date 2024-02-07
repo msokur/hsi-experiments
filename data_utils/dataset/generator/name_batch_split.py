@@ -1,20 +1,19 @@
-import abc
 from typing import List, Dict, Tuple
 from tqdm import tqdm
 
 import os
 import numpy as np
 
-from data_utils.data_archive import DataArchive
+from data_utils.data_storage import DataStorage
 from configuration.parameter import (
     BATCH_FILE
 )
 
 
 class NameBatchSplit:
-    def __init__(self, data_archive: DataArchive, batch_size: int, use_labels: List[int], dict_names: List[str],
+    def __init__(self, data_storage: DataStorage, batch_size: int, use_labels: List[int], dict_names: List[str],
                  with_sample_weights: bool):
-        self.data_archive = data_archive
+        self.data_storage = data_storage
         self.batch_size = batch_size
         self.use_labels = use_labels
         self.dict_names = dict_names
@@ -44,11 +43,10 @@ class NameBatchSplit:
         self.__save_rest(batch_save_path=train_dir, rest=train_rest)
         self.__save_rest(batch_save_path=valid_dir, rest=valid_rest)
         print(f"--------Splitting data into train and valid batches finished--------")
-        train_paths = self.data_archive.get_paths(archive_path=train_dir)
-        valid_paths = self.data_archive.get_paths(archive_path=valid_dir)
+        train_paths = self.data_storage.get_paths(storage_path=train_dir)
+        valid_paths = self.data_storage.get_paths(storage_path=valid_dir)
         return train_paths, valid_paths
 
-    @abc.abstractmethod
     def __split_data_archive__(self, root_data_paths: List[str], batch_train_save_path: str, batch_valid_save_path: str,
                                except_train_names: List[str], except_valid_names: List[str]) \
             -> Tuple[Dict[str, list], Dict[str, list]]:
@@ -57,7 +55,7 @@ class NameBatchSplit:
 
         for p in tqdm(root_data_paths):
             # ------------ except_indexes filtering ---------------
-            data_ = self.data_archive.get_datas(data_path=p)
+            data_ = self.data_storage.get_datas(data_path=p)
             self.__check_dict_names(self.dict_names, data_)
 
             p_names = data_[self.p_dict_name][...]
@@ -93,13 +91,13 @@ class NameBatchSplit:
         if chunks > 0:
             data_ = {k: np.array_split(data[k][...][data_indexes][:chunks_max], chunks) for k in self.save_dict_names}
 
-            idx = len(self.data_archive.get_paths(archive_path=save_path))
+            idx = len(self.data_storage.get_paths(storage_path=save_path))
             for row in range(chunks):
                 arch = {}
                 for i, n in enumerate(self.save_dict_names):
                     arch[n] = data_[n][row]
 
-                self.data_archive.save_group(save_path=save_path, group_name=f"{BATCH_FILE}{idx}", datas=arch)
+                self.data_storage.save_group(save_path=save_path, group_name=f"{BATCH_FILE}{idx}", datas=arch)
                 idx += 1
 
         # ---------------saving of the non equal last part for the future partition---------
@@ -116,7 +114,7 @@ class NameBatchSplit:
         if not os.path.exists(path=path):
             os.mkdir(path)
         else:
-            self.data_archive.delete_archive(delete_path=path)
+            self.data_storage.delete_archive(delete_path=path)
             os.mkdir(path)
 
     @staticmethod

@@ -4,20 +4,20 @@ from typing import List, Dict, Union, Iterable
 
 import numpy as np
 
-from data_utils.data_archive import DataArchive
+from data_utils.data_storage import DataStorage
 
 
-class DataArchiveNPZ(DataArchive):
+class DataStorageNPZ(DataStorage):
     @staticmethod
     def get_path(file) -> str:
         return file.fid.name
 
     @staticmethod
-    def get_paths(archive_path: str) -> List[str]:
-        return sorted(glob(os.path.join(archive_path, "*.npz")))
+    def get_paths(storage_path: str) -> List[str]:
+        return sorted(glob(os.path.join(storage_path, "*.npz")))
 
-    def all_data_generator(self, archive_path: str) -> Iterable:
-        paths = self.get_paths(archive_path=archive_path)
+    def all_data_generator(self, storage_path: str) -> Iterable:
+        paths = self.get_paths(storage_path=storage_path)
         for path in paths:
             yield np.load(file=path)
 

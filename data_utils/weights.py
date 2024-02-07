@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 import numpy as np
 
-from data_utils.data_archive import DataArchive
+from data_utils.data_storage import DataStorage
 
 from configuration.parameter import (
     DICT_y, DICT_WEIGHT,
@@ -15,10 +15,10 @@ from configuration.parameter import (
 
 
 class Weights:
-    def __init__(self, filename: str, data_archive: DataArchive, labels: list = None, label_file=None,
+    def __init__(self, filename: str, data_storage: DataStorage, labels: list = None, label_file=None,
                  y_dict_name: str = None, weight_dict_name: str = None):
         self.filename = filename
-        self.data_archive = data_archive
+        self.data_storage = data_storage
         if labels is not None:
             self.labels = labels
         elif label_file is not None:
@@ -47,7 +47,7 @@ class Weights:
     def weights_get_or_save(self, root_path: str) -> np.ndarray:
         weights_path = os.path.join(root_path, self.filename)
 
-        paths = self.data_archive.get_paths(archive_path=root_path)
+        paths = self.data_storage.get_paths(storage_path=root_path)
 
         quantities = []
         for path in tqdm(paths):
@@ -79,7 +79,7 @@ class Weights:
         return weights
 
     def weighted_data_save(self, root_path: str, weights: np.ndarray):
-        paths = self.data_archive.get_paths(archive_path=root_path)
+        paths = self.data_storage.get_paths(storage_path=root_path)
         for i, path in tqdm(enumerate(paths)):
             y = self.__get_y__(path=path)
             weights_ = np.zeros(y.shape)
@@ -94,7 +94,7 @@ class Weights:
         sums = np.zeros(labels.shape)
 
         for p in class_data_paths:
-            y = self.data_archive.get_data(data_path=p, data_name=self.y_dict_name)
+            y = self.data_storage.get_data(data_path=p, data_name=self.y_dict_name)
             for i, l in enumerate(labels):
                 sums[i] += np.flatnonzero(y == l).shape[0]
 
@@ -110,7 +110,7 @@ class Weights:
 
     @abc.abstractmethod
     def save_data(self, path: str, weights: np.ndarray):
-        self.data_archive.save_data(save_path=path, data_name=self.weight_dict_name, data=weights)
+        self.data_storage.save_data(save_path=path, data_name=self.weight_dict_name, data=weights)
 
     def __get_y__(self, path: str) -> np.ndarray:
-        return self.data_archive.get_data(data_path=path, data_name=self.y_dict_name)[...]
+        return self.data_storage.get_data(data_path=path, data_name=self.y_dict_name)[...]

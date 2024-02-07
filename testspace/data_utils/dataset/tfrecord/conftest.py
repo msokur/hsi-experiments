@@ -1,6 +1,5 @@
 import numpy as np
 
-
 # --- Test data
 
 SPEC = 15
@@ -10,7 +9,7 @@ PATCH = [3, 3]
 TF_DATA_1D_X_0 = np.array([[i] * SPEC for i in range(SAMPLES)], dtype=np.float32)
 
 TF_DATA_3D_X_0 = np.array([[i] * 3 * 3 * SPEC for i in range(SAMPLES)], dtype=np.float32).reshape([SAMPLES, PATCH[0],
-                                                                                                PATCH[1], SPEC])
+                                                                                                   PATCH[1], SPEC])
 
 _y_list = []
 for i, size in enumerate([20, 40, 10, 30]):

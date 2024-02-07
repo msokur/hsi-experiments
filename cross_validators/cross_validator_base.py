@@ -14,14 +14,14 @@ from data_utils.dataset.choice_names import ChoiceNames
 from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, \
     PreprocessorKeys as PPK, TrainerKeys as TK
 from configuration.parameter import (
-    ARCHIVE_TYPE,
+    STORAGE_TYPE,
 )
 
 
 class CrossValidatorBase:
     def __init__(self, config):
         self.config = config
-        self.data_archive = provider.get_data_archive(typ=ARCHIVE_TYPE)
+        self.data_storage = provider.get_data_storage(typ=STORAGE_TYPE)
 
     @staticmethod
     def get_execution_flags():
@@ -54,25 +54,25 @@ class CrossValidatorBase:
                                                data_folder=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
                                                **kwargs)
 
-    def cross_validation_step(self, model_name: str, except_names: List[str], except_cv_names=None):
-        if except_cv_names is None:
-            except_cv_names = []
-        choice_names = ChoiceNames(data_archive=self.data_archive, config_cv=self.config.CONFIG_CV,
+    def cross_validation_step(self, model_name: str, except_names: List[str], leave_out_names=None):
+        if leave_out_names is None:
+            leave_out_names = []
+        choice_names = ChoiceNames(data_storage=self.data_storage, config_cv=self.config.CONFIG_CV,
                                    labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
                                    y_dict_name=self.config.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1],
                                    log_dir=model_name)
-        except_valid_names = choice_names.get_valid_except_names(raw_path=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
-                                                                 except_names=except_cv_names)
-        except_train_names = list(set(except_names) - set(except_cv_names) - set(except_valid_names))
+        valid_names = choice_names.get_valid_except_names(raw_path=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
+                                                          except_names=leave_out_names)
+        train_names = list(set(except_names) - set(leave_out_names) - set(valid_names))
 
-        print(f"We except for patient out data: {', '.join(n for n in except_cv_names)}.\n")
-        print(f"We except for train data: {', '.join(n for n in except_train_names)}.\n")
-        print(f"We except for valid data: {', '.join(n for n in except_valid_names)}.\n")
+        print(f"We except for patient out data: {', '.join(n for n in leave_out_names)}.\n")
+        print(f"We except for train data: {', '.join(n for n in train_names)}.\n")
+        print(f"We except for valid data: {', '.join(n for n in valid_names)}.\n")
 
         trainer = provider.get_trainer(typ=self.config.CONFIG_TRAINER[TK.TYPE], config=self.config,
-                                       data_archive=self.data_archive, model_name=model_name,
-                                       except_cv_names=except_cv_names, except_train_names=except_train_names,
-                                       except_valid_names=except_valid_names)
+                                       data_storage=self.data_storage, model_name=model_name,
+                                       leave_out_names=leave_out_names, train_names=train_names,
+                                       valid_names=valid_names)
         trainer.train()
 
     """def get_paths_and_splits(self, root_path=None):
@@ -101,7 +101,7 @@ class CrossValidatorBase:
             os.makedirs(root_folder)
 
         data_loader = provider.get_data_loader(config=self.config, typ=self.config.CONFIG_DATALOADER[DLK.TYPE],
-                                               data_archive=self.data_archive)
+                                               data_storage=self.data_storage)
         paths, splits = data_loader.get_paths_and_splits()
 
         date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
@@ -125,7 +125,7 @@ class CrossValidatorBase:
 
             except_names = [data_loader.get_name(path=p) for p in paths]
             self.cross_validation_step(model_name=model_name, except_names=except_names,
-                                       except_cv_names=[data_loader.get_name(p) for p in paths_patch])
+                                       leave_out_names=[data_loader.get_name(p) for p in paths_patch])
 
             for i, path_ in enumerate(paths_patch):
                 sensitivity, specificity = 0, 0
@@ -155,7 +155,7 @@ class CrossValidatorBase:
         return label_not_to_train
 
     def __check_label__(self, path: str) -> bool:
-        data = self.data_archive.get_datas(data_path=path)
+        data = self.data_storage.get_datas(data_path=path)
         unique_y = np.unique(data[self.config.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1]])
         intersect = np.intersect1d(unique_y, self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
 

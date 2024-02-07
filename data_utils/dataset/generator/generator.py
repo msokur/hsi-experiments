@@ -3,15 +3,15 @@ from typing import List, Tuple, Union
 import tensorflow as tf
 import numpy as np
 
-from data_utils.data_archive import DataArchive
+from data_utils.data_storage import DataStorage
 
 
 class GeneratorDataset:
     """Dataset for tensorflow"""
 
-    def __init__(self, data_archive: DataArchive, batch_paths: List[str], X_name: str, y_name: str, weights_name: str,
+    def __init__(self, data_storage: DataStorage, batch_paths: List[str], X_name: str, y_name: str, weights_name: str,
                  with_sample_weights: bool):
-        self.data_archive = data_archive
+        self.data_storage = data_storage
         self.batch_paths = batch_paths
         self.X_name = X_name
         self.y_name = y_name
@@ -22,7 +22,7 @@ class GeneratorDataset:
         return len(self.batch_paths)
 
     def __getitem__(self, idx):
-        batch_data = self.data_archive.get_datas(data_path=self.batch_paths[idx])
+        batch_data = self.data_storage.get_datas(data_path=self.batch_paths[idx])
 
         data = (batch_data[self.X_name][:], batch_data[self.y_name][:].astype(np.float64))
 
@@ -42,7 +42,7 @@ class GeneratorDataset:
         Always give the signature from the spectrum and label data. If 'with_sample_weights' True , there is also a
         TensorSpec for the sample weights.
         """
-        data = self.data_archive.get_datas(data_path=self.batch_paths[0])
+        data = self.data_storage.get_datas(data_path=self.batch_paths[0])
         X, y = data[self.X_name], data[self.y_name]
         output_signature = (
             tf.TensorSpec(shape=((None,) + (X.shape[1:])), dtype=X.dtype, name=self.X_name),

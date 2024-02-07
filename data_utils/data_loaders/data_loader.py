@@ -13,7 +13,7 @@ from data_utils.background_detection import detect_background
 from data_utils.data_loaders.path_splits import get_splits
 from data_utils.data_loaders.path_sort import get_sort, folder_sort
 
-from data_utils.data_archive import DataArchive
+from data_utils.data_storage import DataStorage
 
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK
 from configuration.parameter import (
@@ -22,13 +22,13 @@ from configuration.parameter import (
 
 
 class DataLoader:
-    def __init__(self, config, data_archive: DataArchive, dict_names=None):
+    def __init__(self, config, data_storage: DataStorage, dict_names=None):
         self.config = config
         if dict_names is None:
             dict_names = [DICT_X, DICT_y, DICT_IDX]
         if 'background_mask' not in dict_names:
             dict_names.append('background_mask')
-        self.data_archive = data_archive
+        self.data_storage = data_storage
         self.data_reader = provider.get_extension_loader(typ=self.config.CONFIG_DATALOADER[DLK.FILE_EXTENSION],
                                                          config=config)
         self.dict_names = dict_names
@@ -40,10 +40,10 @@ class DataLoader:
         return os.path.split(p=path)[-1].split(".")[0].split(self.config.CONFIG_DATALOADER[DLK.NAME_SPLIT])[0]
 
     def get_name(self, path: str) -> str:
-        return self.data_archive.get_name(path=path)
+        return self.data_storage.get_name(path=path)
 
     def get_paths(self, root_path) -> List[str]:
-        return self.data_archive.get_paths(archive_path=root_path)
+        return self.data_storage.get_paths(storage_path=root_path)
 
     def get_paths_and_splits(self, root_path=None):
         if root_path is None:
@@ -164,7 +164,7 @@ class DataLoader:
                     self.X_y_dict_save_to_archive(destination_path=destination_path, values=values, name=pat_name)
                     first = False
                 else:
-                    self.data_archive.append_data(file_path=os.path.join(destination_path, pat_name),
+                    self.data_storage.append_data(file_path=os.path.join(destination_path, pat_name),
                                                   append_datas=values)
 
     def patches3d_get_from_spectrum(self, spectrum: np.ndarray):
@@ -191,7 +191,7 @@ class DataLoader:
         return tissue_indexes
 
     def X_y_dict_save_to_archive(self, destination_path: str, values: dict, name: str) -> None:
-        self.data_archive.save_group(save_path=destination_path, group_name=name,
+        self.data_storage.save_group(save_path=destination_path, group_name=name,
                                      datas=values)
 
     def X_y_concatenate_from_spectrum(self, spectra, indexes, labels=None):
@@ -256,7 +256,7 @@ class DataLoader:
         return indexes_np
 
     def labeled_spectrum_get_from_archive(self, path: str) -> dict:
-        data = self.data_archive.get_datas(data_path=path)
+        data = self.data_storage.get_datas(data_path=path)
         X, y = data[self.dict_names[0]], data[self.dict_names[1]]
 
         return self.labeled_spectrum_get_from_X_y(X=X, y=y)

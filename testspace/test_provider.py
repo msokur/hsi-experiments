@@ -4,7 +4,7 @@ import numpy as np
 from shutil import rmtree
 
 from provider import get_trainer, get_data_loader, get_whole_analog_of_data_loader, get_evaluation, get_smoother, \
-    get_scaler, get_pixel_detection, get_cross_validator, get_extension_loader, get_data_archive
+    get_scaler, get_pixel_detection, get_cross_validator, get_extension_loader, get_data_storage
 
 from trainers.trainer_tuner import TrainerTuner
 from trainers.trainer_easy import TrainerEasy
@@ -22,7 +22,7 @@ from data_utils.scaler import NormalizerScaler, StandardScalerTransposed
 
 from data_utils.border import detect_border, detect_core
 
-from data_utils.data_archive import DataArchiveZARR, DataArchiveNPZ
+from data_utils.data_storage import DataStorageZARR, DataStorageNPZ
 
 from cross_validators.cross_validator_base import CrossValidatorBase
 
@@ -36,8 +36,8 @@ GET_TRAINER_DATA = [("Tuner", "trainer_tuner", TrainerTuner),
 
 @pytest.mark.parametrize("typ,model_name,result", GET_TRAINER_DATA)
 def test_get_trainer(test_config, typ, model_name, result):
-    trainer = get_trainer(typ=typ, config=test_config, data_archive=DataArchiveNPZ(),  model_name=model_name,
-                          except_cv_names=[""], except_train_names=[""], except_valid_names=[""])
+    trainer = get_trainer(typ=typ, config=test_config, data_storage=DataStorageNPZ(), model_name=model_name,
+                          leave_out_names=[""], train_names=[""], valid_names=[""])
 
     assert isinstance(trainer, result)
 
@@ -53,7 +53,7 @@ GET_DATA_LOADER_DATA = [("normal", DataLoader),
 
 @pytest.mark.parametrize("typ,result", GET_DATA_LOADER_DATA)
 def test_get_data_loader(test_config, typ, result):
-    loader = get_data_loader(typ=typ, config=test_config, data_archive=DataArchiveNPZ())
+    loader = get_data_loader(typ=typ, config=test_config, data_storage=DataStorageNPZ())
 
     assert isinstance(loader, result)
 
@@ -132,7 +132,7 @@ def scaler_path():
 @pytest.mark.parametrize("typ,result", GET_SCALER_DATA)
 def test_get_scaler(test_config, typ, result):
     path = "scaler_test"
-    scaler = get_scaler(typ=typ, config=test_config, preprocessed_path=path, data_archive=DataArchiveNPZ())
+    scaler = get_scaler(typ=typ, config=test_config, preprocessed_path=path, data_storage=DataStorageNPZ())
 
     assert isinstance(scaler, result)
 
@@ -183,15 +183,15 @@ def test_get_extension_loader_error(test_config):
         get_extension_loader(typ="test", config=test_config)
 
 
-GET_DATA_ARCHIVE = [("npz", DataArchiveNPZ),
-                    ("zarr", DataArchiveZARR)]
+GET_DATA_STORAGE = [("npz", DataStorageNPZ),
+                    ("zarr", DataStorageZARR)]
 
 
-@pytest.mark.parametrize("typ,archive", GET_DATA_ARCHIVE)
-def test_get_data_archive(typ: str, archive):
-    assert isinstance(get_data_archive(typ=typ), archive)
+@pytest.mark.parametrize("typ,data_storage", GET_DATA_STORAGE)
+def test_get_data_storage(typ: str, data_storage):
+    assert isinstance(get_data_storage(typ=typ), data_storage)
 
 
-def test_get_data_archive_error():
-    with pytest.raises(ValueError, match="Error! No corresponding data archive for test"):
-        get_data_archive(typ="test")
+def test_get_data_storage_error():
+    with pytest.raises(ValueError, match="Error! No corresponding data storage for test"):
+        get_data_storage(typ="test")

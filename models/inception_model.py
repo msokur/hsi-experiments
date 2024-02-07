@@ -22,9 +22,7 @@ class InceptionModelBase(ModelBase):
         if self.name is None:
             self.name = MK.INCEPTION_MODEL_NAME
 
-        input_ = keras.layers.Input(
-            shape=self.input_shape, name=self.name
-        )
+        input_ = keras.layers.Input(shape=self.input_shape, name="input")
 
         net = self.__inception_block(input_=input_, factor=self.model_config[MK.INCEPTION_FACTOR],
                                      with_batch_norm=self.model_config[MK.WITH_BATCH_NORM])
@@ -81,7 +79,8 @@ class InceptionModelBase(ModelBase):
 
         model = keras.Model(
             inputs=[input_],
-            outputs=[result]
+            outputs=[result],
+            name=self.name
         )
 
         return model

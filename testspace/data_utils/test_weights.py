@@ -5,7 +5,7 @@ import os
 import pickle
 
 from data_utils.weights import Weights
-from data_utils.data_archive import DataArchiveZARR, DataArchiveNPZ
+from data_utils.data_storage import DataStorageZARR, DataStorageNPZ
 
 WEIGHTS_RESULT = np.array([[8, 8, 8, 8], [4, 4, 0, 0]])
 
@@ -24,22 +24,22 @@ WEIGHTS_SAVE_RESULT = {"weights": WEIGHTS_RESULT,
 WEIGHT_DATA_SAVE_RESULT = np.array([np.full(shape=12, fill_value=8), np.full(shape=12, fill_value=4)])
 
 
-def get_data_archive(typ: str):
+def get_data_storage(typ: str):
     if typ == "npz":
-        return DataArchiveNPZ()
+        return DataStorageNPZ()
     elif typ == "zarr":
-        return DataArchiveZARR()
+        return DataStorageZARR()
 
 
 def test_weights_get_from_file(data_dir: str):
-    weights = Weights(filename="weights_test.weights", data_archive=get_data_archive(typ="npz"),
+    weights = Weights(filename="weights_test.weights", data_storage=get_data_storage(typ="npz"),
                       labels=LABELS).weights_get_from_file(root_path=data_dir)
     assert (weights == WEIGHTS_RESULT).all()
 
 
 def test_weights_get_from_file_error(data_dir: str):
     with pytest.raises(ValueError, match=f"No .weights file was found in the directory, check given path!"):
-        Weights(filename=FILENAME, data_archive=get_data_archive(typ="npz"),
+        Weights(filename=FILENAME, data_storage=get_data_storage(typ="npz"),
                 labels=LABELS).weights_get_from_file(root_path=data_dir)
 
 
@@ -50,7 +50,7 @@ WEIGHT_GET_OR_SAVE_DATA = [("npz", "1d"),
 @pytest.mark.parametrize("typ,folder", WEIGHT_GET_OR_SAVE_DATA)
 def test_weights_get_or_save_only_get(data_dir: str, typ: str, folder: str):
     main_path = os.path.join(data_dir, f"{typ}_file", folder)
-    weights_class = Weights(filename=FILENAME, data_archive=get_data_archive(typ=typ), labels=LABELS)
+    weights_class = Weights(filename=FILENAME, data_storage=get_data_storage(typ=typ), labels=LABELS)
     weights = weights_class.weights_get_or_save(root_path=main_path)
     os.remove(os.path.join(main_path, FILENAME))
     assert (weights == WEIGHTS_RESULT).all()
@@ -59,7 +59,7 @@ def test_weights_get_or_save_only_get(data_dir: str, typ: str, folder: str):
 @pytest.mark.parametrize("typ,folder", WEIGHT_GET_OR_SAVE_DATA)
 def test_weights_get_or_save_only_save(data_dir: str, typ: str, folder: str):
     main_path = os.path.join(data_dir, f"{typ}_file", folder)
-    weights_class = Weights(filename=FILENAME, data_archive=get_data_archive(typ=typ), labels=LABELS)
+    weights_class = Weights(filename=FILENAME, data_storage=get_data_storage(typ=typ), labels=LABELS)
     weights_class.weights_get_or_save(root_path=main_path)
     data = pickle.load(open(os.path.join(main_path, FILENAME), 'rb'))
     os.remove(os.path.join(main_path, FILENAME))
@@ -68,7 +68,7 @@ def test_weights_get_or_save_only_save(data_dir: str, typ: str, folder: str):
 
 
 def test_weighted_data_save_npz(npz_1d_data_dir: str):
-    weight = Weights(filename=FILENAME, data_archive=get_data_archive(typ="npz"), labels=LABELS,
+    weight = Weights(filename=FILENAME, data_storage=get_data_storage(typ="npz"), labels=LABELS,
                      y_dict_name=Y_DICT_NAME, weight_dict_name=WEIGHT_DICT_NAME)
     weight.weighted_data_save(root_path=npz_1d_data_dir, weights=WEIGHTS_RESULT)
     data_weights = []
@@ -80,7 +80,7 @@ def test_weighted_data_save_npz(npz_1d_data_dir: str):
 
 
 def test_weighted_data_save_zarr(zarr_1d_data_dir: str):
-    weight = Weights(filename=FILENAME, data_archive=get_data_archive(typ="zarr"), labels=LABELS,
+    weight = Weights(filename=FILENAME, data_storage=get_data_storage(typ="zarr"), labels=LABELS,
                      y_dict_name=Y_DICT_NAME, weight_dict_name=WEIGHT_DICT_NAME)
     weight.weighted_data_save(root_path=zarr_1d_data_dir, weights=WEIGHTS_RESULT)
     data_weights = []

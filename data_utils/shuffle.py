@@ -11,7 +11,7 @@ from tqdm import tqdm
 import warnings
 
 from configuration.copy_py_files import copy_files
-from data_utils.data_archive import DataArchive
+from data_utils.data_storage import DataStorage
 from data_utils.dataset import save_tfr_file
 from data_utils.dataset.meta_files import write_meta_info
 
@@ -21,9 +21,9 @@ from configuration.parameter import (
 
 
 class Shuffle:
-    def __init__(self, config, data_archive: DataArchive, raw_path: str, dict_names: list, dataset_typ: str,
+    def __init__(self, config, data_storage: DataStorage, raw_path: str, dict_names: list, dataset_typ: str,
                  set_seed: bool = True):
-        self.data_archive = data_archive
+        self.data_storage = data_storage
         self.raw_path = raw_path
         self.config = config
         self.dict_names = dict_names
@@ -54,7 +54,7 @@ class Shuffle:
     def __check_piles_number(self):
         size = 0.0
         # get size from data archive
-        for p in self.data_archive.get_paths(archive_path=self.raw_path):
+        for p in self.data_storage.get_paths(storage_path=self.raw_path):
             # get file size in bytes and convert to GB
             size += os.path.getsize(p) / (1024.0 ** 3)
 
@@ -94,13 +94,13 @@ class Shuffle:
     def __split_into_piles(self, piles: List[list]):
         print("--Splitting into piles started--")
 
-        for i, p in tqdm(enumerate(self.data_archive.get_paths(archive_path=self.raw_path))):
+        for i, p in tqdm(enumerate(self.data_storage.get_paths(storage_path=self.raw_path))):
             # clear piles for new randon numbers
             for pn in range(self.piles_number):
                 piles[pn] = []
 
-            name = self.data_archive.get_name(path=p)
-            _data = self.data_archive.get_datas(data_path=p)
+            name = self.data_storage.get_name(path=p)
+            _data = self.data_storage.get_datas(data_path=p)
 
             data = {n: a for n, a in _data.items()}
 
@@ -182,4 +182,4 @@ class TFRShuffle(Shuffle):
 
 class GeneratorShuffle(Shuffle):
     def _save_file(self, file_name: str, sh_data: Dict[str, np.ndarray]):
-        self.data_archive.save_group(save_path=self.shuffle_saving_path, group_name=file_name, datas=sh_data)
+        self.data_storage.save_group(save_path=self.shuffle_saving_path, group_name=file_name, datas=sh_data)

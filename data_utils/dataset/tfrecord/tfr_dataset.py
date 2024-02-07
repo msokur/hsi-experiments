@@ -17,13 +17,13 @@ from configuration.parameter import (
 
 
 class TFRDatasets(Dataset):
-    def get_datasets(self, ds_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
+    def get_datasets(self, dataset_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
                      batch_path: str):
-        train_ints = self.__get_names_int_list(ds_paths=ds_paths, names=train_names)
-        valid_ints = self.__get_names_int_list(ds_paths=ds_paths, names=valid_names)
+        train_ints = self.__get_names_int_list(dataset_paths=dataset_paths, names=train_names)
+        valid_ints = self.__get_names_int_list(dataset_paths=dataset_paths, names=valid_names)
         tf_labels = tf.Variable(initial_value=labels, dtype=tf.int64)
 
-        dataset = tf.data.TFRecordDataset(filenames=ds_paths)
+        dataset = tf.data.TFRecordDataset(filenames=dataset_paths)
 
         if self.d3:
             dataset = dataset.map(map_func=tfr_3d_train_parser)
@@ -35,7 +35,7 @@ class TFRDatasets(Dataset):
 
         return train_dataset, valid_dataset
 
-    def get_paths(self, root_paths: str) -> List[str]:
+    def get_dataset_paths(self, root_paths: str) -> List[str]:
         return sorted(glob(os.path.join(root_paths, "*" + TFR_FILE_EXTENSION)))
 
     def get_meta_shape(self, paths: List[str]) -> Tuple[int]:
@@ -48,15 +48,15 @@ class TFRDatasets(Dataset):
         pass
 
     @staticmethod
-    def __get_names_int_list(ds_paths: list, names: list) -> tf.Variable:
+    def __get_names_int_list(dataset_paths: list, names: list) -> tf.Variable:
         """Parsed names in Dataset files to integer
 
-        :param ds_paths: List with the paths from the data
+        :param dataset_paths: List with the paths from the data
         :param names: List with names to use
 
         :return: A tf Variable with integer
         """
-        names_int_dict = parse_names_to_int(tfr_files=ds_paths)
+        names_int_dict = parse_names_to_int(tfr_files=dataset_paths)
         names_int = []
         for name in names:
             if name in names_int_dict:
@@ -88,7 +88,7 @@ class TFRDatasets(Dataset):
         return dataset.batch(batch_size=self.batch_size, drop_remainder=True).with_options(options=self.options)
 
     @staticmethod
-    def _get_ds_options():
+    def _get_dataset_options():
         """Get TF data options"""
         options = tf.data.Options()
         options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
