@@ -9,7 +9,7 @@
 		"WAVE_AREA": 100,
 		"LABELS_TO_TRAIN": [0, 1],
 		"NAME_SPLIT": "_SpecCube",
-		"MASK_DIFF": ["_SpecCube.dat", ".png"],
+		"MASK_DIFF": ["dat.dat", "mask.png"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
 		"SMOOTHING_TYPE": "median_filter",
@@ -24,17 +24,17 @@
 		"LABEL_DATA": {
 			"0": {
 				"MASK": [[255, 255, 0]],
-				"LABEL": "Nerve",
+				"LABEL": "Class0",
 				"COLOR": "yellow"
 			},
 			"1": {
 				"MASK": [[0, 0, 255]],
-				"LABEL": "Tumor",
+				"LABEL": "Class1",
 				"COLOR": "blue"
 			},
 			"2": {
 				"MASK": [[255, 0, 0]],
-				"LABEL": "Parotis",
+				"LABEL": "Class2",
 				"COLOR": "red"
 			}
 		},

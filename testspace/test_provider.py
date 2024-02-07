@@ -1,6 +1,7 @@
 import pytest
 import os
 import numpy as np
+from shutil import rmtree
 
 from provider import get_trainer, get_data_loader, get_whole_analog_of_data_loader, get_evaluation, get_smoother, \
     get_scaler, get_pixel_detection, get_cross_validator, get_extension_loader, get_data_archive
@@ -23,7 +24,7 @@ from data_utils.border import detect_border, detect_core
 
 from data_utils.data_archive import DataArchiveZARR, DataArchiveNPZ
 
-from cross_validators.cross_validator_normal import CrossValidationNormal
+from cross_validators.cross_validator_base import CrossValidatorBase
 
 from data_utils.data_loaders.dat_file import DatFile
 from data_utils.data_loaders.mat_file import MatFile
@@ -34,18 +35,16 @@ GET_TRAINER_DATA = [("Tuner", "trainer_tuner", TrainerTuner),
 
 
 @pytest.mark.parametrize("typ,model_name,result", GET_TRAINER_DATA)
-def test_get_trainer(typ, model_name, result):
-    trainer = get_trainer(typ=typ, data_archive=DataArchiveNPZ(),
-                          config_trainer={"BATCH_SIZE": 10, "WITH_SAMPLE_WEIGHTS": False}, config_paths={},
-                          labels_to_train=[0], model_name=model_name, except_cv_names=[""], except_train_names=[""],
-                          except_valid_names=[""], dict_names=[""], config_distribution={}, d3=True, mode="DEBUG")
+def test_get_trainer(test_config, typ, model_name, result):
+    trainer = get_trainer(typ=typ, config=test_config, data_archive=DataArchiveNPZ(),  model_name=model_name,
+                          except_cv_names=[""], except_train_names=[""], except_valid_names=[""])
 
     assert isinstance(trainer, result)
 
 
-def test_get_trainer_error():
+def test_get_trainer_error(test_config):
     with pytest.raises(ValueError, match="Error! No corresponding Trainer for test"):
-        get_trainer(typ="test")
+        get_trainer(typ="test", config=test_config)
 
 
 GET_DATA_LOADER_DATA = [("normal", DataLoader),
@@ -53,23 +52,18 @@ GET_DATA_LOADER_DATA = [("normal", DataLoader),
 
 
 @pytest.mark.parametrize("typ,result", GET_DATA_LOADER_DATA)
-def test_get_data_loader(typ, result):
-    loader = get_data_loader(typ=typ, data_archive=DataArchiveNPZ(),
-                             config_dataloader={"FILE_EXTENSION": ".dat"}, config_paths={})
+def test_get_data_loader(test_config, typ, result):
+    loader = get_data_loader(typ=typ, config=test_config, data_archive=DataArchiveNPZ())
 
     assert isinstance(loader, result)
 
 
-def test_data_loader_error():
+def test_data_loader_error(test_config):
     with pytest.raises(ValueError, match="Error! No corresponding Data Loader for test"):
-        get_data_loader(typ="test")
+        get_data_loader(typ="test", config=test_config)
 
 
-GET_WHOLE_ANALOG_DATA = [("colon", "colon_whole"),
-                         ("bea_brain", "bea_brain_whole"),
-                         ("bea_eso", "bea_eso_whole"),
-                         ("bea_colon", "bea_colon_whole"),
-                         ("hno", "hno_whole")]
+GET_WHOLE_ANALOG_DATA = [("normal", "whole")]
 
 
 @pytest.mark.parametrize("typ,result", GET_WHOLE_ANALOG_DATA)
@@ -86,18 +80,23 @@ GET_EVALUATION_DATA = [([0, 1], EvaluationBinary),
                        ([0, 1, 2], EvaluationMulticlass)]
 
 
+@pytest.fixture
+def delete_result_folder():
+    yield
+    if os.path.exists("results"):
+        rmtree("results")
+
+
 @pytest.mark.parametrize("labels,result", GET_EVALUATION_DATA)
-def test_get_evaluation(labels, result):
-    evaluation = get_evaluation(labels=labels, config_cv={"NAME": "test"}, npz_folder="test")
+def test_get_evaluation(test_config, delete_result_folder, labels, result):
+    evaluation = get_evaluation(labels=labels, config=test_config)
 
     assert isinstance(evaluation, result)
 
-    os.rmdir(path=evaluation.save_evaluation_folder)
 
-
-def test_get_evaluation_error():
+def test_get_evaluation_error(test_config):
     with pytest.raises(ValueError, match="Error! No corresponding evaluation for labels length < 2"):
-        get_evaluation(labels=[0], name="test")
+        get_evaluation(labels=[0], config=test_config)
 
 
 GET_SMOOTHER_DATA = [("median_filter", "/work/folder", 5, MedianFilter),
@@ -105,7 +104,7 @@ GET_SMOOTHER_DATA = [("median_filter", "/work/folder", 5, MedianFilter),
 
 
 @pytest.mark.parametrize("typ,path,size,result", GET_SMOOTHER_DATA)
-def test_get_smoother(typ, path, size, result):
+def test_get_smoother(test_config, typ, path, size, result):
     smoother = get_smoother(typ=typ, path=path, size=size)
 
     assert isinstance(smoother, result)
@@ -131,16 +130,16 @@ def scaler_path():
 
 @pytest.mark.usefixtures("scaler_path")
 @pytest.mark.parametrize("typ,result", GET_SCALER_DATA)
-def test_get_scaler(typ, result):
+def test_get_scaler(test_config, typ, result):
     path = "scaler_test"
-    scaler = get_scaler(typ=typ, preprocessed_path=path, data_archive=DataArchiveNPZ())
+    scaler = get_scaler(typ=typ, config=test_config, preprocessed_path=path, data_archive=DataArchiveNPZ())
 
     assert isinstance(scaler, result)
 
 
-def test_get_scaler_error():
+def test_get_scaler_error(test_config):
     with pytest.raises(ValueError, match="Error! No corresponding scaler for test"):
-        get_scaler(typ="test")
+        get_scaler(typ="test", config=test_config)
 
 
 GET_PIXEL_DETECTION_DATA = [("detect_border", detect_border),
@@ -157,17 +156,17 @@ def test_get_pixel_detection_error():
         get_pixel_detection(typ="test")
 
 
-GET_CROSS_VALIDATION_DATA = [("normal", CrossValidationNormal)]
+GET_CROSS_VALIDATION_DATA = [("normal", CrossValidatorBase)]
 
 
 @pytest.mark.parametrize("typ,result", GET_CROSS_VALIDATION_DATA)
-def test_get_cross_validation(typ, result):
-    assert isinstance(get_cross_validator(typ=typ), result)
+def test_get_cross_validation(test_config, typ, result):
+    assert isinstance(get_cross_validator(typ=typ, config=test_config), result)
 
 
-def test_get_cross_validation_error():
+def test_get_cross_validation_error(test_config):
     with pytest.raises(ValueError, match="Error! No corresponding Cross validator for test"):
-        get_cross_validator(typ="test")
+        get_cross_validator(typ="test", config=test_config)
 
 
 GET_EXTENSION_LOADER_DATA = [(".dat", DatFile),
@@ -175,13 +174,13 @@ GET_EXTENSION_LOADER_DATA = [(".dat", DatFile),
 
 
 @pytest.mark.parametrize("typ,result", GET_EXTENSION_LOADER_DATA)
-def test_get_extension_loader(typ, result):
-    assert isinstance(get_extension_loader(typ=typ, dataloader_config={}), result)
+def test_get_extension_loader(test_config, typ, result):
+    assert isinstance(get_extension_loader(typ=typ, config=test_config), result)
 
 
-def test_get_extension_loader_error():
+def test_get_extension_loader_error(test_config):
     with pytest.raises(ValueError, match="Error! No corresponding file extension for test"):
-        get_extension_loader(typ="test")
+        get_extension_loader(typ="test", config=test_config)
 
 
 GET_DATA_ARCHIVE = [("npz", DataArchiveNPZ),

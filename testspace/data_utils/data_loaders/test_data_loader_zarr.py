@@ -32,9 +32,9 @@ def zarr_test_dir(zarr_data_dir: str) -> str:
 
 
 @pytest.fixture
-def dataloader() -> DataLoader:
+def dataloader(test_config) -> DataLoader:
     data_archive = DataArchiveZARR()
-    return DataLoader(data_archive=data_archive, config_dataloader={"FILE_EXTENSION": ".dat"}, config_paths={})
+    return DataLoader(config=test_config, data_archive=data_archive)
 
 
 def test_get_name(zarr_test_dir: str, dataloader):

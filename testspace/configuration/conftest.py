@@ -13,65 +13,35 @@ from models.inception_model import InceptionModel1D, InceptionModel3D
 from util import tf_metric_multiclass, tf_metrics_binary
 
 
-# --- pytest fixtures for the paths to load test data ---
+# --- pytest fixtures for the paths to load test data --
 @pytest.fixture
-def configuration_dir(main_dir: str) -> str:
-    return os.path.join(main_dir, "configuration")
-
-
-@pytest.fixture
-def data_dir(configuration_dir: str) -> str:
-    return os.path.join(configuration_dir, "test_data")
+def config_data_dir(main_dir: str) -> str:
+    return os.path.join(main_dir, "_test_configs")
 
 
 @pytest.fixture
-def config_data_name() -> str:
-    return "get_config_data.json"
+def base_config_path(config_data_dir: str) -> str:
+    return os.path.join(config_data_dir, "preprocessor_data.json")
 
 
 @pytest.fixture
-def config_data_dir(data_dir: str, config_data_name: str) -> str:
-    return os.path.join(data_dir, config_data_name)
+def cv_data_dir(config_data_dir: str) -> str:
+    return os.path.join(config_data_dir, "cv_data.json")
 
 
 @pytest.fixture
-def paths_data_name() -> str:
-    return "get_paths_data.json"
+def dataloader_data_dir(config_data_dir: str) -> str:
+    return os.path.join(config_data_dir, "dataloader_data.json")
 
 
 @pytest.fixture
-def paths_data_dir(data_dir: str, paths_data_name: str) -> str:
-    return os.path.join(data_dir, paths_data_name)
+def paths_data_dir(config_data_dir: str) -> str:
+    return os.path.join(config_data_dir, "paths_data.json")
 
 
 @pytest.fixture
-def dataloader_data_name() -> str:
-    return "get_dataloader_data.json"
-
-
-@pytest.fixture
-def dataloader_data_dir(data_dir: str, dataloader_data_name: str) -> str:
-    return os.path.join(data_dir, dataloader_data_name)
-
-
-@pytest.fixture
-def cv_data_name() -> str:
-    return "get_cv_data.json"
-
-
-@pytest.fixture
-def cv_data_dir(data_dir: str, cv_data_name: str) -> str:
-    return os.path.join(data_dir, cv_data_name)
-
-
-@pytest.fixture
-def trainer_data_name() -> str:
-    return "get_trainer_data.json"
-
-
-@pytest.fixture
-def trainer_data_dir(data_dir: str, trainer_data_name: str) -> str:
-    return os.path.join(data_dir, trainer_data_name)
+def trainer_data_dir(config_data_dir: str) -> str:
+    return os.path.join(config_data_dir, "trainer_data.json")
 
 
 # --- shared results ---
@@ -103,7 +73,7 @@ def dataloader_result() -> dict:
             "WAVE_AREA": 100,
             "LABELS_TO_TRAIN": [0, 1],
             "NAME_SPLIT": "_SpecCube",
-            "MASK_DIFF": ["_SpecCube.dat", ".png"],
+            "MASK_DIFF": ["dat.dat", "mask.png"],
             "LABELS_FILENAME": "labels.labels",
             "CONTAMINATION_FILENAME": "contamination.csv",
             "SMOOTHING_TYPE": "median_filter",
@@ -117,7 +87,7 @@ def dataloader_result() -> dict:
             "CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
             "WITH_BACKGROUND_EXTRACTION": False,
             "MASK_COLOR": {0: [[255, 255, 0]], 1: [[0, 0, 255]], 2: [[255, 0, 0]]},
-            "TISSUE_LABELS": {0: "Nerve", 1: "Tumor", 2: "Parotis"},
+            "TISSUE_LABELS": {0: "Class0", 1: "Class1", 2: "Class2"},
             "PLOT_COLORS": {0: "yellow", 1: "blue", 2: "red"},
             "LABELS": [0, 1, 2]}
 
@@ -150,7 +120,7 @@ def path_prefix() -> str:
 @pytest.fixture
 def path_result(sys_slash: str, path_prefix: str):
     return {"CHECKPOINT_PATH": "checkpoints",
-            "MODEL_PATH": "model",
+            "RESULTS_FOLDER": "results",
             "MODE": "WITH_GPU",
             "PREFIX": path_prefix,
             "MODEL_NAME_PATHS": ["/home/sc.uni-leipzig.de/xyz/hsi-experiments-BA/logs"],

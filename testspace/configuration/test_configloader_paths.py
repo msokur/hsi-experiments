@@ -21,7 +21,7 @@ def get_database_result(path_result: dict) -> dict:
 @pytest.fixture
 def concat_prefix_result(get_database_result: dict) -> dict:
     return pop_from_dict(data=get_database_result, keys_to_pop=["SHUFFLED_PATH", "BATCHED_PATH", "MASK_PATH",
-                                                                "MODEL_NAME_PATHS", "PREFIX", "MODE", "MODEL_PATH",
+                                                                "MODEL_NAME_PATHS", "PREFIX", "MODE", "RESULTS_FOLDER",
                                                                 "CHECKPOINT_PATH"])
 
 

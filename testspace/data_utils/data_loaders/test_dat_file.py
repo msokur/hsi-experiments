@@ -79,24 +79,24 @@ MK2_RESULT_MASK = np.array([[NO_ANNO, NO_ANNO, NO_ANNO, NO_ANNO, NO_ANNO, GREEN,
                             [NO_ANNO, RED, NO_ANNO, NO_ANNO, NO_ANNO, BLUE, NO_ANNO, NO_ANNO]])
 
 
-def GET_MASK_COLOR(typ):
+def GET_MASK_COLOR(typ, config):
     if typ == "RGB":
-        LOADER_CONFIG["MASK_COLOR"] = RGB_MASK_COLOR
+        config.CONFIG_DATALOADER["MASK_COLOR"] = RGB_MASK_COLOR
     elif typ == "RGBA":
-        LOADER_CONFIG["MASK_COLOR"] = RGBA_MASK_COLOR
+        config.CONFIG_DATALOADER["MASK_COLOR"] = RGBA_MASK_COLOR
     elif typ == "COMBINED":
-        LOADER_CONFIG["MASK_COLOR"] = COMBINED_MASK_COLOR
+        config.CONFIG_DATALOADER["MASK_COLOR"] = COMBINED_MASK_COLOR
     elif typ == "ERROR1":
-        LOADER_CONFIG["MASK_COLOR"] = ERROR1_MASK_COLOR
+        config.CONFIG_DATALOADER["MASK_COLOR"] = ERROR1_MASK_COLOR
     elif typ == "ERROR2":
-        LOADER_CONFIG["MASK_COLOR"] = ERROR2_MASK_COLOR
+        config.CONFIG_DATALOADER["MASK_COLOR"] = ERROR2_MASK_COLOR
     elif typ == "ERROR3":
-        LOADER_CONFIG["MASK_COLOR"] = ERROR3_MASK_COLOR
+        config.CONFIG_DATALOADER["MASK_COLOR"] = ERROR3_MASK_COLOR
     elif typ == "WARNING":
-        LOADER_CONFIG["MASK_COLOR"] = WARNING_MASK_COLOR
+        config.CONFIG_DATALOADER["MASK_COLOR"] = WARNING_MASK_COLOR
     else:
         raise ValueError("Found no typ for 'MASK_COLOR'!")
-    return LOADER_CONFIG.copy()
+    return config
 
 
 @pytest.fixture
@@ -106,37 +106,39 @@ def mask():
                      [[0, 0, 0, 0], [0, 0, 255, 255], [0, 0, 255, 128]]])
 
 
-INDEXES_GET_BOOL_FROM_MASK_DATA = [(DatFile(dataloader_config=GET_MASK_COLOR("RGB")), RGB_RESULT_BOOL_MASK),
-                                   (DatFile(dataloader_config=GET_MASK_COLOR("RGBA")), RGBA_RESULT_BOOL_MASK),
-                                   (DatFile(dataloader_config=GET_MASK_COLOR("COMBINED")), COMBINED_RESULT_BOOL_MASK)]
+INDEXES_GET_BOOL_FROM_MASK_DATA = [(DatFile, "RGB", RGB_RESULT_BOOL_MASK),
+                                   (DatFile, "RGBA", RGBA_RESULT_BOOL_MASK),
+                                   (DatFile, "COMBINED", COMBINED_RESULT_BOOL_MASK)]
 
 
-@pytest.mark.parametrize("loader,result", INDEXES_GET_BOOL_FROM_MASK_DATA)
-def test_indexes_get_bool_from_mask(mask, loader, result):
+@pytest.mark.parametrize("ext_loader,color,result", INDEXES_GET_BOOL_FROM_MASK_DATA)
+def test_indexes_get_bool_from_mask(test_config, mask, ext_loader, color: str, result):
+    loader = ext_loader(config=GET_MASK_COLOR(typ=color, config=test_config))
     bool_masks = loader.indexes_get_bool_from_mask(mask=mask)
     for bool_mask, result_mask in zip(bool_masks, result):
         assert (bool_mask == result_mask).all()
 
 
-INDEXES_GET_BOOL_FROM_MASK_DATA_ERROR = [(DatFile(dataloader_config=GET_MASK_COLOR("ERROR1")),
+INDEXES_GET_BOOL_FROM_MASK_DATA_ERROR = [(DatFile, "ERROR1",
                                           "Check your configurations in 'MASK_COLOR' for the classification 0! "
                                           "You need a RGB or RGBA value!"),
-                                         (DatFile(dataloader_config=GET_MASK_COLOR("ERROR2")),
+                                         (DatFile, "ERROR2",
                                           "Check your configurations in 'MASK_COLOR' for the classification 0! "
                                           "Surround your RGB/RGBA value with brackets!"),
-                                         (DatFile(dataloader_config=GET_MASK_COLOR("ERROR3")),
+                                         (DatFile, "ERROR3",
                                           "Check your configurations in 'MASK_COLOR' for the classification 0! "
                                           "You need a RGB or RGBA value!")]
 
 
-@pytest.mark.parametrize("loader,error", INDEXES_GET_BOOL_FROM_MASK_DATA_ERROR)
-def test_indexes_get_bool_from_mask_error(mask, loader, error):
+@pytest.mark.parametrize("ext_loader,error_typ,error", INDEXES_GET_BOOL_FROM_MASK_DATA_ERROR)
+def test_indexes_get_bool_from_mask_error(test_config, mask, ext_loader, error_typ: str, error: str):
+    loader = ext_loader(config=GET_MASK_COLOR(typ=error_typ, config=test_config))
     with pytest.raises(ValueError, match=error):
         loader.indexes_get_bool_from_mask(mask=mask)
 
 
-def test_indexes_get_bool_from_mask_warning(mask):
-    loader = DatFile(dataloader_config=GET_MASK_COLOR("WARNING"))
+def test_indexes_get_bool_from_mask_warning(test_config, mask):
+    loader = DatFile(config=GET_MASK_COLOR(typ="WARNING", config=test_config))
     with pytest.warns(UserWarning, match="To many values in 'MASK_COLOR' for the classification 0! "
                                          "Only the first four will be used."):
         bool_masks = loader.indexes_get_bool_from_mask(mask=mask)
@@ -144,13 +146,14 @@ def test_indexes_get_bool_from_mask_warning(mask):
     assert (bool_masks[0] == RGBA_RESULT_BOOL_MASK[0]).all()
 
 
-SET_MASK_WITH_LABEL_DATA = [(DatFile(dataloader_config=GET_MASK_COLOR("RGB")), RGB_RESULT_INDEX_MASK),
-                            (DatFile(dataloader_config=GET_MASK_COLOR("RGBA")), RGBA_RESULT_INDEX_MASK),
-                            (DatFile(dataloader_config=GET_MASK_COLOR("COMBINED")), COMBINED_RESULT_INDEX_MASK)]
+SET_MASK_WITH_LABEL_DATA = [(DatFile, "RGB", RGB_RESULT_INDEX_MASK),
+                            (DatFile, "RGBA", RGBA_RESULT_INDEX_MASK),
+                            (DatFile, "COMBINED", COMBINED_RESULT_INDEX_MASK)]
 
 
-@pytest.mark.parametrize("loader,result", SET_MASK_WITH_LABEL_DATA)
-def test_set_mask_with_label(mask, loader, result):
+@pytest.mark.parametrize("ext_loader,color,result", SET_MASK_WITH_LABEL_DATA)
+def test_set_mask_with_label(test_config, mask, ext_loader, color: str, result):
+    loader = ext_loader(config=GET_MASK_COLOR(typ=color, config=test_config))
     print(loader.set_mask_with_label(mask=mask))
     assert (loader.set_mask_with_label(mask=mask) == result).all()
 
@@ -164,18 +167,18 @@ def dat_path(dat_data_dir: str) -> str:
     return os.path.join(dat_data_dir, "test_dat.dat")
 
 
-def test_file_read_mask_and_spectrum_only_spectrum(dat_path: str):
-    spectrum, _ = DatFile(dataloader_config=LOADER_CONFIG).file_read_mask_and_spectrum(dat_path)
+def test_file_read_mask_and_spectrum_only_spectrum(test_config, dat_path: str):
+    spectrum, _ = DatFile(config=test_config).file_read_mask_and_spectrum(dat_path)
     assert np.allclose(spectrum, SPECTRUM_RESULT_4_5_92)
 
 
-def test_file_read_mask_and_spectrum_only_mask(dat_path: str):
-    _, mask = DatFile(dataloader_config=LOADER_CONFIG).file_read_mask_and_spectrum(dat_path)
+def test_file_read_mask_and_spectrum_only_mask(test_config, dat_path: str):
+    _, mask = DatFile(config=test_config).file_read_mask_and_spectrum(dat_path)
     assert (mask == PNG_IMG_1).all()
 
 
-def test_spectrum_read_from_dat(dat_path: str):
-    cube = DatFile(dataloader_config=LOADER_CONFIG).spectrum_read_from_dat(dat_path=dat_path)
+def test_spectrum_read_from_dat(test_config, dat_path: str):
+    cube = DatFile(config=test_config).spectrum_read_from_dat(dat_path=dat_path)
     assert np.allclose(cube, SPECTRUM_RESULT_4_5_92)
 
 
@@ -219,12 +222,13 @@ def test_mask_read_error(dat_data_dir: str, img_name, error_msg, error_typ):
         DatFile.mask_read(mask_path=path)
 
 
-MK2_MASK_DATA = [(DatFile(dataloader_config=GET_MASK_COLOR("RGB")), MK2_RESULT_MASK),
-                 (DatFile(dataloader_config=GET_MASK_COLOR("RGBA")), MK2_RESULT_MASK)]
+MK2_MASK_DATA = [(DatFile, "RGB", MK2_RESULT_MASK),
+                 (DatFile, "RGBA", MK2_RESULT_MASK)]
 
 
-@pytest.mark.parametrize("loader,result", MK2_MASK_DATA)
-def test_mk2_mask(dat_data_dir: str, loader, result):
+@pytest.mark.parametrize("ext_loader,color,result", MK2_MASK_DATA)
+def test_mk2_mask(test_config, dat_data_dir: str, ext_loader, color: str, result):
+    loader = ext_loader(config=GET_MASK_COLOR(typ=color, config=test_config))
     mask = loader.mk2_mask(mask_path=os.path.join(dat_data_dir, "test_mask.mk2"),
                            shape=(8, 8))
     print(mask)

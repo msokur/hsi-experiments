@@ -60,8 +60,7 @@ class DataLoader:
 
     def smooth(self, spectrum):
         if self.config.CONFIG_DATALOADER[DLK.SMOOTHING_TYPE] is not None:
-            smoother = provider.get_smoother(config=self.config,
-                                             typ=self.config.CONFIG_DATALOADER[DLK.SMOOTHING_TYPE],
+            smoother = provider.get_smoother(typ=self.config.CONFIG_DATALOADER[DLK.SMOOTHING_TYPE],
                                              path="",
                                              size=self.config.CONFIG_DATALOADER[DLK.SMOOTHING_VALUE])
             spectrum = smoother.smooth_func(spectrum)

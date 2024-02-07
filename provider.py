@@ -109,15 +109,15 @@ def get_evaluation(labels: list, config, *args, **kwargs):
     value_error("evaluation", "labels length < 2")
 
 
-def get_smoother(typ: str, config, *args, **kwargs):
+def get_smoother(typ: str, *args, **kwargs):
     from data_utils.smoothing import MedianFilter, GaussianFilter
 
     if typ == "median_filter":
         print("Smooth spectrum with median filter!")
-        return MedianFilter(config=config, *args, **kwargs)
+        return MedianFilter(*args, **kwargs)
     elif typ == "gaussian_filter":
         print("Smooth spectrum with gaussian filter!")
-        return GaussianFilter(config=config, *args, **kwargs)
+        return GaussianFilter(*args, **kwargs)
 
     value_error("smoother", typ)
 

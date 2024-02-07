@@ -49,5 +49,5 @@ def test_get_key_list(data: dict, result: list):
     assert get_key_list(dict_data=data) == result
 
 
-def test_read_config(config_data_dir: str, base_config_result):
-    assert read_config(file=config_data_dir, section="TEST") == base_config_result
+def test_read_config(base_config_path: str, base_config_result):
+    assert read_config(file=base_config_path, section="PREPROCESSOR", ) == base_config_result

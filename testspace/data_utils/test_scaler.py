@@ -51,8 +51,8 @@ X_Y_CONCATENATE_DATA = [(NormalizerScaler, "npz", "1d"), (NormalizerScaler, "npz
 
 
 @pytest.mark.parametrize("scaler_class,data_typ,data_shape", X_Y_CONCATENATE_DATA)
-def test_X_y_concatenate(delete_scaler_file, data_dir: str, scaler_class, data_typ: str, data_shape: str):
-    scaler = scaler_class(preprocessed_path=data_dir, data_archive=get_data_archive(typ=data_typ),
+def test_X_y_concatenate(test_config, delete_scaler_file, data_dir: str, scaler_class, data_typ: str, data_shape: str):
+    scaler = scaler_class(config=test_config, preprocessed_path=data_dir, data_archive=get_data_archive(typ=data_typ),
                           scaler_file=SCALER_FILE)
     scaler.preprocessed_path = os.path.join(data_dir, data_typ + "_file", data_shape)
 
@@ -68,7 +68,8 @@ SCALE_X_DATA = [(NormalizerScaler, DATA_1D_X_0, L2_NORM_1D_SCALD), (NormalizerSc
 
 
 @pytest.mark.parametrize("scaler_class,x_raw,x_result", SCALE_X_DATA)
-def test_scale_X(delete_scaler_file, data_dir: str, scaler_class, x_raw: np.ndarray, x_result: np.ndarray):
-    scaler = scaler_class(preprocessed_path=data_dir, data_archive=DataArchiveNPZ, scaler_file=SCALER_FILE)
+def test_scale_X(delete_scaler_file, test_config, data_dir: str, scaler_class, x_raw: np.ndarray, x_result: np.ndarray):
+    scaler = scaler_class(config=test_config, preprocessed_path=data_dir, data_archive=DataArchiveNPZ,
+                          scaler_file=SCALER_FILE)
     X = scaler.scale_X(X=x_raw)
     assert (x_result == X).all()

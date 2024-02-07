@@ -294,7 +294,7 @@ class EvaluationBase(Metrics):
     def create_joint_folder(*args):
         results_folder = os.path.join(*args)
         if not os.path.exists(results_folder):
-            os.mkdir(results_folder)
+            os.makedirs(results_folder)
         return results_folder
 
 

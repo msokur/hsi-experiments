@@ -1,12 +1,12 @@
 {
   "BASE_PATH": {
-    "CHECKPOINT_PATH": "checkpoints",
-    "MODEL_PATH": "model"
+    "CHECKPOINT_PATH": "checkpoints"
   },
   "SYSTEM": {
     "MODE": "WITH_GPU",
     "PREFIX": "/work/users/xyz",
-    "MODEL_NAME_PATHS": ["/home/sc.uni-leipzig.de/xyz/hsi-experiments-BA/logs"]
+    "MODEL_NAME_PATHS": ["/home/sc.uni-leipzig.de/xyz/hsi-experiments-BA/logs"],
+    "RESULTS_FOLDER": "results"
   },
   "DATABASE": {
     "1.CONCAT_WITH_PREFIX": {
