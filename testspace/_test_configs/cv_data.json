@@ -9,7 +9,8 @@
     "CHOOSE_EXCLUDED_VALID": "by_class",
     "USE_ALL_LABELS": false,
     "SAVE_PREDICTION": true,
-    "SAVE_CURVES": false
+    "SAVE_CURVES": false,
+    "MODE": "RUN"
   },
   "CV": {
     "TYPE": "normal",

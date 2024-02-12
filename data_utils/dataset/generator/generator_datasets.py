@@ -3,11 +3,11 @@ from shutil import rmtree
 
 import numpy as np
 
-from data_utils.dataset.dataset_interface import Dataset
-from data_utils.dataset.generator import GeneratorDataset
-from data_utils.dataset.meta_files import get_shape_from_meta
+from ..dataset_interface import Dataset
+from ..generator import GeneratorDataset
+from ..meta_files import get_shape_from_meta
+from .name_batch_split import NameBatchSplit
 from data_utils.data_storage import DataStorage
-from data_utils.dataset.generator import NameBatchSplit
 
 import tensorflow as tf
 import os

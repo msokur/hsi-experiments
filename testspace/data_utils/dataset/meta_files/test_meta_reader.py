@@ -17,7 +17,7 @@ CW_TEST_DATA = [("1d", [0, 1, 2, 3], ["test_0", "test_1", "test_2", "test_3", "t
 
 @pytest.mark.parametrize("shape,labels,names,result", CW_TEST_DATA)
 def test_cw_from_meta(tfr_data_dir: str, shape: str, labels: list, names: list, result: dict):
-    stored_path = glob(os.path.join(tfr_data_dir, shape, "*" + TFR_FILE_EXTENSION))
+    stored_path = glob(os.path.join(tfr_data_dir, shape,"shuffled", "*" + TFR_FILE_EXTENSION))
     cw = get_cw_from_meta(files=stored_path, labels=labels, names=names, dataset_typ="tfr")
     for (cw_l, cw_v), (res_l, res_v) in zip(cw.items(), result.items()):
         assert cw_l == res_l and pytest.approx(cw_v, rel=1e-3) == res_v

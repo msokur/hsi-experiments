@@ -5,7 +5,7 @@ import os
 
 import pytest
 
-from data_utils.data_storage import DataStorageZARR, DataStorageNPZ, DataStorage
+from data_utils.data_storage import DataStorageZARR, DataStorageNPZ
 from data_utils.dataset.generator.generator import GeneratorDataset
 from testspace.data_utils.conftest import (
     DATA_1D_X_0, DATA_1D_X_1, DATA_3D_X_0, DATA_3D_X_1, DATA_y_0, DATA_y_1, DATA_WEIGHTS_0, DATA_WEIGHTS_1,

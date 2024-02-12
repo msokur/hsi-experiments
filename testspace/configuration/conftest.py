@@ -103,6 +103,7 @@ def cv_result() -> dict:
             "USE_ALL_LABELS": False,
             "SAVE_PREDICTION": True,
             "SAVE_CURVES": False,
+            "MODE": "RUN",
             "TYPE": "normal",
             "NAME": "CV_NAME",
             "DATABASE_ABBREVIATION": "DATABASE_NAME",

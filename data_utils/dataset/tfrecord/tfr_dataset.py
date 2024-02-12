@@ -5,11 +5,12 @@ import tensorflow as tf
 import os
 
 from glob import glob
-from data_utils.dataset.dataset_interface import Dataset
+from ..dataset_interface import Dataset
 from data_utils.dataset.meta_files import get_shape_from_meta
 from data_utils.dataset.tfrecord.tfr_utils import get_numpy_X
 from data_utils.dataset.tfrecord.tfr_parser import tfr_1d_train_parser, tfr_3d_train_parser
-from data_utils.dataset.tfrecord.tfr_utils import parse_names_to_int, filter_name_idx_and_labels
+from data_utils.dataset.tfrecord.tfr_utils import filter_name_idx_and_labels
+from ..utils import parse_names_to_int
 
 from configuration.keys import CrossValidationKeys as CVK
 from configuration.parameter import (
@@ -60,7 +61,7 @@ class TFRDatasets(Dataset):
 
         :return: A tf Variable with integer
         """
-        names_int_dict = parse_names_to_int(tfr_files=dataset_paths)
+        names_int_dict = parse_names_to_int(files=dataset_paths, meta_type="tfr")
         names_int = []
         for name in names:
             if name in names_int_dict:
