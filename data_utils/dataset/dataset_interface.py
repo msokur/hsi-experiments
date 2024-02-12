@@ -3,18 +3,19 @@ from typing import List, Tuple
 
 import numpy as np
 
+from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
+
 
 class Dataset:
-    def __init__(self, batch_size: int, d3: bool, with_sample_weights: bool):
+    def __init__(self, config):
         """TFRecords dataset from a shuffled dataset
 
-        :param batch_size: Size from batches
-        :param d3: True -> data with patches, False -> data without patches
-        :param with_sample_weights: True -> use sample weights, False -> don't use sample weights
+        :param config: Configurations
         """
-        self.batch_size = batch_size
-        self.d3 = d3
-        self.with_sample_weights = with_sample_weights
+        self.config = config
+        self.batch_size = config.CONFIG_TRAINER[TK.BATCH_SIZE]
+        self.d3 = config.CONFIG_DATALOADER[DLK.D3]
+        self.with_sample_weights = config.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS]
         self.options = self._get_dataset_options()
 
     @abc.abstractmethod

@@ -1,8 +1,9 @@
 from util.tf_metrics_binary import F1_score
 import pytest
+import tensorflow as tf
 
-y_true = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0]
-y_pred = [1.0, 1.1, 2.2, 1.5, 1.8, 0.9, 1.1, 1.4, 0.5, 0.8]
+y_true = tf.Variable([1, 1, 1, 1, 1, 1, 0, 0, 0, 0])
+y_pred = tf.Variable([1.0, 1.1, 2.2, 1.5, 1.8, 0.9, 1.1, 1.4, 0.5, 0.8])
 result10 = 0.7692
 result12 = 0.6
 

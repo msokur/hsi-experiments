@@ -11,6 +11,7 @@ from data_utils.dataset.tfrecord.tfr_utils import get_numpy_X
 from data_utils.dataset.tfrecord.tfr_parser import tfr_1d_train_parser, tfr_3d_train_parser
 from data_utils.dataset.tfrecord.tfr_utils import parse_names_to_int, filter_name_idx_and_labels
 
+from configuration.keys import CrossValidationKeys as CVK
 from configuration.parameter import (
     TFR_FILE_EXTENSION, TFR_TYP
 )
@@ -19,6 +20,9 @@ from configuration.parameter import (
 class TFRDatasets(Dataset):
     def get_datasets(self, dataset_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
                      batch_path: str):
+        if self.config.CONFIG_CV[CVK.MODE] == "DEBUG":
+            dataset_paths = [dataset_paths[0]]
+
         train_ints = self.__get_names_int_list(dataset_paths=dataset_paths, names=train_names)
         valid_ints = self.__get_names_int_list(dataset_paths=dataset_paths, names=valid_names)
         tf_labels = tf.Variable(initial_value=labels, dtype=tf.int64)
