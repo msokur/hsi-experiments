@@ -9,7 +9,7 @@
     "CHOOSE_EXCLUDED_VALID": "by_class",
     "USE_ALL_LABELS": false,
     "SAVE_CURVES": false,
-    "MODE": "RUN"
+    "MODE": "DEBUG"
   },
   "CV_HNO_NORMAL": {
     "TYPE": "normal",

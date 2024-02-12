@@ -10,6 +10,7 @@ class F1_score(Metric):
         self.f1 = self.add_weight("f1", initializer="zeros")
 
     def update_state(self, y_true, y_pred, sample_weight=None):
+        y_true = K.cast(y_true, dtype=tf.float32)
         y_pred_threshold = K.cast(K.greater_equal(y_pred, self.threshold), dtype=tf.float32)
 
         tp = K.sum(y_true * y_pred_threshold)
