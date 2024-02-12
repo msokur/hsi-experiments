@@ -1,0 +1,139 @@
+from typing import List, Dict, Tuple
+from tqdm import tqdm
+
+import os
+import numpy as np
+
+from data_utils.data_storage import DataStorage
+from configuration.parameter import (
+    BATCH_FILE
+)
+
+
+class NameBatchSplit:
+    def __init__(self, data_storage: DataStorage, batch_size: int, use_labels: List[int], dict_names: List[str],
+                 with_sample_weights: bool):
+        self.data_storage = data_storage
+        self.batch_size = batch_size
+        self.use_labels = use_labels
+        self.dict_names = dict_names
+        self.X_dict_name = dict_names[0]
+        self.label_dict_name = dict_names[1]
+        self.p_dict_name = dict_names[2]
+        self.weight_dict_name = dict_names[4]
+        self.save_dict_names = [self.X_dict_name, self.label_dict_name]
+        if with_sample_weights:
+            self.save_dict_names.append(self.weight_dict_name)
+
+    def split(self, data_paths: List[str], batch_save_path: str, train_names: List[str], valid_names: List[str],
+              train_folder: str, valid_folder: str) -> Tuple[List[str], List[str]]:
+        print(f"--------Splitting data into train and valid batches started--------")
+        # ------------removing of previously generated archives (of the previous CV step) ----------------
+        train_dir = os.path.join(batch_save_path, train_folder)
+        self.__init_archive__(path=train_dir)
+        valid_dir = os.path.join(batch_save_path, valid_folder)
+        self.__init_archive__(path=valid_dir)
+        # ----- split datas into batches ----
+        train_rest, valid_rest = self.__split_data_archive__(root_data_paths=data_paths,
+                                                             batch_train_save_path=train_dir,
+                                                             batch_valid_save_path=valid_dir,
+                                                             train_names=train_names,
+                                                             valid_names=valid_names)
+        # ----- save rest of archive ----
+        self.__save_rest(batch_save_path=train_dir, rest=train_rest)
+        self.__save_rest(batch_save_path=valid_dir, rest=valid_rest)
+        print(f"--------Splitting data into train and valid batches finished--------")
+        train_paths = self.data_storage.get_paths(storage_path=train_dir)
+        valid_paths = self.data_storage.get_paths(storage_path=valid_dir)
+        return train_paths, valid_paths
+
+    def __split_data_archive__(self, root_data_paths: List[str], batch_train_save_path: str, batch_valid_save_path: str,
+                               train_names: List[str], valid_names: List[str]) \
+            -> Tuple[Dict[str, list], Dict[str, list]]:
+        train_rest = self.__init_rest()
+        valid_rest = self.__init_rest()
+
+        for p in tqdm(root_data_paths):
+            # ------------ except_indexes filtering ---------------
+            data_ = self.data_storage.get_datas(data_path=p)
+            self.__check_dict_names(self.dict_names, data_)
+
+            p_names = data_[self.p_dict_name][...]
+            labels = data_[self.label_dict_name][...]
+
+            # ------------ get only needed classes indexes --------------
+            label_indexes = np.isin(labels, self.use_labels)
+
+            # ------------ get data indexes --------------
+            train_data_indexes = label_indexes & np.isin(p_names, train_names)
+            self.__check_name_in_data(indexes=train_data_indexes, data_path=p, names=train_names)
+            valid_data_indexes = label_indexes & np.isin(p_names, valid_names)
+            self.__check_name_in_data(indexes=valid_data_indexes, data_path=p, names=train_names)
+
+            # ------------- split data ----------------
+            train_rest_temp = self.__split_and_save_batches__(save_path=batch_train_save_path, data=data_,
+                                                              data_indexes=train_data_indexes)
+            valid_rest_temp = self.__split_and_save_batches__(save_path=batch_valid_save_path, data=data_,
+                                                              data_indexes=valid_data_indexes)
+
+            # ---------------- save rest from archive ------------------
+            for name in self.save_dict_names:
+                train_rest[name] += list(train_rest_temp[name])
+                valid_rest[name] + list(valid_rest_temp[name])
+
+        return train_rest, valid_rest
+
+    def __split_and_save_batches__(self, save_path: str, data, data_indexes: np.ndarray) -> Dict[str, np.ndarray]:
+        # ---------------splitting into archives----------
+        chunks = data_indexes.sum() // self.batch_size
+        chunks_max = chunks * self.batch_size
+
+        if chunks > 0:
+            data_ = {k: np.array_split(data[k][...][data_indexes][:chunks_max], chunks) for k in self.save_dict_names}
+
+            idx = len(self.data_storage.get_paths(storage_path=save_path))
+            for row in range(chunks):
+                arch = {}
+                for i, n in enumerate(self.save_dict_names):
+                    arch[n] = data_[n][row]
+
+                self.data_storage.save_group(save_path=save_path, group_name=f"{BATCH_FILE}{idx}", datas=arch)
+                idx += 1
+
+        # ---------------saving of the non equal last part for the future partition---------
+        rest = {k: data[k][...][data_indexes][chunks_max:] for k in self.save_dict_names}
+        # ---------------saving of the non equal last part for the future partition---------
+        return rest
+
+    def __save_rest(self, batch_save_path: str, rest: Dict[str, list]):
+        if len(rest[self.dict_names[0]]) >= self.batch_size:
+            self.__split_and_save_batches__(save_path=batch_save_path, data={k: np.array(v) for k, v in rest.items()},
+                                            data_indexes=np.full(shape=len(rest[self.dict_names[0]]), fill_value=True))
+
+    def __init_archive__(self, path: str):
+        if not os.path.exists(path=path):
+            os.mkdir(path)
+        else:
+            self.data_storage.delete_archive(delete_path=path)
+            os.mkdir(path)
+
+    @staticmethod
+    def __check_dict_names(dict_names, data_):
+        diff_dict_names = set(dict_names) - set(data_)
+        diff_dataset = set(data_) - set(dict_names)
+
+        if len(diff_dict_names):
+            print(f'WARNING! dict_names {diff_dict_names} are not in dataset')
+        if len(diff_dataset):
+            print(f'WARNING! dict_names {diff_dataset} are not in dict_names of Preprocessor')
+
+    @staticmethod
+    def __check_name_in_data(indexes: np.ndarray, data_path: str, names: List[str]):
+        if indexes.shape[0] == 0:
+            print(f"WARING! No data found in {data_path} for the names: {','.join(n for n in names)}.")
+
+    def __init_rest(self) -> Dict[str, list]:
+        rest_array = {}
+        for name in self.dict_names:
+            rest_array[name] = []
+        return rest_array
