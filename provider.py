@@ -194,13 +194,12 @@ def get_prediction_to_image(typ: str, **kwargs):
         value_error(modul="prediction to image", typ=typ)
 
 
-def get_dataset(typ: str, batch_size: int, d3: bool, with_sample_weights: bool, data_storage=None, dict_names=None):
+def get_dataset(typ: str, config, data_storage):
     from data_utils.dataset import TFRDatasets, GeneratorDatasets
     if typ == "tfr":
-        return TFRDatasets(batch_size=batch_size, d3=d3, with_sample_weights=with_sample_weights)
+        return TFRDatasets(config=config)
     elif typ == "generator":
-        return GeneratorDatasets(batch_size=batch_size, d3=d3, with_sample_weights=with_sample_weights,
-                                 data_storage=data_storage, dict_names=dict_names)
+        return GeneratorDatasets(config=config, data_storage=data_storage)
     else:
         value_error(modul="dataset", typ=typ)
 

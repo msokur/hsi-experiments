@@ -25,8 +25,8 @@ class NameBatchSplit:
         if with_sample_weights:
             self.save_dict_names.append(self.weight_dict_name)
 
-    def split(self, data_paths: List[str], batch_save_path: str, except_train_names: List[str],
-              except_valid_names: List[str], train_folder: str, valid_folder: str) -> Tuple[List[str], List[str]]:
+    def split(self, data_paths: List[str], batch_save_path: str, train_names: List[str], valid_names: List[str],
+              train_folder: str, valid_folder: str) -> Tuple[List[str], List[str]]:
         print(f"--------Splitting data into train and valid batches started--------")
         # ------------removing of previously generated archives (of the previous CV step) ----------------
         train_dir = os.path.join(batch_save_path, train_folder)
@@ -37,8 +37,8 @@ class NameBatchSplit:
         train_rest, valid_rest = self.__split_data_archive__(root_data_paths=data_paths,
                                                              batch_train_save_path=train_dir,
                                                              batch_valid_save_path=valid_dir,
-                                                             except_train_names=except_train_names,
-                                                             except_valid_names=except_valid_names)
+                                                             train_names=train_names,
+                                                             valid_names=valid_names)
         # ----- save rest of archive ----
         self.__save_rest(batch_save_path=train_dir, rest=train_rest)
         self.__save_rest(batch_save_path=valid_dir, rest=valid_rest)
@@ -48,7 +48,7 @@ class NameBatchSplit:
         return train_paths, valid_paths
 
     def __split_data_archive__(self, root_data_paths: List[str], batch_train_save_path: str, batch_valid_save_path: str,
-                               except_train_names: List[str], except_valid_names: List[str]) \
+                               train_names: List[str], valid_names: List[str]) \
             -> Tuple[Dict[str, list], Dict[str, list]]:
         train_rest = self.__init_rest()
         valid_rest = self.__init_rest()
@@ -65,10 +65,10 @@ class NameBatchSplit:
             label_indexes = np.isin(labels, self.use_labels)
 
             # ------------ get data indexes --------------
-            train_data_indexes = label_indexes & np.isin(p_names, except_train_names)
-            self.__check_name_in_data(indexes=train_data_indexes, data_path=p, names=except_train_names)
-            valid_data_indexes = label_indexes & np.isin(p_names, except_valid_names)
-            self.__check_name_in_data(indexes=valid_data_indexes, data_path=p, names=except_train_names)
+            train_data_indexes = label_indexes & np.isin(p_names, train_names)
+            self.__check_name_in_data(indexes=train_data_indexes, data_path=p, names=train_names)
+            valid_data_indexes = label_indexes & np.isin(p_names, valid_names)
+            self.__check_name_in_data(indexes=valid_data_indexes, data_path=p, names=train_names)
 
             # ------------- split data ----------------
             train_rest_temp = self.__split_and_save_batches__(save_path=batch_train_save_path, data=data_,

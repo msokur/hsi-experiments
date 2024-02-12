@@ -65,9 +65,9 @@ class CrossValidatorBase:
                                                           except_names=leave_out_names)
         train_names = list(set(except_names) - set(leave_out_names) - set(valid_names))
 
-        print(f"We except for patient out data: {', '.join(n for n in leave_out_names)}.\n")
-        print(f"We except for train data: {', '.join(n for n in train_names)}.\n")
-        print(f"We except for valid data: {', '.join(n for n in valid_names)}.\n")
+        print(f"Leave out patient data: {', '.join(n for n in leave_out_names)}.\n")
+        print(f"Train patient data: {', '.join(n for n in train_names)}.\n")
+        print(f"Valid patient data: {', '.join(n for n in valid_names)}.\n")
 
         trainer = provider.get_trainer(typ=self.config.CONFIG_TRAINER[TK.TYPE], config=self.config,
                                        data_storage=self.data_storage, model_name=model_name,
@@ -117,17 +117,17 @@ class CrossValidatorBase:
             else:
                 model_name += "_" + str(indexes[0]) + "_" + data_loader.get_name(np.array(paths)[indexes][0])
 
-            paths_patch = np.array(paths)[indexes]
+            leave_out_paths = np.array(paths)[indexes]
 
-            if self.__check_data_label__(paths_patch):
-                print(f"In files {paths_patch} are no needed labels for training!")
+            if self.__check_data_label__(leave_out_paths):
+                print(f"In files {leave_out_paths} are no needed labels for training!")
                 continue
 
             except_names = [data_loader.get_name(path=p) for p in paths]
             self.cross_validation_step(model_name=model_name, except_names=except_names,
-                                       leave_out_names=[data_loader.get_name(p) for p in paths_patch])
+                                       leave_out_names=[data_loader.get_name(p) for p in leave_out_paths])
 
-            for i, path_ in enumerate(paths_patch):
+            for i, path_ in enumerate(leave_out_paths):
                 sensitivity, specificity = 0, 0
                 with open(csv_filename, 'a', newline='') as csvfile:  # for full cross_valid and for separate file
                     fieldnames = ['time', 'index', 'sensitivity', 'specificity', 'name', 'model_name']

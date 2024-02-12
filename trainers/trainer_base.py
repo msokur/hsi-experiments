@@ -35,11 +35,7 @@ class Trainer:
         self.batch_path = None
         self.mirrored_strategy = None
         self.log_dir = model_name
-        self.dataset = get_dataset(typ=DATASET_TYPE, batch_size=config.CONFIG_TRAINER[TK.BATCH_SIZE],
-                                   d3=config.CONFIG_DATALOADER[DLK.D3],
-                                   with_sample_weights=config.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS],
-                                   data_storage=self.data_storage,
-                                   dict_names=config.CONFIG_PREPROCESSOR[PPK.DICT_NAMES])
+        self.dataset = get_dataset(typ=DATASET_TYPE, config=config, data_storage=self.data_storage)
 
     @abc.abstractmethod
     def train_process(self):
