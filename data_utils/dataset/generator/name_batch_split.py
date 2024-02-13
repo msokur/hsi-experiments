@@ -22,7 +22,7 @@ class NameBatchSplit:
         self.label_dict_name = dict_names[1]
         self.p_dict_name = dict_names[2]
         self.p_dict_name_idx = dict_names[3]
-        self.weight_dict_name = dict_names[4]
+        self.weight_dict_name = dict_names[5]
         self.save_dict_names = [self.X_dict_name, self.label_dict_name]
         if with_sample_weights:
             self.save_dict_names.append(self.weight_dict_name)

@@ -5,6 +5,8 @@ import tensorflow as tf
 import os
 
 from glob import glob
+from utils import alphanum_key
+
 from ..dataset_interface import Dataset
 from data_utils.dataset.meta_files import get_shape_from_meta
 from data_utils.dataset.tfrecord.tfr_utils import get_numpy_X
@@ -21,6 +23,7 @@ from configuration.parameter import (
 class TFRDatasets(Dataset):
     def get_datasets(self, dataset_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
                      batch_path: str):
+        dataset_paths.sort(key=alphanum_key)
         if self.config.CONFIG_CV[CVK.MODE] == "DEBUG":
             dataset_paths = [dataset_paths[0]]
 

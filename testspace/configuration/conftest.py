@@ -52,7 +52,7 @@ def base_config_result() -> dict:
                                 "ADD_SAMPLE_WEIGHTS": True,
                                 "SCALE": True,
                                 "SHUFFLE": True},
-            "DICT_NAMES": ["NAME_1", "NAME_2", "NAME_3"],
+            "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
             "PILES_NUMBER": 100,
             "WEIGHT_FILENAME": "weights.weights",
             "FILES_TO_COPY": ["test_file.py"],

@@ -49,7 +49,7 @@ WEIGHT_GET_OR_SAVE_DATA = [("npz", "1d"),
 
 @pytest.mark.parametrize("typ,folder", WEIGHT_GET_OR_SAVE_DATA)
 def test_weights_get_or_save_only_get(data_dir: str, typ: str, folder: str):
-    main_path = os.path.join(data_dir, f"{typ}_file", folder)
+    main_path = os.path.join(data_dir, f"{typ}_file", folder, "patient")
     weights_class = Weights(filename=FILENAME, data_storage=get_data_storage(typ=typ), labels=LABELS)
     weights = weights_class.weights_get_or_save(root_path=main_path)
     os.remove(os.path.join(main_path, FILENAME))
@@ -58,7 +58,7 @@ def test_weights_get_or_save_only_get(data_dir: str, typ: str, folder: str):
 
 @pytest.mark.parametrize("typ,folder", WEIGHT_GET_OR_SAVE_DATA)
 def test_weights_get_or_save_only_save(data_dir: str, typ: str, folder: str):
-    main_path = os.path.join(data_dir, f"{typ}_file", folder)
+    main_path = os.path.join(data_dir, f"{typ}_file", folder, "patient")
     weights_class = Weights(filename=FILENAME, data_storage=get_data_storage(typ=typ), labels=LABELS)
     weights_class.weights_get_or_save(root_path=main_path)
     data = pickle.load(open(os.path.join(main_path, FILENAME), 'rb'))
@@ -70,22 +70,24 @@ def test_weights_get_or_save_only_save(data_dir: str, typ: str, folder: str):
 def test_weighted_data_save_npz(npz_1d_data_dir: str):
     weight = Weights(filename=FILENAME, data_storage=get_data_storage(typ="npz"), labels=LABELS,
                      y_dict_name=Y_DICT_NAME, weight_dict_name=WEIGHT_DICT_NAME)
-    weight.weighted_data_save(root_path=npz_1d_data_dir, weights=WEIGHTS_RESULT)
+    root_path = os.path.join(npz_1d_data_dir, "patient")
+    weight.weighted_data_save(root_path=root_path, weights=WEIGHTS_RESULT)
     data_weights = []
     for file in ["data_test_0.npz", "data_test_1.npz"]:
-        data = np.load(os.path.join(npz_1d_data_dir, file))
+        data = np.load(os.path.join(root_path, file))
         data_weights.append(data[WEIGHT_DICT_NAME])
-        np.savez(file=os.path.join(npz_1d_data_dir, file), **{k: v for k, v in data.items() if k != WEIGHT_DICT_NAME})
+        np.savez(file=os.path.join(root_path, file), **{k: v for k, v in data.items() if k != WEIGHT_DICT_NAME})
     assert (data_weights == WEIGHT_DATA_SAVE_RESULT).all()
 
 
 def test_weighted_data_save_zarr(zarr_1d_data_dir: str):
     weight = Weights(filename=FILENAME, data_storage=get_data_storage(typ="zarr"), labels=LABELS,
                      y_dict_name=Y_DICT_NAME, weight_dict_name=WEIGHT_DICT_NAME)
-    weight.weighted_data_save(root_path=zarr_1d_data_dir, weights=WEIGHTS_RESULT)
+    root_path = os.path.join(zarr_1d_data_dir, "patient")
+    weight.weighted_data_save(root_path=root_path, weights=WEIGHTS_RESULT)
     data_weights = []
     for file in ["data_test_0", "data_test_1"]:
-        data = zarr.open_group(store=os.path.join(zarr_1d_data_dir, file), mode="a")
+        data = zarr.open_group(store=os.path.join(root_path, file), mode="a")
         data_weights.append(data[WEIGHT_DICT_NAME][...].copy())
         data.pop(WEIGHT_DICT_NAME)
 

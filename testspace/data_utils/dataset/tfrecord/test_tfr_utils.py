@@ -4,8 +4,8 @@ import os
 import tensorflow as tf
 
 from data_utils.dataset.tfrecord.tfr_utils import filter_name_idx_and_labels, get_numpy_X
-from testspace.data_utils.dataset.tfrecord.conftest import (
-    TF_DATA_1D_X_0, TF_DATA_3D_X_0
+from ..conftest import (
+    D1_X_0, D3_X_0
 )
 from configuration.parameter import (
     TFR_FILE_EXTENSION,
@@ -27,7 +27,7 @@ def test_filter_name_idx_and_labels():
         assert tf.math.reduce_all(data == result)
 
 
-GET_NUMPY_X_DATA = [("1d", (15,), TF_DATA_1D_X_0), ("3d", (3, 3, 15), TF_DATA_3D_X_0)]
+GET_NUMPY_X_DATA = [("1d", (15,), D1_X_0), ("3d", (3, 3, 15), D3_X_0)]
 
 
 @pytest.mark.parametrize("folder,shape,result", GET_NUMPY_X_DATA)

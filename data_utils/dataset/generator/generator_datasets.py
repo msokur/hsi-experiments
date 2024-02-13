@@ -3,6 +3,7 @@ from shutil import rmtree
 
 import numpy as np
 
+from utils import alphanum_key
 from ..dataset_interface import Dataset
 from ..generator import GeneratorDataset
 from ..meta_files import get_shape_from_meta
@@ -26,6 +27,7 @@ class GeneratorDatasets(Dataset):
 
     def get_datasets(self, dataset_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
                      batch_path: str):
+        dataset_paths.sort(key=alphanum_key)
         if not os.path.exists(path=batch_path):
             os.makedirs(name=batch_path)
 
@@ -35,8 +37,14 @@ class GeneratorDatasets(Dataset):
                                                      train_names=train_names, valid_names=valid_names,
                                                      train_folder=TRAIN, valid_folder=VALID)
 
+        train_paths.sort(key=alphanum_key)
+        valid_paths.sort(key=alphanum_key)
+
         train_ds = self.__get_dataset__(batch_paths=train_paths, options=self.options)
-        valid_ds = self.__get_dataset__(batch_paths=valid_paths, options=self.options)
+        if len(valid_paths) == 0:
+            valid_ds = None
+        else:
+            valid_ds = self.__get_dataset__(batch_paths=valid_paths, options=self.options)
 
         return train_ds, valid_ds
 

@@ -54,7 +54,7 @@ X_Y_CONCATENATE_DATA = [(NormalizerScaler, "npz", "1d"), (NormalizerScaler, "npz
 def test_X_y_concatenate(test_config, delete_scaler_file, data_dir: str, scaler_class, data_typ: str, data_shape: str):
     scaler = scaler_class(config=test_config, preprocessed_path=data_dir, data_storage=get_data_storage(typ=data_typ),
                           scaler_file=SCALER_FILE)
-    scaler.preprocessed_path = os.path.join(data_dir, data_typ + "_file", data_shape)
+    scaler.preprocessed_path = os.path.join(data_dir, data_typ + "_file", data_shape, "patient")
 
     values = scaler.X_y_concatenate()
 

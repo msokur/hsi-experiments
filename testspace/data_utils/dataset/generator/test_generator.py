@@ -32,7 +32,8 @@ WEIGHT_TF_SPEC = TensorSpec(shape=(None,), dtype=np.float64, name=WEIGHTS_NAME)
 
 
 def test___len__(zarr_3d_data_dir: str):
-    batch_paths = glob(os.path.join(zarr_3d_data_dir, "data_test_*"))
+    storage_zarr = DataStorageZARR()
+    batch_paths = storage_zarr.get_paths(storage_path=os.path.join(zarr_3d_data_dir, "patient"))
     data_gen = GeneratorDataset(data_storage=DataStorageZARR(), batch_paths=batch_paths, X_name=X_NAME, y_name=y_NAME,
                                 weights_name=WEIGHTS_NAME, with_sample_weights=False)
     assert data_gen.__len__() == 2
@@ -47,8 +48,7 @@ GETITEM_TEST_DATA = [(DataStorageZARR(), "zarr", "1d", 0, False, D1_X_y_0),
 @pytest.mark.parametrize("data_storage,typ,patch,idx,with_weights,results", GETITEM_TEST_DATA)
 def test___getitem__(data_dir: str, data_storage, typ: str, patch: str, idx: int, with_weights: bool,
                      results: tuple):
-    batch_paths = sorted(glob(os.path.join(data_dir, f"{typ}_file", patch, "data_test_*")))
-    print(batch_paths)
+    batch_paths = data_storage.get_paths(os.path.join(data_dir, f"{typ}_file", patch, "patient"))
     data_gen = GeneratorDataset(data_storage=data_storage, batch_paths=batch_paths, X_name=X_NAME, y_name=y_NAME,
                                 weights_name=WEIGHTS_NAME, with_sample_weights=with_weights)
     data = data_gen.__getitem__(idx=idx)
@@ -64,7 +64,7 @@ CALL_TEST_DATA = [(DataStorageZARR(), "zarr", "1d", True, [D1_X_y_w_0, D1_X_y_w_
 
 @pytest.mark.parametrize("data_storage,typ,patch,with_weights,results", CALL_TEST_DATA)
 def test___call__(data_dir: str, data_storage, typ: str, patch: str, with_weights: bool, results: list):
-    batch_paths = sorted(glob(os.path.join(data_dir, f"{typ}_file", patch, "data_test_*")))
+    batch_paths = data_storage.get_paths(os.path.join(data_dir, f"{typ}_file", patch, "patient"))
     data_gen = GeneratorDataset(data_storage=data_storage, batch_paths=batch_paths, X_name=X_NAME, y_name=y_NAME,
                                 weights_name=WEIGHTS_NAME, with_sample_weights=with_weights)
     for datas, result in zip(data_gen.__call__(), results):
@@ -81,7 +81,7 @@ SIGNATURE_TEST_DATA = [(DataStorageZARR(), "zarr", "1d", True, (X_1D_TF_SPEC, y_
 @pytest.mark.parametrize("data_storage,typ,patch,with_weights,results", SIGNATURE_TEST_DATA)
 def test_get_output_signature(data_dir: str, data_storage, typ: str, patch: str, with_weights: bool,
                               results: tuple):
-    batch_paths = glob(os.path.join(data_dir, f"{typ}_file", patch, "data_test_*"))
+    batch_paths = data_storage.get_paths(os.path.join(data_dir, f"{typ}_file", patch, "patient"))
     data_gen = GeneratorDataset(data_storage=data_storage, batch_paths=batch_paths, X_name=X_NAME, y_name=y_NAME,
                                 weights_name=WEIGHTS_NAME, with_sample_weights=with_weights)
     assert data_gen.get_output_signature() == results
