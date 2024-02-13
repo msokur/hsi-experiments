@@ -42,7 +42,7 @@
       "RAW_SOURCE_PATH": ["HNO", "Parotis-Faelle", "*"]
     },
     "2.CONCAT_WITH_ROOT_PATH": {
-      "RAW_NPZ_PATH": ["patient_data"],
+      "RAW_NPZ_PATH": ["patient_data_npz"],
       "SHUFFLED_PATH": ["shuffled_npz"],
       "BATCHED_PATH": ["batch_sized_npz"]
     }

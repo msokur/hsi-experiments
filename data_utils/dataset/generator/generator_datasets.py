@@ -31,11 +31,16 @@ class GeneratorDatasets(Dataset):
         if not os.path.exists(path=batch_path):
             os.makedirs(name=batch_path)
 
-        batch_split = NameBatchSplit(data_storage=self.data_storage, batch_size=self.batch_size, use_labels=labels,
-                                     dict_names=self.dict_names, with_sample_weights=self.with_sample_weights)
-        train_paths, valid_paths = batch_split.split(data_paths=dataset_paths, batch_save_path=batch_path,
-                                                     train_names=train_names, valid_names=valid_names,
-                                                     train_folder=TRAIN, valid_folder=VALID)
+        if self.config.CONFIG_CV[CVK.MODE] == "DEBUG" and len(
+                self.data_storage.get_paths(storage_path=os.path.join(batch_path, TRAIN))) > 0:
+            train_paths = self.data_storage.get_paths(storage_path=os.path.join(batch_path, TRAIN))
+            valid_paths = self.data_storage.get_paths(storage_path=os.path.join(batch_path, VALID))
+        else:
+            batch_split = NameBatchSplit(data_storage=self.data_storage, batch_size=self.batch_size, use_labels=labels,
+                                         dict_names=self.dict_names, with_sample_weights=self.with_sample_weights)
+            train_paths, valid_paths = batch_split.split(data_paths=dataset_paths, batch_save_path=batch_path,
+                                                         train_names=train_names, valid_names=valid_names,
+                                                         train_folder=TRAIN, valid_folder=VALID)
 
         train_paths.sort(key=alphanum_key)
         valid_paths.sort(key=alphanum_key)

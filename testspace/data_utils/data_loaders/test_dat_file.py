@@ -154,7 +154,6 @@ SET_MASK_WITH_LABEL_DATA = [(DatFile, "RGB", RGB_RESULT_INDEX_MASK),
 @pytest.mark.parametrize("ext_loader,color,result", SET_MASK_WITH_LABEL_DATA)
 def test_set_mask_with_label(test_config, mask, ext_loader, color: str, result):
     loader = ext_loader(config=GET_MASK_COLOR(typ=color, config=test_config))
-    print(loader.set_mask_with_label(mask=mask))
     assert (loader.set_mask_with_label(mask=mask) == result).all()
 
 
@@ -202,7 +201,6 @@ def test_mask_read_jpg(dat_data_dir: str, img_name, result):
     path = os.path.join(dat_data_dir, img_name)
     with pytest.warns(UserWarning, match="Better use '.png' format. Alpha channel added."):
         img = DatFile.mask_read(mask_path=path)
-    print(img)
     assert (img == result).all()
 
 
@@ -231,5 +229,4 @@ def test_mk2_mask(test_config, dat_data_dir: str, ext_loader, color: str, result
     loader = ext_loader(config=GET_MASK_COLOR(typ=color, config=test_config))
     mask = loader.mk2_mask(mask_path=os.path.join(dat_data_dir, "test_mask.mk2"),
                            shape=(8, 8))
-    print(mask)
     assert (mask == result).all()

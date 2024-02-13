@@ -24,10 +24,10 @@ class GeneratorDataset:
     def __getitem__(self, idx):
         batch_data = self.data_storage.get_datas(data_path=self.batch_paths[idx])
 
-        data = (batch_data[self.X_name][:], batch_data[self.y_name][:].astype(np.float64))
+        data = (batch_data[self.X_name][:], batch_data[self.y_name][:])
 
         if self.with_sample_weights and self.weights_name in batch_data:
-            data += (batch_data[self.weights_name][:],)
+            data += (batch_data[self.weights_name][:].astype(np.float32),)
 
         return data
 
@@ -50,7 +50,6 @@ class GeneratorDataset:
                           name=self.y_name)
         )
         if self.with_sample_weights:
-            weights = data[self.weights_name]
-            output_signature += (tf.TensorSpec(shape=(None,), dtype=weights.dtype, name=self.weights_name),)
+            output_signature += (tf.TensorSpec(shape=(None,), dtype=tf.float32, name=self.weights_name),)
 
         return output_signature
