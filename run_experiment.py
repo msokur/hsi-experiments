@@ -18,7 +18,7 @@ class Experiment:
         self.create_experiment_folder()
 
         self.parameters_for_experiment = parameters_for_experiment
-        self.combinations_keys = parameters_for_experiment.keys()
+        self.combinations_keys = list(parameters_for_experiment.keys())
         self.config_sections = [v['config_section'] for v in self.parameters_for_experiment.values()]
         self.combinations = self.create_combinations()
         print(f"Input parameters for experiment: {self.parameters_for_experiment}")
@@ -36,11 +36,56 @@ class Experiment:
         if not os.path.exists(self.root_folder):
             os.mkdir(self.root_folder)
 
+    def filter_background_combinations(self, combinations):
+        if 'BACKGROUND.WITH_BACKGROUND_EXTRACTION' in self.combinations_keys and \
+                ('BACKGROUND.BLOOD_THRESHOLD' in self.combinations_keys or
+                 'BACKGROUND.LIGHT_REFLECTION_THRESHOLD' in self.combinations_keys):
+            with_background_extraction_index = self.combinations_keys.index('BACKGROUND.WITH_BACKGROUND_EXTRACTION')
+
+            appeared_BackgroundExtractionFalse = False
+            filtered_combinations = []
+            for combination in combinations:
+                if combination[with_background_extraction_index]:
+                    filtered_combinations.append(combination)
+                    continue
+                if (not combination[with_background_extraction_index]) and (not appeared_BackgroundExtractionFalse):
+                    appeared_BackgroundExtractionFalse = True
+                    filtered_combinations.append(combination)
+
+            return filtered_combinations
+        return combinations
+
     def create_combinations(self):
         parameters = [v['parameters'] for v in self.parameters_for_experiment.values()]
+        print('parameters', parameters)
         combinations = list(itertools.product(*parameters))
 
+        combinations = self.filter_background_combinations(combinations)
+        combinations = self.filter_smoothing_values(combinations)
+
         return combinations
+
+    def filter_smoothing_values(self, combinations):
+        if 'SMOOTHING_TYPE' in self.combinations_keys and 'SMOOTHING_VALUE' in self.combinations_keys:
+            smoothing_type_index = self.combinations_keys.index('SMOOTHING_TYPE')
+            smoothing_value_index = self.combinations_keys.index('SMOOTHING_VALUE')
+
+            filtered_combinations = []
+            appeared_SmoothingNone = False
+            for combination in combinations:
+                if combination[smoothing_type_index] == 'gaussian_filter' and \
+                        combination[smoothing_value_index] in gaussian_params:
+                    filtered_combinations.append(combination)
+                if combination[smoothing_type_index] == 'median_filter' and \
+                        combination[smoothing_value_index] in median_params:
+                    filtered_combinations.append(combination)
+
+                if combination[smoothing_type_index] is None and (not appeared_SmoothingNone):
+                    appeared_SmoothingNone = True
+                    filtered_combinations.append(combination)
+            return filtered_combinations
+        return combinations
+
 
     def create_folder_for_results(self):
         results_root_folder = self.config.CONFIG_PATHS['RESULTS_FOLDER']
@@ -98,21 +143,22 @@ class Experiment:
 
     def run_experiment(self):
         for i, combination in enumerate(self.combinations):
+            #print('-----------------')
             print(combination)
             sample_dict = {name: c for name, c in zip(self.combinations_keys, combination)}
-            print(sample_dict)
+            #print(sample_dict)
 
             short_name = self.combine_short_name(sample_dict)
-            print(short_name)
-            print('-----------------')
+            #print(short_name)
 
-            print(self.root_folder)
-            print(self.name + "_" + short_name)
-            print(short_name)
-            print(i)
-            print(self.experiment_results_root_folder)
 
-            print('-----------------')
+            #print(self.root_folder)
+            #print(self.name + "_" + short_name)
+            #print(short_name)
+            #print(i)
+            #print(self.experiment_results_root_folder)
+
+            #print('-----------------')
             '''stream = os.popen(
                 f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv.sh {self.root_folder} '
                 f'{self.name + "_" + short_name} {short_name} {i} {self.experiment_metrics_root_folder}')
@@ -137,7 +183,7 @@ class Experiment:
                     short_name += "F"
             if 'str' in dtype:
                 short_name += value[0]
-            if 'int' in dtype:
+            if 'int' in dtype or 'float' in dtype:
                 short_name += str(value)
             short_name += '_'
 
@@ -145,6 +191,8 @@ class Experiment:
 
 
 if __name__ == '__main__':
+    gaussian_params = [0.1, 0.2]
+    median_params = [3, 5, 7]
 
     config_for_experiment = {
         '3D_SIZE': {
@@ -155,13 +203,27 @@ if __name__ == '__main__':
             'config_section': 'CONFIG_PREPROCESSOR',
             'parameters': ["svn_T", 'l2_norm']
         },
+        "BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': [True]
+        },
+        "BACKGROUND.BLOOD_THRESHOLD": {
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': [0.1, 0.2, 0.3]
+        },
+        #"SMOOTHING_TYPE": {
+        #    'config_section': 'CONFIG_DATALOADER',
+        #    'parameters': [None, 'median_filter', 'gaussian_filter']
+        #},
+        #"SMOOTHING_VALUE": {
+        #    'config_section': 'CONFIG_DATALOADER',
+        #    'parameters': median_params + gaussian_params
+        #},
     }
 
-    experiment = Experiment('ExperimentRevival', config_for_experiment)
+    experiment = Experiment('ExperimentRevival_treeConfigs', config_for_experiment)
     experiment.run_experiment()
     # print(exp.get_results())
-
-
 
     '''config_for_experiment = {
         '3D_SIZE':  [[3, 3], [5, 5]],

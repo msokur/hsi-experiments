@@ -49,6 +49,8 @@ class GeneratorDataset:
             tf.TensorSpec(shape=(None,) if len(y.shape) == 1 else ((None,) + (y.shape[1:])), dtype=y.dtype,
                           name=self.y_name)
         )
+
+        print(*data)
         if self.with_sample_weights:
             output_signature += (tf.TensorSpec(shape=(None,), dtype=tf.float32, name=self.weights_name),)
 
