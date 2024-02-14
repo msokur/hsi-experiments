@@ -8,6 +8,7 @@ class F1_score(Metric):
         super().__init__(name=name, **kwargs)
         self.threshold = threshold
         self.f1 = self.add_weight("f1", initializer="zeros")
+        self.strategy = self.strategy = tf.distribute.get_strategy()
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_true = K.cast(y_true, dtype=tf.float32)
@@ -16,7 +17,10 @@ class F1_score(Metric):
         tp = K.sum(y_true * y_pred_threshold)
         fp = K.sum(K.clip(y_pred_threshold - y_true, 0, 1))
         fn = K.sum(K.clip(y_true - y_pred_threshold, 0, 1))
-        self.f1.assign(tp / (tp + 0.5 * (fp + fn) + K.epsilon()))
+        f1 = tp / (tp + 0.5 * (fp + fn) + K.epsilon())
+        if self.strategy is not None:
+            f1 = f1 / self.strategy.num_replicas_in_sync
+        self.f1.assign(f1)
 
     def merge_state(self, metrics):
         length = len(metrics) + 1

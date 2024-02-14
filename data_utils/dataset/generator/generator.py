@@ -50,7 +50,6 @@ class GeneratorDataset:
                           name=self.y_name)
         )
 
-        print(*data)
         if self.with_sample_weights:
             output_signature += (tf.TensorSpec(shape=(None,), dtype=tf.float32, name=self.weights_name),)
 

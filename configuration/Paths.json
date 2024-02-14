@@ -5,8 +5,8 @@
   "Cluster_Benny": {
     "MODE": "WITH_GPU",
     "DATABASE_ROOT_FOLDER": "/work/users/bn322dcei",
-    "LOGS_FOLDER": ["/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs"],
-    "RESULTS_FOLDER": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/results"
+    "LOGS_FOLDER": ["/work/users/bn322dcei/hsi-experiments/model_logs"],
+    "RESULTS_FOLDER": "/work/users/bn322dcei/hsi-experiments/model_results"
   },
   "Win_Benny": {
     "MODE": "WITHOUT_GPU",
@@ -34,6 +34,17 @@
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
       "SHUFFLED_PATH": ["shuffled"],
       "BATCHED_PATH": ["batch_sized"]
+    }
+  },
+  "HNO_2_Database": {
+    "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
+      "ROOT_PATH": ["data_3d", "hno_2", "9x9", "svn", "no_smooth"],
+      "RAW_SOURCE_PATH": ["HNO", "Parotis_2", "*"]
+    },
+    "2.CONCAT_WITH_ROOT_PATH": {
+      "RAW_NPZ_PATH": ["patient_data_npz"],
+      "SHUFFLED_PATH": ["shuffled_tfr"],
+      "BATCHED_PATH": ["batch_sized_npz"]
     }
   },
   "HNO_COMBINED_Database": {
