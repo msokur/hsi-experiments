@@ -92,7 +92,8 @@ def split_list(paths: list[str], name_list: list[list[str]]) -> List[np.ndarray]
     for names in name_list:
         split_part_list = []
         for name in names:
-            name_idx = np.flatnonzero([True if name in path else False for path in paths])
+            name_idx = np.flatnonzero([True if name == os.path.splitext(os.path.basename(path))[0] else False for path
+                                       in paths])
             if len(name_idx) < 1:
                 warnings.warn(f"No matches with name '{name}' in paths. The name will be ignored!")
                 continue

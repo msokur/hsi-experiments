@@ -84,7 +84,7 @@ def _get_samples_per_label(paths: List[str], names: list):
     for p in paths:
         samples_per_names = get_section_from_meta(file_path=p, section=SAMPLES_PER_NAME)
         # create a list with samples per label for the needed names
-        samples_per_labels = [samples_per_names[name] for name in names if name in names]
+        samples_per_labels = [samples_per_names[name] for name in names if name in samples_per_names.keys()]
         for samples_per_label in samples_per_labels:
             # remove patient index
             samples_per_label.pop(FEATURE_PAT_IDX)

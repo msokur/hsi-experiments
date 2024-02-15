@@ -28,7 +28,7 @@ D3_X_y_w_1 = D3_X_y_1 + (DATA_WEIGHTS_1,)
 X_1D_TF_SPEC = TensorSpec(shape=(None, 10), dtype=np.int32, name=X_NAME)
 X_3D_TF_SPEC = TensorSpec(shape=(None, 3, 3, 10), dtype=np.int32, name=X_NAME)
 y_TF_SPEC = TensorSpec(shape=(None,), dtype=np.int32, name=y_NAME)
-WEIGHT_TF_SPEC = TensorSpec(shape=(None,), dtype=np.float64, name=WEIGHTS_NAME)
+WEIGHT_TF_SPEC = TensorSpec(shape=(None,), dtype=np.float32, name=WEIGHTS_NAME)
 
 
 def test___len__(zarr_3d_data_dir: str):
