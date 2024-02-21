@@ -44,13 +44,13 @@
     "EPOCHS": 50,
     "SMALLER_DATASET": false,
     "MODEL_CHECKPOINT": {
-      "monitor": "val_f1",
+      "monitor": "val_f1_score",
       "save_best_only": true,
       "mode": "max"
     },
     "EARLY_STOPPING": {
       "enable": true,
-      "monitor": "val_f1",
+      "monitor": "val_f1_score",
       "mode": "max",
       "min_delta": 0,
       "patience": 5,
