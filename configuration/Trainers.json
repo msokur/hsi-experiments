@@ -99,7 +99,7 @@
     "TYPE":  "Easy",
     "RESTORE": false,
     "FILES_TO_COPY": [["*.py"], ["data_utils", "*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"], ["scripts", "*.job"], ["trainers", "*.py"], ["util", "*.py"], ["evaluation", "*.py"], ["cross_validators", "*.py"], ["configuration", "*.py"], ["configuration", "*.json"]],
-    "WITH_SAMPLE_WEIGHTS": false,
+    "WITH_SAMPLE_WEIGHTS": true,
     "MODEL": "inception_model",
     "MODEL_PARAMS": "inception_model",
     "LEARNING_RATE": 1e-4,
@@ -108,7 +108,7 @@
       },
     "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
-    "EPOCHS": 50,
+    "EPOCHS": 1,
     "SMALLER_DATASET": false,
     "MODEL_CHECKPOINT": {
       "monitor": "val_f1_score_weighted",
