@@ -102,7 +102,7 @@ class Shuffle:
             name = self.data_storage.get_name(path=p)
             _data = self.data_storage.get_datas(data_path=p)
 
-            data = {n: a for n, a in _data.items()}
+            data = {n: a[...] for n, a in _data.items()}
 
             # fill random distribution to files
             for it in range(data[self.dict_names[0]].shape[0]):

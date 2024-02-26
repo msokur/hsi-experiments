@@ -5,11 +5,14 @@ import tensorflow as tf
 import os
 
 from glob import glob
-from data_utils.dataset.dataset_interface import Dataset
+from utils import alphanum_key
+
+from ..dataset_interface import Dataset
 from data_utils.dataset.meta_files import get_shape_from_meta
 from data_utils.dataset.tfrecord.tfr_utils import get_numpy_X
 from data_utils.dataset.tfrecord.tfr_parser import tfr_1d_train_parser, tfr_3d_train_parser
-from data_utils.dataset.tfrecord.tfr_utils import parse_names_to_int, filter_name_idx_and_labels
+from data_utils.dataset.tfrecord.tfr_utils import filter_name_idx_and_labels
+from ..utils import parse_names_to_int
 
 from configuration.keys import CrossValidationKeys as CVK
 from configuration.parameter import (
@@ -20,6 +23,7 @@ from configuration.parameter import (
 class TFRDatasets(Dataset):
     def get_datasets(self, dataset_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
                      batch_path: str):
+        dataset_paths.sort(key=alphanum_key)
         if self.config.CONFIG_CV[CVK.MODE] == "DEBUG":
             dataset_paths = [dataset_paths[0]]
 
@@ -60,7 +64,7 @@ class TFRDatasets(Dataset):
 
         :return: A tf Variable with integer
         """
-        names_int_dict = parse_names_to_int(tfr_files=dataset_paths)
+        names_int_dict = parse_names_to_int(files=dataset_paths, meta_type="tfr")
         names_int = []
         for name in names:
             if name in names_int_dict:
@@ -87,7 +91,8 @@ class TFRDatasets(Dataset):
         else:
             dataset = dataset.flat_map(map_func=lambda X, y, sw: tf.data.Dataset.from_tensor_slices(tensors=(X, y)))
 
-        dataset = dataset.cache().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+        # dataset = dataset.cache().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+        dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
         return dataset.batch(batch_size=self.batch_size, drop_remainder=True).with_options(options=self.options)
 

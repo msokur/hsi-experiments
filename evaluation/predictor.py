@@ -20,6 +20,7 @@ class Predictor:
 
     def __init__(self, config):
         self.config = config
+        self.data_storage = get_data_storage(typ=STORAGE_TYPE)
         set_tf_seed()
 
     def save_predictions(self, training_csv_path,
@@ -39,7 +40,7 @@ class Predictor:
         custom_objects = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"]
         results_dictionary = []
         data_loader = get_data_loader(typ=self.config.CONFIG_DATALOADER[DLK.TYPE], config=self.config,
-                                      data_storage=get_data_storage(typ=STORAGE_TYPE))
+                                      data_storage=self.data_storage)
         with open(training_csv_path, newline='') as csvfile:
             report_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
             for row in tqdm(report_reader):
@@ -56,7 +57,7 @@ class Predictor:
                                                                      checkpoint),
                                                         custom_objects=custom_objects)
                 # predictor = Predictor(self.config, checkpoint, MODEL_FOLDER=model_path)
-                predictions, gt, size = self.get_predictions_for_npz(os.path.join(npz_folder, name + ".npz"))
+                predictions, gt, size = self.get_predictions_for_npz(os.path.join(npz_folder, name))
 
                 results_dictionary.append({
                     'name': name,
@@ -70,12 +71,12 @@ class Predictor:
         np.save(os.path.join(predictions_saving_folder, predictions_npy_filename), results_dictionary)
 
     def get_predictions_for_npz(self, path):
-        data = np.load(path)
-        spectrum = data["X"]
-        gt = data["y"]
+        data = self.data_storage.get_datas(data_path=path)
+        spectrum = data["X"][...]
+        gt = data["y"][...]
         size = None
         if "size" in data:
-            size = data["size"]
+            size = data["size"][...]
 
         # get only needed samples
         indexes = np.zeros(gt.shape).astype(bool)

@@ -19,12 +19,12 @@ TFR_META_EXTENSION = ".tfrmeta"     # extension for tfr meta file
 GEN_META_EXTENSION = ".meta"        # extension for generator dataset meta file
 
 
-# --- Data archive names
+# --- Data storage names
 DICT_X = "X"                            # default dict name for spectrum
 DICT_y = "y"                            # default dict name for classifications
 DICT_IDX = "indexes_in_datacube"        # default dict name for original indexes in hyper cube
 DICT_WEIGHT = "weights"                 # default dict name for weights
-ORG_NAME = "org_name"                   # original file name, when mor files in one data archive
+ORG_NAME = "org_name"                   # original file name, when mor files in one data storage
 
 # --- Scaler
 SCALER_FILE = "scaler.scaler"

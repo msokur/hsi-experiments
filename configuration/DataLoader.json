@@ -66,7 +66,82 @@
 		"SPLIT_PATHS_BY": "Files",
 		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
 		"BACKGROUND": {
-			"WITH_BACKGROUND_EXTRACTION": false
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		},
+		"COMBINE_DATA_FROM_FOLDER": true
+	},
+	"HNO_2": {
+		"TYPE": "normal",
+		"FILE_EXTENSION": ".dat",
+		"3D": true,
+		"3D_SIZE": [9, 9],
+		"FIRST_NM": 8,
+		"LAST_NM": 100,
+		"WAVE_AREA": 100,
+		"LABELS_TO_TRAIN": [0, 1],
+		"NAME_SPLIT": "_SpecCube",
+		"MASK_DIFF": ["_SpecCube.dat", ".png"],
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING_TYPE": null,
+		"SMOOTHING_VALUE": 5,
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_core",
+			"depth": 5,
+			"axis": [],
+			"not_used_labels": []
+		},
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [[0, 0, 255]],
+				"LABEL": "Tumor",
+				"COLOR": "blue"
+			},
+			"1": {
+				"MASK": [[255, 0, 0]],
+				"LABEL": "Parotis",
+				"COLOR": "red"
+			},
+			"2": {
+				"MASK": [[255, 255, 0]],
+				"LABEL": "Nerve",
+				"COLOR": "yellow"
+			},
+			"3": {
+				"MASK": [[255, 255, 255]],
+				"LABEL": "Subcutaneous_Tissue",
+				"COLOR": "white"
+			},
+			"4": {
+				"MASK": [[0, 255, 0]],
+				"LABEL": "Muscle",
+				"COLOR": "green"
+			},
+			"5": {
+				"MASK": [[128, 128, 128]],
+				"LABEL": "Vein",
+				"COLOR": "grey"
+			},
+			"6": {
+				"MASK": [[12, 27, 12]],
+				"LABEL": "Cartilage",
+				"COLOR": "black"
+			},
+			"7": {
+				"MASK": [[26, 255, 255]],
+				"LABEL": "Not_Certain",
+				"COLOR": "cornflowerblue"
+			}
+		},
+		"SPLIT_PATHS_BY": "Files",
+		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": true,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
 		},
 		"COMBINE_DATA_FROM_FOLDER": true
 	},

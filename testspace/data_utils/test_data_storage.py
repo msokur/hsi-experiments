@@ -24,7 +24,7 @@ def get_file(typ: str, path: str):
 
 @pytest.mark.parametrize("data_storage,typ,data_name", GET_PATH_TEST_DATA)
 def test_get_path(data_dir: str, data_storage, typ: str, data_name: str):
-    file_path = os.path.join(data_dir, f"{typ}_file", "1d", data_name)
+    file_path = os.path.join(data_dir, f"{typ}_file", "1d", "patient", data_name)
     file = get_file(typ=typ, path=file_path)
     assert data_storage.get_path(file=file) == file_path
 
@@ -38,9 +38,11 @@ GET_PATHS_TEST_DATA = [(DataStorageNPZ(), "npz", "1d", ["data_test_0.npz", "data
 @pytest.mark.parametrize("data_storage,typ,patch,data_names", GET_PATHS_TEST_DATA)
 def test_get_paths(data_dir: str, data_storage, typ: str, patch: str, data_names: list):
     result_paths = []
-    root_path = os.path.join(data_dir, f"{typ}_file", patch)
+    root_path = os.path.join(data_dir, f"{typ}_file", patch, "patient")
     for name in data_names:
         result_paths.append(os.path.join(root_path, name))
+    print(data_storage.get_paths(storage_path=root_path))
+    print(root_path)
     assert data_storage.get_paths(storage_path=root_path) == result_paths
 
 
@@ -67,14 +69,16 @@ ALL_DATA_GENERATOR_TEST_DATA = [(DataStorageNPZ(), "npz", "1d", [DATA_1D_0, DATA
 
 @pytest.mark.parametrize("data_storage,typ,patch,results", ALL_DATA_GENERATOR_TEST_DATA)
 def test_all_data_generator_keys(data_dir: str, data_storage, typ: str, patch: str, results: list):
-    data_generator = data_storage.all_data_generator(storage_path=os.path.join(data_dir, f"{typ}_file", patch))
+    storage_path = os.path.join(data_dir, f"{typ}_file", patch, "patient")
+    data_generator = data_storage.all_data_generator(storage_path=storage_path)
     for data_gen, result in zip(data_generator, results):
         assert data_gen.keys() == result.keys()
 
 
 @pytest.mark.parametrize("data_storage,typ,patch,results", ALL_DATA_GENERATOR_TEST_DATA)
 def test_all_data_generator_values(data_dir: str, data_storage, typ: str, patch: str, results: list):
-    data_generator = data_storage.all_data_generator(storage_path=os.path.join(data_dir, f"{typ}_file", patch))
+    storage_path = os.path.join(data_dir, f"{typ}_file", patch, "patient")
+    data_generator = data_storage.all_data_generator(storage_path=storage_path)
     for data_gen, result in zip(data_generator, results):
         for k in data_gen.keys():
             assert (data_gen[k][...] == result[k]).all()
@@ -88,15 +92,16 @@ GET_DATAS_TEST_DATA = [(DataStorageNPZ(), "npz", "1d", "data_test_0.npz", DATA_1
 
 @pytest.mark.parametrize("data_storage,typ,patch,group_name,result", GET_DATAS_TEST_DATA)
 def test_get_datas_keys(data_dir: str, data_storage, typ: str, patch: str, group_name: str, result: dict):
-    file_path = os.path.join(data_dir, f"{typ}_file", patch, group_name)
+    file_path = os.path.join(data_dir, f"{typ}_file", patch, "patient", group_name)
     datas = data_storage.get_datas(data_path=file_path)
+    print(datas)
     assert datas.keys() == result.keys()
 
 
 @pytest.mark.parametrize("data_storage,typ,patch,group_name,result", GET_DATAS_TEST_DATA)
 def test_get_datas_values(data_dir: str, data_storage, typ: str, patch: str, group_name: str,
                           result: dict):
-    file_path = os.path.join(data_dir, f"{typ}_file", patch, group_name)
+    file_path = os.path.join(data_dir, f"{typ}_file", patch, "patient", group_name)
     datas = data_storage.get_datas(data_path=file_path)
     for k in datas.keys():
         assert (datas[k][...] == result[k]).all()
@@ -115,7 +120,7 @@ GET_DATA_TEST_DATA = [(DataStorageNPZ(), "npz", "1d", "data_test_0.npz", "X", DA
 @pytest.mark.parametrize("data_storage,typ,patch,data_name,array_name,result", GET_DATA_TEST_DATA)
 def test_get_data(data_dir: str, data_storage, typ: str, patch: str, data_name: str, array_name: str,
                   result: list):
-    file_path = os.path.join(data_dir, f"{typ}_file", patch, data_name)
+    file_path = os.path.join(data_dir, f"{typ}_file", patch, "patient", data_name)
     assert (data_storage.get_data(data_path=file_path, data_name=array_name)[...] == result).all()
 
 

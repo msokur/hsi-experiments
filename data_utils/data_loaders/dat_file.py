@@ -14,7 +14,7 @@ class DatFile:
         This class can load a HSI spectrum from a .dat file and annotation masks from .png, .jpg, .jpeg, .jpe or .mk2
         file.
 
-        The input dictionary need following keys and values:
+        The input dictionary for config.CONFIG_DATALOADER need following keys and values:
 
         MASK_COLOR -> dictionary with int keys (start by 0) with RGB and/or RGBA values.
 
@@ -204,7 +204,10 @@ class DatFile:
         # add alpha channel
         if img.mode != "RGBA":
             img = img.convert("RGBA")
-            warnings.warn("Better use '.png' format. Alpha channel added.")
+            if img.format == "PNG":
+                warnings.warn(".png without alpha channel. Alpha channel added.")
+            else:
+                warnings.warn("Better use '.png' format. Alpha channel added.")
 
         return np.reshape(img.getdata(), newshape=img.size[::-1] + (4,))
 

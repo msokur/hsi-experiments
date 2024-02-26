@@ -34,8 +34,12 @@ class CrossValidatorBase:
         if execution_flags is None:
             execution_flags = CrossValidatorBase.get_execution_flags()
 
+        csv_filename = None
+        if CVK.CSV_FILENAME in self.config.CONFIG_CV:
+            csv_filename = self.config.CONFIG_CV[CVK.CSV_FILENAME]
+
         if execution_flags[CVK.EF_CROSS_VALIDATION]:
-            self.cross_validation()
+            self.cross_validation(csv_filename=csv_filename)
         if execution_flags[CVK.EF_EVALUATION]:
             self.evaluation(**kwargs)
 

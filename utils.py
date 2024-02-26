@@ -4,6 +4,7 @@ import glob
 import numpy as np
 import inspect
 import psutil
+import re
 
 from configuration.keys import TelegramKeys as TGK
 
@@ -68,3 +69,15 @@ def get_used_memory(process_id: int, unit: str = "GB") -> str:
     memory = process.memory_info().rss
     memory /= 1024 ** exponent
     return f"{round(memory, 3)} {unit}"
+
+
+def alphanum_key(s: str):
+    file_name = os.path.basename(s)
+    return [_try_int(c) for c in re.split(pattern="([0-9]+)", string=file_name)]
+
+
+def _try_int(s):
+    try:
+        return int(s)
+    except ValueError:
+        return s
