@@ -5,7 +5,7 @@ import numpy as np
 from glob import glob
 import matplotlib.pyplot as plt
 
-from util.experiments_combinations import BackgroundCombinations, SmoothingCombinations
+import util.experiments_combinations as utils
 
 
 # TODO. Document background parameters + give warning about WITH_BACKGROUND_EXTRACTION
@@ -24,12 +24,14 @@ class Experiment:
         self.create_experiment_folder()
 
         self.parameters_for_experiment = params_for_experiment
-        self.background_parameters = self.validate_background_params(background_params)
+        self.background_parameters = utils.BackgroundCombinations.validate_background_params(background_params)
 
         self.combinations_keys = list(params_for_experiment.keys())
         self.config_sections = [v['config_section'] for v in self.parameters_for_experiment.values()]
         self.combinations = self.create_combinations()
-        print(f"Input parameters for experiment: {self.parameters_for_experiment}")
+
+        print(f"Input parameters for experiment: {self.parameters_for_experiment} \n "
+              f"Background params: {self.background_parameters}")
         print(f"Combinations keys: {self.combinations_keys}")
         print("Combinations:")
         print(*self.combinations, sep='\n')
@@ -46,47 +48,25 @@ class Experiment:
         if not os.path.exists(self.root_folder):
             os.mkdir(self.root_folder)
 
-    @staticmethod
-    def validate_background_params(background_params):
-        # There are only 2 legit values for 'BACKGROUND.WITH_BACKGROUND_EXTRACTION': [True] and [True, False]
-        if 'BACKGROUND.WITH_BACKGROUND_EXTRACTION' in background_params:
-            with_or_without_background = background_params['BACKGROUND.WITH_BACKGROUND_EXTRACTION']['parameters']
-            if len(with_or_without_background) == 0:
-                raise ValueError(f"Error! Empty list were passed for BACKGROUND.WITH_BACKGROUND_EXTRACTION: "
-                                 f"{with_or_without_background}")
-            if len(with_or_without_background) == 1 and not with_or_without_background[0]:
-                raise ValueError(
-                    f"Error! False is passed for WITH_BACKGROUND_EXTRACTION: {with_or_without_background}, "
-                    f"which means that there is no need in experiments. Just set it in configs.")
-            if len(with_or_without_background) > 2:
-                raise ValueError(f"Error! 'BACKGROUND.WITH_BACKGROUND_EXTRACTION' should be either [False, True] or "
-                                 f"[True], but more values were given: {with_or_without_background}")
-            if np.array(with_or_without_background).dtype != 'bool':
-                raise ValueError(
-                    f"Error! Not boolean values are specified for 'BACKGROUND.WITH_BACKGROUND_EXTRACTION': "
-                    f"{with_or_without_background}")
-            if len(with_or_without_background) == 2 and len(np.unique(with_or_without_background)) != 2:
-                raise ValueError(f"Error! Duplicate values are passed for BACKGROUND.WITH_BACKGROUND_EXTRACTION: "
-                                 f"{with_or_without_background}")
-
-        else:
-            raise ("Error! 'BACKGROUND.LIGHT_REFLECTION_THRESHOLD' and/or 'BACKGROUND.BLOOD_THRESHOLD' are specified, "
-                   "but 'BACKGROUND.WITH_BACKGROUND_EXTRACTION' is not. Experiments would be redundant.")
-
-        return background_params
-
     def create_combinations(self):
-        parameters = [v['parameters'] for v in self.parameters_for_experiment.values()]
-        print('parameters', parameters)
+        parameters = self.get_parameters(self.parameters_for_experiment)
         combinations = list(itertools.product(*parameters))
 
-        combinations = SmoothingCombinations(self.parameters_for_experiment,
-                                             self.combinations_keys,
-                                             gaussian_params=gaussian_params,
-                                             median_params=median_params).add_combinations(combinations)
-        combinations = BackgroundCombinations(self.background_parameters).add_combinations(combinations)
+        combinations = utils.SmoothingCombinations(self.parameters_for_experiment,
+                                                   self.combinations_keys,
+                                                   gaussian_params=gaussian_params,
+                                                   median_params=median_params).add_combinations(combinations)
+        combinations = utils.BackgroundCombinations(self.background_parameters).add_combinations(combinations)
 
         return combinations
+
+    @staticmethod
+    def get_parameters(parameters):
+        parameters_ = []
+        for value in parameters.values():
+            if 'parameters' in value:
+                parameters_.append(value['parameters'])
+        return parameters_
 
     def create_folder_for_results(self):
         results_root_folder = self.config.CONFIG_PATHS['RESULTS_FOLDER']
@@ -102,10 +82,21 @@ class Experiment:
         self.json_name = os.path.join(self.root_folder, 'combinations.json')
 
         result_json = []
-        for combination in self.combinations:
+        for combination in self.combinations[:3]:
+            print(combination)
+            print(self.config_sections)
+            print(self.combinations_keys)
+            for section, name, value in zip(self.config_sections,
+                                            self.combinations_keys,
+                                            combination):
+                print(section, name, value)
+            print({section: [name, value] for section, name, value in zip(self.config_sections,
+                                                                                       self.combinations_keys,
+                                                                                       combination)})
             result_json.append({section: [name, value] for section, name, value in zip(self.config_sections,
                                                                                        self.combinations_keys,
                                                                                        combination)})
+            print(result_json)
 
         with open(self.json_name, 'w') as outfile:
             outfile.write(json.dumps(result_json))
@@ -146,11 +137,12 @@ class Experiment:
         for i, combination in enumerate(self.combinations):
             # print('-----------------')
             print(combination)
+            #print(self.combinations_keys)
             sample_dict = {name: c for name, c in zip(self.combinations_keys, combination)}
-            # print(sample_dict)
+            print(sample_dict)
 
             short_name = self.combine_short_name(sample_dict)
-            # print(short_name)
+            print(short_name)
 
             # print(self.root_folder)
             # print(self.name + "_" + short_name)
@@ -203,14 +195,6 @@ if __name__ == '__main__':
             'config_section': 'CONFIG_PREPROCESSOR',
             'parameters': ["svn_T", 'l2_norm']
         },
-        # "BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    'parameters': [True]
-        # },
-        # "BACKGROUND.BLOOD_THRESHOLD": {
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    'parameters': [0.1, 0.2, 0.3]
-        # },
         "SMOOTHING_TYPE": {
             'add_None': True,
             'config_section': 'CONFIG_DATALOADER',
@@ -220,19 +204,28 @@ if __name__ == '__main__':
             'config_section': 'CONFIG_DATALOADER',
             'parameters': median_params + gaussian_params
         },
+        "BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
+            'config_section': 'CONFIG_DATALOADER',
+            # 'parameters': [True]
+        },
+        "BACKGROUND.BLOOD_THRESHOLD": {
+            'config_section': 'CONFIG_DATALOADER'
+            # 'parameters': [0.1, 0.2, 0.3]
+        },
+        "BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
+            'config_section': 'CONFIG_DATALOADER'
+        }
+
     }
 
     background_config = {
         "BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
-            'config_section': 'CONFIG_DATALOADER',
             'parameters': [True, False]
         },
         "BACKGROUND.BLOOD_THRESHOLD": {
-            'config_section': 'CONFIG_DATALOADER',
             'parameters': [0.1, 0.2, 0.3]
         },
         "BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
-            'config_section': 'CONFIG_DATALOADER',
             'parameters': [0.7, 0.8]
         }
     }
@@ -240,7 +233,7 @@ if __name__ == '__main__':
     experiment = Experiment('ExperimentRevival_treeConfigs',
                             config_for_experiment,
                             background_params=background_config)
-    # experiment.run_experiment()
+    #experiment.run_experiment()
     # print(exp.get_results())
 
     '''config_for_experiment = {

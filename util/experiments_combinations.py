@@ -1,13 +1,13 @@
 import itertools
 import abc
-
-
+import numpy as np
+import run_experiment
 # for experiments in run_experiment.py
 
 
 class Combinations:
     @abc.abstractmethod
-    def add_combinations(self):
+    def add_combinations(self, combinations):
         pass
 
 
@@ -25,10 +25,8 @@ class SmoothingCombinations(Combinations):
             params_without_smoothing = self.parameters_for_experiment.copy()
             del params_without_smoothing['SMOOTHING_TYPE']
             del params_without_smoothing['SMOOTHING_VALUE']
-            print(params_without_smoothing)
-            parameters = [v['parameters'] for v in params_without_smoothing.values()]
+            parameters = run_experiment.Experiment.get_parameters(params_without_smoothing)
             raw_combinations = list(itertools.product(*parameters))
-            print(raw_combinations)
             for combination in raw_combinations:
                 combination_ = list(combination)
                 combination_.append(None)
@@ -64,7 +62,6 @@ class BackgroundCombinations(Combinations):
                 new_combinations = [list(combination)] * self._get_length_for_duplication()
 
                 background_combinations = self._get_background_combinations()
-                print(background_combinations)
                 for index, c in enumerate(new_combinations):
                     t = list(c)
                     if self._add_combination_with_False(index, t, background_combinations, output_combinations):
@@ -73,7 +70,6 @@ class BackgroundCombinations(Combinations):
                     t.append(True)
                     t.append(background_combinations[index - 1][0])
                     t.append(background_combinations[index - 1][1])
-                    print(t)
                     output_combinations.append(t)
 
             return output_combinations
@@ -121,3 +117,32 @@ class BackgroundCombinations(Combinations):
             output_combinations.append(t)
             return True
         return False
+
+    @staticmethod
+    def validate_background_params(background_params):
+        # There are only 2 legit values for 'BACKGROUND.WITH_BACKGROUND_EXTRACTION': [True] and [True, False]
+        if 'BACKGROUND.WITH_BACKGROUND_EXTRACTION' in background_params:
+            with_or_without_background = background_params['BACKGROUND.WITH_BACKGROUND_EXTRACTION']['parameters']
+            if len(with_or_without_background) == 0:
+                raise ValueError(f"Error! Empty list were passed for BACKGROUND.WITH_BACKGROUND_EXTRACTION: "
+                                 f"{with_or_without_background}")
+            if len(with_or_without_background) == 1 and not with_or_without_background[0]:
+                raise ValueError(
+                    f"Error! False is passed for WITH_BACKGROUND_EXTRACTION: {with_or_without_background}, "
+                    f"which means that there is no need in experiments. Just set it in configs.")
+            if len(with_or_without_background) > 2:
+                raise ValueError(f"Error! 'BACKGROUND.WITH_BACKGROUND_EXTRACTION' should be either [False, True] or "
+                                 f"[True], but more values were given: {with_or_without_background}")
+            if np.array(with_or_without_background).dtype != 'bool':
+                raise ValueError(
+                    f"Error! Not boolean values are specified for 'BACKGROUND.WITH_BACKGROUND_EXTRACTION': "
+                    f"{with_or_without_background}")
+            if len(with_or_without_background) == 2 and len(np.unique(with_or_without_background)) != 2:
+                raise ValueError(f"Error! Duplicate values are passed for BACKGROUND.WITH_BACKGROUND_EXTRACTION: "
+                                 f"{with_or_without_background}")
+
+        else:
+            raise ("Error! 'BACKGROUND.LIGHT_REFLECTION_THRESHOLD' and/or 'BACKGROUND.BLOOD_THRESHOLD' are specified, "
+                   "but 'BACKGROUND.WITH_BACKGROUND_EXTRACTION' is not. Experiments would be redundant.")
+
+        return background_params
