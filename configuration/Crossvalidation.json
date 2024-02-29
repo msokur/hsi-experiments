@@ -1,7 +1,7 @@
 {
   "BASE":{
     "EXECUTION_FLAGS": {
-      "cross_validation": true,
+      "cross_validation": false,
       "evaluation": true
     },
     "FIRST_SPLIT": 0,
@@ -13,11 +13,11 @@
   },
   "CV_HNO_NORMAL": {
     "TYPE": "normal",
-    "NAME": "2024-02-14_HNO_2_9x9_snv_no-smooth_paper-model",
+    "NAME": "2024-02-21_HNO_2_9x9_snv_no-smooth_paper-model",
     "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
     "RESTORE_VALID_SEQUENCE": "",
     "GET_CHECKPOINT_FROM_EARLYSTOPPING": true,
-    "CSV_FILENAME": "2024-02-14_HNO_2_9x9_snv_no-smooth_paper-model_stats_19.02.2024-10_52_02.csv"
+    "CSV_FILENAME": "2024-02-21_HNO_2_9x9_snv_no-smooth_paper-model_stats_26.02.2024-09_07_59.csv"
   },
   "CV_ESO_NORMAL": {
     "TYPE": "normal",

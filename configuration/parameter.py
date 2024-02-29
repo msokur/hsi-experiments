@@ -62,5 +62,8 @@ GEN_ALL = "all"                         # modus all for data generator
 GEN_TRAIN = "train"                     # modus train for data generator
 GEN_VALID = "valid"                     # modus valid for data generator
 
+# --- predictor
+MAX_SIZE_PER_SPEC = 4.0                 # maximal size in GB for a spectrum to predict
+
 # --- prediction to image
 PRED_TO_IMG_TYP = "archive"
