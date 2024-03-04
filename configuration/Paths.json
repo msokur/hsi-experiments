@@ -11,8 +11,8 @@
   "Win_Benny": {
     "MODE": "WITHOUT_GPU",
     "DATABASE_ROOT_FOLDER": "C:\\Users\\benny\\Desktop\\Arbeit\\data",
-    "LOGS_FOLDER": ["C:\\Users\\benny\\Desktop\\Arbeit\\data\\logs"],
-    "RESULTS_FOLDER": "C:\\Users\\benny\\Desktop\\Arbeit\\data\\results"
+    "LOGS_FOLDER": ["C:\\Users\\benny\\Desktop\\Arbeit\\data\\hsi-experiments\\model_logs"],
+    "RESULTS_FOLDER": "C:\\Users\\benny\\Desktop\\Arbeit\\data\\hsi-experiments\\model_results"
   },
   "Cluster_Mariia": {
     "MODE": "WITH_GPU",

@@ -3,10 +3,9 @@ from tqdm import tqdm
 import tensorflow as tf
 import numpy as np
 import os
-import inspect
 from glob import glob
 
-from configuration.keys import DataLoaderKeys as DLK, CrossValidationKeys as CVK
+from configuration.keys import DataLoaderKeys as DLK, CrossValidationKeys as CVK, PathKeys as PK
 from models.model_randomness import set_tf_seed
 from provider import get_data_loader, get_data_storage
 from configuration.parameter import (
@@ -97,7 +96,10 @@ class Predictor:
             else:
                 end_step = start_step + steps_width
 
-            predictions_.append(self.model.predict(spectrum[start_step:end_step], verbose=0))
+            tf_spectrum = tf.convert_to_tensor(spectrum[start_step:end_step])
+            predict_data = tf.data.Dataset.from_tensor_slices(tf_spectrum).batch(500)
+            predictions_.append(self.model.predict(predict_data, verbose=0))
+            start_step += steps_width
 
         predictions = np.concatenate(predictions_, axis=0)
 
@@ -105,12 +107,8 @@ class Predictor:
 
     def edit_model_path_if_local(self, model_path):
         if "LOCAL" in self.config.CONFIG_PATHS["MODE"]:
-            model_path = model_path.split("hsi-experiments")[-1][1:]
-            model_path = model_path.replace("/", "\\")
-
-            current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-            parent_dir = os.path.dirname(current_dir)
-            model_path = os.path.join(parent_dir, model_path)
+            model_folders = os.path.split(model_path)
+            model_path = os.path.join(self.config.CONFIG_PATHS[PK.RESULTS_FOLDER], model_folders[-2], model_folders[-1])
         return model_path
 
     def get_checkpoint(self, checkpoint, model_path=None):

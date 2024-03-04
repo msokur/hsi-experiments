@@ -1,7 +1,7 @@
 import numpy as np
 import provider
 from configuration.get_config import telegram
-from configuration.keys import CrossValidationKeys as CVK
+from configuration.keys import CrossValidationKeys as CVK, DataLoaderKeys as DLK
 
 
 def out_of_the_box(config):
@@ -18,9 +18,12 @@ def out_of_the_box(config):
     # evaluation/evaluation_base.py -> EvaluationBase -> save_predictions_and_metrics()
     # you can pass any parameters from save_predictions_and_metrics() except training_csv_path and npz_folder,
     # because they passed automatically
+    thresholds = None
+    if len(config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]) <= 2:
+        thresholds = np.round(np.linspace(0.1, 0.5, 5), 4)
     cross_validator.pipeline(execution_flags=execution_flags,
                              # specify thresholds if classification is binary
-                             # thresholds=np.round(np.linspace(0.1, 0.5, 5), 4)
+                             thresholds=thresholds
                              )
 
 
