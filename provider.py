@@ -113,10 +113,10 @@ def get_smoother(typ: str, *args, **kwargs):
     from data_utils.smoothing import MedianFilter, GaussianFilter
 
     if typ == "median_filter":
-        print("Smooth spectrum with median filter!")
+        print("Spectrum is smoothed with median filter!")
         return MedianFilter(*args, **kwargs)
     elif typ == "gaussian_filter":
-        print("Smooth spectrum with gaussian filter!")
+        print("Spectrum is smoothed with gaussian filter!")
         return GaussianFilter(*args, **kwargs)
 
     value_error("smoother", typ)

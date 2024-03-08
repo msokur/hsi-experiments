@@ -152,7 +152,7 @@
   },
     "COLON": {
     "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
-      "RAW_NPZ_PATH": ["experiment", "patient_data"],
+      "RAW_NPZ_PATH": ["experiment"],
       "RAW_SOURCE_PATH": [""]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {

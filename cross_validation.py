@@ -20,7 +20,7 @@ def out_of_the_box(config):
     # because they passed automatically
     cross_validator.pipeline(execution_flags=execution_flags,
                              # specify thresholds if classification is binary
-                             # thresholds=np.round(np.linspace(0.1, 0.5, 5), 4)
+                             thresholds=np.round(np.linspace(0.1, 0.5, 5), 4)
                              )
 
 
