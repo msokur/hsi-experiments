@@ -44,7 +44,7 @@ class DistributionsChecker:
         self.test_paths = paths
         self.path = os.path.split(paths[0])[0]
         self.dataset = dataset
-        self.all_data = np.array(self.get_all_data(paths=self.test_paths))
+        self.all_data = self.get_all_data(paths=self.test_paths)
         self.prints = local_config[DCK.PRINTS]
 
     @staticmethod
@@ -62,7 +62,7 @@ class DistributionsChecker:
             for the example above (50000, 92)
         """
         center = math.floor(data.shape[1] / 2)
-        return data[:, center, center, ...]
+        return data[:, center, center, ...].copy()
 
     def get_all_data(self, paths, feature_index=-1):
         """
@@ -77,9 +77,9 @@ class DistributionsChecker:
 
         for p in tqdm(paths):
             data = self.get_data(path=p, feature_index=feature_index)
-            all_data += list(data)
+            all_data.append(data)
 
-        return all_data
+        return np.concatenate(all_data, axis=0)
 
     def get_data(self, path, feature_index=-1) -> np.ndarray:
         """
