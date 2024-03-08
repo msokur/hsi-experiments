@@ -66,10 +66,11 @@ class CrossValidatorExperiment(CrossValidatorBase):
             print(configs)
 
         print(configs)
-        for key, value in configs.items():
-            print(key, value)
-            config_section = getattr(self.config, key)
-            config_section[value[0]] = value[1]
+        for config_name, params in configs.items():
+            print(config_name, params)
+            section, value = params
+            config_section = getattr(self.config, section)
+            config_section[config_name] = value
 
             #print('--------------', self.config.CONFIG_DATALOADER)
             #print('--------------', self.config.CONFIG_PREPROCESSOR)
