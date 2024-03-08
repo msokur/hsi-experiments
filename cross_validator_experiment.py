@@ -2,6 +2,7 @@ import os
 import argparse
 import json
 import numpy as np
+from shutil import rmtree
 
 from cross_validators.cross_validator_base import CrossValidatorBase
 from data_utils.preprocessor import Preprocessor
@@ -34,6 +35,8 @@ class CrossValidatorExperiment(CrossValidatorBase):
         super().__init__(self.config, *args, **kwargs)
 
         self.pipeline(thresholds=np.round(np.linspace(0.1, 0.5, 5), 4))
+
+        rmtree(self.config.CONFIG_PATHS['RAW_NPZ_PATH'])
 
     def parse_args(self):
         parser = argparse.ArgumentParser(description='Process some integers.')
