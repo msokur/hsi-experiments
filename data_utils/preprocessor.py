@@ -111,9 +111,10 @@ class Preprocessor:
 
         # ----------shuffle part------------------
         if execution_flags['shuffle']:
+            print(f"SHUFFLE PATHS {self.config.CONFIG_PATHS[PK.SHUFFLED_PATH]}")
             shuffle = provider.get_shuffle(config=self.config, typ=DATASET_TYPE, data_storage=data_storage,
                                            raw_path=preprocessed_path,
-                                           dict_names=self.dict_names)
+                                           dict_names=self.dict_names, small=False)
             shuffle.shuffle()
 
         print(f'---- Memory, preprocessor 4, after shuffling {get_used_memory(process_id=process_id)} ----')

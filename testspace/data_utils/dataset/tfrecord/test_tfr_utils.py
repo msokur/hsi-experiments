@@ -27,11 +27,11 @@ def test_filter_name_idx_and_labels():
         assert tf.math.reduce_all(data == result)
 
 
-GET_NUMPY_X_DATA = [("1d", (15,), D1_X_0), ("3d", (3, 3, 15), D3_X_0)]
+GET_NUMPY_X_DATA = [("1d", D1_X_0), ("3d", D3_X_0)]
 
 
-@pytest.mark.parametrize("folder,shape,result", GET_NUMPY_X_DATA)
-def test_get_numpy_X(tfr_data_dir: str, folder: str, shape: tuple, result: np.ndarray):
+@pytest.mark.parametrize("folder,result", GET_NUMPY_X_DATA)
+def test_get_numpy_X(tfr_data_dir: str, folder: str, result: np.ndarray):
     tfr_path = os.path.join(tfr_data_dir, folder, "shuffled", "shuffle0" + TFR_FILE_EXTENSION)
-    X = get_numpy_X(tfr_path=tfr_path, shape=shape)
+    X = get_numpy_X(tfr_path=tfr_path)
     assert (X == result).all()
