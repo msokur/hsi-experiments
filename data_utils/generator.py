@@ -123,30 +123,30 @@ class DataGenerator(keras.utils.Sequence):
             delimiter = self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"]
             if self.config.CONFIG_CV["CHOOSE_EXCLUDED_VALID"] == "restore":
                 print("Restore names of patients that will be used for validation dataset")
-                restore_paths = glob.glob(os.path.join(self.config.CONFIG_CV["RESTORE_VALID_PATH"],
-                                                       f"*{delimiter}"))
-                restore_path = restore_paths[np.flatnonzero(
-                    np.core.defchararray.find(restore_paths, self.config.CONFIG_CV["RESTORE_VALID_SEQUENCE"]) != -1)[0]]
+                #restore_paths = glob.glob(os.path.join(self.config.CONFIG_CV["RESTORE_VALID_PATH"],
+                #                                       f"*{delimiter}"))
+                #restore_path = restore_paths[np.flatnonzero(
+                #    np.core.defchararray.find(restore_paths, self.config.CONFIG_CV["RESTORE_VALID_SEQUENCE"]) != -1)[0]]
 
                 log_name = self.log_dir.split(delimiter)[-1]
-                log_index = log_name.split("_")[1]  # can be problems
+                log_index = log_name.split("3d_")[1]  # can be problems
 
-                restore_log_paths = glob.glob(os.path.join(restore_path, f"*{delimiter}"))
+                restore_log_paths = glob.glob(os.path.join(self.config.CONFIG_CV["RESTORE_VALID_PATIENTS_FOLDER"],
+                                                           f"*{delimiter}"))
                 restore_log_path = restore_log_paths[
                     np.flatnonzero(np.core.defchararray.find(restore_log_paths, "3d_" + str(log_index) + "_") != -1)[0]]
 
                 valid_except_indexes = pickle.load(
                     open(os.path.join(restore_log_path, "valid.valid_except_names"), "rb"))
-                print(
-                    f"We restore {valid_except_indexes} from {restore_log_path} "
-                    f"with {self.config.CONFIG_CV['RESTORE_VALID_SEQUENCE']}")
+                print(f"We restore {valid_except_indexes} from {restore_log_path} ")
+                    #f"with {self.config.CONFIG_CV['RESTORE_VALID_SEQUENCE']}")
                 return valid_except_indexes
 
             raw_paths = glob.glob(os.path.join(self.raw_npz_path, '*.npz'))
             raw_paths_names = [r.split(delimiter)[-1].split('.')[0] for r in raw_paths]
             how_many_patients_to_exclude = self.config.CONFIG_CV["HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID"]
 
-            print('Getting new validation patients')
+            print('Generate random validation patients')
             if self.config.CONFIG_CV["CHOOSE_EXCLUDED_VALID"] == "randomly":
                 return DataGenerator.get_random_choice(paths=raw_paths_names,
                                                        excepts=self.except_indexes,

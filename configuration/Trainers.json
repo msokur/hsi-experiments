@@ -128,7 +128,7 @@
     "TYPE":  "Easy",
     "RESTORE": false,
     "FILES_TO_COPY": [["*.py"], ["data_utils", "*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"], ["scripts", "*.job"], ["trainers", "*.py"], ["util", "*.py"], ["evaluation", "*.py"], ["cross_validators", "*.py"], ["configuration", "*.py"], ["configuration", "*.json"]],
-    "WITH_SAMPLE_WEIGHTS": true,
+    "WITH_SAMPLE_WEIGHTS": false,
     "MODEL": "inception_model",
     "MODEL_PARAMS": "inception_model",
     "LEARNING_RATE": 1e-4,

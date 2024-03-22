@@ -91,29 +91,12 @@ class ChoiceNames:
 
     def get_valid_except_names(self, raw_path: str, except_names: List[str]):
         if self.CONFIG_CV[CVK.CHOOSE_EXCLUDED_VALID] == "restore":
-            print("Restore names of patients that will be used for validation dataset")
-            restore_paths = glob(os.path.join(self.CONFIG_CV[CVK.RESTORE_VALID_PATH], "*", ""))
-            restore_path = restore_paths[np.flatnonzero(
-                np.core.defchararray.find(restore_paths, self.CONFIG_CV[CVK.RESTORE_VALID_SEQUENCE]) != -1)[0]]
-
-            log_name = os.path.split(self.log_dir)[-1]
-            log_index = log_name.split("_")[1]  # can be problems
-
-            restore_log_paths = glob(os.path.join(restore_path, "*", ""))
-            restore_log_path = restore_log_paths[
-                np.flatnonzero(np.core.defchararray.find(restore_log_paths, "3d_" + str(log_index) + "_") != -1)[0]]
-
-            valid_except_indexes = pickle.load(
-                open(os.path.join(restore_log_path, VALID_LOG), "rb"))
-            print(
-                f"We restore {valid_except_indexes} from {restore_log_path} "
-                f"with {self.CONFIG_CV[CVK.RESTORE_VALID_SEQUENCE]}")
-            return valid_except_indexes
+            return self.restore_valid_names()
 
         raw_paths = self.data_storage.get_paths(storage_path=raw_path)
         raw_paths_names = [os.path.split(r)[-1].split(".")[0] for r in raw_paths]
 
-        print('Getting new validation patients')
+        print('Generating random validation patients')
         if self.CONFIG_CV[CVK.CHOOSE_EXCLUDED_VALID] == "randomly":
             return self.random_choice(paths=raw_paths_names,
                                       excepts=except_names,
@@ -123,3 +106,19 @@ class ChoiceNames:
             return self.class_choice(paths=raw_paths,
                                      paths_names=raw_paths_names,
                                      excepts=except_names)
+
+    def restore_valid_names(self):
+        print("Restoring of valid patients...")
+        print('WARNING! Check if an order of the excepted test patients in the RESTORE_VALID_PATIENTS_FOLDER '
+              'corresponds to the order of the excepted test patients in the current CV')
+
+        log_name = os.path.split(self.log_dir)[-1]
+        log_index = log_name.split("step_")[1]  # can be problems
+
+        restore_log_paths = glob(os.path.join(self.CONFIG_CV[CVK.RESTORE_VALID_PATIENTS_FOLDER], "*", ""))
+        restore_log_path = restore_log_paths[
+            np.flatnonzero(np.core.defchararray.find(restore_log_paths, "step_" + str(log_index)) != -1)[0]]
+
+        valid_except_indexes = pickle.load(open(os.path.join(restore_log_path, VALID_LOG), "rb"))
+        print(f"We restore {valid_except_indexes} from {restore_log_path} ")
+        return valid_except_indexes
