@@ -114,7 +114,7 @@ INDEXES_GET_BOOL_FROM_MASK_DATA = [(DatFile, "RGB", RGB_RESULT_BOOL_MASK),
 @pytest.mark.parametrize("ext_loader,color,result", INDEXES_GET_BOOL_FROM_MASK_DATA)
 def test_indexes_get_bool_from_mask(test_config, mask, ext_loader, color: str, result):
     loader = ext_loader(config=GET_MASK_COLOR(typ=color, config=test_config))
-    bool_masks = loader.indexes_get_bool_from_mask(mask=mask)
+    bool_masks = loader.get_boolean_indexes_from_mask(mask=mask)
     for bool_mask, result_mask in zip(bool_masks, result):
         assert (bool_mask == result_mask).all()
 
@@ -134,14 +134,14 @@ INDEXES_GET_BOOL_FROM_MASK_DATA_ERROR = [(DatFile, "ERROR1",
 def test_indexes_get_bool_from_mask_error(test_config, mask, ext_loader, error_typ: str, error: str):
     loader = ext_loader(config=GET_MASK_COLOR(typ=error_typ, config=test_config))
     with pytest.raises(ValueError, match=error):
-        loader.indexes_get_bool_from_mask(mask=mask)
+        loader.get_boolean_indexes_from_mask(mask=mask)
 
 
 def test_indexes_get_bool_from_mask_warning(test_config, mask):
     loader = DatFile(config=GET_MASK_COLOR(typ="WARNING", config=test_config))
     with pytest.warns(UserWarning, match="To many values in 'MASK_COLOR' for the classification 0! "
                                          "Only the first four will be used."):
-        bool_masks = loader.indexes_get_bool_from_mask(mask=mask)
+        bool_masks = loader.get_boolean_indexes_from_mask(mask=mask)
 
     assert (bool_masks[0] == RGBA_RESULT_BOOL_MASK[0]).all()
 

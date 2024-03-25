@@ -76,7 +76,7 @@ class Preprocessor:
         if execution_flags['load_data_with_dataloader']:
             dataloader = provider.get_data_loader(config=self.config, typ=self.config.CONFIG_DATALOADER[DLK.TYPE],
                                                   data_storage=data_storage)
-            dataloader.files_read_and_save_to_archive(root_path, preprocessed_path)
+            dataloader.read_files_and_save_to_archive(root_path, preprocessed_path)
 
         print(f'---- Memory, preprocessor 1, after reading of origin files '
               f'{get_used_memory(process_id=process_id)} ----')

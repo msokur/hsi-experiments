@@ -11,7 +11,7 @@ class DataLoaderWhole(DataLoader):
         super().__init__(config=config, data_storage=data_storage, dict_names=dict_names)
         self.dict_names.append("size")
 
-    def file_read(self, path):
+    def read_file(self, path):
         def reshape(arr):
             return np.reshape(arr, tuple([arr.shape[0] * arr.shape[1]]) + tuple(arr.shape[2:]))
 
@@ -20,14 +20,14 @@ class DataLoaderWhole(DataLoader):
             mask_path = self.config.CONFIG_PATHS[PK.MASK_PATH]
         else:
             mask_path = None
-        spectrum, mask = self.file_read_mask_and_spectrum(path, mask_path=mask_path)
+        spectrum, mask = self.read_spectrum_and_mask(path, mask_path=mask_path)
         mask = self.set_mask_with_label(mask)
 
-        background_mask = self.background_get_mask(spectrum, mask.shape[:2])
+        background_mask = self.get_background_mask(spectrum, mask.shape[:2])
         spectrum = self.smooth(spectrum)
 
         if self.config.CONFIG_DATALOADER[DLK.D3]:
-            spectrum = self.patches3d_get_from_spectrum(spectrum)
+            spectrum = self.get_3D_patches_from_spectrum(spectrum)
 
         size = spectrum.shape[:2]
         X = reshape(spectrum)

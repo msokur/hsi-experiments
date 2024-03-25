@@ -32,8 +32,6 @@ scripts/outputs
 testingarea/*.py
 testingarea
 *.html
-jupyter/*.png
-jupyter/*.jpg
 yarn.lock
 node_modules/
 *.config
