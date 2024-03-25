@@ -17,7 +17,7 @@ from data_utils.data_storage import DataStorage
 
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK
 from configuration.parameter import (
-    DICT_X, DICT_y, DICT_IDX, ORG_NAME
+    DICT_X, DICT_y, DICT_IDX, ORIGINAL_NAME
 )
 
 
@@ -33,6 +33,29 @@ class DataLoader:
                                                          config=config)
         self.dict_names = dict_names
 
+    def decide_3D_patchifier(self, size, dtype):
+        use_standard_3D_patchifier = False
+        use_onflow_3D_patchifier = False
+        if self.config.CONFIG_DATALOADER[DLK.D3]:
+            # 1Gb = 10**9 bytes
+            # for explanation why we divide /1000 - check issue #75:
+            # https://git.iccas.de/MaktabiM/hsi-experiments/-/issues/75
+
+            spectrum_volume = np.prod(size) / 1000
+            patch_volume = np.prod(self.config.CONFIG_DATALOADER[DLK.D3_SIZE]) / 1000
+            bytes_per_element = np.dtype(dtype).itemsize / 1000
+
+            needed_bytes = spectrum_volume * patch_volume * bytes_per_element
+            needed_gb = needed_bytes
+
+            if needed_gb > 5:
+                use_onflow_3D_patchifier = True
+                print(f'Onflow 3D patchifier will be used, because needed amount of Gb is {needed_gb}')
+            else:
+                use_standard_3D_patchifier = True
+                print(f'Standard 3D  patchifier will be used. Needed amount of Gb is {needed_gb}')
+        return use_standard_3D_patchifier, use_onflow_3D_patchifier
+
     def get_labels(self):
         return self.config.CONFIG_DATALOADER[DLK.LABELS]
 
@@ -41,9 +64,6 @@ class DataLoader:
 
     def get_name(self, path: str) -> str:
         return self.data_storage.get_name(path=path)
-
-    def get_paths(self, root_path) -> List[str]:
-        return self.data_storage.get_paths(storage_path=root_path)
 
     def get_paths_and_splits(self, root_path=None):
         if root_path is None:
@@ -57,6 +77,110 @@ class DataLoader:
                             values=self.config.CONFIG_DATALOADER[DLK.PATIENTS_EXCLUDE_FOR_TEST])
 
         return paths, splits
+
+    def get_paths(self, root_path) -> List[str]:
+        return self.data_storage.get_paths(storage_path=root_path)
+
+    @abc.abstractmethod
+    def read_file(self, path):
+        print(f'Reading {path}')
+        mask_path = self.get_mask_path()
+        spectrum, mask = self.read_spectrum_and_mask(path=path, mask_path=mask_path)
+        use_standard_3D_patchifier, use_onflow_3D_patchifier = self.decide_3D_patchifier(spectrum.shape, spectrum.dtype)
+
+        spectrum, boolean_masks, background_mask = self.transformations_pipeline(spectrum, mask, path)
+
+        # -------------- до цього моменту spectrum у форматі (480, 640, х, х, 92)
+        # а далі вже як список
+
+        if use_standard_3D_patchifier:
+            spectrum = self.get_3D_patches_from_spectrum(spectrum)
+
+        training_instances = self.concatenate_train_instances(spectrum, boolean_masks, background_mask)
+
+        # on-flow patchify should be here, because we need coordinates
+        if use_onflow_3D_patchifier:
+            self.get_3D_patches_onflow(training_instances, spectrum, boolean_masks, background_mask)
+
+        return training_instances
+
+    def get_3D_patches_onflow(self, training_instances, spectrum, boolean_masks, background_mask):
+        def get_condition(index):
+            return (extended_indexes_in_datacube[:, index] >= (coordinates[index] - lookup)) & \
+                   (extended_indexes_in_datacube[:, index] <= (coordinates[index] + lookup))
+
+        train_spectrum, train_indexes = training_instances['X'], training_instances['indexes_in_datacube']
+
+        extended_boolean_masks = self.extend_masks(boolean_masks)
+        extended_instances = self.concatenate_train_instances(spectrum,
+                                                              extended_boolean_masks,
+                                                              background_mask)
+        extended_spectrum, extended_indexes_in_datacube = extended_instances['X'], extended_instances['indexes_in_datacube']
+
+        lookup = self.config.CONFIG_DATALOADER[DLK.D3_SIZE][0] // 2
+        for spectra, coordinates in zip(train_spectrum, train_indexes):
+            print(coordinates)
+            x_condition = get_condition(0)
+            y_condition = get_condition(1)
+
+            pixels = extended_spectrum[x_condition & y_condition]
+            indexes = extended_indexes_in_datacube[x_condition & y_condition]
+            indexes[:, 0] -= coordinates[0] - lookup
+            indexes[:, 1] -= coordinates[1] - lookup
+
+            patch = np.zeros(self.config.CONFIG_DATALOADER[DLK.D3_SIZE] + [spectrum.shape[-1]])
+            patch[indexes[:, 0].astype(int), indexes[:, 1].astype(int)] = pixels
+
+    def get_labeled_spectrum_from_boolean_masks(self, spectrum, boolean_masks):
+        spectrum = np.array(spectrum)
+        labeled_spectrum = []
+        for label_mask in boolean_masks:
+            labeled_spectrum.append(spectrum[label_mask])
+
+        return labeled_spectrum
+
+    def transformations_pipeline(self, spectrum, mask, path):
+        spectrum = self.smooth(spectrum)
+
+        background_mask = self.get_background_mask(spectrum, mask.shape[:2])
+        contamination_mask = self.get_contamination_mask(os.path.split(path)[0], mask.shape[:2])
+
+        boolean_masks = self.data_reader.get_boolean_indexes_from_mask(mask)
+        boolean_masks = [i * background_mask for i in boolean_masks]
+        boolean_masks = [i * contamination_mask for i in boolean_masks]
+        boolean_masks = self.pixel_detection(boolean_masks)
+
+        return spectrum, boolean_masks, background_mask
+
+    def extend_masks(self, boolean_masks):
+        import matplotlib.pyplot as plt
+        '''def encode_mask():
+            binary_mask = np.zeros(mask.shape[:2], dtype=bool)
+            boolean_masks = self.data_reader.get_boolean_indexes_from_mask(mask)
+            for boolean_mask in boolean_masks:
+                binary_mask += np.array(boolean_mask).astype(bool)
+
+            plt.imsave('1.png', binary_mask)
+
+            return binary_mask.astype(np.int8) * 255'''
+
+        import cv2
+        output_boolean_masks = []
+        for index, boolean_mask in enumerate(boolean_masks):
+            # binary_mask = encode_mask()
+            # print(np.unique(boolean_mask))
+            plt.imsave(f'{index}_1.png', boolean_mask)
+            # contours, _ = cv2.findContours(binary_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+            margin = self.config.CONFIG_DATALOADER[DLK.D3_SIZE]
+            kernel = np.ones((margin[0], margin[1]), np.uint8)
+
+            # Apply dilation to the contour mask
+            contour_with_margin = cv2.dilate(boolean_mask.astype(np.int8) * 255, kernel)
+            output_boolean_masks.append(np.array(contour_with_margin / 255).astype(bool))
+
+            plt.imsave(f'{index}_2.png', contour_with_margin)
+        return output_boolean_masks
 
     def smooth(self, spectrum):
         if self.config.CONFIG_DATALOADER[DLK.SMOOTHING_TYPE] is not None:
@@ -86,49 +210,23 @@ class DataLoader:
                 else:
                     border_masks.append(masks[idx])
 
+            border_masks = [masks[i] * border_masks[i] for i in range(len(masks))]
             return border_masks
 
         return masks
 
-    def file_read_mask_and_spectrum(self, path, mask_path):
+    def read_spectrum_and_mask(self, path, mask_path):
         return self.data_reader.file_read_mask_and_spectrum(path=path, mask_path=mask_path)
 
-    @abc.abstractmethod
-    def file_read(self, path):
-        print(f'Reading {path}')
+    def get_mask_path(self):
         if PK.MASK_PATH in self.config.CONFIG_PATHS.keys():
             mask_path = self.config.CONFIG_PATHS[PK.MASK_PATH]
         else:
             mask_path = None
-        spectrum, mask = self.file_read_mask_and_spectrum(path=path, mask_path=mask_path)
 
-        spectrum = self.smooth(spectrum)
+        return mask_path
 
-        background_mask = self.background_get_mask(spectrum, mask.shape[:2])
-        contamination_mask = self.get_contamination_mask(os.path.split(path)[0], mask.shape[:2])
-
-        if self.config.CONFIG_DATALOADER[DLK.D3]:
-            spectrum = self.patches3d_get_from_spectrum(spectrum)
-
-        indexes = self.data_reader.indexes_get_bool_from_mask(mask)
-        indexes = [i * background_mask for i in indexes]
-        indexes = [i * contamination_mask for i in indexes]
-        border_masks = self.pixel_detection(indexes)
-        indexes = [indexes[i] * border_masks[i] for i in range(len(indexes))]
-
-        spectra = []
-        for idx in indexes:
-            spectra.append(spectrum[idx])
-
-        indexes_np = self.indexes_get_np_from_bool_indexes(*indexes)
-
-        values = self.X_y_concatenate_from_spectrum(spectra, indexes_np)
-        values = {n: v for n, v in zip(self.dict_names[:3], values)}
-        values["background_mask"] = background_mask
-
-        return values
-
-    def files_read_and_save_to_archive(self, root_path, destination_path):
+    def read_files_and_save_to_archive(self, root_path, destination_path):
         print('----Saving of archives is started----')
 
         paths = self.__get_raw_paths(root_path=root_path)
@@ -148,8 +246,8 @@ class DataLoader:
     def read_and_save_base(self, paths: List[str], destination_path: str):
         for path in tqdm(paths):
             name = self.get_cube_name(path)
-            values = self.file_read(path)
-            self.X_y_dict_save_to_archive(destination_path, values, name)
+            values = self.read_file(path)
+            self.save_training_samples_to_archive(destination_path, values, name)
 
     def read_and_save_folder(self, paths: List[str], destination_path: str):
         names_and_paths = folder_sort(paths=paths)
@@ -158,16 +256,17 @@ class DataLoader:
             first = True
             for path in paths:
                 name = self.get_cube_name(path=path)
-                values = self.file_read(path=path)
-                values[ORG_NAME] = np.array([name] * values[self.dict_names[0]].shape[0])
+                values = self.read_file(path=path)
+                values[ORIGINAL_NAME] = np.array([name] * values[self.dict_names[0]].shape[0])
                 if first:
-                    self.X_y_dict_save_to_archive(destination_path=destination_path, values=values, name=pat_name)
+                    self.save_training_samples_to_archive(destination_path=destination_path, values=values,
+                                                          name=pat_name)
                     first = False
                 else:
                     self.data_storage.append_data(file_path=os.path.join(destination_path, pat_name),
                                                   append_datas=values)
 
-    def patches3d_get_from_spectrum(self, spectrum: np.ndarray):
+    def get_3D_patches_from_spectrum(self, spectrum: np.ndarray):
         size = self.config.CONFIG_DATALOADER[DLK.D3_SIZE]
         # Better not to use non even sizes
         pad = [int((s - 1) / 2) for s in size]
@@ -180,34 +279,38 @@ class DataLoader:
 
         return patches
 
-    def indexes_get_bool_from_mask(self, mask):
-        return self.data_reader.indexes_get_bool_from_mask(mask)
+    def get_boolean_masks_from_original_mask(self, mask):
+        return self.data_reader.get_boolean_masks_from_original_mask(mask)
 
-    def indexes_get_np_from_mask(self, mask):
-        indexes = self.indexes_get_bool_from_mask(mask)
+    def get_coordinates_from_original_mask(self, mask):
+        boolean_masks = self.get_boolean_masks_from_original_mask(mask)
 
-        tissue_indexes = self.indexes_get_np_from_bool_indexes(*indexes)
+        tissue_indexes = self.get_coordinates_from_boolean_masks(*boolean_masks)
 
         return tissue_indexes
 
-    def X_y_dict_save_to_archive(self, destination_path: str, values: dict, name: str) -> None:
+    def save_training_samples_to_archive(self, destination_path: str, values: dict, name: str) -> None:
         self.data_storage.save_group(save_path=destination_path, group_name=name,
                                      datas=values)
 
-    def X_y_concatenate_from_spectrum(self, spectra, indexes, labels=None):
+    def concatenate_train_instances(self, spectrum, boolean_masks, background_mask, labels=None):
+        labeled_spectrum = self.get_labeled_spectrum_from_boolean_masks(spectrum, boolean_masks)
+
+        coordinates = self.get_coordinates_from_boolean_masks(*boolean_masks)
+
         X, y, indexes_in_datacube = [], [], []
         if labels is None:
             labels = self.get_labels()
 
-        if len(labels) != len(spectra):
+        if len(labels) != len(labeled_spectrum):
             raise ValueError("Error! Labels length doesn't correspond to Spectra length! Check get_labels() and "
-                             "indexes_get_bool_from_mask(): whole number of indexes has to be the same as length of "
+                             "get_boolean_masks_from_original_mask(): whole number of indexes has to be the same as length of "
                              "labels returned from get_labels()")
 
         if np.unique(labels).shape[0] != len(labels):
             raise ValueError("Error! There are some non unique labels! Check get_labels()")
 
-        for spectrum, label, idx in zip(spectra, labels, indexes):
+        for spectrum, label, idx in zip(labeled_spectrum, labels, coordinates):
             X += list(spectrum)
             y += [label] * len(spectrum)
             indexes_in_datacube += list(np.array(idx).T)
@@ -217,7 +320,12 @@ class DataLoader:
         assert X.shape[0] == y.shape[0]
         assert y.shape[0] == indexes_in_datacube.shape[0]
 
-        return X, y, indexes_in_datacube
+        training_instances = X, y, indexes_in_datacube
+
+        training_instances = {n: v for n, v in zip(self.dict_names[:3], training_instances)}
+        training_instances["background_mask"] = background_mask
+
+        return training_instances
 
     def get_contamination_mask(self, path, shape):
         mask = np.full(shape, True)
@@ -235,7 +343,7 @@ class DataLoader:
     def get_contamination_filename(self):
         return self.config.CONFIG_DATALOADER[DLK.CONTAMINATION_FILENAME]
 
-    def background_get_mask(self, spectrum, shapes):
+    def get_background_mask(self, spectrum, shapes):
         background_mask = np.ones(shapes).astype(bool)
         if self.config.CONFIG_DATALOADER["BACKGROUND"]["WITH_BACKGROUND_EXTRACTION"]:
             blood_threshold = self.config.CONFIG_DATALOADER["BACKGROUND"]["BLOOD_THRESHOLD"]
@@ -248,24 +356,24 @@ class DataLoader:
         return background_mask
 
     @staticmethod
-    def indexes_get_np_from_bool_indexes(*args):
-        indexes_np = []
-        for i in args:
-            indexes_np.append(np.where(i))
+    def get_coordinates_from_boolean_masks(*args):
+        coordinates = []
+        for boolean_mask in args:
+            coordinates.append(np.where(boolean_mask))
 
-        return indexes_np
+        return coordinates
 
-    def labeled_spectrum_get_from_archive(self, path: str) -> dict:
+    def get_labeled_spectrum_from_archive(self, path: str) -> dict:
         data = self.data_storage.get_datas(data_path=path)
         X, y = data[self.dict_names[0]], data[self.dict_names[1]]
 
-        return self.labeled_spectrum_get_from_X_y(X=X, y=y)
+        return self.get_labeled_spectrum_from_training_samples(X=X, labels=y)
 
     @staticmethod
-    def labeled_spectrum_get_from_X_y(X: np.ndarray, y: np.ndarray) -> dict:
+    def get_labeled_spectrum_from_training_samples(X: np.ndarray, labels: np.ndarray) -> dict:
         labeled_spectrum = {}
-        for label in np.unique(y):
-            labeled_spectrum[label] = X[y == label]
+        for label in np.unique(labels):
+            labeled_spectrum[label] = X[labels == label]
         return labeled_spectrum
 
     def __get_raw_paths(self, root_path: str) -> List[str]:
