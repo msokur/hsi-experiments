@@ -98,6 +98,7 @@ class DataLoader:
         boolean_masks = self.data_reader.get_boolean_indexes_from_mask(mask)
 
         transformation_inputs = {
+            'config': self.config,
             'path': os.path.split(path)[0],
             'spectrum': spectrum,
             'shape': mask.shape[:2]
@@ -198,7 +199,6 @@ class DataLoader:
         if labels is None:
             labels = self.get_labels()
 
-        print('Labels', labels)
         if len(labels) != len(labeled_spectrum):
             raise ValueError("Error! Labels length doesn't correspond to Spectra length! Check get_labels() and "
                              "get_boolean_masks_from_original_mask(): whole number of indexes has to be the same "
