@@ -25,6 +25,7 @@ DICT_y = "y"                            # default dict name for classifications
 DICT_IDX = "indexes_in_datacube"        # default dict name for original indexes in hyper cube
 DICT_WEIGHT = "weights"                 # default dict name for weights
 ORIGINAL_NAME = "original_name"                   # original file name, when mor files in one data storage
+BACKGROUND_MASK = 'background_mask'
 
 # --- Scaler
 SCALER_FILE = "scaler.scaler"
