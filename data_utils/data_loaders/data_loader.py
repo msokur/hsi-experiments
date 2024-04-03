@@ -118,11 +118,11 @@ class DataLoader:
         return spectrum, boolean_masks, background_mask
 
     def smooth(self, spectrum):
-        if self.config.CONFIG_DATALOADER[DLK.SMOOTHING_TYPE] is not None:
-            smoother = provider.get_smoother(typ=self.config.CONFIG_DATALOADER[DLK.SMOOTHING_TYPE],
-                                             path="",
-                                             size=self.config.CONFIG_DATALOADER[DLK.SMOOTHING_VALUE])
-            spectrum = smoother.smooth_func(spectrum)
+        smoothing_section = self.config.CONFIG_DATALOADER[DLK.SMOOTHING]
+        if smoothing_section[DLK.SMOOTHING_TYPE] is not None:
+            smoother = provider.get_smoother(typ=smoothing_section[DLK.SMOOTHING_TYPE],
+                                             config=self.config)
+            spectrum = smoother.smooth1d_from_2d_input(spectrum)
         return spectrum
 
     def read_spectrum_and_mask(self, path, mask_path):

@@ -175,13 +175,13 @@ class Experiment:
 
 
 if __name__ == '__main__':
-    gaussian_params = [0.1, 0.2]
+    gaussian_params = [0.5, 1, 1.5]
     median_params = [3, 5, 7]
 
     config_for_experiment = {
         '3D_SIZE': {
             'config_section': 'CONFIG_DATALOADER',
-            'parameters': [[3, 3], [5, 5]]
+            'parameters': [[3, 3], [5, 5], [7, 7], [11, 11]]
         },
         "NORMALIZATION_TYPE": {
             'config_section': 'CONFIG_PREPROCESSOR',

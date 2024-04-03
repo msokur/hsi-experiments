@@ -12,8 +12,11 @@
 		"MASK_DIFF": ["_SpecCube.dat", ".png"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": null,
-		"SMOOTHING_VALUE": 5,
+		"SMOOTHING": {
+			"SMOOTHING_TYPE": null,
+			"SMOOTHING_DIMENSIONS": "1d",
+			"SMOOTHING_VALUE": 5
+		},
 		"BORDER_CONFIG": {
 			"enable": false,
 			"methode": "detect_core",
@@ -85,8 +88,11 @@
 		"MASK_DIFF": ["_SpecCube.dat", ".png"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": null,
-		"SMOOTHING_VALUE": 5,
+		"SMOOTHING": {
+			"SMOOTHING_TYPE": null,
+			"SMOOTHING_DIMENSIONS": "1d",
+			"SMOOTHING_VALUE": 5
+		},
 		"BORDER_CONFIG": {
 			"enable": false,
 			"methode": "detect_core",
@@ -158,8 +164,11 @@
 		"MASK_DIFF": [".dat", ".png"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": null,
-		"SMOOTHING_VALUE": 5,
+		"SMOOTHING": {
+			"SMOOTHING_TYPE": null,
+			"SMOOTHING_DIMENSIONS": "1d",
+			"SMOOTHING_VALUE": 5
+		},
 		"BORDER_CONFIG": {
 			"enable": false,
 			"methode": "detect_core",
@@ -207,8 +216,11 @@
 		"MASK_DIFF": [".dat", ".mk2"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": null,
-		"SMOOTHING_VALUE": 5,
+		"SMOOTHING": {
+			"SMOOTHING_TYPE": null,
+			"SMOOTHING_DIMENSIONS": "1d",
+			"SMOOTHING_VALUE": 5
+		},
 		"BORDER_CONFIG": {
 			"enable": false,
 			"methode": "detect_core",
@@ -302,8 +314,11 @@
 		"MASK_DIFF": [".dat", ".mk2"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": null,
-		"SMOOTHING_VALUE": 5,
+		"SMOOTHING": {
+			"SMOOTHING_TYPE": null,
+			"SMOOTHING_DIMENSIONS": "1d",
+			"SMOOTHING_VALUE": 5
+		},
 		"BORDER_CONFIG": {
 			"enable": false,
 			"methode": "detect_core",
@@ -397,8 +412,11 @@
 		"MASK_DIFF": [".dat", ".mk2"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": null,
-		"SMOOTHING_VALUE": 5,
+		"SMOOTHING": {
+			"SMOOTHING_TYPE": null,
+			"SMOOTHING_DIMENSIONS": "1d",
+			"SMOOTHING_VALUE": 5
+		},
 		"BORDER_CONFIG": {
 			"enable": false,
 			"methode": "detect_core",
@@ -491,8 +509,11 @@
 		"NUMBER_SORT": ["Op", "C"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": "gaussian_filter",
-		"SMOOTHING_VALUE": 5,
+		"SMOOTHING": {
+			"SMOOTHING_TYPE": "gaussian_filter",
+			"SMOOTHING_DIMENSIONS": "1d",
+			"SMOOTHING_VALUE": 5
+		},
 		"BORDER_CONFIG": {
 			"enable": false,
 			"methode": "detect_core",
@@ -549,8 +570,11 @@
 		"NUMBER_SORT": ["Cp", null],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": "median_filter",
-		"SMOOTHING_VALUE": 5,
+		"SMOOTHING": {
+			"SMOOTHING_TYPE": "median_filter",
+			"SMOOTHING_DIMENSIONS": "1d",
+			"SMOOTHING_VALUE": 5
+		},
 		"BORDER_CONFIG": {
 			"enable": false,
 			"methode": "detect_border",
@@ -587,8 +611,11 @@
 		"NUMBER_SORT": ["EP", null],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": null,
-		"SMOOTHING_VALUE": 5,
+		"SMOOTHING": {
+			"SMOOTHING_TYPE": null,
+			"SMOOTHING_DIMENSIONS": "1d",
+			"SMOOTHING_VALUE": 5
+		},
 		"BORDER_CONFIG": {
 			"enable": false,
 			"methode": "detect_core",
@@ -631,8 +658,11 @@
 		"NUMBER_SPLIT": ["CP", null],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": null,
-		"SMOOTHING_VALUE": 5,
+		"SMOOTHING": {
+			"SMOOTHING_TYPE": null,
+			"SMOOTHING_DIMENSIONS": "1d",
+			"SMOOTHING_VALUE": 5
+		},
 		"BORDER_CONFIG": {
 			"enable": false,
 			"methode": "detect_border",
@@ -660,7 +690,7 @@
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".dat",
 		"3D": true,
-		"3D_SIZE": [11, 11],
+		"3D_SIZE": [5, 5],
 		"FIRST_NM": 8,
 		"LAST_NM": 100,
 		"WAVE_AREA": 100,
@@ -669,8 +699,11 @@
 		"MASK_DIFF": [".dat", ".dat_Mask JW Kolo.png"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": null,
-		"SMOOTHING_VALUE": 5,
+		"SMOOTHING": {
+			"SMOOTHING_TYPE": "gaussian_filter",
+			"SMOOTHING_DIMENSIONS": "1d",
+			"SMOOTHING_VALUE": 1
+		},
 		"BORDER_CONFIG": {
 			"enable": false,
 			"methode": "detect_core",
