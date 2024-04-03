@@ -37,4 +37,5 @@ node_modules/
 *.config
 archive_logs
 jupyter/*/*.png
+jupyter/*/*/*.png
 results
