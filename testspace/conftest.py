@@ -20,7 +20,9 @@ def sys_slash() -> str:
         return "/"
 
 
-def configurations():
+
+@pytest.fixture
+def test_config():
     from configuration import get_config as config
 
     config_path = os.path.join(MAIN_DIR, "_test_configs")
@@ -37,14 +39,6 @@ def configurations():
                                                    main_dir=config_path)
 
     return config
-
-
-TEST_CONFIG = configurations()
-
-
-@pytest.fixture
-def test_config():
-    return TEST_CONFIG
 
 
 @pytest.fixture
