@@ -24,7 +24,7 @@ class Predictor:
         set_tf_seed()
 
     def save_predictions(self, training_csv_path,
-                         npz_folder,
+                         folder_with_npz,
                          predictions_saving_folder,
                          predictions_npy_filename,
                          checkpoint=None):
@@ -57,7 +57,7 @@ class Predictor:
                                                                      checkpoint),
                                                         custom_objects=custom_objects)
                 # predictor = Predictor(self.config, checkpoint, MODEL_FOLDER=model_path)
-                predictions, gt, size = self.get_predictions_for_npz(os.path.join(npz_folder, name))
+                predictions, gt, size = self.get_predictions_for_npz(os.path.join(folder_with_npz, name))
 
                 results_dictionary.append({
                     'name': name,
