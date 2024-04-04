@@ -9,7 +9,7 @@ from configuration.parameter import (
 )
 
 
-class TrainerEasy(Trainer):
+class TrainerBinary(Trainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -35,8 +35,6 @@ class TrainerEasy(Trainer):
         '''-------TRAINING---------'''
 
         history = model.fit(
-            # x=train_generator,
-            # validation_data=valid_generator,
             x=train_dataset,
             validation_data=valid_dataset,
             epochs=self.config.CONFIG_TRAINER[TK.EPOCHS],
@@ -55,31 +53,22 @@ class TrainerEasy(Trainer):
 
         return model, history
 
-    def compile_model(self, model: keras.Model) -> keras.Model:
-        metric_dict = self.config.CONFIG_TRAINER[TK.CUSTOM_OBJECTS]
-        METRICS = [
-            keras.metrics.BinaryAccuracy(name="accuracy"),
-        ]
-        for key in metric_dict.keys():
-            METRICS.append(metric_dict[key]["metric"](**metric_dict[key]["args"]))
-
-        model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=self.config.CONFIG_TRAINER[TK.LEARNING_RATE]),
-            loss=keras.losses.BinaryCrossentropy(),
-            metrics=METRICS,
-        )
-
-        return model
-
     def get_loss_and_metrics(self):
         loss = keras.losses.BinaryCrossentropy()
         metric_dict = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS"]
-        raw_metrics = []
+        raw_metrics = [
+            keras.metrics.BinaryAccuracy(name="accuracy")
+        ]
+
+        non_weightable_metrics = [
+            # add in non_weightable_metrics metrics that should not be affected by class_weights or sample_weights
+            # For example absolut values, like tp, tn, fp, fn (True Positives, ....)
+        ]
 
         for key in metric_dict.keys():
             raw_metrics.append(metric_dict[key]["metric"](**metric_dict[key]["args"]))
 
-        return loss, raw_metrics
+        return loss, raw_metrics, non_weightable_metrics
 
     def get_restored_model(self) -> tuple[keras.Model, int]:
         print('!!!!!!!!!!!!We restore model!!!!!!!!!!!!')

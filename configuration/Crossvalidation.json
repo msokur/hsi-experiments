@@ -43,7 +43,7 @@
   },
     "CV_COLON": {
     "TYPE": "normal",
-    "NAME": "experiment_with_background",
+    "NAME": "experiment_with_sample_weights",
     "RESTORE_VALID_PATIENTS_FOLDER": "C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\logs\\ExperimentRevival\\3D3_Ns_",
     "GET_CHECKPOINT_FROM_EARLYSTOPPING": true,
       "HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1
