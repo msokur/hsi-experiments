@@ -71,7 +71,7 @@ class TrainerEasy(Trainer):
 
         return model
 
-    def get_parameters_for_compile(self):
+    def get_loss_and_metrics(self):
         loss = keras.losses.BinaryCrossentropy()
         metric_dict = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS"]
         raw_metrics = []

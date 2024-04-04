@@ -1,5 +1,5 @@
 STORAGE_TYPE = "npz"                # type for data archive management choose between 'npz' or 'zarr'
-DATASET_TYPE = "generator"          # type of dataset, choose between 'generator' or 'tfr'
+DATASET_TYPE = "tfr"          # type of dataset, choose between 'generator' or 'tfr'
 
 # --- ZARR params
 BLOCK_SIZE = 10000                  # max number of samples per chunk
@@ -31,7 +31,7 @@ BACKGROUND_MASK = 'background_mask'
 SCALER_FILE = "scaler.scaler"
 
 # --- Trainer
-VALID_LOG = "valid.valid_except_names"  # data name to log valid names
+FILE_WITH_VALID_NAME = "valid.valid_except_names"  # data name to log valid names
 HISTORY_FILE = "history"                # file name for training history
 
 # --- batches

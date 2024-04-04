@@ -2,8 +2,8 @@
 
 
 def get_trainer(typ: str, config, *args, **kwargs):
-    from trainers.trainer_easy import TrainerEasy
-    from trainers.trainer_easy_several_outputs import TrainerEasySeveralOutputs
+    from trainers.trainer_binary import TrainerBinary
+    from trainers.trainer_multiclass import TrainerMulticlass
 
     if typ == "Tuner":
         print('TrainerTuner')
@@ -11,10 +11,10 @@ def get_trainer(typ: str, config, *args, **kwargs):
         return TrainerTuner(config=config, *args, **kwargs)
     elif typ == "Easy":
         print('TrainerEasy')
-        return TrainerEasy(config=config, *args, **kwargs)
+        return TrainerBinary(config=config, *args, **kwargs)
     elif typ == "SeveralOutput":
         print('TrainerEasySeveralOutputs')
-        return TrainerEasySeveralOutputs(config=config, *args, **kwargs)
+        return TrainerMulticlass(config=config, *args, **kwargs)
 
     value_error("Trainer", typ)
 

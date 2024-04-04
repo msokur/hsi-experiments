@@ -8,7 +8,7 @@ import os
 from data_utils.data_storage import DataStorage
 from configuration.keys import CrossValidationKeys as CVK
 from configuration.parameter import (
-    VALID_LOG,
+    FILE_WITH_VALID_NAME,
 )
 
 
@@ -119,6 +119,6 @@ class ChoiceNames:
         restore_log_path = restore_log_paths[
             np.flatnonzero(np.core.defchararray.find(restore_log_paths, "step_" + str(log_index)) != -1)[0]]
 
-        valid_except_indexes = pickle.load(open(os.path.join(restore_log_path, VALID_LOG), "rb"))
+        valid_except_indexes = pickle.load(open(os.path.join(restore_log_path, FILE_WITH_VALID_NAME), "rb"))
         print(f"We restore {valid_except_indexes} from {restore_log_path} ")
         return valid_except_indexes

@@ -1,5 +1,5 @@
 import tensorflow.keras as keras
-from trainers.trainer_easy import TrainerEasy
+from trainers.trainer_binary import TrainerEasy
 from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
 
 
@@ -24,7 +24,7 @@ class TrainerEasySeveralOutputs(TrainerEasy):
 
         return model
 
-    def get_parameters_for_compile(self):
+    def get_loss_and_metrics(self):
         loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True)  # TODO, check if from logits?
         metric_dict = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS"]
         raw_metrics = []
