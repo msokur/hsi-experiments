@@ -57,7 +57,7 @@
       "restore_best_weights": true
     }
   },
-  "BASE_TUNER": {
+  "BASE_MULTICLASS_TUNER": {
     "TYPE":  "Tuner",
     "RESTORE": false,
     "FILES_TO_COPY": [["*.py"], ["data_utils", "*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"], ["scripts", "*.job"], ["trainers", "*.py"], ["util", "*.py"], ["evaluation", "*.py"], ["cross_validators", "*.py"], ["configuration", "*.py"], ["configuration", "*.json"]],
@@ -74,11 +74,11 @@
     "SMALLER_DATASET": false,
     "TUNER": "BayesianOptimization",
     "TUNER_PARAMS": {
-      "objective": {"name": "f1_score_weighted", "direction":  "max"},
-      "max_trials": 1,
+      "objective": {"name": "val_f1_score_weighted", "direction":  "max"},
+      "max_trials": 20,
       "overwrite": true
     },
-    "TUNER_EPOCHS": 1,
+    "TUNER_EPOCHS": 5,
     "MODEL_CHECKPOINT": {
       "monitor": "val_f1_score_weighted",
       "save_best_only": true,
@@ -87,6 +87,42 @@
     "EARLY_STOPPING": {
       "enable": true,
       "monitor": "val_f1_score_weighted",
+      "mode": "max",
+      "min_delta": 0,
+      "patience": 5,
+      "restore_best_weights": true
+    }
+  },
+  "BASE_BINARY_TUNER": {
+    "TYPE":  "Tuner",
+    "RESTORE": false,
+    "FILES_TO_COPY": [["*.py"], ["data_utils", "*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"], ["scripts", "*.job"], ["trainers", "*.py"], ["util", "*.py"], ["evaluation", "*.py"], ["cross_validators", "*.py"], ["configuration", "*.py"], ["configuration", "*.json"]],
+    "WITH_SAMPLE_WEIGHTS": false,
+    "MODEL": "paper_model",
+    "MODEL_PARAMS": "paper_model_tuner",
+    "LEARNING_RATE": 1e-4,
+    "CUSTOM_OBJECTS": {
+      "F1_score": [{"name":  "f1_score"}]
+    },
+    "BATCH_SIZE": 500,
+    "SPLIT_FACTOR": 0.8,
+    "EPOCHS": 1,
+    "SMALLER_DATASET": false,
+    "TUNER": "BayesianOptimization",
+    "TUNER_PARAMS": {
+      "objective": {"name": "val_f1_score", "direction":  "max"},
+      "max_trials": 20,
+      "overwrite": true
+    },
+    "TUNER_EPOCHS": 5,
+    "MODEL_CHECKPOINT": {
+      "monitor": "val_f1_score",
+      "save_best_only": true,
+      "mode": "max"
+    },
+    "EARLY_STOPPING": {
+      "enable": true,
+      "monitor": "val_f1_score",
       "mode": "max",
       "min_delta": 0,
       "patience": 5,

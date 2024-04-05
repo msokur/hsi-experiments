@@ -42,7 +42,7 @@ class Dataset:
         pass
 
     @abc.abstractmethod
-    def get_X(self, path: str, shape: Tuple[int]) -> np.ndarray:
+    def get_X(self, path: str) -> np.ndarray:
         pass
 
     @abc.abstractmethod

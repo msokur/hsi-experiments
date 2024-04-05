@@ -59,7 +59,7 @@ class GeneratorDatasets(Dataset):
     def get_meta_shape(self, paths: List[str]) -> Tuple[int]:
         return get_shape_from_meta(files=paths, dataset_type=GEN_TYP)
 
-    def get_X(self, path: str, shape: Tuple[int]) -> np.ndarray:
+    def get_X(self, path: str) -> np.ndarray:
         return self.data_storage.get_data(data_path=path, data_name=self.dict_names[0])
 
     def delete_batches(self, batch_path: str):

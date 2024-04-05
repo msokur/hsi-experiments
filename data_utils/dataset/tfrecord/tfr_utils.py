@@ -26,17 +26,14 @@ def filter_name_idx_and_labels(X, y, sw, pat_idx, use_pat_idx: tf.Variable, use_
             tf.boolean_mask(tensor=sw, mask=mask))
 
 
-def get_numpy_X(tfr_path: str, shape: tuple) -> np.ndarray:
+def get_numpy_X(tfr_path: str) -> np.ndarray:
     """Get X as numpy array from a TFRecord file.
 
     :param tfr_path: Path from the file to read
-    :param shape: The shape from X
 
     :return: Numpy array with data from X
     """
-    shape_ = tf.Variable(shape, dtype=tf.int64)
-    data = tf.data.TFRecordDataset(filenames=tfr_path).map(map_func=lambda record: tfr_X_parser(record=record,
-                                                                                                shape=shape_))
+    data = tf.data.TFRecordDataset(filenames=tfr_path).map(map_func=lambda record: tfr_X_parser(record=record))
 
     return data.as_numpy_iterator().__next__()
 

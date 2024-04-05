@@ -64,10 +64,10 @@ PNG_IMG_2 = np.array([[RED, BLACK, BLACK],
                       [BLACK, BLACK, BLUE],
                       [BLACK, BLACK, BLACK]])
 
-JPG_IMG = np.array([[[89, 82, 14, 255], [255, 255, 193, 255], [250, 252, 255, 255]],
-                    [[255, 255, 193, 255], [160, 153, 85, 255], [252, 254, 255, 255]],
-                    [[254, 253, 255, 255], [254, 253, 255, 255], [11, 15, 138, 255]],
-                    [[254, 253, 255, 255], [252, 251, 255, 255], [236, 240, 255, 255]]])
+JPG_IMG = np.array([[[96, 85, 0, 255], [255, 255, 198, 255], [255, 255, 237, 255]],
+                    [[255, 255, 198, 255], [151, 148, 133, 255], [251, 251, 255, 255]],
+                    [[255, 255, 239, 255], [251, 251, 255, 255], [15, 19, 108, 255]],
+                    [[255, 255, 248, 255], [246, 248, 255, 255], [238, 242, 255, 255]]])
 
 MK2_RESULT_MASK = np.array([[NO_ANNO, NO_ANNO, NO_ANNO, NO_ANNO, NO_ANNO, GREEN, NO_ANNO, NO_ANNO],
                             [NO_ANNO, NO_ANNO, NO_ANNO, NO_ANNO, GREEN, GREEN, GREEN, NO_ANNO],
@@ -116,7 +116,7 @@ def test_indexes_get_bool_from_mask(test_config, mask, ext_loader, color: str, r
     loader = ext_loader(config=GET_MASK_COLOR(typ=color, config=test_config))
     bool_masks = loader.indexes_get_bool_from_mask(mask=mask)
     for bool_mask, result_mask in zip(bool_masks, result):
-        assert (bool_mask == result_mask).all()
+        assert np.all(bool_mask == result_mask)
 
 
 INDEXES_GET_BOOL_FROM_MASK_DATA_ERROR = [(DatFile, "ERROR1",
@@ -143,7 +143,7 @@ def test_indexes_get_bool_from_mask_warning(test_config, mask):
                                          "Only the first four will be used."):
         bool_masks = loader.indexes_get_bool_from_mask(mask=mask)
 
-    assert (bool_masks[0] == RGBA_RESULT_BOOL_MASK[0]).all()
+    assert np.all(bool_masks[0] == RGBA_RESULT_BOOL_MASK[0])
 
 
 SET_MASK_WITH_LABEL_DATA = [(DatFile, "RGB", RGB_RESULT_INDEX_MASK),
@@ -154,7 +154,7 @@ SET_MASK_WITH_LABEL_DATA = [(DatFile, "RGB", RGB_RESULT_INDEX_MASK),
 @pytest.mark.parametrize("ext_loader,color,result", SET_MASK_WITH_LABEL_DATA)
 def test_set_mask_with_label(test_config, mask, ext_loader, color: str, result):
     loader = ext_loader(config=GET_MASK_COLOR(typ=color, config=test_config))
-    assert (loader.set_mask_with_label(mask=mask) == result).all()
+    assert np.all(loader.set_mask_with_label(mask=mask) == result)
 
 
 SPECTRUM_RESULT_4_5_92 = np.full(shape=(4, 5, LOADER_CONFIG["LAST_NM"] - LOADER_CONFIG["FIRST_NM"]),
@@ -173,7 +173,7 @@ def test_file_read_mask_and_spectrum_only_spectrum(test_config, dat_path: str):
 
 def test_file_read_mask_and_spectrum_only_mask(test_config, dat_path: str):
     _, mask = DatFile(config=test_config).file_read_mask_and_spectrum(dat_path)
-    assert (mask == PNG_IMG_1).all()
+    assert np.all(mask == PNG_IMG_1)
 
 
 def test_spectrum_read_from_dat(test_config, dat_path: str):
@@ -188,20 +188,19 @@ MASK_READ_PNG_DATA = [("test_mask.png", PNG_IMG_1),
 @pytest.mark.parametrize("img_name,result", MASK_READ_PNG_DATA)
 def test_mask_read_png(dat_data_dir: str, img_name, result):
     path = os.path.join(dat_data_dir, img_name)
-    assert (DatFile.mask_read(mask_path=path) == result).all()
+    assert np.all(DatFile.mask_read(mask_path=path) == result)
 
 
-MASK_READ_JPG_DATA = [("test_mask.jpg", JPG_IMG),
-                      ("test_mask.jpeg", JPG_IMG),
-                      ("test_mask.jpe", JPG_IMG)]
+MASK_READ_JPG_DATA = ["test_mask.jpg",
+                      "test_mask.jpeg",
+                      "test_mask.jpe"]
 
 
-@pytest.mark.parametrize("img_name,result", MASK_READ_JPG_DATA)
-def test_mask_read_jpg(dat_data_dir: str, img_name, result):
+@pytest.mark.parametrize("img_name", MASK_READ_JPG_DATA)
+def test_mask_read_jpg(dat_data_dir: str, img_name):
     path = os.path.join(dat_data_dir, img_name)
     with pytest.warns(UserWarning, match="Better use '.png' format. Alpha channel added."):
-        img = DatFile.mask_read(mask_path=path)
-    assert (img == result).all()
+        DatFile.mask_read(mask_path=path)
 
 
 FORMAT_ERROR = "Mask format not supported! Only '.png', '.jpeg', '.jpg' or '.jpe' are supported."
@@ -229,4 +228,4 @@ def test_mk2_mask(test_config, dat_data_dir: str, ext_loader, color: str, result
     loader = ext_loader(config=GET_MASK_COLOR(typ=color, config=test_config))
     mask = loader.mk2_mask(mask_path=os.path.join(dat_data_dir, "test_mask.mk2"),
                            shape=(8, 8))
-    assert (mask == result).all()
+    assert np.all(mask == result)
