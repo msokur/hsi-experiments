@@ -1,36 +1,50 @@
-from scipy.ndimage import gaussian_filter, median_filter
+from scipy.ndimage import gaussian_filter1d, gaussian_filter, median_filter
 import abc
-from tqdm import tqdm
-from glob import glob
-import os
 import numpy as np
+
+from configuration.keys import DataLoaderKeys as DLK
 
 
 class Smoother:
-    def __init__(self, path, size):
-        self.path = path
-        self.size = size
+    def __init__(self, config):
+        self.config = config
+        self.size = self.config.CONFIG_DATALOADER[DLK.SMOOTHING][DLK.SMOOTHING_VALUE]
     
     @abc.abstractmethod
-    def smooth_func(self, X):
+    def smooth_1d(self, X):
         pass
-    
-    def smooth(self):
-        paths = glob(os.path.join(self.path, '*.npz'))
-        
-        for path in tqdm(paths):
-            data = np.load(path)
-            X = self.smooth_func(data['X'])
-            data_ = {n: a for n, a in data.items()}
-            data_['X'] = X.copy()
-            np.savez(path, **data_)
+
+    @abc.abstractmethod
+    def smooth_2d(self, X):
+        pass
+
+    def smooth(self, X):
+        smoothing_dimension = self.config[DLK.SMOOTHING][DLK.SMOOTHING_DIMENSIONS]
+        if smoothing_dimension == '1d':
+            self.smooth_1d(X)
+        if smoothing_dimension == '2d':
+            self.smooth_2d(X)
+
+        raise NotImplementedError("There is no implementation for SMOOTHING_DIMENSIONS, look in Dataloader.json config")
+
+    def smooth1d_from_2d_input(self, X_2d):
+        original_shape = X_2d.shape
+
+        X_1d = np.reshape(X_2d, [original_shape[0] * original_shape[1], original_shape[2]])
+        X_smoothed = self.smooth_1d(X_1d)
+        X_smoothed_2d = np.reshape(X_smoothed, original_shape)
+
+        return X_smoothed_2d
             
     
 class MedianFilter(Smoother):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
     
-    def smooth_func(self, X):
+    def smooth_1d(self, X):
+        return median_filter(X, size=(1, self.size))
+
+    def smooth_2d(self, X):
         return median_filter(X, size=self.size)
 
 
@@ -38,5 +52,8 @@ class GaussianFilter(Smoother):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
     
-    def smooth_func(self, X):
-        return gaussian_filter(X, self.size)
+    def smooth_1d(self, X):
+        return gaussian_filter1d(X, sigma=self.size)
+
+    def smooth_2d(self, X):
+        return gaussian_filter(X, sigma=self.size)

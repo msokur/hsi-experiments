@@ -49,7 +49,7 @@ GET_PATHS_DATA = [([ARR_DATA_1, ARR_DATA_2, ARR_DATA_3], ["pat_1", "pat_2", "pat
 def test_get_paths(zarr_test_dir: str, dataloader, values: list, names: list):
     result = []
     for value, name in zip(values, names):
-        dataloader.X_y_dict_save_to_archive(destination_path=zarr_test_dir, values=value, name=name)
+        dataloader.save_training_samples_to_archive(destination_path=zarr_test_dir, values=value, name=name)
         result.append(os.path.join(zarr_test_dir, name))
 
     elem = dataloader.get_paths(root_path=zarr_test_dir)
@@ -66,7 +66,7 @@ X_Y_DICT_SAVE_DATA_TREE = [([ARR_DATA_1, ARR_DATA_2], ["pat_one", "pat_two"],
 def test_X_y_dict_save_to_archive_tree(zarr_test_dir: str, dataloader, values: list, names: list,
                                        result: list):
     for value, name in zip(values, names):
-        dataloader.X_y_dict_save_to_archive(destination_path=zarr_test_dir, values=value, name=name)
+        dataloader.save_training_samples_to_archive(destination_path=zarr_test_dir, values=value, name=name)
 
     z_archive = zarr.open_group(store=zarr_test_dir, mode="r")
     elem = []
@@ -85,7 +85,7 @@ X_Y_DICT_SAVE_DATA_CHUNKS = [(ARR_DATA_1, "pat_one", [(1, 1), (1, 1), (1,)]),
 @pytest.mark.parametrize("values,name,result", X_Y_DICT_SAVE_DATA_CHUNKS)
 def test_X_y_dict_save_to_archive_chunks(zarr_test_dir: str, dataloader, values: dict[str, np.ndarray],
                                          name: str, result: list):
-    dataloader.X_y_dict_save_to_archive(destination_path=zarr_test_dir, values=values, name=name)
+    dataloader.save_training_samples_to_archive(destination_path=zarr_test_dir, values=values, name=name)
 
     z_archive = zarr.open_group(store=zarr_test_dir, mode="r")
     elem = []

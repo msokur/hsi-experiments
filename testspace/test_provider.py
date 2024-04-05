@@ -7,8 +7,8 @@ from provider import get_trainer, get_data_loader, get_whole_analog_of_data_load
     get_scaler, get_pixel_detection, get_cross_validator, get_extension_loader, get_data_storage
 
 from trainers.trainer_tuner import TrainerTuner
-from trainers.trainer_easy import TrainerEasy
-from trainers.trainer_easy_several_outputs import TrainerEasySeveralOutputs
+from trainers.trainer_binary import TrainerBinary
+from trainers.trainer_multiclass import TrainerMulticlass
 
 from data_utils.data_loaders.data_loader import DataLoader
 from data_utils.data_loaders.data_loader_whole import DataLoaderWhole
@@ -30,8 +30,8 @@ from data_utils.data_loaders.dat_file import DatFile
 from data_utils.data_loaders.mat_file import MatFile
 
 GET_TRAINER_DATA = [("Tuner", "trainer_tuner", TrainerTuner),
-                    ("Easy", "trainer_easy", TrainerEasy),
-                    ("SeveralOutput", "trainer_multiclass", TrainerEasySeveralOutputs)]
+                    ("Easy", "trainer_easy", TrainerBinary),
+                    ("SeveralOutput", "trainer_multiclass", TrainerMulticlass)]
 
 
 @pytest.mark.parametrize("typ,model_name,result", GET_TRAINER_DATA)

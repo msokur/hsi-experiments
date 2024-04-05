@@ -13,22 +13,24 @@ import util.experiments_combinations as utils
 
 
 class Experiment:
-    def __init__(self, name, params_for_experiment, background_params=None):
+    def __init__(self, name, params_for_experiment, background_params=None, replace_combinations_file=False):
         self.experiment_results_root_folder = None
         self.root_folder = None
 
         import configuration.get_config as config
         self.config = config
         self.name = name
+        self.replace_combinations_file = replace_combinations_file
 
         self.create_experiment_folder()
+        self.json_name = os.path.join(self.root_folder, 'combinations.json')
 
         self.parameters_for_experiment = params_for_experiment
         self.background_parameters = utils.BackgroundCombinations.validate_background_params(background_params)
 
         self.combinations_keys = list(params_for_experiment.keys())
         self.config_sections = [v['config_section'] for v in self.parameters_for_experiment.values()]
-        self.combinations = self.create_combinations()
+        self.combinations = self.generate_combinations()
 
         print(f"Input parameters for experiment: {self.parameters_for_experiment} \n "
               f"Background params: {self.background_parameters}")
@@ -48,7 +50,7 @@ class Experiment:
         if not os.path.exists(self.root_folder):
             os.mkdir(self.root_folder)
 
-    def create_combinations(self):
+    def generate_combinations(self):
         parameters = self.get_parameters(self.parameters_for_experiment)
         combinations = list(itertools.product(*parameters))
 
@@ -79,25 +81,15 @@ class Experiment:
         print('Folder where metrics will be saved', self.experiment_results_root_folder)
 
     def save_combinations(self):
-        self.json_name = os.path.join(self.root_folder, 'combinations.json')
+        if os.path.exists(self.json_name) and not self.replace_combinations_file:
+            raise ValueError(f"{self.json_name} already exists! You can set replace_combinations_file to True, but "
+                             f"be careful to not to loose combinations in the existing file")
 
         result_json = []
-        for combination in self.combinations[:3]:
-            print(combination)
-            print(self.config_sections)
-            print(self.combinations_keys)
-            for section, name, value in zip(self.config_sections,
-                                            self.combinations_keys,
-                                            combination):
-                print(section, name, value)
-            print({section: [name, value] for section, name, value in zip(self.config_sections,
+        for combination in self.combinations:
+            result_json.append({name: [section, value] for section, name, value in zip(self.config_sections,
                                                                                        self.combinations_keys,
                                                                                        combination)})
-            result_json.append({section: [name, value] for section, name, value in zip(self.config_sections,
-                                                                                       self.combinations_keys,
-                                                                                       combination)})
-            print(result_json)
-
         with open(self.json_name, 'w') as outfile:
             outfile.write(json.dumps(result_json))
 
@@ -183,17 +175,17 @@ class Experiment:
 
 
 if __name__ == '__main__':
-    gaussian_params = [0.1, 0.2]
+    gaussian_params = [0.5, 1, 1.5]
     median_params = [3, 5, 7]
 
     config_for_experiment = {
         '3D_SIZE': {
             'config_section': 'CONFIG_DATALOADER',
-            'parameters': [[3, 3], [5, 5]]
+            'parameters': [[3, 3], [5, 5], [7, 7], [11, 11]]
         },
         "NORMALIZATION_TYPE": {
             'config_section': 'CONFIG_PREPROCESSOR',
-            'parameters': ["svn_T", 'l2_norm']
+            'parameters': ["svn", 'l2_norm']
         },
         "SMOOTHING_TYPE": {
             'add_None': True,
@@ -230,10 +222,11 @@ if __name__ == '__main__':
         }
     }
 
-    experiment = Experiment('ExperimentRevival_treeConfigs',
+    experiment = Experiment('ExperimentRevival',
                             config_for_experiment,
-                            background_params=background_config)
-    #experiment.run_experiment()
+                            background_params=background_config,
+                            replace_combinations_file=True)
+    experiment.run_experiment()
     # print(exp.get_results())
 
     '''config_for_experiment = {

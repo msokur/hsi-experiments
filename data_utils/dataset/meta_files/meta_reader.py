@@ -8,7 +8,7 @@ from configuration.parameter import (
 )
 
 
-def get_cw_from_meta(files: list, labels: list, names: list, dataset_typ: str = DATASET_TYPE) -> Dict[str, float]:
+def get_class_weights_from_meta(files: list, labels: list, names: list, dataset_typ: str = DATASET_TYPE) -> Dict[str, float]:
     """Calculate class weights from meta file.
 
     :param files: Paths to datasets
@@ -28,14 +28,14 @@ def get_cw_from_meta(files: list, labels: list, names: list, dataset_typ: str = 
                 sums[label] += v
 
     total = np.sum([samples for samples in sums.values()])
-    cw = {}
+    class_weights = {}
     for label, samples in sums.items():
         if samples > 0.0:
-            cw[label] = (1 / samples) * total / labels.__len__()
+            class_weights[label] = (1 / samples) * total / labels.__len__()
         else:
-            cw[label] = 0.0
+            class_weights[label] = 0.0
 
-    return cw
+    return class_weights
 
 
 def get_shape_from_meta(files: list, dataset_type: str = DATASET_TYPE) -> Tuple[int]:

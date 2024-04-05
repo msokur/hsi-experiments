@@ -1,7 +1,7 @@
 import sys
 import os
 import inspect
-from typing import List
+from typing import List, Union
 
 import numpy as np
 from tqdm import tqdm
@@ -12,7 +12,9 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
 from data_utils.dataset import Dataset
+from data_utils.data_storage import DataStorage
 from configuration.keys import DistroCheckKeys as DCK
+from configuration.parameter import FEATURE_X
 
 """
 This class is about choosing a representative small dataset for speed up the training
@@ -34,7 +36,8 @@ There are several functionality parts:
 
 
 class DistributionsChecker:
-    def __init__(self, local_config: dict, paths: List[str], dataset: Dataset):
+    def __init__(self, local_config: dict, paths: List[str], dataset: Dataset, base_paths: List[str] = None,
+                 base_data_storage: Union[Dataset, DataStorage] = None):
         """
         Args:
             local_config: configuration parameters
@@ -44,7 +47,13 @@ class DistributionsChecker:
         self.test_paths = paths
         self.path = os.path.split(paths[0])[0]
         self.dataset = dataset
-        self.all_data = self.get_all_data(paths=self.test_paths)
+        if base_paths is None:
+            self.all_data = self.get_all_data(paths=self.test_paths, storage=dataset)
+        else:
+            if base_data_storage is None:
+                raise ValueError("Base Data Storage is None, please insert a 'Dataset' or 'DataStorge' object when"
+                                 "base_paths is not None!")
+            self.all_data = self.get_all_data(paths=base_paths, storage=base_data_storage)
         self.prints = local_config[DCK.PRINTS]
 
     @staticmethod
@@ -64,7 +73,7 @@ class DistributionsChecker:
         center = math.floor(data.shape[1] / 2)
         return data[:, center, center, ...].copy()
 
-    def get_all_data(self, paths, feature_index=-1):
+    def get_all_data(self, paths: List[str], storage: Union[DataStorage, Dataset], feature_index=-1):
         """
         Read data from the given path.
         It's also possible to get data with the given feature_index (for example, get only 4th feature)
@@ -76,12 +85,18 @@ class DistributionsChecker:
         all_data = []
 
         for p in tqdm(paths):
-            data = self.get_data(path=p, feature_index=feature_index)
+            if isinstance(storage, Dataset):
+                data = self.get_data(data=storage.get_X(path=p), feature_index=feature_index)
+            elif isinstance(storage, DataStorage):
+                data = self.get_data(data=storage.get_data(data_path=p, data_name=FEATURE_X),
+                                     feature_index=feature_index)
+            else:
+                raise ValueError("Storage type for all data reading wrong!")
             all_data.append(data)
 
         return np.concatenate(all_data, axis=0)
 
-    def get_data(self, path, feature_index=-1) -> np.ndarray:
+    def get_data(self, data: np.ndarray, feature_index=-1) -> np.ndarray:
         """
         Read data from the given path.
         It's also possible to get data with the given feature_index (for example, get only 4th feature)
@@ -89,9 +104,7 @@ class DistributionsChecker:
         Returns:
             data with shapes (number_of_samples, feature(s)). For 3d data only the centered patches will be used.
         """
-        shape = self.dataset.get_meta_shape(paths=[path])
-        data = self.dataset.get_X(path=path, shape=shape)
-        if shape.__len__() > 2:
+        if data.shape.__len__() > 2:
             data_1d = self.get_centers(data=data)
         else:
             data_1d = data
@@ -118,14 +131,13 @@ class DistributionsChecker:
 
         if np.abs(std1 - std2) < self.local_config[DCK.Z_TEST_STD_DELTA]:
             from statsmodels.stats import weightstats
-            z, p_value = weightstats.ztest(d1, x2=d2, value=0)
+            z, p_value = weightstats.ztest(x1=d1, x2=d2, value=0)
             if self.prints:
                 print('z-score and p_value:', z, p_value)
-            if p_value > self.local_config[DCK.Z_TEST_P_VALUE]:
-                return True
-        else:
-            print('WARNING! Distributions (std) are too different, Z-test results '
-                  'would be meaningless. Use kolmogorov_smirnov_test().')
+            return p_value > self.local_config[DCK.Z_TEST_P_VALUE]
+
+        print('WARNING! Distributions (std) are too different, Z-test results '
+              'would be meaningless. Use kolmogorov_smirnov_test().')
         return False
 
     def kolmogorov_smirnov_test(self, d1, d2):
@@ -142,9 +154,8 @@ class DistributionsChecker:
         ks = ks_2samp(d1, d2)
         if self.prints:
             print(ks)
-        if ks.pvalue > self.local_config[DCK.KS_TEST_P_VALUE]:
-            return True
-        return False
+
+        return ks.pvalue > self.local_config[DCK.KS_TEST_P_VALUE]
 
     def compare_shuffled_distributions(self, test_archive_index=0):
         """ Compare distributions separately for each feature.
@@ -153,8 +164,7 @@ class DistributionsChecker:
         Returns:
             True if archive with test_archive_index has the same distribution, False if not the same
         """
-        test_data = self.get_data(path=self.test_paths[test_archive_index])
-
+        test_data = self.get_data(data=self.dataset.get_X(path=self.test_paths[test_archive_index]))
         results = []
         for i in range(test_data.shape[-1]):
             z_result = True
@@ -163,9 +173,8 @@ class DistributionsChecker:
 
             ks_result = self.kolmogorov_smirnov_test(self.all_data[:, i], test_data[:, i])
             results.append(z_result & ks_result)
-        if np.all(results):
-            return True
-        return False
+
+        return np.all(results)
 
     def get_small_database_for_tuning(self):
         """ Get an archive with the same distribution as the whole database.
@@ -190,15 +199,36 @@ class DistributionsChecker:
 
     def test_all_archives_in_folder(self):
         """
-        Prints for each archive of the folder if the distribution of archive is the same with the whole dataset (True)
-        And False if not the same
+        Returns an array for each archive of the folder if the distribution of archive is the same with the whole
+        dataset (True) And False if not the same
         """
+        usable = []
         for i in tqdm(range(len(self.test_paths))):
             result = self.compare_shuffled_distributions(test_archive_index=i)
-            print(f'Archive {i} can be used: {result}')
+            if self.prints:
+                print(f"Archive '{self.test_paths[i]}' can be used: {result}")
+            usable.append(result)
+
+        return usable
 
 
 if __name__ == '__main__':
-    import configuration.get_config as configuration
-    dc = DistributionsChecker(configuration, '/work/users/mi186veva/data_3d/raw_3d_svn/shuffled')
+    from configuration import get_config as config
+    from provider import get_dataset, get_data_storage
+    from glob import glob
+    from data_utils.data_storage import DataStorageNPZ
+
+    dataset_ = get_dataset(typ="tfr", config=config, data_storage=get_data_storage(typ="npz"))
+    dc_config = {
+        "PRINTS": False,
+        "Z_TEST": True,
+        "Z_TEST_P_VALUE": 0.05,
+        "Z_TEST_STD_DELTA": 0.01,
+        "KS_TEST_P_VALUE": 0.05
+    }
+    main_path = r"C:\Users\benny\Desktop\Arbeit\data\data_3d\hno\3x3\svn_T\no_smooth"
+    test_paths_ = glob(os.path.join(main_path, "shuffled_tfr_test_2", "*.tfrecord"))
+    main_paths_ = glob(os.path.join(main_path, "patient_data_npz", "*.npz"))
+    dc = DistributionsChecker(dc_config, paths=[test_paths_[0]], dataset=dataset_,
+                              base_paths=main_paths_, base_data_storage=DataStorageNPZ())
     print(dc.test_all_archives_in_folder())

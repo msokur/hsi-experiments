@@ -59,7 +59,7 @@ class GeneratorDatasets(Dataset):
     def get_meta_shape(self, paths: List[str]) -> Tuple[int]:
         return get_shape_from_meta(files=paths, dataset_type=GEN_TYP)
 
-    def get_X(self, path: str, shape: Tuple[int]) -> np.ndarray:
+    def get_X(self, path: str) -> np.ndarray:
         return self.data_storage.get_data(data_path=path, data_name=self.dict_names[0])
 
     def delete_batches(self, batch_path: str):
@@ -68,6 +68,7 @@ class GeneratorDatasets(Dataset):
     def __get_dataset__(self, batch_paths: List[str], options: tf.data.Options):
         if self.config.CONFIG_CV[CVK.MODE] == "DEBUG":
             batch_paths = batch_paths[::100]
+            print('LeN', len(batch_paths))
 
         dataset = GeneratorDataset(data_storage=self.data_storage, batch_paths=batch_paths, X_name=self.dict_names[0],
                                    y_name=self.dict_names[1], weights_name=self.dict_names[5],

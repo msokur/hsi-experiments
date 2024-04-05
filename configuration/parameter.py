@@ -9,6 +9,7 @@ D3_CHUNK = (1, 1)                   # chunks for patches
 SHUFFLE_GROUP_NAME = "shuffled"     # prefix for shuffled dataset
 PILE_NAME = ".pile"                 # data extension for piles
 MAX_SIZE_PER_PILE = 2.0             # maximal size per pile/shuffle file in GB
+SMALL_SHUFFLE_SET = False           # create only representative shuffle sets
 
 # --- Meta files
 SAMPLES_PER_NAME = "samples_per_patient_name"
@@ -24,13 +25,14 @@ DICT_X = "X"                            # default dict name for spectrum
 DICT_y = "y"                            # default dict name for classifications
 DICT_IDX = "indexes_in_datacube"        # default dict name for original indexes in hyper cube
 DICT_WEIGHT = "weights"                 # default dict name for weights
-ORG_NAME = "org_name"                   # original file name, when mor files in one data storage
+ORIGINAL_NAME = "original_name"                   # original file name, when mor files in one data storage
+BACKGROUND_MASK = 'background_mask'
 
 # --- Scaler
 SCALER_FILE = "scaler.scaler"
 
 # --- Trainer
-VALID_LOG = "valid.valid_except_names"  # data name to log valid names
+FILE_WITH_VALID_NAME = "valid.valid_except_names"  # data name to log valid names
 HISTORY_FILE = "history"                # file name for training history
 
 # --- batches

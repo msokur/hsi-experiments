@@ -14,7 +14,7 @@ from data_utils.weights import Weights
 
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK, PreprocessorKeys as PPK
 from configuration.parameter import (
-    STORAGE_TYPE, DATASET_TYPE
+    STORAGE_TYPE, DATASET_TYPE, SMALL_SHUFFLE_SET
 )
 
 '''
@@ -76,7 +76,7 @@ class Preprocessor:
         if execution_flags['load_data_with_dataloader']:
             dataloader = provider.get_data_loader(config=self.config, typ=self.config.CONFIG_DATALOADER[DLK.TYPE],
                                                   data_storage=data_storage)
-            dataloader.files_read_and_save_to_archive(root_path, preprocessed_path)
+            dataloader.read_files_and_save_to_archive(root_path, preprocessed_path)
 
         print(f'---- Memory, preprocessor 1, after reading of origin files '
               f'{get_used_memory(process_id=process_id)} ----')
@@ -111,9 +111,10 @@ class Preprocessor:
 
         # ----------shuffle part------------------
         if execution_flags['shuffle']:
+            print(f"SHUFFLE PATHS {self.config.CONFIG_PATHS[PK.SHUFFLED_PATH]}")
             shuffle = provider.get_shuffle(config=self.config, typ=DATASET_TYPE, data_storage=data_storage,
                                            raw_path=preprocessed_path,
-                                           dict_names=self.dict_names)
+                                           dict_names=self.dict_names, small=SMALL_SHUFFLE_SET)
             shuffle.shuffle()
 
         print(f'---- Memory, preprocessor 4, after shuffling {get_used_memory(process_id=process_id)} ----')

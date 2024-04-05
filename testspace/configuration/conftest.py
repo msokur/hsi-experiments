@@ -107,8 +107,7 @@ def cv_result() -> dict:
             "TYPE": "normal",
             "NAME": "CV_NAME",
             "DATABASE_ABBREVIATION": "DATABASE_NAME",
-            "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/xyz/hsi-experiments-BA/logs/Experiment",
-            "RESTORE_VALID_SEQUENCE": "",
+            "RESTORE_VALID_PATIENTS_FOLDER": "/home/sc.uni-leipzig.de/xyz/hsi-experiments-BA/logs/Experiment",
             "GET_CHECKPOINT_FROM_VALID": True}
 
 

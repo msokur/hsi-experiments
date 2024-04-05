@@ -16,10 +16,10 @@ class DataLoaderWholeBase(DataLoader):
         return self.class_instance.get_labels()
 
     def indexes_get_bool_from_mask(self, mask):
-        return self.class_instance.indexes_get_bool_from_mask(mask)
+        return self.class_instance.get_boolean_masks_from_original_mask(mask)
 
     def file_read_mask_and_spectrum(self, path):
-        return self.class_instance.file_read_mask_and_spectrum(path)
+        return self.class_instance.read_spectrum_and_mask(path)
 
     def get_name(self, path):
         return self.class_instance.get_name_func(path)
@@ -28,7 +28,7 @@ class DataLoaderWholeBase(DataLoader):
         def reshape(arr):
             return np.reshape(arr, tuple([arr.shape[0] * arr.shape[1]]) + tuple(arr.shape[2:]))
         print(f'Reading {path}')
-        spectrum, mask = self.class_instance.file_read_mask_and_spectrum(path)
+        spectrum, mask = self.class_instance.read_spectrum_and_mask(path)
         mask = self.set_mask_with_labels(mask)
         
         spectrum = DataLoader.smooth(spectrum)

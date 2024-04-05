@@ -40,7 +40,7 @@ class DatFile:
         """
         self.CONFIG_DATALOADER = config.CONFIG_DATALOADER
 
-    def indexes_get_bool_from_mask(self, mask: np.ndarray) -> List[np.ndarray]:
+    def get_boolean_indexes_from_mask(self, mask: np.ndarray) -> List[np.ndarray]:
         """ Create for every classification a boolean array
 
         Input is a 3D array with RGB or RGBA code and this function creates for every classification a separate array
@@ -130,7 +130,7 @@ class DatFile:
         ...     [2, 2]])
         """
         result_mask = np.zeros(mask.shape[:2]) - 1
-        indexes = self.indexes_get_bool_from_mask(mask)
+        indexes = self.get_boolean_indexes_from_mask(mask)
         for sub_mask, key in zip(indexes, self.CONFIG_DATALOADER[DLK.MASK_COLOR].keys()):
             result_mask[sub_mask] = key
 

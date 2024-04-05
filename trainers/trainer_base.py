@@ -10,7 +10,7 @@ import pickle
 import psutil
 
 from util.compare_distributions import DistributionsChecker
-from data_utils.dataset.meta_files import get_cw_from_meta
+from data_utils.dataset.meta_files import get_class_weights_from_meta
 from provider import get_dataset
 
 from callbacks import CustomTensorboardCallback
@@ -20,7 +20,7 @@ from configuration.keys import (
     TrainerKeys as TK, PathKeys as PK, DataLoaderKeys as DLK, PreprocessorKeys as PPK,
     CrossValidationKeys as CVK)
 from configuration.parameter import (
-    DATASET_TYPE, VALID_LOG, HISTORY_FILE, TUNE
+    DATASET_TYPE, FILE_WITH_VALID_NAME, HISTORY_FILE, TUNE
 )
 
 
@@ -42,16 +42,11 @@ class Trainer:
         pass
 
     @abc.abstractmethod
-    def get_model(self):
-        pass
-
-    @abc.abstractmethod
-    def get_parameters_for_compile(self):
-        # should return Loss and Metrics
+    def get_loss_and_metrics(self):
         pass
 
     def save_except_names(self, except_names):
-        with open(os.path.join(self.log_dir, VALID_LOG), "wb") as f:
+        with open(os.path.join(self.log_dir, FILE_WITH_VALID_NAME), "wb") as f:
             pickle.dump(except_names, f, pickle.HIGHEST_PROTOCOL)
 
     def logging_and_copying(self):
@@ -70,8 +65,8 @@ class Trainer:
         return split_train
 
     def compile_model(self, model):
-        loss, raw_metrics = self.get_parameters_for_compile()
-        METRICS, WEIGHTED_METRICS = self.fill_metrics(raw_metrics)
+        loss, raw_metrics, non_weightable_metrics = self.get_loss_and_metrics()
+        METRICS, WEIGHTED_METRICS = self.fill_metrics(raw_metrics, non_weightable_metrics)
 
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=self.config.CONFIG_TRAINER["LEARNING_RATE"]),
@@ -82,15 +77,18 @@ class Trainer:
 
         return model
 
-    def fill_metrics(self, raw_metrics):
+    def fill_metrics(self, raw_metrics, non_weightable_metrics):
         METRICS, WEIGHTED_METRICS = [], []
 
         if self.config.CONFIG_TRAINER["WITH_SAMPLE_WEIGHTS"]:
             WEIGHTED_METRICS = raw_metrics.copy()
-            METRICS = None
         else:
             WEIGHTED_METRICS = None
             METRICS = raw_metrics.copy()
+
+        METRICS += non_weightable_metrics.copy()
+        if not METRICS:
+            METRICS = None
 
         return METRICS, WEIGHTED_METRICS
 
@@ -115,14 +113,9 @@ class Trainer:
                                                        labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
                                                        batch_path=self.batch_path)
 
-        print("--- Calculate class weights ---")
-        class_weights = get_cw_from_meta(files=root_data_paths,
-                                         labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
-                                         names=self.train_names)
-        print(f"---Class weights---\n{class_weights}")
-        # TODO class_weights dirty fix
-        class_weights = {k: v for k, v in enumerate(class_weights.values())}
+        class_weights = self.get_class_weights(root_data_paths)
         return train_ds, valid_ds, class_weights
+
 
     def get_callbacks(self):
         checkpoint_path = os.path.join(self.log_dir, self.config.CONFIG_PATHS[PK.CHECKPOINT_FOLDER], "cp-{epoch:04d}")
@@ -152,6 +145,17 @@ class Trainer:
             callbacks_.append(early_stopping_callback)
 
         return callbacks_
+
+    def get_class_weights(self, root_data_paths):
+        class_weights = None
+        if not self.config.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS]:
+            class_weights = get_class_weights_from_meta(files=root_data_paths,
+                                                        labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
+                                                        names=self.train_names)
+
+            class_weights = {k: v for k, v in enumerate(class_weights.values())}
+        print(f"---Class weights---\n{class_weights}")
+        return class_weights
 
     def save_history(self, history):
         np.save(os.path.join(self.log_dir, HISTORY_FILE), history.history)

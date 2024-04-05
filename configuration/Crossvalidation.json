@@ -1,7 +1,7 @@
 {
   "BASE":{
     "EXECUTION_FLAGS": {
-      "cross_validation": false,
+      "cross_validation": true,
       "evaluation": true
     },
     "FIRST_SPLIT": 0,
@@ -13,24 +13,18 @@
   },
   "CV_HNO_NORMAL": {
     "TYPE": "normal",
-    "NAME": "2024-02-21_HNO_2_9x9_snv_no-smooth_paper-model",
-    "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
-    "RESTORE_VALID_SEQUENCE": "",
+    "NAME": "2024-02-14_HNO_2_9x9_snv_no-smooth_paper-model",
     "GET_CHECKPOINT_FROM_EARLYSTOPPING": true,
     "CSV_FILENAME": "2024-02-21_HNO_2_9x9_snv_no-smooth_paper-model_stats_26.02.2024-09_07_59.csv"
   },
   "CV_ESO_NORMAL": {
     "TYPE": "normal",
     "NAME": "2023-10-27_CV_ESO_3x3_snv-t_no-smooth_speed_up",
-    "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
-    "RESTORE_VALID_SEQUENCE": "",
     "GET_CHECKPOINT_FROM_EARLYSTOPPING": true
   },
   "CV_GASTRIC_MK": {
     "TYPE": "normal",
     "NAME": "2023-09-26_CV_GASTRIC_INVIVO_3x3_snvT_no_smooth_mk",
-    "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
-    "RESTORE_VALID_SEQUENCE": "",
     "GET_CHECKPOINT_FROM_EARLYSTOPPING": true
   },
   "CV_POSTPROCESSING_Eso": {
@@ -38,8 +32,6 @@
     "POST_PROCESSING_ALGORITHM": "algorithm_plain",
     "NAME": "Esophagus_MedFilter",
     "DATABASE_ABBREVIATION": "Esophagus_MedFilter",
-    "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
-    "RESTORE_VALID_SEQUENCE": "",
     "GET_CHECKPOINT_FROM_EARLYSTOPPING": true
   },
   "CV_POSTPROCESSING_Colon": {
@@ -47,15 +39,12 @@
     "POST_PROCESSING_ALGORITHM": "algorithm_plain",
     "NAME": "Colon_MedianFilter",
     "DATABASE_ABBREVIATION": "Colon_MedianFilter",
-    "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
-    "RESTORE_VALID_SEQUENCE": "",
     "GET_CHECKPOINT_FROM_EARLYSTOPPING": true
   },
     "CV_COLON": {
     "TYPE": "normal",
-    "NAME": "check_CV_without_sample_weights",
-    "RESTORE_VALID_PATH": "/home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/logs/ExperimentHowManyValidPatExclude",
-    "RESTORE_VALID_SEQUENCE": "",
+    "NAME": "experiment_with_sample_weights",
+    "RESTORE_VALID_PATIENTS_FOLDER": "C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\logs\\ExperimentRevival\\3D3_Ns_",
     "GET_CHECKPOINT_FROM_EARLYSTOPPING": true,
       "HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1
     }
