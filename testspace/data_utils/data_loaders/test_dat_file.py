@@ -116,7 +116,7 @@ def test_indexes_get_bool_from_mask(test_config, mask, ext_loader, color: str, r
     loader = ext_loader(config=GET_MASK_COLOR(typ=color, config=test_config))
     bool_masks = loader.indexes_get_bool_from_mask(mask=mask)
     for bool_mask, result_mask in zip(bool_masks, result):
-        assert (bool_mask == result_mask).all()
+        assert np.all(bool_mask == result_mask)
 
 
 INDEXES_GET_BOOL_FROM_MASK_DATA_ERROR = [(DatFile, "ERROR1",
@@ -143,7 +143,7 @@ def test_indexes_get_bool_from_mask_warning(test_config, mask):
                                          "Only the first four will be used."):
         bool_masks = loader.indexes_get_bool_from_mask(mask=mask)
 
-    assert (bool_masks[0] == RGBA_RESULT_BOOL_MASK[0]).all()
+    assert np.all(bool_masks[0] == RGBA_RESULT_BOOL_MASK[0])
 
 
 SET_MASK_WITH_LABEL_DATA = [(DatFile, "RGB", RGB_RESULT_INDEX_MASK),
@@ -154,7 +154,7 @@ SET_MASK_WITH_LABEL_DATA = [(DatFile, "RGB", RGB_RESULT_INDEX_MASK),
 @pytest.mark.parametrize("ext_loader,color,result", SET_MASK_WITH_LABEL_DATA)
 def test_set_mask_with_label(test_config, mask, ext_loader, color: str, result):
     loader = ext_loader(config=GET_MASK_COLOR(typ=color, config=test_config))
-    assert (loader.set_mask_with_label(mask=mask) == result).all()
+    assert np.all(loader.set_mask_with_label(mask=mask) == result)
 
 
 SPECTRUM_RESULT_4_5_92 = np.full(shape=(4, 5, LOADER_CONFIG["LAST_NM"] - LOADER_CONFIG["FIRST_NM"]),
@@ -173,7 +173,7 @@ def test_file_read_mask_and_spectrum_only_spectrum(test_config, dat_path: str):
 
 def test_file_read_mask_and_spectrum_only_mask(test_config, dat_path: str):
     _, mask = DatFile(config=test_config).file_read_mask_and_spectrum(dat_path)
-    assert (mask == PNG_IMG_1).all()
+    assert np.all(mask == PNG_IMG_1)
 
 
 def test_spectrum_read_from_dat(test_config, dat_path: str):
@@ -188,7 +188,7 @@ MASK_READ_PNG_DATA = [("test_mask.png", PNG_IMG_1),
 @pytest.mark.parametrize("img_name,result", MASK_READ_PNG_DATA)
 def test_mask_read_png(dat_data_dir: str, img_name, result):
     path = os.path.join(dat_data_dir, img_name)
-    assert (DatFile.mask_read(mask_path=path) == result).all()
+    assert np.all(DatFile.mask_read(mask_path=path) == result)
 
 
 MASK_READ_JPG_DATA = ["test_mask.jpg",
@@ -228,4 +228,4 @@ def test_mk2_mask(test_config, dat_data_dir: str, ext_loader, color: str, result
     loader = ext_loader(config=GET_MASK_COLOR(typ=color, config=test_config))
     mask = loader.mk2_mask(mask_path=os.path.join(dat_data_dir, "test_mask.mk2"),
                            shape=(8, 8))
-    assert (mask == result).all()
+    assert np.all(mask == result)
