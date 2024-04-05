@@ -132,13 +132,17 @@ class EvaluationBase(Metrics):
             for threshold in thresholds:
                 comparison_csv_path = os.path.join(results_folder, self.comparison_csvname)
 
+                write_header = True
+                if os.path.exists(comparison_csv_path):
+                    write_header = False
+
                 with open(comparison_csv_path, "a", newline='') as csvfile:
                     fieldnames = ['Time', 'Checkpoint', 'Threshold', 'Sensitivity_mean', 'Specificity_mean']
                     if self.additional_columns:
                         fieldnames += list(self.additional_columns.keys())
                         # print(fieldnames)
                     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                    if not os.path.exists(comparison_csv_path):
+                    if write_header:
                         writer.writeheader()
 
                     print(f'-----------------Checkpoint: {checkpoint}, Threshold: {threshold}------------------- ')
@@ -181,7 +185,7 @@ class EvaluationBase(Metrics):
                     specificity_mean = np.nanmean(metrics_all['Specificity'], axis=0)
 
                     self.plot_sensitivity_specificity(sensitivity_mean, specificity_mean,
-                                                      results_folder)
+                                                      results_folder, threshold=threshold)
                     self.write_row_to_comparison_file(checkpoint, threshold, sensitivity_mean, specificity_mean, writer)
 
     def check_predictions_npy_filename(self, predictions_npy_filename):
@@ -255,7 +259,7 @@ class EvaluationBase(Metrics):
         self.write_metrics_to_csv(writer_cp, median, time_string="TOTAL MEDIAN")
 
     @staticmethod
-    def plot_sensitivity_specificity(sensitivity_mean, specificity_mean, results_folder):
+    def plot_sensitivity_specificity(sensitivity_mean, specificity_mean, results_folder, threshold):
         plt.plot(sensitivity_mean, label="sensitivity mean")
         plt.plot(specificity_mean, label="specificity mean")
         plt.ylabel("Value")
@@ -263,7 +267,7 @@ class EvaluationBase(Metrics):
         plt.legend(loc="lower right")
         plt.title("Sensitivity and specificity mean by classes")
         plt.savefig(os.path.join(results_folder,
-                                 'thresholds_metrics_curves_mean.png'))
+                                 f'thresholds_{threshold}_metrics_curves_mean.png'))
         plt.clf()
         plt.cla()
         plt.close('all')

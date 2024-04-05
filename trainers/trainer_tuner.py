@@ -12,6 +12,9 @@ from configuration.parameter import (
 
 
 class TrainerTuner(Trainer):
+    def get_parameters_for_compile(self):
+        pass
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.tuner_dir = os.path.join(self.log_dir, "tuner")

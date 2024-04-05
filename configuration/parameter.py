@@ -9,6 +9,7 @@ D3_CHUNK = (1, 1)                   # chunks for patches
 SHUFFLE_GROUP_NAME = "shuffled"     # prefix for shuffled dataset
 PILE_NAME = ".pile"                 # data extension for piles
 MAX_SIZE_PER_PILE = 2.0             # maximal size per pile/shuffle file in GB
+SMALL_SHUFFLE_SET = False           # create only representative shuffle sets
 
 # --- Meta files
 SAMPLES_PER_NAME = "samples_per_patient_name"
@@ -62,6 +63,9 @@ TFR_FILE_EXTENSION = ".tfrecord"
 GEN_ALL = "all"                         # modus all for data generator
 GEN_TRAIN = "train"                     # modus train for data generator
 GEN_VALID = "valid"                     # modus valid for data generator
+
+# --- predictor
+MAX_SIZE_PER_SPEC = 4.0                 # maximal size in GB for a spectrum to predict
 
 # --- prediction to image
 PRED_TO_IMG_TYP = "archive"

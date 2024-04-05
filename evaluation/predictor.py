@@ -3,14 +3,13 @@ from tqdm import tqdm
 import tensorflow as tf
 import numpy as np
 import os
-import inspect
 from glob import glob
 
-from configuration.keys import DataLoaderKeys as DLK, CrossValidationKeys as CVK
+from configuration.keys import DataLoaderKeys as DLK, CrossValidationKeys as CVK, PathKeys as PK
 from models.model_randomness import set_tf_seed
 from provider import get_data_loader, get_data_storage
 from configuration.parameter import (
-    STORAGE_TYPE
+    STORAGE_TYPE, MAX_SIZE_PER_SPEC
 )
 
 tf.random.set_seed(1)
@@ -88,19 +87,28 @@ class Predictor:
 
         gt = gt[indexes]
         spectrum = spectrum[indexes]
+        prediction_steps, steps_width = self._get_spec_step(shape=spectrum.shape, dtype=spectrum.dtype)
+        predictions_ = []
+        start_step = 0
+        for prediction_step in range(prediction_steps):
+            if prediction_step == prediction_steps - 1:
+                end_step = spectrum.shape[0]
+            else:
+                end_step = start_step + steps_width
 
-        predictions = self.model.predict(spectrum, verbose=0)
+            tf_spectrum = tf.convert_to_tensor(spectrum[start_step:end_step])
+            predict_data = tf.data.Dataset.from_tensor_slices(tf_spectrum).batch(500)
+            predictions_.append(self.model.predict(predict_data, verbose=0))
+            start_step += steps_width
+
+        predictions = np.concatenate(predictions_, axis=0)
 
         return predictions, gt, size
 
     def edit_model_path_if_local(self, model_path):
         if "LOCAL" in self.config.CONFIG_PATHS["MODE"]:
-            model_path = model_path.split("hsi-experiments")[-1][1:]
-            model_path = model_path.replace("/", "\\")
-
-            current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-            parent_dir = os.path.dirname(current_dir)
-            model_path = os.path.join(parent_dir, model_path)
+            model_folders = os.path.split(model_path)
+            model_path = os.path.join(self.config.CONFIG_PATHS[PK.RESULTS_FOLDER], model_folders[-2], model_folders[-1])
         return model_path
 
     def get_checkpoint(self, checkpoint, model_path=None):
@@ -123,6 +131,26 @@ class Predictor:
 
         best_checkpoint_path = checkpoints_paths[-1]
         return best_checkpoint_path.split(self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-2]
+
+    @staticmethod
+    def _get_spec_step(shape: tuple, dtype: np.dtype, max_size: float = MAX_SIZE_PER_SPEC):
+        if dtype == np.float64:
+            byte = 8
+        else:
+            byte = 4
+
+        size = (np.prod(shape) * byte) / (1024 ** 3)
+
+        if size <= max_size:
+            # return only one step and the size of the
+            return 1, shape[0]
+        else:
+            # calculate the needed steps
+            steps = int(-(-size // max_size))
+            # calculate the size for every step
+            step_size = int(-(-shape[0] // steps))
+
+            return steps, step_size
 
 
 if __name__ == "__main__":

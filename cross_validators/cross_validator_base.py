@@ -112,6 +112,8 @@ class CrossValidatorBase:
 
         if csv_filename is None:
             csv_filename = os.path.join(root_folder, name + "_stats" + date_ + ".csv")
+        else:
+            csv_filename = os.path.join(root_folder, csv_filename)
 
         for indexes in splits[self.config.CONFIG_CV[CVK.FIRST_SPLIT]:]:
             model_name = path_template
