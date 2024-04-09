@@ -1,7 +1,7 @@
 from typing import Tuple
 
 import numpy as np
-import matplotlib.pyplot as plt
+
 
 from scipy.signal import savgol_filter
 from sklearn import preprocessing
@@ -143,6 +143,7 @@ class cube(object):
         return gamma_corrected
 
     def cube_plot(self):
+        import matplotlib.pyplot as plt
         rgb_cube = self.get_rgb_cube()
         # plot the rgb image
         imgplot = plt.figure()

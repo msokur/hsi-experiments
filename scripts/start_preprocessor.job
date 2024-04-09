@@ -1,18 +1,27 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=32
+#SBATCH --ntasks-per-node=8
 #SBATCH --job-name=prepro
 #SBATCH --partition=clara
 #SBATCH --time=40:00:00
-#SBATCH --mem=100G
+#SBATCH --mem=48G
 ##SBATCH --gres=gpu:v100:2
 ##SBATCH --gres=gpu:rtx2080ti:2
 
-#SBATCH --output=output/PrePro_HNO_2__9x9_SNV_NO_SMOOTH%j.log
+#SBATCH --output=outputs/_3D_patchifier_17x17_%j.log
 
 #module load FlexiBLAS/3.0.4-GCC-10.3.0
-module load Python/3.9.5-GCCcore-10.3.0
-module load CUDA/11.4.1
+#module load Python/3.10.8-GCCcore-12.2.0
+#module load CUDA/11.7.0
+#module load TensorFlow/2.9.1-foss-2022a-CUDA-11.7.0
+#module load OpenCV/4.5.5-foss-2021b-contrib
+#module load SciPy-bundle/2023.02-gfbf-2022b
+
+module load Python
+source /home/sc.uni-leipzig.de/mi186veva/venv/tf/bin/activate
+
+#module list
 
 
-python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/data_utils/preprocessor.py
+#python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/data_utils/preprocessor.py
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/data_utils/preprocessor.py

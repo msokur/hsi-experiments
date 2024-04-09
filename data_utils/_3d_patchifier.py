@@ -59,11 +59,15 @@ class Patchifier:
         extended_instances = concatenate_function(spectrum,  extended_boolean_masks, background_mask)
         extended_spectrum = extended_instances['X']
         extended_indexes_in_datacube = extended_instances['indexes_in_datacube']
+        size = self.config.CONFIG_DATALOADER[DLK.D3_SIZE]
 
         training_instances[DICT_X] = np.fromiter(self.patch_generator(extended_indexes_in_datacube,
                                                                       train_indexes,
                                                                       extended_spectrum,
-                                                                      spectrum), dtype=object, count=-1)
+                                                                      spectrum), 
+                                                 dtype=object,
+                                                 #dtype=np.dtype((float, size[0], size[1], spectrum.shape[-1])), 
+                                                 count=-1)
 
         return training_instances
 

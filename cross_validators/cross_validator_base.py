@@ -142,7 +142,6 @@ class CrossValidatorBase:
                                      'sensitivity': str(sensitivity),
                                      'specificity': str(specificity),
                                      'name': path_,
-                                     # 'model_name': config.MODEL_NAME})
                                      'model_name': model_name})
 
     def get_nearest_int_delimiter(self, folder):
