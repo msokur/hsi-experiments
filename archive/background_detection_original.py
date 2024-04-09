@@ -39,7 +39,7 @@ def detect_background(cube, minWL=500, maxWL=995, WLsteps=5, cube_index=None, bg
         # calculate parameter from range subresults
         sub1 = (-np.log(mean_value1 / mean_value2) - a) / b
 
-        mean_value1[mean_value1 > 0.25] = 0
+        mean_value1[mean_value1 > 0.7] = 0
         sub1[sub1 < 0] = 0
         mean_value3[mean_value3 < 0.1] = 0
 

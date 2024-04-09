@@ -10,8 +10,8 @@ from data_utils.data_loaders.archive.data_loader_hno import DataLoaderHNO
 from data_utils.data_loaders.archive.data_loader_whole_hno import DataLoaderWholeHNO
 from data_utils.smoothing import MedianFilter, GaussianFilter
 from data_utils.scaler import NormalizerScaler, StandardScaler, StandardScalerTransposed
-import trainers.trainer_easy as trainer_easy
-import trainers.trainer_easy_several_outputs as trainer_easy_several_outputs
+import trainers.trainer_binary as trainer_easy
+import trainers.trainer_multiclass as trainer_easy_several_outputs
 from evaluation.evaluation_binary import EvaluationBinary
 from evaluation.evaluation_multiclass import EvaluationMulticlass
 import models.archive.keras_tuner_model as keras_tuner_model

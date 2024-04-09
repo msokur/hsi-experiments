@@ -29,10 +29,14 @@ def tfr_3d_train_parser(record):
     return X, y, sw, pat_idx
 
 
-def tfr_X_parser(record, shape: tf.Variable):
-    parsed = tf.io.parse_single_example(record, _base_feature_keys())
+def tfr_X_parser(record):
+    parsed = tf.io.parse_single_example(record, _base_3d_feature_keys())
 
-    X_shape = tf.concat(values=[[parsed[FEATURE_SAMPLES]], shape], axis=0)
+    if tf.equal(parsed[FEATURE_X_AXIS_1], -1):
+        X_shape = tf.concat(values=[[parsed[FEATURE_SAMPLES]], [parsed[FEATURE_SPEC]]], axis=0)
+    else:
+        X_shape = tf.concat(values=[[parsed[FEATURE_SAMPLES]], [parsed[FEATURE_X_AXIS_1]], [parsed[FEATURE_X_AXIS_2]],
+                                    [parsed[FEATURE_SPEC]]], axis=0)
 
     return _decode_and_reshape_X(parsed=parsed, shape=X_shape)
 
@@ -52,8 +56,8 @@ def _base_feature_keys():
 def _base_3d_feature_keys():
     """Returns the feature keys for a 3D dataset"""
     feature_keys = _base_feature_keys()
-    feature_keys[FEATURE_X_AXIS_1] = tf.io.FixedLenFeature(shape=[], dtype=tf.int64)
-    feature_keys[FEATURE_X_AXIS_2] = tf.io.FixedLenFeature(shape=[], dtype=tf.int64)
+    feature_keys[FEATURE_X_AXIS_1] = tf.io.FixedLenFeature(shape=[], dtype=tf.int64, default_value=-1)
+    feature_keys[FEATURE_X_AXIS_2] = tf.io.FixedLenFeature(shape=[], dtype=tf.int64, default_value=-1)
 
     return feature_keys
 

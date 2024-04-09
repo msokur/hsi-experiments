@@ -2,8 +2,8 @@
 
 
 def get_trainer(typ: str, config, *args, **kwargs):
-    from trainers.trainer_easy import TrainerEasy
-    from trainers.trainer_easy_several_outputs import TrainerEasySeveralOutputs
+    from trainers.trainer_binary import TrainerBinary
+    from trainers.trainer_multiclass import TrainerMulticlass
 
     if typ == "Tuner":
         print('TrainerTuner')
@@ -11,10 +11,10 @@ def get_trainer(typ: str, config, *args, **kwargs):
         return TrainerTuner(config=config, *args, **kwargs)
     elif typ == "Easy":
         print('TrainerEasy')
-        return TrainerEasy(config=config, *args, **kwargs)
+        return TrainerBinary(config=config, *args, **kwargs)
     elif typ == "SeveralOutput":
         print('TrainerEasySeveralOutputs')
-        return TrainerEasySeveralOutputs(config=config, *args, **kwargs)
+        return TrainerMulticlass(config=config, *args, **kwargs)
 
     value_error("Trainer", typ)
 
@@ -72,7 +72,7 @@ def get_data_loader(typ: str, config, *args, **kwargs):
     value_error("Data Loader", typ)
 
 
-def get_whole_analog_of_data_loader(original_database):    # maybe out of date
+def get_whole_analog_of_data_loader(original_database):  # maybe out of date
     analog = ""
     if original_database == 'normal':
         analog = 'whole'
@@ -129,7 +129,7 @@ def get_scaler(typ: str, config, *args, **kwargs):
         return NormalizerScaler(config=config, *args, **kwargs)
     elif typ == 'svn':
         return StandardScalerTransposed(config=config, *args, **kwargs)
-    
+
     value_error("scaler", typ)
 
 
@@ -204,14 +204,26 @@ def get_dataset(typ: str, config, data_storage):
         value_error(modul="dataset", typ=typ)
 
 
-def get_shuffle(typ: str, config, data_storage, raw_path: str, dict_names: list, set_seed: bool = True):
+def get_shuffle(typ: str, config, data_storage, raw_path: str, dict_names: list, set_seed: bool = True,
+                small: bool = False):
     from data_utils.shuffle import TFRShuffle, GeneratorShuffle
+    from data_utils.small_shuffle import SmallShuffle
     if typ == "tfr":
-        return TFRShuffle(config=config, data_storage=data_storage, raw_path=raw_path, dict_names=dict_names,
-                          dataset_typ=typ, set_seed=set_seed)
+        sh_class = TFRShuffle(config=config, data_storage=data_storage, raw_path=raw_path, dict_names=dict_names,
+                              dataset_typ=typ, set_seed=set_seed)
+        if small:
+            dataset = get_dataset(typ=typ, config=config, data_storage=data_storage)
+            return SmallShuffle(config=config, shuffle_class=sh_class, dataset=dataset, set_seed=set_seed)
+        else:
+            return sh_class
     elif typ == "generator":
-        return GeneratorShuffle(config=config, data_storage=data_storage, raw_path=raw_path, dict_names=dict_names,
-                                dataset_typ=typ, set_seed=set_seed)
+        sh_class = GeneratorShuffle(config=config, data_storage=data_storage, raw_path=raw_path, dict_names=dict_names,
+                                    dataset_typ=typ, set_seed=set_seed)
+        if small:
+            dataset = get_dataset(typ=typ, config=config, data_storage=data_storage)
+            return SmallShuffle(config=config, shuffle_class=sh_class, dataset=dataset, set_seed=set_seed)
+        else:
+            return sh_class
     else:
         value_error(modul="shuffle", typ=typ)
 

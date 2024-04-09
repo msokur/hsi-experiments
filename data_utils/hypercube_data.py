@@ -3,10 +3,6 @@ from typing import Tuple
 import numpy as np
 
 
-from scipy.signal import savgol_filter
-from sklearn import preprocessing
-
-
 # Example:Plot image
 # from hypercube_data import cube
 # im = cube(
@@ -66,6 +62,7 @@ class Cube_Read(object):
         return data, x
 
     def cube_SG_learn(self):
+        from scipy.signal import savgol_filter
         spectrum_data = self.read_cube()
         pixelXSize = int(np.size(spectrum_data) / 100)
         data = spectrum_data.reshape((pixelXSize, 100))
@@ -73,6 +70,7 @@ class Cube_Read(object):
         return data_SG
 
     def cube_SNV_learn(self):
+        from sklearn import preprocessing
         spectrum_data = self.cube_SG_learn()
         data_SNV = preprocessing.scale(spectrum_data, axis=1)
         return data_SNV

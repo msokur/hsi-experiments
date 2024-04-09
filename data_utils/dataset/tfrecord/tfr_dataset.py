@@ -49,8 +49,10 @@ class TFRDatasets(Dataset):
     def get_meta_shape(self, paths: List[str]) -> Tuple[int]:
         return get_shape_from_meta(files=paths, dataset_type=TFR_TYP)
 
-    def get_X(self, path: str, shape: Tuple[int]) -> np.ndarray:
-        return get_numpy_X(tfr_path=path, shape=shape)
+    def get_X(self, path: str) -> np.ndarray:
+        if not path.endswith(TFR_FILE_EXTENSION):
+            path += TFR_FILE_EXTENSION
+        return get_numpy_X(tfr_path=path)
 
     def delete_batches(self, batch_path: str):
         pass
