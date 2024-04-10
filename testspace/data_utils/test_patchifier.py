@@ -16,9 +16,9 @@ TESTABLE_INDEX = [SIZE[0] // 2, SIZE[1] // 2]
 def create_training_instances():
     instances = {
         DICT_X: np.random.rand(1, 92),
-        DICT_y: [0],
-        DICT_IDX: [TESTABLE_INDEX],
-        ORIGINAL_NAME: ['Pat0'],
+        DICT_y: np.array([0]),
+        DICT_IDX: np.array([TESTABLE_INDEX]),
+        ORIGINAL_NAME: np.array(['Pat0']),
         BACKGROUND_MASK: None
     }
     return instances
@@ -36,7 +36,7 @@ def test_patchifier_algorithm():
 
 def test_equality_of_items_of_instances():
     for key in [DICT_y, DICT_IDX, ORIGINAL_NAME]:
-        assert _3D_training_instances[key][0] == training_instances[key][0]
+        assert np.array_equal(_3D_training_instances[key][0], training_instances[key][0])
 
 
 def test_length_of_instances():
