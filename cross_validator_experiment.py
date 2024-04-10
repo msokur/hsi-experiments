@@ -30,7 +30,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
 
         self.set_configs()
         self.set_preprocessor_paths()
-        self.generate_data()
+        self.preprocess()
 
         super().__init__(self.config, *args, **kwargs)
 
@@ -83,7 +83,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
         self.config.CONFIG_PATHS['SHUFFLED_PATH'] = os.path.join(self.config.CONFIG_PATHS['RAW_NPZ_PATH'], 'shuffled')
         self.config.CONFIG_PATHS['BATCHED_PATH'] = os.path.join(self.config.CONFIG_PATHS['RAW_NPZ_PATH'], 'batch_sized')
 
-    def generate_data(self):
+    def preprocess(self):
         preprocessor = Preprocessor(self.config)
         preprocessor.pipeline()
 

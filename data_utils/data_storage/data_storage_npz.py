@@ -37,7 +37,7 @@ class DataStorageNPZ(DataStorage):
         np.savez(file=os.path.join(save_path, group_name), **datas)
 
     def save_data(self, save_path: str, data_name: str, data: np.ndarray) -> None:
-        npz_data = np.load(file=save_path)
+        npz_data = np.load(file=save_path, allow_pickle=True)
         datas = {k: v for k, v in npz_data.items()}
         datas[data_name] = data
         main_path, name = os.path.split(p=save_path)
