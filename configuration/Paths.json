@@ -152,7 +152,7 @@
   },
     "COLON": {
     "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
-      "RAW_NPZ_PATH": ["experiment_with_sample_weights"],
+      "RAW_NPZ_PATH": ["samples_standard_with_background_extraction"],
       "RAW_SOURCE_PATH": [""]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
