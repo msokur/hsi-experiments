@@ -690,7 +690,7 @@
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".dat",
 		"3D": true,
-		"3D_SIZE": [5, 5],
+		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,
 		"LAST_NM": 100,
 		"WAVE_AREA": 100,
