@@ -3,8 +3,8 @@ import os
 
 from glob import glob
 
-from .visualization_base import VisualizationBase
-from ..data_storage import DataStorage
+from data_utils.visualization.visualization_base import VisualizationBase
+from data_utils.data_storage import DataStorage
 
 from configuration.keys import PathKeys as PK
 

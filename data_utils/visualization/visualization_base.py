@@ -102,12 +102,3 @@ class VisualizationBase:
         new_image[new_image > 255.0] = 255.0
 
         return new_image.astype(int)
-
-
-if __name__ == "__main__":
-    from data_utils.data_storage import DataStorageNPZ
-    import configuration.get_config as config_
-
-    ds = DataStorageNPZ()
-
-    visu = VisualizationBase(config=config_, data_storage=ds)

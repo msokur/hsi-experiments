@@ -6,8 +6,8 @@ from tqdm import tqdm
 from glob import glob
 from tensorflow import keras
 
-from .visualization_base import VisualizationBase
-from ..data_storage import DataStorage
+from data_utils.visualization.visualization_base import VisualizationBase
+from data_utils.data_storage import DataStorage
 from models.model_base import ModelBase
 
 from configuration.keys import (
@@ -29,7 +29,7 @@ class VisualizationFromCSV(VisualizationBase):
     def __init__(self, config, data_storage: DataStorage):
         super().__init__(config, data_storage)
 
-    def create_and_save_error_maps(self, folder_name: VISUALIZATION_FOLDER):
+    def create_and_save_error_maps(self, folder_name=VISUALIZATION_FOLDER):
         csv_path = self._get_csv_path(csv_folder=str(os.path.join(self.config.CONFIG_PATHS[PK.LOGS_FOLDER][0],
                                                                   self.config.CONFIG_CV[CVK.NAME])))
         csv_data = pd.read_csv(csv_path, delimiter=",", header=None,
@@ -112,3 +112,13 @@ class VisualizationFromCSV(VisualizationBase):
 
         return self._get_mask(shape=shape, indexes=indexes, labels=y_pred_1d)
 
+
+if __name__ == "__main__":
+    from data_utils.data_storage import DataStorageNPZ
+    import configuration.get_config as config_
+
+    ds = DataStorageNPZ()
+
+    visu = VisualizationFromCSV(config=config_, data_storage=ds)
+
+    visu.create_and_save_error_maps()
