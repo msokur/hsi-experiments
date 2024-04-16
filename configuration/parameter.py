@@ -69,3 +69,4 @@ MAX_SIZE_PER_SPEC = 4.0                 # maximal size in GB for a spectrum to p
 
 # --- prediction to image
 PRED_TO_IMG_TYP = "archive"
+VISUALIZATION_FOLDER = "visualization"
