@@ -21,14 +21,15 @@ class VisualizationFromData(VisualizationBase):
         super().__init__(config, data_storage)
 
     def create_and_save_error_maps(self, save_path: str, threshold, y_true: np.ndarray, y_pred: np.ndarray,
-                                   patient_name: str):
+                                   original_names: np.ndarray, patient_name: str):
         if len(y_pred.shape) > 1:
             y_pred = y_pred.reshape(-1)
 
         save_folder = os.path.join(save_path, f"{VISUALIZATION_FOLDER}_by_threshold_{threshold}")
         self._check_folder(path=save_folder)
 
-        for y_true_, y_pred_, cube_idx, name in self._get_data(patient_name=patient_name, y_true=y_true, y_pred=y_pred):
+        for y_true_, y_pred_, cube_idx, name in self._get_data(patient_name=patient_name, y_true=y_true, y_pred=y_pred,
+                                                               original_names=original_names):
             rgb_cube = self._get_rgb_cube(name=name)
             true_mask = self._get_mask(shape=rgb_cube.shape[:2],
                                        indexes=cube_idx,
@@ -45,7 +46,7 @@ class VisualizationFromData(VisualizationBase):
                              name=name,
                              save_folder=save_folder)
 
-    def _get_data(self, patient_name: str, y_true: np.ndarray, y_pred: np.ndarray):
+    def _get_data(self, patient_name: str, y_true: np.ndarray, y_pred: np.ndarray, original_names: np.ndarray):
         data_path = glob(os.path.join(self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
                                       patient_name + self.data_storage.get_extension()))[0]
         data = self.data_storage.get_datas(data_path=data_path)
@@ -57,10 +58,10 @@ class VisualizationFromData(VisualizationBase):
         self._check_values(values=y_true, mask=label_mask, name=patient_name)
         self._check_values(values=y_pred, mask=label_mask, name=patient_name)
 
-        if ORIGINAL_NAME in data:
-            names = np.unique(data[ORIGINAL_NAME])
+        if original_names is not None:
+            names = np.unique(original_names)
             for name in names:
-                name_mask = data[ORIGINAL_NAME][label_mask] == name
+                name_mask = original_names == name
                 mask = np.logical_and(label_mask, data[ORIGINAL_NAME] == name)
                 yield y_true[name_mask], y_pred[name_mask], cube_idx[mask], name
         else:
