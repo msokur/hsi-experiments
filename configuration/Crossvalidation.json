@@ -15,7 +15,7 @@
     "TYPE": "normal",
     "NAME": "2024-02-21_HNO_2_9x9_snv_no-smooth_paper-model",
     "GET_CHECKPOINT_FROM_EARLYSTOPPING": true,
-    "CSV_FILENAME": "2024-02-21_HNO_2_9x9_snv_no-smooth_paper-model_stats_26.02.2024-09_07_59_win.csv"
+    "CSV_FILENAME": null
   },
   "CV_ESO_NORMAL": {
     "TYPE": "normal",
