@@ -1,0 +1,31 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=16
+
+#SBATCH --job-name=r_cv
+
+#SBATCH --partition=clara
+#SBATCH --time=2-00:00:00
+#SBATCH --mem=64G
+##SBATCH --gres=gpu:v100:2
+#SBATCH --gres=gpu:rtx2080ti:2
+
+#SBATCH --output=output/CV_VISU_HNO_11x11%j.log
+
+module load cuDNN/8.2.2.26-CUDA-11.4.1
+module load Anaconda3/3023.09-0
+
+## enter the name from your env
+CONDA_ENV="hsi_env"
+
+## source your .bashrc to load conda
+source ~/.bashrc
+
+## activate conda env
+conda activate $CONDA_ENV
+
+## run python script
+python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/cross_validation.py
+
+## deactivate conda env
+conda deactivate
