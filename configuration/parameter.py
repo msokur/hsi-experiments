@@ -25,7 +25,7 @@ DICT_X = "X"                            # default dict name for spectrum
 DICT_y = "y"                            # default dict name for classifications
 DICT_IDX = "indexes_in_datacube"        # default dict name for original indexes in hyper cube
 DICT_WEIGHT = "weights"                 # default dict name for weights
-ORIGINAL_NAME = "original_name"                   # original file name, when mor files in one data storage
+ORIGINAL_NAME = "original_name"         # original file name, when mor files in one data storage
 BACKGROUND_MASK = 'background_mask'
 
 # --- Scaler

@@ -62,7 +62,12 @@ class VisualizationFromData(VisualizationBase):
             names = np.unique(original_names)
             for name in names:
                 name_mask = original_names == name
-                mask = np.logical_and(label_mask, data[ORIGINAL_NAME] == name)
+                if ORIGINAL_NAME in data:
+                    mask = np.logical_and(label_mask, data[ORIGINAL_NAME] == name)
+                elif "org_name" in data:
+                    mask = np.logical_and(label_mask, data["org_name"] == name)
+                else:
+                    raise ValueError("Check name for original name in preprocessed data.")
                 yield y_true[name_mask], y_pred[name_mask], cube_idx[mask], name
         else:
             yield y_true, y_pred, cube_idx[label_mask], patient_name

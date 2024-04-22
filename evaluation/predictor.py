@@ -108,6 +108,10 @@ class Predictor:
         if ORIGINAL_NAME in data:
             names = data[ORIGINAL_NAME][...][indexes]
 
+        # TODO can be deleted in future, is for old datasets
+        if "org_name" in data:
+            names = data["org_name"][...][indexes]
+
         return predictions, gt, size, names
 
     def edit_model_path_if_local(self, model_path):
