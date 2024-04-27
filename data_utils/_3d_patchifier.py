@@ -6,6 +6,16 @@ from configuration.parameter import (
     DICT_X, DICT_IDX
 )
 
+# There are 2 approaches for patchifing: "Standard" and "Onflow".
+# Standard first creates patches for the whole image using image.extract_patches_2d() function.
+# Of course, it's very memory consuming, especially for patch sizes 7+,
+# because (640, 480, 7, 7, 92) barely fits into memory.
+# That's why exists "onflow": firstly 1D spectra are extracted.
+# Then we iterate over 1D samples, look for its neighbours and construct 3D patch from neighbours
+# This approach gives opportunity to check higher patch sizes, but it is slower than Standard for smaller patch sizes
+# If you want to read more:
+# https://git.iccas.de/MaktabiM/hsi-experiments/-/wikis/Research-conclusions/Comparing-standard-and-on-flow-patchifier
+
 
 class Patchifier:
     def __init__(self, config):
@@ -34,7 +44,7 @@ class Patchifier:
                 print(f'Standard 3D  patchifier will be used. Needed amount of Gb is {needed_gb}')
         return use_standard_3D_patchifier, use_onflow_3D_patchifier
 
-    def get_3D_patches_from_spectrum(self, spectrum: np.ndarray):
+    def get_3D_patches_standard(self, spectrum: np.ndarray):
         size = self.config.CONFIG_DATALOADER[DLK.D3_SIZE]
         # Better not to use non even sizes
         pad = [int((s - 1) / 2) for s in size]
@@ -56,18 +66,14 @@ class Patchifier:
         train_indexes = training_instances[DICT_IDX]
 
         extended_boolean_masks = self.extend_masks(boolean_masks)
-        extended_instances = concatenate_function(spectrum,  extended_boolean_masks, background_mask)
+        extended_instances = concatenate_function(spectrum, extended_boolean_masks, background_mask)
         extended_spectrum = extended_instances['X']
         extended_indexes_in_datacube = extended_instances['indexes_in_datacube']
-        size = self.config.CONFIG_DATALOADER[DLK.D3_SIZE]
 
-        training_instances[DICT_X] = np.fromiter(self.patch_generator(extended_indexes_in_datacube,
-                                                                      train_indexes,
-                                                                      extended_spectrum,
-                                                                      spectrum), 
-                                                 dtype=object,
-                                                 #dtype=np.dtype((float, size[0], size[1], spectrum.shape[-1])), 
-                                                 count=-1)
+        training_instances[DICT_X] = self.patch_generator(extended_indexes_in_datacube,
+                                                          train_indexes,
+                                                          extended_spectrum,
+                                                          spectrum)
 
         return training_instances
 
@@ -78,7 +84,9 @@ class Patchifier:
 
         sizes = self.config.CONFIG_DATALOADER[DLK.D3_SIZE]
         lookup = sizes[0] // 2
-        for coordinates in train_indexes:
+
+        result = np.zeros([train_indexes.shape[0], sizes[0], sizes[1], spectrum.shape[-1]])
+        for index, coordinates in enumerate(train_indexes):
             x_condition = get_condition(0)
             y_condition = get_condition(1)
 
@@ -89,13 +97,14 @@ class Patchifier:
 
             patch = np.zeros(sizes + [spectrum.shape[-1]])
             patch[tuple(indexes.T)] = pixels
-            yield patch
+            result[index] = patch
+
+        return result
 
     def extend_masks(self, boolean_masks):
         import cv2
         output_boolean_masks = []
         for index, boolean_mask in enumerate(boolean_masks):
-
             margin = self.config.CONFIG_DATALOADER[DLK.D3_SIZE]
             kernel = np.ones((margin[0], margin[1]), np.uint8)
 

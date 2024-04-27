@@ -71,7 +71,7 @@ class DataLoader:
         spectrum, boolean_masks, background_mask = self.transformations_pipeline(spectrum, mask, path)
 
         if use_standard_3D_patchifier:
-            spectrum = patchifier.get_3D_patches_from_spectrum(spectrum)
+            spectrum = patchifier.get_3D_patches_standard(spectrum)
 
         training_instances = self.concatenate_train_instances(spectrum, boolean_masks, background_mask)
 

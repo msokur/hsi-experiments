@@ -30,7 +30,7 @@ class TrainerBinary(Trainer):
         '''-------DATASET---------'''
 
         train_dataset, valid_dataset, class_weights = self.get_datasets(
-            for_tuning=self.config.CONFIG_TRAINER[TK.SMALLER_DATASET])
+            for_tuning=self.config.CONFIG_TRAINER[TK.USE_SMALLER_DATASET])
 
         '''-------TRAINING---------'''
 
