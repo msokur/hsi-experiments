@@ -181,10 +181,13 @@ class EvaluationBase(Metrics):
                             append_value(metrics_all, metrics_)
 
                             if save_curves:
+                                roc_folder = os.path.join(results_folder, f"roc_by_threshold_{threshold}")
+                                if not os.path.exists(results_folder):
+                                    os.mkdir(roc_folder)
                                 self.save_roc_curves(gt,
                                                      predictions_raw,
                                                      f'Image_{name}',
-                                                     results_folder)
+                                                     roc_folder)
                                 self.visualization.create_and_save_error_maps(save_path=results_folder,
                                                                               threshold=threshold,
                                                                               y_true=gt,
