@@ -114,11 +114,12 @@ class ChoiceNames:
 
         log_name = os.path.split(self.log_dir)[-1]
         log_index = log_name.split("step_")[1]  # can be problems
-
+        
         restore_log_paths = glob(os.path.join(self.CONFIG_CV[CVK.RESTORE_VALID_PATIENTS_FOLDER], "*", ""))
         restore_log_path = restore_log_paths[
-            np.flatnonzero(np.core.defchararray.find(restore_log_paths, "step_" + str(log_index)) != -1)[0]]
+            np.flatnonzero(np.core.defchararray.find(restore_log_paths, "3d_" + str(log_index)) != -1)[0]]
 
         valid_except_indexes = pickle.load(open(os.path.join(restore_log_path, FILE_WITH_VALID_NAME), "rb"))
+        valid_except_indexes = [v[:-1] if v[-1]=='_' else v for v in valid_except_indexes]
         print(f"We restore {valid_except_indexes} from {restore_log_path} ")
         return valid_except_indexes

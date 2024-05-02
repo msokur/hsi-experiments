@@ -1,0 +1,10 @@
+loader_section = "COLON"   #DataLoader.json
+system_section_cluster = "Cluster_Mariia"   #Paths.json
+system_section_local = "Win_Mariia"    #Paths.json
+database_section = "COLON_SERVER"    #Paths.json
+prepro_section = "COLON"   #Preprocessor.json
+cv_section = "CV_COLON"
+trainer_section = "INCEPTION_BINARY"
+distro_section = "Default"
+aug_section = "Default"
+tg_section = "Mariia"

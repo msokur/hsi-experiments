@@ -16,9 +16,9 @@
   },
   "Cluster_Mariia": {
     "MODE": "WITH_GPU",
-    "DATABASE_ROOT_FOLDER": "/work/users/mi186veva/",
-    "LOGS_FOLDER": ["/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/logs"],
-    "RESULTS_FOLDER": "/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/results"
+    "DATABASE_ROOT_FOLDER": "/work/mi186veva-MySpace/",
+    "LOGS_FOLDER": ["/work/mi186veva-logs/"],
+    "RESULTS_FOLDER": "/work/mi186veva-results/"
   },
   "Win_Mariia": {
     "MODE": "WITHOUT_GPU",
@@ -162,7 +162,7 @@
     }, 
 "COLON_SERVER": {
     "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
-      "RAW_NPZ_PATH": ["experiment"],
+      "RAW_NPZ_PATH": ["representative_dataset"],
       "RAW_SOURCE_PATH": ["data_dat"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {

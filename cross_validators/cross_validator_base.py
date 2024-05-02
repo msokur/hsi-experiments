@@ -43,8 +43,8 @@ class CrossValidatorBase:
         if execution_flags[CVK.EF_EVALUATION]:
             self.evaluation(**kwargs)
 
-        self.config.telegram.send_tg_message(f'Operations in cross_validation.py for {self.config.CONFIG_CV[CVK.NAME]} '
-                                             f'are successfully completed!')
+        #self.config.telegram.send_tg_message(f'Operations in cross_validation.py for {self.config.CONFIG_CV[CVK.NAME]} '
+        #                                     f'are successfully completed!')
 
     def evaluation(self, **kwargs):
         training_csv_path = self.get_csv(os.path.join(self.config.CONFIG_PATHS[PK.LOGS_FOLDER][0],

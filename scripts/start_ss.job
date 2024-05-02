@@ -2,14 +2,14 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=16
 #SBATCH --job-name=db_preproc
-#SBATCH --partition=clara-job
+#SBATCH --partition=clara
 #SBATCH --time=40:00:00
-#SBATCH --mem=2G
+#SBATCH --mem=16G
 ##SBATCH --gres=gpu:v100:2
-##SBATCH --gres=gpu:rtx2080ti:1
-#SBATCH --output=_starter_%j.log
+#SBATCH --gres=gpu:rtx2080ti:2
+#SBATCH --output=_check_CV_on_one_combination_%j.log
 
-module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
+#module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
 
 
 #module load Python
@@ -20,14 +20,19 @@ module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
 #module load OpenCV
 #module load scikit-image
 
-module load Python/3.7.4-GCCcore-8.3.0
+#module load Python/3.7.4-GCCcore-8.3.0
 #module load TensorFlow/2.2.0-fosscuda-2019b-Python-3.7.4
-module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4
-module load SciPy-bundle/2019.10-fosscuda-2019b-Python-3.7.4
-module load scikit-learn/0.23.1-fosscuda-2019b-Python-3.7.4
-module load matplotlib/3.1.1-fosscuda-2019b-Python-3.7.4
-module load OpenCV/4.2.0-fosscuda-2019b-Python-3.7.4
-module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
+#module load TensorFlow/2.4.0-fosscuda-2019b-Python-3.7.4
+#module load SciPy-bundle/2019.10-fosscuda-2019b-Python-3.7.4
+#module load scikit-learn/0.23.1-fosscuda-2019b-Python-3.7.4
+#module load matplotlib/3.1.1-fosscuda-2019b-Python-3.7.4
+#module load OpenCV/4.2.0-fosscuda-2019b-Python-3.7.4
+#module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
+
+module load Python
+source /home/sc.uni-leipzig.de/mi186veva/venv/tf/bin/activate
+
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validator_experiment.py --experiment_folder=/work/mi186veva-logs/ExperimentRevival --cv_name=ExperimentRevival_3D3_Ns_ --abbreviation=3D3_Ns_ --config_index=0 --results_folder=/work/mi186veva-results/ExperimentRevival/ExperimentRevival
 
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/starter.py
+#python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/starter.py
