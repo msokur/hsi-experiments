@@ -10,33 +10,44 @@ from data_utils.preprocessor import Preprocessor
 
 class CrossValidatorExperiment(CrossValidatorBase):
     def __init__(self, *args, **kwargs):
-        self.parse_args()
+        try:
+            self.parse_args()
 
-        import configuration.get_config as config  # we need config from scratch every time
-        self.config = config
+            import configuration.get_config as config  # we need config from scratch every time
+            self.config = config
 
-        print(f'Hi from CV! with {self.args.experiment_folder}, {self.args.cv_name} and config_index='
-              f'{self.args.config_index}')
+            print(f'Hi from CV! with {self.args.experiment_folder}, {self.args.cv_name} and config_index='
+                  f'{self.args.config_index}')
 
-        print(self.config.CONFIG_PATHS)
-        print(self.config.CONFIG_CV)
-        self.config.CONFIG_CV["TYPE"] = 'experiment'
-        self.config.CONFIG_CV["NAME"] = self.args.abbreviation
-        self.config.CONFIG_PATHS['RESULTS_FOLDER'] = self.args.results_folder
-        self.config.CONFIG_PATHS['LOGS_FOLDER'] = [self.args.experiment_folder]
+            print(self.config.CONFIG_PATHS)
+            print(self.config.CONFIG_CV)
+            self.config.CONFIG_CV["TYPE"] = 'experiment'
+            self.config.CONFIG_CV["NAME"] = self.args.abbreviation
+            self.config.CONFIG_PATHS['RESULTS_FOLDER'] = self.args.results_folder
+            self.config.CONFIG_PATHS['LOGS_FOLDER'] = [self.args.experiment_folder]
 
-        # TODO, so far could be removed, because folder is already created in  run_experiments.py
-        # self.create_folder_for_results()
+            # TODO, so far could be removed, because folder is already created in  run_experiments.py
+            # self.create_folder_for_results()
 
-        self.set_configs()
-        self.set_preprocessor_paths()
-        self.preprocess()
+            self.set_configs()
+            self.set_preprocessor_paths()
+            self.preprocess()
 
-        super().__init__(self.config, *args, **kwargs)
+            super().__init__(self.config, *args, **kwargs)
 
-        self.pipeline(thresholds=np.round(np.linspace(0.1, 0.5, 5), 4))
+            self.pipeline(thresholds=np.round(np.linspace(0.001, 0.6, 100), 4))
 
-        rmtree(self.config.CONFIG_PATHS['RAW_NPZ_PATH'])
+            rmtree(self.config.CONFIG_PATHS['RAW_NPZ_PATH'])
+
+            self.config.telegram.send_tg_message(f'Experiment step {self.args.cv_name} (index {self.args.config_index}) is successfully completed!')
+
+        except Exception as e:
+            rmtree(self.config.CONFIG_PATHS['RAW_NPZ_PATH'])
+
+            self.config.telegram.send_tg_message(f'ERROR!!!, In experiment step {self.args.cv_name} (index {self.args.config_index}) error {e}')
+
+            raise e
+        
 
     def parse_args(self):
         parser = argparse.ArgumentParser(description='Process some integers.')

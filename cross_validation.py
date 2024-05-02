@@ -69,10 +69,11 @@ if __name__ == '__main__':
         out_of_the_box(configuration)
         # postprocessing_for_one_model(config)
 
-        telegram.send_tg_message('Operations in cross_validation.py are successfully completed!')
+        telegram.send_tg_message(f'Operations in cross_validation.py for {configuration.CONFIG_CV[CVK.NAME]} '
+                                             f'are successfully completed!')
 
     except Exception as e:
 
-        telegram.send_tg_message(f'ERROR!!!, In CV error {e}')
+        telegram.send_tg_message(f'ERROR!!!, In CV {configuration.CONFIG_CV[CVK.NAME]} error {e}')
 
         raise e
