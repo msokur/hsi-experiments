@@ -5,8 +5,8 @@
       "evaluation": true
     },
     "FIRST_SPLIT": 0,
-    "HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID": 1,
-    "CHOOSE_EXCLUDED_VALID": "by_class",
+    "HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID": 3,
+    "CHOOSE_EXCLUDED_VALID": "restore",
     "USE_ALL_LABELS": false,
     "SAVE_CURVES": false,
     "MODE": "DEBUG"
@@ -43,9 +43,8 @@
   },
     "CV_COLON": {
     "TYPE": "normal",
-    "NAME": "experiment_with_sample_weights",
-    "RESTORE_VALID_PATIENTS_FOLDER": "C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\logs\\ExperimentRevival\\3D3_Ns_",
-    "GET_CHECKPOINT_FROM_EARLYSTOPPING": true,
-      "HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1
-    }
+    "NAME": "check_experiment_on_cluster",
+    "RESTORE_VALID_PATIENTS_FOLDER": "/work/mi186veva-logs/ExperimentALLHowManyValidPatExclude/ExperimentALLHowManyValidPatExclude_WF_C3_/",
+    "GET_CHECKPOINT_FROM_EARLYSTOPPING": true
+   }
 }
