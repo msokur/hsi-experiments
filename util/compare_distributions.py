@@ -218,17 +218,27 @@ if __name__ == '__main__':
     from glob import glob
     from data_utils.data_storage import DataStorageNPZ
 
-    dataset_ = get_dataset(typ="tfr", config=config, data_storage=get_data_storage(typ="npz"))
-    dc_config = {
-        "PRINTS": False,
-        "Z_TEST": True,
-        "Z_TEST_P_VALUE": 0.05,
-        "Z_TEST_STD_DELTA": 0.01,
-        "KS_TEST_P_VALUE": 0.05
-    }
-    main_path = r"C:\Users\benny\Desktop\Arbeit\data\data_3d\hno\3x3\svn_T\no_smooth"
-    test_paths_ = glob(os.path.join(main_path, "shuffled_tfr_test_2", "*.tfrecord"))
-    main_paths_ = glob(os.path.join(main_path, "patient_data_npz", "*.npz"))
-    dc = DistributionsChecker(dc_config, paths=[test_paths_[0]], dataset=dataset_,
+    #dataset_ = get_dataset(typ="tfr", config=config, data_storage=get_data_storage(typ="npz"))
+    dataset_ = get_dataset(typ="generator", config=config, data_storage=get_data_storage(typ="npz"))
+    dc_config = config.CONFIG_DISTRIBUTION #{
+    #    "PRINTS": False,
+    #    "Z_TEST": True,
+    #    "Z_TEST_P_VALUE": 0.05,
+    #    "Z_TEST_STD_DELTA": 0.01,
+    #    "KS_TEST_P_VALUE": 0.05
+    #}
+    dc_config["PRINTS"] = True
+    
+    #main_path = r"C:\Users\benny\Desktop\Arbeit\data\data_3d\hno\3x3\svn_T\no_smooth"
+    main_path = config.CONFIG_PATHS["RAW_NPZ_PATH"]
+    
+    
+    #test_paths_ = glob(os.path.join(main_path, "shuffled_tfr_test_2", "*.tfrecord"))
+    test_paths_ = glob(os.path.join(config.CONFIG_PATHS["SHUFFLED_PATH"], "*.npz"))
+    #main_paths_ = glob(os.path.join(main_path, "patient_data_npz", "*.npz"))
+    main_paths_ = glob(os.path.join(main_path, "*.npz"))
+    
+    print(test_paths_[:5])
+    dc = DistributionsChecker(dc_config, paths=test_paths_[:5], dataset=dataset_,
                               base_paths=main_paths_, base_data_storage=DataStorageNPZ())
     print(dc.test_all_archives_in_folder())
