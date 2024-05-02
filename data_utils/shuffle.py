@@ -151,9 +151,9 @@ class Shuffle:
         piles_paths = glob(os.path.join(self.shuffle_saving_path, f"*{PILE_NAME}"))
 
         # load all piles and there sub dictionary's
-        for pp in tqdm(piles_paths):
+        for pile in tqdm(piles_paths):
             data = []
-            with open(pp, "rb") as fr:
+            with open(pile, "rb") as fr:
                 try:
                     while True:
                         data.append(pickle.load(fr))
@@ -171,11 +171,10 @@ class Shuffle:
             random.shuffle(indexes)
             sh_data = {n: a[indexes] for n, a in _data.items()}
 
-            # remove pile
-            os.remove(pp)
+            os.remove(pile)
 
             # save shuffled date and meta information
-            sh_name = f"{SHUFFLE_GROUP_NAME}_{os.path.splitext(os.path.basename(pp))[0]}"
+            sh_name = f"{SHUFFLE_GROUP_NAME}_{os.path.splitext(os.path.basename(pile))[0]}"
             write_meta_info(save_dir=self.shuffle_saving_path, file_name=sh_name,
                             labels=sh_data[self.dict_names[1]], names=sh_data[self.dict_names[2]],
                             names_idx=sh_data[self.dict_names[3]], X_shape=sh_data[self.dict_names[0]].shape,

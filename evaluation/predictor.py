@@ -115,13 +115,13 @@ class Predictor:
         if type(checkpoint) == int:
             return f"cp-{checkpoint:04d}"
         if self.config.CONFIG_CV[CVK.GET_CHECKPOINT_FROM_EARLYSTOPPING]:
-            return self.get_best_checkpoint_from_csv(model_path)
+            return self.get_best_checkpoint_from_folder(model_path)
         if checkpoint is None:
             return f"cp-{self.config.CONFIG_TRAINER['EPOCHS']:04d}"
 
         return checkpoint
 
-    def get_best_checkpoint_from_csv(self, model_path):
+    def get_best_checkpoint_from_folder(self, model_path):
         if model_path is None:
             raise ValueError('Please specify model path!')
 
