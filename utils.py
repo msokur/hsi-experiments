@@ -4,6 +4,7 @@ import glob
 import numpy as np
 import inspect
 import psutil
+import asyncio
 import re
 
 from configuration.keys import TelegramKeys as TGK
@@ -21,7 +22,7 @@ class Telegram:
             try:
                 import telegram_send
                 message = f"{self.tg_config[TGK.USER]}, " + message
-                telegram_send.send(messages=[message], conf=self.tg_config[TGK.FILE])
+                asyncio.run(telegram_send.send(messages=[message], conf=self.tg_config[TGK.FILE]))
             except Exception as e:
                 print("Some problems with telegram! Messages could not be delivered")
                 print(e)
