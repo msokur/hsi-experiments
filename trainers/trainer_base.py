@@ -99,7 +99,7 @@ class Trainer:
             self.batch_path += self.leave_out_names[0]
         else:
             self.batch_path += "batches"
-        if for_tuning:
+        if for_tuning and not self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET]:
             self.batch_path += "_" + TUNE
             ds = DistributionsChecker(paths=root_data_paths, dataset=self.dataset,
                                       local_config=self.config.CONFIG_DISTRIBUTION)

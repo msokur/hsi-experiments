@@ -3,6 +3,7 @@ import os
 import random
 import pickle
 from typing import List, Dict
+import shutil
 
 import numpy as np
 
@@ -15,7 +16,7 @@ from data_utils.data_storage import DataStorage
 from data_utils.dataset import save_tfr_file
 from data_utils.dataset.meta_files import write_meta_info
 
-from configuration.keys import PreprocessorKeys as PPK, PathKeys as PK
+from configuration.keys import PreprocessorKeys as PPK, PathKeys as PK, TrainerKeys as TK
 from configuration.parameter import (
     SHUFFLE_GROUP_NAME, PILE_NAME, MAX_SIZE_PER_PILE
 )
@@ -49,13 +50,52 @@ class Shuffle:
         if self.set_seed:
             random.seed(a=42)
 
-        self.check_piles_number()
-        self.__create_piles(use_piles=use_piles)
-        self.__split_into_piles(use_piles=use_piles)
-        self.__shuffle_piles()
+        if self.config.CONFIG_TRAINER[TK.USE_SMALLER_DATASET] and \
+                self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET]:
+            self.__create_one_shuffled_archive_like_example()
+        else:
+            self.check_piles_number()
+            self.__create_piles(use_piles=use_piles)
+            self.__split_into_piles(use_piles=use_piles)
+            self.__shuffle_piles()
         print("--------Shuffling finished--------")
 
     # ------------------divide all samples into piles_number files------------------
+
+    def __create_one_shuffled_archive_like_example(self):
+        import pandas as pd
+
+        def get_name(string):
+            return string.split(self.config.CONFIG_PATHS[PK.SYS_DELIMITER])[-1].split('.')[0]
+        self.__remove_files(PILE_NAME)
+        self.__remove_files("shuffled")
+
+        example = np.load(self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET])
+        example_name = get_name(self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET])
+        example_root = os.path.dirname(self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET])
+
+        for patient_index, patient_path in tqdm(enumerate(self.data_storage.get_paths(storage_path=self.raw_path))):
+            name = patient_path.split(self.config.CONFIG_PATHS[PK.SYS_DELIMITER])[-1].split('.')[0]
+            condition = example["PatientName"] == name
+            _data = self.data_storage.get_datas(data_path=patient_path)
+
+            example_df = pd.DataFrame(example['indexes_in_datacube'][condition], columns=['x', 'y'])
+            example_df['index'] = example_df.index  # Keep original index to map back
+
+            data_df = pd.DataFrame(_data['indexes_in_datacube'], columns=['x', 'y'])
+            data_df['index'] = data_df.index
+
+            # Merge on coordinates
+            merged_df = pd.merge(example_df, data_df, on=['x', 'y'], suffixes=('_example', '_data'))
+
+            # Update using numpy advanced indexing
+            merged_df_numpy = merged_df.to_numpy()
+            example['X'][condition][merged_df_numpy[:, 2]] = _data['X'][merged_df_numpy[:, -1]]
+
+        np.savez(os.path.join(self.shuffle_saving_path, example_name+'.npz'), **example)
+        shutil.copy(os.path.join(example_root, example_name+'.meta'), self.shuffle_saving_path)
+
+        return
 
     def check_piles_number(self):
         size = 0.0
@@ -79,6 +119,11 @@ class Shuffle:
                           "configuration/parameter.")
             self.piles_number = new_piles_number
 
+    def __remove_files(self, extension):
+        paths = glob(os.path.join(self.shuffle_saving_path, f"*{extension}*"))
+        for p in paths:
+            os.remove(p)
+
     def __create_piles(self, use_piles: List[int]):
         print("----Piles creating started----")
         print(f"Pile number: {self.piles_number}")
@@ -86,9 +131,7 @@ class Shuffle:
             print(f"Create only shuffle piles for the indexes: {use_piles}")
 
         # remove previous piles if they exist
-        piles_paths = glob(os.path.join(self.shuffle_saving_path, f"*{PILE_NAME}*"))
-        for p in piles_paths:
-            os.remove(p)
+        self.__remove_files(PILE_NAME)
 
         # create clear piles
         for i in use_piles:

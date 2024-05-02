@@ -33,7 +33,7 @@
   },
   "COLON":{
     "EXECUTION_FLAGS": {
-      "LOAD_DATA_WITH_DATALOADER": true,
+      "LOAD_DATA_WITH_DATALOADER": false,
       "ADD_SAMPLE_WEIGHTS": false,
       "SCALE": false,
       "SHUFFLE": true
@@ -45,6 +45,7 @@
       ["configuration", "*.py"], ["configuration", "*.json"]],
     "NORMALIZATION_TYPE": "svn",
     "SCALER_FILE": "scaler.scaler",
-    "SCALER_PATH": null
+    "SCALER_PATH": null,
+    "SMALL_REPRESENTATIVE_DATASET": "C:\\Users\\tkachenko\\Desktop\\HSI\\colon\\representative_datasets\\shuffled_example.npz"
     }
 }
