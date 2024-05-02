@@ -13,7 +13,7 @@ import util.experiments_combinations as utils
 
 
 class Experiment:
-    def __init__(self, name, params_for_experiment, background_params=None, replace_combinations_file=False):
+    def __init__(self, name, params_for_experiment, background_params={}, replace_combinations_file=False):
         self.experiment_results_root_folder = None
         self.root_folder = None
 
@@ -53,12 +53,15 @@ class Experiment:
     def generate_combinations(self):
         parameters = self.get_parameters(self.parameters_for_experiment)
         combinations = list(itertools.product(*parameters))
-
-        combinations = utils.SmoothingCombinations(self.parameters_for_experiment,
-                                                   self.combinations_keys,
-                                                   gaussian_params=gaussian_params,
-                                                   median_params=median_params).add_combinations(combinations)
-        combinations = utils.BackgroundCombinations(self.background_parameters).add_combinations(combinations)
+        
+        
+        if 'SMOOTHING_TYPE' in self.parameters_for_experiment:
+            combinations = utils.SmoothingCombinations(self.parameters_for_experiment,
+                                                       self.combinations_keys,
+                                                       gaussian_params=gaussian_params,
+                                                       median_params=median_params).add_combinations(combinations)
+        if self.background_parameters:
+            combinations = utils.BackgroundCombinations(self.background_parameters).add_combinations(combinations)
 
         return combinations
 
@@ -136,18 +139,19 @@ class Experiment:
             short_name = self.combine_short_name(sample_dict)
             print(short_name)
 
-            # print(self.root_folder)
-            # print(self.name + "_" + short_name)
-            # print(short_name)
-            # print(i)
-            # print(self.experiment_results_root_folder)
+            print(self.root_folder)
+            print(self.name + "_" + short_name)
+            print(short_name)
+            print(i)
+            print(self.experiment_results_root_folder)
 
-            # print('-----------------')
-            '''stream = os.popen(
+            
+            stream = os.popen(
                 f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv.sh {self.root_folder} '
-                f'{self.name + "_" + short_name} {short_name} {i} {self.experiment_metrics_root_folder}')
+                f'{self.name + "_" + short_name} {short_name} {i} {self.experiment_results_root_folder} {self.name}')
             output = stream.read()
-            print(output)'''
+            print('print',output)
+            print('--------------------------------------------------------------------------------------------------')
 
     @staticmethod
     def combine_short_name(sample_dict):
@@ -181,32 +185,32 @@ if __name__ == '__main__':
     config_for_experiment = {
         '3D_SIZE': {
             'config_section': 'CONFIG_DATALOADER',
-            'parameters': [[3, 3], [5, 5], [7, 7], [11, 11]]
+            'parameters': [[3, 3]]#, [5, 5], [7, 7], [11, 11]]
         },
         "NORMALIZATION_TYPE": {
             'config_section': 'CONFIG_PREPROCESSOR',
-            'parameters': ["svn", 'l2_norm']
+            'parameters': ["svn"]#, 'l2_norm']
         },
-        "SMOOTHING_TYPE": {
-            'add_None': True,
-            'config_section': 'CONFIG_DATALOADER',
-            'parameters': ['median_filter', 'gaussian_filter']
-        },
-        "SMOOTHING_VALUE": {
-            'config_section': 'CONFIG_DATALOADER',
-            'parameters': median_params + gaussian_params
-        },
-        "BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
-            'config_section': 'CONFIG_DATALOADER',
-            # 'parameters': [True]
-        },
-        "BACKGROUND.BLOOD_THRESHOLD": {
-            'config_section': 'CONFIG_DATALOADER'
-            # 'parameters': [0.1, 0.2, 0.3]
-        },
-        "BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
-            'config_section': 'CONFIG_DATALOADER'
-        }
+        #"SMOOTHING_TYPE": {
+        #    'add_None': True,
+        #    'config_section': 'CONFIG_DATALOADER',
+        #    'parameters': ['median_filter', 'gaussian_filter']
+        #},
+        #"SMOOTHING_VALUE": {
+        #    'config_section': 'CONFIG_DATALOADER',
+        #    'parameters': median_params + gaussian_params
+        #},
+        #"BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
+        #    'config_section': 'CONFIG_DATALOADER',
+        #    # 'parameters': [True]
+        #},
+        #"BACKGROUND.BLOOD_THRESHOLD": {
+        #    'config_section': 'CONFIG_DATALOADER'
+        #    # 'parameters': [0.1, 0.2, 0.3]
+        #},
+        #"BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
+        #    'config_section': 'CONFIG_DATALOADER'
+        #}
 
     }
 
@@ -222,9 +226,9 @@ if __name__ == '__main__':
         }
     }
 
-    experiment = Experiment('ExperimentRevival',
+    experiment = Experiment('ExperimentRevivalRestoreValid',
                             config_for_experiment,
-                            background_params=background_config,
+                            #background_params=background_config,
                             replace_combinations_file=True)
     experiment.run_experiment()
     # print(exp.get_results())

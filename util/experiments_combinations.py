@@ -36,19 +36,21 @@ class SmoothingCombinations(Combinations):
         return combinations
 
     def filter_combinations(self, combinations):
-        smoothing_type_index = self.combinations_keys.index('SMOOTHING_TYPE')
-        smoothing_value_index = self.combinations_keys.index('SMOOTHING_VALUE')
+        if 'SMOOTHING_TYPE' in self.parameters_for_experiment:
+            smoothing_type_index = self.combinations_keys.index('SMOOTHING_TYPE')
+            smoothing_value_index = self.combinations_keys.index('SMOOTHING_VALUE')
 
-        filtered_combinations = []
-        for combination in combinations:
-            if combination[smoothing_type_index] == 'gaussian_filter' and \
-                    combination[smoothing_value_index] in self.gaussian_params:
-                filtered_combinations.append(combination)
-            if combination[smoothing_type_index] == 'median_filter' and \
-                    combination[smoothing_value_index] in self.median_params:
-                filtered_combinations.append(combination)
+            filtered_combinations = []
+            for combination in combinations:
+                if combination[smoothing_type_index] == 'gaussian_filter' and \
+                        combination[smoothing_value_index] in self.gaussian_params:
+                    filtered_combinations.append(combination)
+                if combination[smoothing_type_index] == 'median_filter' and \
+                        combination[smoothing_value_index] in self.median_params:
+                    filtered_combinations.append(combination)
 
-        return filtered_combinations
+            return filtered_combinations
+        return combinations
 
 
 class BackgroundCombinations(Combinations):
@@ -120,29 +122,30 @@ class BackgroundCombinations(Combinations):
 
     @staticmethod
     def validate_background_params(background_params):
-        # There are only 2 legit values for 'BACKGROUND.WITH_BACKGROUND_EXTRACTION': [True] and [True, False]
-        if 'BACKGROUND.WITH_BACKGROUND_EXTRACTION' in background_params:
-            with_or_without_background = background_params['BACKGROUND.WITH_BACKGROUND_EXTRACTION']['parameters']
-            if len(with_or_without_background) == 0:
-                raise ValueError(f"Error! Empty list were passed for BACKGROUND.WITH_BACKGROUND_EXTRACTION: "
-                                 f"{with_or_without_background}")
-            if len(with_or_without_background) == 1 and not with_or_without_background[0]:
-                raise ValueError(
-                    f"Error! False is passed for WITH_BACKGROUND_EXTRACTION: {with_or_without_background}, "
-                    f"which means that there is no need in experiments. Just set it in configs.")
-            if len(with_or_without_background) > 2:
-                raise ValueError(f"Error! 'BACKGROUND.WITH_BACKGROUND_EXTRACTION' should be either [False, True] or "
-                                 f"[True], but more values were given: {with_or_without_background}")
-            if np.array(with_or_without_background).dtype != 'bool':
-                raise ValueError(
-                    f"Error! Not boolean values are specified for 'BACKGROUND.WITH_BACKGROUND_EXTRACTION': "
-                    f"{with_or_without_background}")
-            if len(with_or_without_background) == 2 and len(np.unique(with_or_without_background)) != 2:
-                raise ValueError(f"Error! Duplicate values are passed for BACKGROUND.WITH_BACKGROUND_EXTRACTION: "
-                                 f"{with_or_without_background}")
+        if background_params:
+            # There are only 2 legit values for 'BACKGROUND.WITH_BACKGROUND_EXTRACTION': [True] and [True, False]
+            if 'BACKGROUND.WITH_BACKGROUND_EXTRACTION' in background_params:
+                with_or_without_background = background_params['BACKGROUND.WITH_BACKGROUND_EXTRACTION']['parameters']
+                if len(with_or_without_background) == 0:
+                    raise ValueError(f"Error! Empty list were passed for BACKGROUND.WITH_BACKGROUND_EXTRACTION: "
+                                     f"{with_or_without_background}")
+                if len(with_or_without_background) == 1 and not with_or_without_background[0]:
+                    raise ValueError(
+                        f"Error! False is passed for WITH_BACKGROUND_EXTRACTION: {with_or_without_background}, "
+                        f"which means that there is no need in experiments. Just set it in configs.")
+                if len(with_or_without_background) > 2:
+                    raise ValueError(f"Error! 'BACKGROUND.WITH_BACKGROUND_EXTRACTION' should be either [False, True] or "
+                                     f"[True], but more values were given: {with_or_without_background}")
+                if np.array(with_or_without_background).dtype != 'bool':
+                    raise ValueError(
+                        f"Error! Not boolean values are specified for 'BACKGROUND.WITH_BACKGROUND_EXTRACTION': "
+                        f"{with_or_without_background}")
+                if len(with_or_without_background) == 2 and len(np.unique(with_or_without_background)) != 2:
+                    raise ValueError(f"Error! Duplicate values are passed for BACKGROUND.WITH_BACKGROUND_EXTRACTION: "
+                                     f"{with_or_without_background}")
 
-        else:
-            raise ("Error! 'BACKGROUND.LIGHT_REFLECTION_THRESHOLD' and/or 'BACKGROUND.BLOOD_THRESHOLD' are specified, "
-                   "but 'BACKGROUND.WITH_BACKGROUND_EXTRACTION' is not. Experiments would be redundant.")
+            else:
+                raise ValueError("Error! 'BACKGROUND.LIGHT_REFLECTION_THRESHOLD' and/or 'BACKGROUND.BLOOD_THRESHOLD' are specified, "
+                       "but 'BACKGROUND.WITH_BACKGROUND_EXTRACTION' is not. Experiments would be redundant.")
 
         return background_params
