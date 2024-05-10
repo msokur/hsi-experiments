@@ -19,7 +19,7 @@
     "EXECUTION_FLAGS": {
       "LOAD_DATA_WITH_DATALOADER": true,
       "ADD_SAMPLE_WEIGHTS": true,
-      "SCALE": true,
+      "SCALE": false,
       "SHUFFLE": true
     },
     "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
@@ -33,9 +33,9 @@
   },
   "COLON":{
     "EXECUTION_FLAGS": {
-      "LOAD_DATA_WITH_DATALOADER": false,
-      "ADD_SAMPLE_WEIGHTS": false,
-      "SCALE": false,
+      "LOAD_DATA_WITH_DATALOADER": true,
+      "ADD_SAMPLE_WEIGHTS": true,
+      "SCALE": true,
       "SHUFFLE": true
     },
     "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
@@ -46,6 +46,6 @@
     "NORMALIZATION_TYPE": "svn",
     "SCALER_FILE": "scaler.scaler",
     "SCALER_PATH": null,
-    "SMALL_REPRESENTATIVE_DATASET": "C:\\Users\\tkachenko\\Desktop\\HSI\\colon\\representative_datasets\\shuffled_example.npz"
+      "SMALL_REPRESENTATIVE_DATASET": "/work/mi186veva-MySpace/representable_archives/shuffled_example.npz"
     }
 }

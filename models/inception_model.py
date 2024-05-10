@@ -30,6 +30,7 @@ class InceptionModelBase(ModelBase):
         return self.__inception_base(input_=input_, net=net)
 
     def __inception_block(self, input_, factor=16, with_batch_norm=False):
+        #input_ = keras.ops.expand_dims(input_, axis=-1)
         input_ = tf.expand_dims(input_, axis=-1)
 
         branches = []

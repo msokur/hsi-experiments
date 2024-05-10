@@ -162,7 +162,7 @@
     }, 
 "COLON_SERVER": {
     "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
-      "RAW_NPZ_PATH": ["representative_dataset"],
+      "RAW_NPZ_PATH": ["Experiment_3d_3_5", "run"],
       "RAW_SOURCE_PATH": ["data_dat"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {

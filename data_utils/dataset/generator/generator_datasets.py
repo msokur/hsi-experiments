@@ -67,7 +67,7 @@ class GeneratorDatasets(Dataset):
 
     def __get_dataset__(self, batch_paths: List[str], options: tf.data.Options):
         if self.config.CONFIG_CV[CVK.MODE] == "DEBUG":
-            batch_paths = batch_paths[::100]
+            batch_paths = batch_paths[::20]
             print('LeN', len(batch_paths))
 
         dataset = GeneratorDataset(data_storage=self.data_storage, batch_paths=batch_paths, X_name=self.dict_names[0],

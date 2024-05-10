@@ -9,7 +9,7 @@ sbatch <<EOT
 #SBATCH --mem=16G
 ##SBATCH --gres=gpu:v100:2
 #SBATCH --gres=gpu:rtx2080ti:2
-#SBATCH --output=$6/_CV_$3_%j.log
+#SBATCH --output=$6/_ExperimentStep_$3_%j.log
 
 #module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
 
@@ -21,8 +21,13 @@ sbatch <<EOT
 #module load OpenCV/4.2.0-fosscuda-2019b-Python-3.7.4
 #module load scikit-image/0.16.2-fosscuda-2019b-Python-3.7.4
 
-module load Python
-source /home/sc.uni-leipzig.de/mi186veva/venv/tf/bin/activate
+#module load Python
+#module load cuDNN
+#source /home/sc.uni-leipzig.de/mi186veva/venv/tf/bin/activate
+
+module load Python/3.9.5-GCCcore-10.3.0
+module load cuDNN/8.2.2.26-CUDA-11.4.1
+source /home/sc.uni-leipzig.de/mi186veva/venv/old_versions/bin/activate
 
 #python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/cross_validation_experiment.py --experiment_folder=$1 --cv_name=$2 --abbreviation=$3 --config_index=$4 --results_folder=$5
 python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validator_experiment.py --experiment_folder=$1 --cv_name=$2 --abbreviation=$3 --config_index=$4 --results_folder=$5

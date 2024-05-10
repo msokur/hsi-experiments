@@ -9,7 +9,7 @@
     "CHOOSE_EXCLUDED_VALID": "restore",
     "USE_ALL_LABELS": false,
     "SAVE_CURVES": false,
-    "MODE": "DEBUG"
+    "MODE": "RUN"
   },
   "CV_HNO_NORMAL": {
     "TYPE": "normal",
@@ -43,7 +43,7 @@
   },
     "CV_COLON": {
     "TYPE": "normal",
-    "NAME": "check_experiment_on_cluster",
+    "NAME": "experiment",
     "RESTORE_VALID_PATIENTS_FOLDER": "/work/mi186veva-logs/ExperimentALLHowManyValidPatExclude/ExperimentALLHowManyValidPatExclude_WF_C3_/",
     "GET_CHECKPOINT_FROM_EARLYSTOPPING": true
    }

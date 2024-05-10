@@ -131,26 +131,26 @@ class Experiment:
     def run_experiment(self):
         for i, combination in enumerate(self.combinations):
             # print('-----------------')
-            print(combination)
+            print('combination', combination)
             #print(self.combinations_keys)
             sample_dict = {name: c for name, c in zip(self.combinations_keys, combination)}
-            print(sample_dict)
+            print('sample_dict', sample_dict)
 
             short_name = self.combine_short_name(sample_dict)
-            print(short_name)
+            print('short_name', short_name)
 
-            print(self.root_folder)
-            print(self.name + "_" + short_name)
-            print(short_name)
-            print(i)
-            print(self.experiment_results_root_folder)
+            print('self.root_folder', self.root_folder)
+            print('self.name + "_" + short_name', self.name + "_" + short_name)
+            print('short_name', short_name)
+            print('Index', i)
+            print('self.experiment_results_root_folder', self.experiment_results_root_folder)
 
             
             stream = os.popen(
                 f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv.sh {self.root_folder} '
                 f'{self.name + "_" + short_name} {short_name} {i} {self.experiment_results_root_folder} {self.name}')
             output = stream.read()
-            print('print',output)
+            print('Prompt output:',output)
             print('--------------------------------------------------------------------------------------------------')
 
     @staticmethod
@@ -185,32 +185,34 @@ if __name__ == '__main__':
     config_for_experiment = {
         '3D_SIZE': {
             'config_section': 'CONFIG_DATALOADER',
-            'parameters': [[3, 3]]#, [5, 5], [7, 7], [11, 11]]
+            'parameters': [[3, 3], [5, 5]]#, [7, 7], [11, 11]]
         },
         "NORMALIZATION_TYPE": {
-            'config_section': 'CONFIG_PREPROCESSOR',
-            'parameters': ["svn"]#, 'l2_norm']
+           'config_section': 'CONFIG_PREPROCESSOR',
+            'parameters': ["svn", 'l2_norm']
         },
-        #"SMOOTHING_TYPE": {
-        #    'add_None': True,
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    'parameters': ['median_filter', 'gaussian_filter']
-        #},
-        #"SMOOTHING_VALUE": {
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    'parameters': median_params + gaussian_params
-        #},
-        #"BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    # 'parameters': [True]
-        #},
-        #"BACKGROUND.BLOOD_THRESHOLD": {
-        #    'config_section': 'CONFIG_DATALOADER'
-        #    # 'parameters': [0.1, 0.2, 0.3]
-        #},
-        #"BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
-        #    'config_section': 'CONFIG_DATALOADER'
-        #}
+        "WITH_SAMPLE_WEIGHTS": {
+            'config_section': 'CONFIG_TRAINER',
+            'parameters': [True, False]
+        },
+        "SMOOTHING_TYPE": {
+            'add_None': True,
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': ['median_filter', 'gaussian_filter']
+        },
+        "SMOOTHING_VALUE": {
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': median_params + gaussian_params
+        },
+        "BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
+            'config_section': 'CONFIG_DATALOADER',
+        },
+        "BACKGROUND.BLOOD_THRESHOLD": {
+            'config_section': 'CONFIG_DATALOADER'
+        },
+        "BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
+            'config_section': 'CONFIG_DATALOADER'
+        }
 
     }
 
@@ -219,17 +221,17 @@ if __name__ == '__main__':
             'parameters': [True, False]
         },
         "BACKGROUND.BLOOD_THRESHOLD": {
-            'parameters': [0.1, 0.2, 0.3]
+            'parameters': [0.1, 0.15]
         },
         "BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
-            'parameters': [0.7, 0.8]
+            'parameters': [0.25, 0.4, 0.6, 0.7]
         }
     }
 
-    experiment = Experiment('ExperimentRevivalRestoreValid',
+    experiment = Experiment('MainExperiment_3d_3_and_5',
                             config_for_experiment,
-                            #background_params=background_config,
-                            replace_combinations_file=True)
+                            background_params=background_config,
+                            replace_combinations_file=False)
     experiment.run_experiment()
     # print(exp.get_results())
 

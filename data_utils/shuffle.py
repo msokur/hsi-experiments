@@ -51,6 +51,7 @@ class Shuffle:
             random.seed(a=42)
 
         if self.config.CONFIG_TRAINER[TK.USE_SMALLER_DATASET] and \
+                PPK.SMALL_REPRESENTATIVE_DATASET in self.config.CONFIG_PREPROCESSOR and \
                 self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET]:
             self.__create_one_shuffled_archive_like_example()
         else:
