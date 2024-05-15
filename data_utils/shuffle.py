@@ -16,7 +16,7 @@ from data_utils.data_storage import DataStorage
 from data_utils.dataset import save_tfr_file
 from data_utils.dataset.meta_files import write_meta_info
 
-from configuration.keys import PreprocessorKeys as PPK, PathKeys as PK, TrainerKeys as TK
+from configuration.keys import PreprocessorKeys as PPK, PathKeys as PK, TrainerKeys as TK, DataLoaderKeys as DK 
 from configuration.parameter import (
     SHUFFLE_GROUP_NAME, PILE_NAME, MAX_SIZE_PER_PILE
 )
@@ -71,9 +71,10 @@ class Shuffle:
         self.__remove_files(PILE_NAME)
         self.__remove_files("shuffled")
 
-        example = np.load(self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET])
+        example = dict(np.load(self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET]))
         example_name = get_name(self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET])
         example_root = os.path.dirname(self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET])
+        example['X'] = np.zeros([example['X'].shape[0], *self.config.CONFIG_DATALOADER[DK.D3_SIZE], example['X'].shape[-1]])
 
         for patient_index, patient_path in tqdm(enumerate(self.data_storage.get_paths(storage_path=self.raw_path))):
             name = patient_path.split(self.config.CONFIG_PATHS[PK.SYS_DELIMITER])[-1].split('.')[0]

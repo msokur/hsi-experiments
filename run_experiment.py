@@ -185,34 +185,34 @@ if __name__ == '__main__':
     config_for_experiment = {
         '3D_SIZE': {
             'config_section': 'CONFIG_DATALOADER',
-            'parameters': [[3, 3], [5, 5]]#, [7, 7], [11, 11]]
+            'parameters': [[5, 5]]#, [7, 7], [11, 11]]
         },
-        "NORMALIZATION_TYPE": {
-           'config_section': 'CONFIG_PREPROCESSOR',
-            'parameters': ["svn", 'l2_norm']
-        },
-        "WITH_SAMPLE_WEIGHTS": {
-            'config_section': 'CONFIG_TRAINER',
-            'parameters': [True, False]
-        },
-        "SMOOTHING_TYPE": {
-            'add_None': True,
-            'config_section': 'CONFIG_DATALOADER',
-            'parameters': ['median_filter', 'gaussian_filter']
-        },
-        "SMOOTHING_VALUE": {
-            'config_section': 'CONFIG_DATALOADER',
-            'parameters': median_params + gaussian_params
-        },
-        "BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
-            'config_section': 'CONFIG_DATALOADER',
-        },
-        "BACKGROUND.BLOOD_THRESHOLD": {
-            'config_section': 'CONFIG_DATALOADER'
-        },
-        "BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
-            'config_section': 'CONFIG_DATALOADER'
-        }
+        #"NORMALIZATION_TYPE": {
+        #   'config_section': 'CONFIG_PREPROCESSOR',
+        #    'parameters': ["svn", 'l2_norm']
+        #},
+        #"WITH_SAMPLE_WEIGHTS": {
+        #    'config_section': 'CONFIG_TRAINER',
+        #    'parameters': [True, False]
+        #},
+        #"SMOOTHING_TYPE": {
+        #    'add_None': True,
+        #    'config_section': 'CONFIG_DATALOADER',
+        #    'parameters': ['median_filter', 'gaussian_filter']
+        #},
+        #"SMOOTHING_VALUE": {
+        #    'config_section': 'CONFIG_DATALOADER',
+        #    'parameters': median_params + gaussian_params
+        #},
+        #"BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
+        #    'config_section': 'CONFIG_DATALOADER',
+        #},
+        #"BACKGROUND.BLOOD_THRESHOLD": {
+        #    'config_section': 'CONFIG_DATALOADER'
+        #},
+        #"BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
+        #    'config_section': 'CONFIG_DATALOADER'
+        #}
 
     }
 
@@ -228,10 +228,10 @@ if __name__ == '__main__':
         }
     }
 
-    experiment = Experiment('MainExperiment_3d_3_and_5',
+    experiment = Experiment('MainExperiment_3d_5',
                             config_for_experiment,
-                            background_params=background_config,
-                            replace_combinations_file=False)
+                            #background_params=background_config,
+                            replace_combinations_file=True)
     experiment.run_experiment()
     # print(exp.get_results())
 
