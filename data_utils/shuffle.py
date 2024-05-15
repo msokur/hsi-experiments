@@ -3,7 +3,7 @@ import os
 import random
 import pickle
 from typing import List, Dict
-import shutil
+import json
 
 import numpy as np
 
@@ -68,13 +68,25 @@ class Shuffle:
 
         def get_name(string):
             return string.split(self.config.CONFIG_PATHS[PK.SYS_DELIMITER])[-1].split('.')[0]
+
+        def adjust_meta_file():
+            meta_name = example_name + '.meta'
+            meta_data = json.load(open(file=os.path.join(example_root, meta_name), mode="r"))
+            meta_data['X_shape'] = [*self.config.CONFIG_DATALOADER[DK.D3_SIZE],
+                                    example['X'].shape[-1]]
+
+            with open(os.path.join(self.shuffle_saving_path, meta_name), "w") as file:
+                json.dump(meta_data, file)
+
         self.__remove_files(PILE_NAME)
         self.__remove_files("shuffled")
 
         example = dict(np.load(self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET]))
         example_name = get_name(self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET])
         example_root = os.path.dirname(self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET])
-        example['X'] = np.zeros([example['X'].shape[0], *self.config.CONFIG_DATALOADER[DK.D3_SIZE], example['X'].shape[-1]])
+        example['X'] = np.zeros([example['X'].shape[0],
+                                 *self.config.CONFIG_DATALOADER[DK.D3_SIZE],
+                                 example['X'].shape[-1]])
 
         for patient_index, patient_path in tqdm(enumerate(self.data_storage.get_paths(storage_path=self.raw_path))):
             name = patient_path.split(self.config.CONFIG_PATHS[PK.SYS_DELIMITER])[-1].split('.')[0]
@@ -95,7 +107,7 @@ class Shuffle:
             example['X'][condition][merged_df_numpy[:, 2]] = _data['X'][merged_df_numpy[:, -1]]
 
         np.savez(os.path.join(self.shuffle_saving_path, example_name+'.npz'), **example)
-        shutil.copy(os.path.join(example_root, example_name+'.meta'), self.shuffle_saving_path)
+        adjust_meta_file()
 
         return
 
