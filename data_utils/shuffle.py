@@ -78,6 +78,14 @@ class Shuffle:
             with open(os.path.join(self.shuffle_saving_path, meta_name), "w") as file:
                 json.dump(meta_data, file)
 
+        def print_number_of_zeros(text):
+            shape = example['X'].shape
+            reshaped_for_counting = np.reshape(example['X'], [shape[0], np.prod(shape[1:])])
+            sums = np.sum(reshaped_for_counting, axis=-1)
+            print(f"Number of unfilled samples ({text})", len(sums[sums == 0]))
+
+            return sums != 0
+
         self.__remove_files(PILE_NAME)
         self.__remove_files("shuffled")
 
@@ -88,28 +96,39 @@ class Shuffle:
                                  *self.config.CONFIG_DATALOADER[DK.D3_SIZE],
                                  example['X'].shape[-1]])
 
+        print_number_of_zeros("before filling")
+        #print(np.unique(example['X']))
+
         for patient_index, patient_path in tqdm(enumerate(self.data_storage.get_paths(storage_path=self.raw_path))):
             name = patient_path.split(self.config.CONFIG_PATHS[PK.SYS_DELIMITER])[-1].split('.')[0]
             condition = example["PatientName"] == name
             _data = self.data_storage.get_datas(data_path=patient_path)
 
-            example_df = pd.DataFrame(example['indexes_in_datacube'][condition], columns=['x', 'y'])
+            example_df = pd.DataFrame(example['indexes_in_datacube'], columns=['x', 'y'])
             example_df['index'] = example_df.index  # Keep original index to map back
+            example_df['PatientName'] = example["PatientName"]  # Don't change the order x, y, index, PatientName
 
             data_df = pd.DataFrame(_data['indexes_in_datacube'], columns=['x', 'y'])
             data_df['index'] = data_df.index
 
             # Merge on coordinates
-            merged_df = pd.merge(example_df, data_df, on=['x', 'y'], suffixes=('_example', '_data'))
+            merged_df = pd.merge(example_df[example_df['PatientName'] == name],
+                                 data_df,
+                                 on=['x', 'y'],
+                                 suffixes=('_example', '_data'))
 
             # Update using numpy advanced indexing
             merged_df_numpy = merged_df.to_numpy()
-            example['X'][condition][merged_df_numpy[:, 2]] = _data['X'][merged_df_numpy[:, -1]]
+
+            example['X'][merged_df_numpy[:, 2].astype(int)] = _data['X'][merged_df_numpy[:, -1].astype(int)]
+
+        not_empty = print_number_of_zeros("after filling")
+        example['X'] = example['X'][not_empty]
+        #print(example['X'].shape)
+        #print(np.unique(example['X']))
 
         np.savez(os.path.join(self.shuffle_saving_path, example_name+'.npz'), **example)
         adjust_meta_file()
-
-        return
 
     def check_piles_number(self):
         size = 0.0
