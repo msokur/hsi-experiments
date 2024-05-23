@@ -20,11 +20,11 @@ class SmoothingCombinations(Combinations):
 
     def add_combinations(self, combinations):
         combinations = self.filter_combinations(combinations)
-        if 'SMOOTHING_TYPE' in self.parameters_for_experiment and \
-                self.parameters_for_experiment['SMOOTHING_TYPE']['add_None']:
+        if 'SMOOTHING.SMOOTHING_TYPE' in self.parameters_for_experiment and \
+                self.parameters_for_experiment['SMOOTHING.SMOOTHING_TYPE']['add_None']:
             params_without_smoothing = self.parameters_for_experiment.copy()
-            del params_without_smoothing['SMOOTHING_TYPE']
-            del params_without_smoothing['SMOOTHING_VALUE']
+            del params_without_smoothing['SMOOTHING.SMOOTHING_TYPE']
+            del params_without_smoothing['SMOOTHING.SMOOTHING_VALUE']
             parameters = run_experiment.Experiment.get_parameters(params_without_smoothing)
             raw_combinations = list(itertools.product(*parameters))
             for combination in raw_combinations:
@@ -36,9 +36,9 @@ class SmoothingCombinations(Combinations):
         return combinations
 
     def filter_combinations(self, combinations):
-        if 'SMOOTHING_TYPE' in self.parameters_for_experiment:
-            smoothing_type_index = self.combinations_keys.index('SMOOTHING_TYPE')
-            smoothing_value_index = self.combinations_keys.index('SMOOTHING_VALUE')
+        if 'SMOOTHING.SMOOTHING_TYPE' in self.parameters_for_experiment:
+            smoothing_type_index = self.combinations_keys.index('SMOOTHING.SMOOTHING_TYPE')
+            smoothing_value_index = self.combinations_keys.index('SMOOTHING.SMOOTHING_VALUE')
 
             filtered_combinations = []
             for combination in combinations:

@@ -55,7 +55,7 @@ class Experiment:
         combinations = list(itertools.product(*parameters))
         
         
-        if 'SMOOTHING_TYPE' in self.parameters_for_experiment:
+        if 'SMOOTHING.SMOOTHING_TYPE' in self.parameters_for_experiment:
             combinations = utils.SmoothingCombinations(self.parameters_for_experiment,
                                                        self.combinations_keys,
                                                        gaussian_params=gaussian_params,
@@ -185,34 +185,34 @@ if __name__ == '__main__':
     config_for_experiment = {
         '3D_SIZE': {
             'config_section': 'CONFIG_DATALOADER',
-            'parameters': [[5, 5]]#, [7, 7], [11, 11]]
+            'parameters': [[3, 3]] #[[5, 5]]#, [7, 7], [11, 11]]
         },
-        #"NORMALIZATION_TYPE": {
-        #   'config_section': 'CONFIG_PREPROCESSOR',
-        #    'parameters': ["svn", 'l2_norm']
-        #},
-        #"WITH_SAMPLE_WEIGHTS": {
-        #    'config_section': 'CONFIG_TRAINER',
-        #    'parameters': [True, False]
-        #},
-        #"SMOOTHING_TYPE": {
-        #    'add_None': True,
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    'parameters': ['median_filter', 'gaussian_filter']
-        #},
-        #"SMOOTHING_VALUE": {
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    'parameters': median_params + gaussian_params
-        #},
-        #"BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
-        #    'config_section': 'CONFIG_DATALOADER',
-        #},
-        #"BACKGROUND.BLOOD_THRESHOLD": {
-        #    'config_section': 'CONFIG_DATALOADER'
-        #},
-        #"BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
-        #    'config_section': 'CONFIG_DATALOADER'
-        #}
+        "NORMALIZATION_TYPE": {
+           'config_section': 'CONFIG_PREPROCESSOR',
+            'parameters': ["svn", 'l2_norm']
+        },
+        "WITH_SAMPLE_WEIGHTS": {
+            'config_section': 'CONFIG_TRAINER',
+            'parameters': [True, False]
+        },
+        "SMOOTHING.SMOOTHING_TYPE": {
+            'add_None': True,
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': ['median_filter', 'gaussian_filter']
+        },
+        "SMOOTHING.SMOOTHING_VALUE": {
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': median_params #+ gaussian_params
+        },
+        "BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
+            'config_section': 'CONFIG_DATALOADER',
+        },
+        "BACKGROUND.BLOOD_THRESHOLD": {
+            'config_section': 'CONFIG_DATALOADER'
+        },
+        "BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
+            'config_section': 'CONFIG_DATALOADER'
+        }
 
     }
 
@@ -228,10 +228,10 @@ if __name__ == '__main__':
         }
     }
 
-    experiment = Experiment('MainExperiment_3d_5',
+    experiment = Experiment('MainExperiment_3d_3_fixed_background',
                             config_for_experiment,
-                            #background_params=background_config,
-                            replace_combinations_file=True)
+                            background_params=background_config,
+                            replace_combinations_file=False)
     experiment.run_experiment()
     # print(exp.get_results())
 
