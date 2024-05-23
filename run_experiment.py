@@ -129,7 +129,9 @@ class Experiment:
         checkpoint = checkpoints[0]'''
 
     def run_experiment(self):
-        for i, combination in enumerate(self.combinations):
+        for i in range(29, 30):
+        #for i, combination in enumerate(self.combinations[29:50]):
+            combination = self.combinations[i]
             # print('-----------------')
             print('combination', combination)
             #print(self.combinations_keys)
@@ -144,7 +146,6 @@ class Experiment:
             print('short_name', short_name)
             print('Index', i)
             print('self.experiment_results_root_folder', self.experiment_results_root_folder)
-
             
             stream = os.popen(
                 f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv.sh {self.root_folder} '
@@ -231,37 +232,6 @@ if __name__ == '__main__':
     experiment = Experiment('MainExperiment_3d_3_fixed_background',
                             config_for_experiment,
                             background_params=background_config,
-                            replace_combinations_file=False)
+                            replace_combinations_file=True)
     experiment.run_experiment()
     # print(exp.get_results())
-
-    '''config_for_experiment = {
-        '3D_SIZE':  [[3, 3], [5, 5]],
-        "NORMALIZATION_TYPE": ["svn_T", 'l2_norm']
-    }'''
-    # ---------------------------------------------------------------------------------------------
-    '''combinations = {
-        'normalization': ['svn_T', 'l2_norm'],
-        'patch_size': [3, 5, 7, 11],
-        'smoothing': ['None', 'median', 'gaussian'],
-        'gaussian_variants': [],
-        'median_variatns': [],
-        'with_sample_weights': [True, False],
-        'with_background': [True, False],
-        'background_threshold': []
-    }'''
-
-    '''config_for_experiment = {
-        'WITH_SMALLER_DATASET': [True],
-        'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
-        #'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [10],
-        # [1, 3, 10, 20, 40]#[1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
-        # 'CV_FIRST_SPLIT': [33]
-    }'''
-
-    '''config_for_experiment = {
-        'WITH_SMALLER_DATASET': [False],
-        'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [4, 10, 20]
-    }
-    #print(list(itertools.product()))
-    HowManyValidPatExcludeExperiment('ExperimentAllDataHowManyValidPatExclude', config_for_experiment)'''
