@@ -81,11 +81,23 @@ class CrossValidatorExperiment(CrossValidatorBase):
             print(config_name, params)
             section, value = params
             config_section = getattr(self.config, section)
-            config_section[config_name] = value
+            
+            if '.' in config_name:  # for nested configs
+                splits = config_name.split('.')
+                subsection = splits[0]
+                field = splits[1]
+                if not subsection in config_section:
+                    raise ValueError(f"{subsection} is not inside {section}! Please check names of parameters!")
+                if not field in config_section[subsection]:
+                    raise ValueError(f"{field} is not inside {subsection}! Please check names of parameters!")
+                config_section[subsection][field] = value
+            else:
+                if not config_name in config_section:
+                    raise ValueError(f"{config_name} is not inside {section}! Please check names of parameters!")
+                config_section[config_name] = value
 
             #print('--------------', self.config.CONFIG_DATALOADER)
             #print('--------------', self.config.CONFIG_PREPROCESSOR)
-        #config.CV_RESTORE_VALID_PATIENTS_SEQUENCE = self.args.abbreviation.replace('WF', 'WT') # TODO
 
         self.config.CONFIG_PATHS['BATCHED_PATH'] += '_' + self.args.cv_name
 
