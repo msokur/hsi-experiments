@@ -129,9 +129,9 @@ class Experiment:
         checkpoint = checkpoints[0]'''
 
     def run_experiment(self):
-        for i in range(29, 30):
-        #for i, combination in enumerate(self.combinations[29:50]):
-            combination = self.combinations[i]
+        #for i in range(29, 30):
+        for i, combination in enumerate(self.combinations):
+            #combination = self.combinations[i]
             # print('-----------------')
             print('combination', combination)
             #print(self.combinations_keys)
@@ -186,7 +186,7 @@ if __name__ == '__main__':
     config_for_experiment = {
         '3D_SIZE': {
             'config_section': 'CONFIG_DATALOADER',
-            'parameters': [[3, 3]] #[[5, 5]]#, [7, 7], [11, 11]]
+            'parameters': [[5, 5]] #[[5, 5]]#, [7, 7], [11, 11]]
         },
         "NORMALIZATION_TYPE": {
            'config_section': 'CONFIG_PREPROCESSOR',
@@ -203,7 +203,7 @@ if __name__ == '__main__':
         },
         "SMOOTHING.SMOOTHING_VALUE": {
             'config_section': 'CONFIG_DATALOADER',
-            'parameters': median_params #+ gaussian_params
+            'parameters': median_params + gaussian_params
         },
         "BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
             'config_section': 'CONFIG_DATALOADER',
@@ -232,6 +232,6 @@ if __name__ == '__main__':
     experiment = Experiment('MainExperiment_3d_3_fixed_background',
                             config_for_experiment,
                             background_params=background_config,
-                            replace_combinations_file=True)
+                            replace_combinations_file=False)
     experiment.run_experiment()
     # print(exp.get_results())
