@@ -3,6 +3,7 @@ import argparse
 import json
 import numpy as np
 from shutil import rmtree
+import csv
 
 from cross_validators.cross_validator_base import CrossValidatorBase
 from data_utils.preprocessor import Preprocessor
@@ -22,7 +23,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
             print(self.config.CONFIG_PATHS)
             print(self.config.CONFIG_CV)
             self.config.CONFIG_CV["TYPE"] = 'experiment'
-            self.config.CONFIG_CV["NAME"] = self.args.abbreviation
+            self.config.CONFIG_CV["NAME"] = self.args.config_index + '_' + self.args.abbreviation
             self.config.CONFIG_PATHS['RESULTS_FOLDER'] = self.args.results_folder
             self.config.CONFIG_PATHS['LOGS_FOLDER'] = [self.args.experiment_folder]
 
@@ -40,14 +41,26 @@ class CrossValidatorExperiment(CrossValidatorBase):
             rmtree(self.config.CONFIG_PATHS['RAW_NPZ_PATH'])
 
             self.config.telegram.send_tg_message(f'Experiment step {self.args.cv_name} (index {self.args.config_index}) is successfully completed!')
+            
+            self.write_status_to_csv("DONE")
 
         except Exception as e:
             rmtree(self.config.CONFIG_PATHS['RAW_NPZ_PATH'])
 
             self.config.telegram.send_tg_message(f'ERROR!!!, In experiment step {self.args.cv_name} (index {self.args.config_index}) error {e}')
+            
+            self.write_status_to_csv("ERROR")
 
             raise e
-        
+            
+    def write_status_to_csv(self, status):
+        row_to_add = [self.args.config_index, status, self.args.abbreviation, self.args.experiment_folder, self.args.cv_name, self.args.results_folder]
+
+        file_path = os.path.join(self.args.experiment_folder, 'status.csv')
+
+        with open(file_path, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(row_to_add)
 
     def parse_args(self):
         parser = argparse.ArgumentParser(description='Process some integers.')
