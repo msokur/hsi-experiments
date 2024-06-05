@@ -9,6 +9,7 @@ import csv
 import utils
 import provider
 
+from data_utils.paths import get_sort, get_splits
 from data_utils.dataset.choice_names import ChoiceNames
 
 from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, \
@@ -104,9 +105,7 @@ class CrossValidatorBase:
         if not os.path.exists(root_folder):
             os.makedirs(root_folder)
 
-        data_loader = provider.get_data_loader(config=self.config, typ=self.config.CONFIG_DATALOADER[DLK.TYPE],
-                                               data_storage=self.data_storage)
-        paths, splits = data_loader.get_paths_and_splits()
+        paths, splits = self.__get_paths_and_splits()
 
         date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
 
@@ -121,7 +120,7 @@ class CrossValidatorBase:
                 for i in indexes:
                     model_name += "_" + str(i)
             else:
-                model_name += "_" + str(indexes[0]) + "_" + data_loader.get_name(np.array(paths)[indexes][0])
+                model_name += "_" + str(indexes[0]) + "_" + self.data_storage.get_name(np.array(paths)[indexes][0])
 
             leave_out_paths = np.array(paths)[indexes]
 
@@ -129,9 +128,9 @@ class CrossValidatorBase:
                 print(f"In files {leave_out_paths} are no needed labels for training!")
                 continue
 
-            except_names = [data_loader.get_name(path=p) for p in paths]
+            except_names = [self.data_storage.get_name(path=p) for p in paths]
             self.cross_validation_step(model_name=model_name, except_names=except_names,
-                                       leave_out_names=[data_loader.get_name(p) for p in leave_out_paths])
+                                       leave_out_names=[self.data_storage.get_name(p) for p in leave_out_paths])
 
             for i, path_ in enumerate(leave_out_paths):
                 sensitivity, specificity = 0, 0
@@ -146,6 +145,19 @@ class CrossValidatorBase:
                                      'name': path_,
                                      # 'model_name': config.MODEL_NAME})
                                      'model_name': model_name})
+
+    def __get_paths_and_splits(self, root_path=None):
+        if root_path is None:
+            root_path = self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH]
+        paths = self.data_storage.get_paths(storage_path=root_path)
+        number = CVK.NUMBER_SORT in self.config.CONFIG_CV.keys()
+        number_sort = self.config.CONFIG_CV[CVK.NUMBER_SORT] if number else None
+        paths = get_sort(paths=paths, number=number, split=number_sort)
+
+        splits = get_splits(typ=self.config.CONFIG_CV[CVK.SPLIT_PATHS_BY], paths=paths,
+                            values=self.config.CONFIG_CV[CVK.PATIENTS_EXCLUDE_FOR_TEST])
+
+        return paths, splits
 
     def get_nearest_int_delimiter(self, folder):
         checkpoints_folders = glob(os.path.join(folder, 'cp-*'))

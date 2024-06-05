@@ -38,8 +38,6 @@ class Predictor:
         """
         custom_objects = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"]
         results_dictionary = []
-        data_loader = get_data_loader(typ=self.config.CONFIG_DATALOADER[DLK.TYPE], config=self.config,
-                                      data_storage=self.data_storage)
         with open(training_csv_path, newline='') as csvfile:
             report_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
             for row in tqdm(report_reader):
@@ -48,7 +46,7 @@ class Predictor:
                 model_path = self.edit_model_path_if_local(row[5])
                 checkpoint = self.get_checkpoint(checkpoint, model_path=model_path)
 
-                name = data_loader.get_name(row[4])
+                name = self.data_storage.get_name(row[4])
                 print(f'We get checkpoint {checkpoint} for {model_path}')
 
                 self.model = tf.keras.models.load_model(os.path.join(model_path,

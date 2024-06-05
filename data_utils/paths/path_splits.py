@@ -3,7 +3,7 @@ import warnings
 import numpy as np
 import os
 
-from configuration.keys import DataLoaderKeys as DLK
+from configuration.keys import CrossValidationKeys as CVK
 
 
 def get_splits(typ: str, paths: list, values: Union[int, list[list[str]], tuple]) -> List[np.ndarray]:
@@ -22,19 +22,19 @@ def get_splits(typ: str, paths: list, values: Union[int, list[list[str]], tuple]
         if isinstance(values, tuple):
             return split_name(paths, values)
         else:
-            __warning(DLK.PATIENTS_EXCLUDE_FOR_TEST)
+            __warning(CVK.PATIENTS_EXCLUDE_FOR_TEST)
     elif typ == "List":
         if isinstance(values, list):
             return split_list(paths, values)
         else:
-            __warning(DLK.PATIENTS_EXCLUDE_FOR_TEST)
+            __warning(CVK.PATIENTS_EXCLUDE_FOR_TEST)
     elif typ == "Files":
         if isinstance(values, int):
             return split_int(len(paths), values)
         else:
-            __warning(DLK.PATIENTS_EXCLUDE_FOR_TEST)
+            __warning(CVK.PATIENTS_EXCLUDE_FOR_TEST)
     else:
-        __warning(DLK.SPLIT_PATHS_BY)
+        __warning(CVK.SPLIT_PATHS_BY)
 
     return split_int(len(paths), 1)
 

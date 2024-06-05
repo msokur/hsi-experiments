@@ -10,7 +10,7 @@ from scipy.ndimage import gaussian_filter, median_filter
 # import configuration.get_config as conf
 from data_utils.background_detection import detect_background
 import data_utils.border as border
-from data_utils.data_loaders.path_splits import get_splits
+from data_utils.paths.path_splits import get_splits
 
 
 class DataLoader:
