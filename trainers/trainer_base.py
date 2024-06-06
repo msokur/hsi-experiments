@@ -119,6 +119,7 @@ class Trainer:
 
     def get_callbacks(self):
         checkpoint_path = os.path.join(self.log_dir, self.config.CONFIG_PATHS[PK.CHECKPOINT_FOLDER], "cp-{epoch:04d}")
+        #checkpoint_path = os.path.join(self.log_dir, self.config.CONFIG_PATHS[PK.CHECKPOINT_FOLDER], "cp-best")
 
         checkpoints_callback = keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,

@@ -133,26 +133,27 @@ class Experiment:
         for i, combination in enumerate(self.combinations):
             #combination = self.combinations[i]
             # print('-----------------')
-            print('combination', combination)
-            #print(self.combinations_keys)
-            sample_dict = {name: c for name, c in zip(self.combinations_keys, combination)}
-            print('sample_dict', sample_dict)
+            if i == 116 or i == 68:
+                print('combination', combination)
+                #print(self.combinations_keys)
+                sample_dict = {name: c for name, c in zip(self.combinations_keys, combination)}
+                print('sample_dict', sample_dict)
 
-            short_name = self.combine_short_name(sample_dict)
-            print('short_name', short_name)
+                short_name = self.combine_short_name(sample_dict)
+                print('short_name', short_name)
 
-            print('self.root_folder', self.root_folder)
-            print('self.name + "_" + short_name', self.name + "_" + short_name)
-            print('short_name', short_name)
-            print('Index', i)
-            print('self.experiment_results_root_folder', self.experiment_results_root_folder)
-            
-            stream = os.popen(
-                f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv.sh {self.root_folder} '
-                f'{self.name + "_" + short_name} {short_name} {i} {self.experiment_results_root_folder} {self.name}')
-            output = stream.read()
-            print('Prompt output:',output)
-            print('--------------------------------------------------------------------------------------------------')
+                print('self.root_folder', self.root_folder)
+                print('self.name + "_" + short_name', self.name + "_" + short_name)
+                print('short_name', short_name)
+                print('Index', i)
+                print('self.experiment_results_root_folder', self.experiment_results_root_folder)
+
+                stream = os.popen(
+                    f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv.sh {self.root_folder} '
+                    f'{self.name + "_" + short_name} {short_name} {i} {self.experiment_results_root_folder} {self.name}')
+                output = stream.read()
+                print('Prompt output:',output)
+                print('--------------------------------------------------------------------------------------------------')
 
     @staticmethod
     def combine_short_name(sample_dict):
@@ -186,7 +187,7 @@ if __name__ == '__main__':
     config_for_experiment = {
         '3D_SIZE': {
             'config_section': 'CONFIG_DATALOADER',
-            'parameters': [[5, 5]] #[[5, 5]]#, [7, 7], [11, 11]]
+            'parameters': [[3, 3]] #[[5, 5]]#, [7, 7], [11, 11]]
         },
         "NORMALIZATION_TYPE": {
            'config_section': 'CONFIG_PREPROCESSOR',
@@ -232,6 +233,6 @@ if __name__ == '__main__':
     experiment = Experiment('MainExperiment_3d_3_fixed_background',
                             config_for_experiment,
                             background_params=background_config,
-                            replace_combinations_file=False)
+                            replace_combinations_file=True)
     experiment.run_experiment()
     # print(exp.get_results())
