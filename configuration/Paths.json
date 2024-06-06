@@ -22,7 +22,7 @@
   },
   "Win_Mariia": {
     "MODE": "WITHOUT_GPU",
-    "DATABASE_ROOT_FOLDER": "C:\\Users\\tkachenko\\Desktop\\HSI\\colon_for_debug",
+    "DATABASE_ROOT_FOLDER": "C:\\Users\\tkachenko\\Desktop\\HSI\\colon",
     "LOGS_FOLDER": ["C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\logs"],
     "RESULTS_FOLDER": "C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\results"
   },
@@ -152,7 +152,7 @@
   },
     "COLON": {
     "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
-      "RAW_NPZ_PATH": ["representative_dataset"],
+      "RAW_NPZ_PATH": ["debug_background"],
       "RAW_SOURCE_PATH": [""]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {

@@ -78,15 +78,18 @@ class OptimalThreshold:
     def find_optimal_threshold_in_checkpoint(self, checkpoint_folder):
         data, sensitivity_column, specificity_column, threshold_column = self.get_data(checkpoint_folder)
 
-        thr, sens, spec = self.get_thresholds_sens_spec(data, sensitivity_column, specificity_column, threshold_column)
+        thresholds, sensitivities, specificities = self.get_thresholds_sens_spec(data,
+                                                                                 sensitivity_column,
+                                                                                 specificity_column,
+                                                                                 threshold_column)
 
         # sort data for case if threshold are not sorted
-        sorted_arrays = list(zip(list(thr), list(sens), list(spec)))
+        sorted_arrays = list(zip(list(thresholds), list(sensitivities), list(specificities)))
         sorted_arrays = sorted(sorted_arrays)  # by default, it sorts by the first column
         sorted_arrays = np.array(sorted_arrays)
-        thr = sorted_arrays[:, 0]
-        sens = sorted_arrays[:, 1]
-        spec = sorted_arrays[:, 2]
+        thresholds = sorted_arrays[:, 0]
+        sensitivities = sorted_arrays[:, 1]
+        specificities = sorted_arrays[:, 2]
 
         # print data
         # print('Sensitivities', sens)
@@ -94,23 +97,31 @@ class OptimalThreshold:
 
         # print intermediate computations
         # print(np.sign(sens - spec))
-        diff = np.diff(np.sign(sens - spec))
+        differences = np.abs(sensitivities - specificities)
         # print(diff)
         # print(np.argmin(diff))
 
-        if len(diff[diff == -2]) == 0:
-            print(f'~~~~~~~~~~~~~~~~You need to add new thresholds starts from {checkpoint_folder}~~~~~~~~~~~~~~')
+        if_sensitivities_and_specificities_intersect = np.diff(np.sign(sensitivities - specificities))
+        if len(if_sensitivities_and_specificities_intersect[if_sensitivities_and_specificities_intersect == -2]) == 0:
+            print(if_sensitivities_and_specificities_intersect)
+            print(f'~~~~~~~~~~~~~~~~You need to add new thresholds for {checkpoint_folder}~~~~~~~~~~~~~~')
 
         # get and print results
-        idx = np.argmin(diff).flatten() + 1
+        optimal_index = np.argmin(differences)  # .flatten() #+ 1
 
         if self.prints:
-            print(f'optimal index and threshold for {checkpoint_folder}: ', idx, thr[idx])
-            print(f'optimal sensitivity and specificity for {checkpoint_folder}: ', sens[idx], spec[idx])
+            print(f'optimal index and threshold for {checkpoint_folder}: ', optimal_index, thresholds[optimal_index])
+            print(f'optimal sensitivity and specificity for {checkpoint_folder}: ', sensitivities[optimal_index],
+                  specificities[optimal_index])
             print(f'Mean value of optimal sensitivity and specificity for {checkpoint_folder}: ',
-                  np.mean([sens[idx], spec[idx]]))
+                  np.mean([sensitivities[optimal_index], specificities[optimal_index]]))
 
-        return thr[idx], sens[idx], spec[idx], np.mean([sens[idx], spec[idx]]), idx
+        return thresholds[optimal_index], \
+               sensitivities[optimal_index], \
+               specificities[optimal_index], \
+               np.mean([sensitivities[optimal_index],
+                        specificities[optimal_index]]), \
+               optimal_index
 
 
 class OptimalCheckpoint(OptimalThreshold):
@@ -153,9 +164,19 @@ class OptimalCheckpoint(OptimalThreshold):
 
 
 if __name__ == '__main__':
-    from evaluation.metrics_csvreader import MetricsCsvReader
+    from configuration import get_config as config
+
+    root_folder = "D:\\mi186veva-results\\MainExperiment_3d_3_fixed_background"
+    optimal_threshold_finder = OptimalThreshold(config, root_folder, prints=False)
+    folder_with_checkoint = 'D:\\mi186veva-results\\MainExperiment_3d_3_fixed_background\\0_3D3_Ns_WT_Sm_S3_BF_B0' \
+                            '.1_B0.25_\\Results_with_EarlyStopping'
+    results = optimal_threshold_finder.find_optimal_threshold_in_checkpoint(folder_with_checkoint)
+    threshold, sensitivity, specificity, mean, _ = results
+    print(threshold, sensitivity, specificity, mean)
+
+    '''from evaluation.metrics_csvreader import MetricsCsvReader
     reader = MetricsCsvReader()
     reader.read_metrics(
         '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/metrics/Esophagus_MedFilter/cp-0038'
         '/metrics_by_threshold_None.csv',
-        names=['Sensitivity', 'Specificity'])
+        names=['Sensitivity', 'Specificity'])'''
