@@ -69,47 +69,56 @@ class Shuffle:
         def get_name(string):
             return string.split(self.config.CONFIG_PATHS[PK.SYS_DELIMITER])[-1].split('.')[0]
 
-        def adjust_meta_file():
-            meta_name = example_name + '.meta'
-            meta_data = json.load(open(file=os.path.join(example_root, meta_name), mode="r"))
-            meta_data['X_shape'] = [*self.config.CONFIG_DATALOADER[DK.D3_SIZE],
-                                    example['X'].shape[-1]]
+        def print_number_of_unfilled_samples(text):
+            unique = np.array([np.unique(x).shape[0] for x in example['X']])
+            print(f"Number of unfilled samples ({text})", unique[unique == 1].shape)
 
-            with open(os.path.join(self.shuffle_saving_path, meta_name), "w") as file:
-                json.dump(meta_data, file)
+            return unique != 1
 
         self.__remove_files(PILE_NAME)
         self.__remove_files("shuffled")
 
         example = dict(np.load(self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET]))
         example_name = get_name(self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET])
-        example_root = os.path.dirname(self.config.CONFIG_PREPROCESSOR[PPK.SMALL_REPRESENTATIVE_DATASET])
         example['X'] = np.zeros([example['X'].shape[0],
                                  *self.config.CONFIG_DATALOADER[DK.D3_SIZE],
                                  example['X'].shape[-1]])
+
+        print_number_of_unfilled_samples("before filling")
 
         for patient_index, patient_path in tqdm(enumerate(self.data_storage.get_paths(storage_path=self.raw_path))):
             name = patient_path.split(self.config.CONFIG_PATHS[PK.SYS_DELIMITER])[-1].split('.')[0]
             condition = example["PatientName"] == name
             _data = self.data_storage.get_datas(data_path=patient_path)
 
-            example_df = pd.DataFrame(example['indexes_in_datacube'][condition], columns=['x', 'y'])
+            example_df = pd.DataFrame(example['indexes_in_datacube'], columns=['x', 'y'])
             example_df['index'] = example_df.index  # Keep original index to map back
+            example_df['PatientName'] = example["PatientName"]  # Don't change the order x, y, index, PatientName
 
             data_df = pd.DataFrame(_data['indexes_in_datacube'], columns=['x', 'y'])
             data_df['index'] = data_df.index
 
             # Merge on coordinates
-            merged_df = pd.merge(example_df, data_df, on=['x', 'y'], suffixes=('_example', '_data'))
+            merged_df = pd.merge(example_df[example_df['PatientName'] == name],
+                                 data_df,
+                                 on=['x', 'y'],
+                                 suffixes=('_example', '_data'))
 
-            # Update using numpy advanced indexing
             merged_df_numpy = merged_df.to_numpy()
-            example['X'][condition][merged_df_numpy[:, 2]] = _data['X'][merged_df_numpy[:, -1]]
+            #print(f"{name}: {len(merged_df_numpy[:, 2])} vs {example['X'][condition].shape[0]}")
+
+            example['X'][merged_df_numpy[:, 2].astype(int)] = _data['X'][merged_df_numpy[:, -1].astype(int)]
+
+        not_empty = print_number_of_unfilled_samples("after filling")
+        for key in example:
+            example[key] = example[key][not_empty]
 
         np.savez(os.path.join(self.shuffle_saving_path, example_name+'.npz'), **example)
-        adjust_meta_file()
 
-        return
+        write_meta_info(save_dir=self.shuffle_saving_path, file_name=example_name,
+                        labels=example[self.dict_names[1]], names=example[self.dict_names[2]],
+                        names_idx=example[self.dict_names[3]], X_shape=example[self.dict_names[0]].shape,
+                        typ=self.dataset_typ)
 
     def check_piles_number(self):
         size = 0.0

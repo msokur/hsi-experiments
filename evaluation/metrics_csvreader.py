@@ -12,8 +12,13 @@ class MetricsCsvReader:
 
     def stack_columns(self, data, suitable_columns):
         return [np.array(data[column].tolist()).astype(float) for column in suitable_columns]
-
+    
+    def get_defaults(self):
+        return ['Accuracy', 'Sensitivity', 'Specificity', 'F1-score', 'MCC', 'AUC']
+    
     def read_metrics(self, csvfile, names=[]):
+        if not names: 
+            names = self.get_defaults()
         data = pd.read_csv(csvfile)
         columns = data.columns
 
@@ -35,6 +40,9 @@ class MetricsCsvReader:
 class MetricsCsvReaderComparisonFiles(MetricsCsvReader):  # for compare_all_thresholds*.csv files
     def fill_result(self, result, name, stacked_metrics):
         result[name] = stacked_metrics
+        
+    def get_defaults(self):
+        return ['Threshold', 'Sensitivity', 'Specificity']
 
     def stack_columns(self, data, suitable_columns):
         def convertible_to_float(checked_string):

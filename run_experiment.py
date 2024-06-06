@@ -55,7 +55,7 @@ class Experiment:
         combinations = list(itertools.product(*parameters))
         
         
-        if 'SMOOTHING_TYPE' in self.parameters_for_experiment:
+        if 'SMOOTHING.SMOOTHING_TYPE' in self.parameters_for_experiment:
             combinations = utils.SmoothingCombinations(self.parameters_for_experiment,
                                                        self.combinations_keys,
                                                        gaussian_params=gaussian_params,
@@ -129,7 +129,9 @@ class Experiment:
         checkpoint = checkpoints[0]'''
 
     def run_experiment(self):
+        #for i in range(29, 30):
         for i, combination in enumerate(self.combinations):
+            #combination = self.combinations[i]
             # print('-----------------')
             print('combination', combination)
             #print(self.combinations_keys)
@@ -144,7 +146,6 @@ class Experiment:
             print('short_name', short_name)
             print('Index', i)
             print('self.experiment_results_root_folder', self.experiment_results_root_folder)
-
             
             stream = os.popen(
                 f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv.sh {self.root_folder} '
@@ -185,34 +186,34 @@ if __name__ == '__main__':
     config_for_experiment = {
         '3D_SIZE': {
             'config_section': 'CONFIG_DATALOADER',
-            'parameters': [[5, 5]]#, [7, 7], [11, 11]]
+            'parameters': [[5, 5]] #[[5, 5]]#, [7, 7], [11, 11]]
         },
-        #"NORMALIZATION_TYPE": {
-        #   'config_section': 'CONFIG_PREPROCESSOR',
-        #    'parameters': ["svn", 'l2_norm']
-        #},
-        #"WITH_SAMPLE_WEIGHTS": {
-        #    'config_section': 'CONFIG_TRAINER',
-        #    'parameters': [True, False]
-        #},
-        #"SMOOTHING_TYPE": {
-        #    'add_None': True,
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    'parameters': ['median_filter', 'gaussian_filter']
-        #},
-        #"SMOOTHING_VALUE": {
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    'parameters': median_params + gaussian_params
-        #},
-        #"BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
-        #    'config_section': 'CONFIG_DATALOADER',
-        #},
-        #"BACKGROUND.BLOOD_THRESHOLD": {
-        #    'config_section': 'CONFIG_DATALOADER'
-        #},
-        #"BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
-        #    'config_section': 'CONFIG_DATALOADER'
-        #}
+        "NORMALIZATION_TYPE": {
+           'config_section': 'CONFIG_PREPROCESSOR',
+            'parameters': ["svn", 'l2_norm']
+        },
+        "WITH_SAMPLE_WEIGHTS": {
+            'config_section': 'CONFIG_TRAINER',
+            'parameters': [True, False]
+        },
+        "SMOOTHING.SMOOTHING_TYPE": {
+            'add_None': True,
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': ['median_filter', 'gaussian_filter']
+        },
+        "SMOOTHING.SMOOTHING_VALUE": {
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': median_params + gaussian_params
+        },
+        "BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
+            'config_section': 'CONFIG_DATALOADER',
+        },
+        "BACKGROUND.BLOOD_THRESHOLD": {
+            'config_section': 'CONFIG_DATALOADER'
+        },
+        "BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
+            'config_section': 'CONFIG_DATALOADER'
+        }
 
     }
 
@@ -228,40 +229,9 @@ if __name__ == '__main__':
         }
     }
 
-    experiment = Experiment('MainExperiment_3d_5',
+    experiment = Experiment('MainExperiment_3d_3_fixed_background',
                             config_for_experiment,
-                            #background_params=background_config,
-                            replace_combinations_file=True)
+                            background_params=background_config,
+                            replace_combinations_file=False)
     experiment.run_experiment()
     # print(exp.get_results())
-
-    '''config_for_experiment = {
-        '3D_SIZE':  [[3, 3], [5, 5]],
-        "NORMALIZATION_TYPE": ["svn_T", 'l2_norm']
-    }'''
-    # ---------------------------------------------------------------------------------------------
-    '''combinations = {
-        'normalization': ['svn_T', 'l2_norm'],
-        'patch_size': [3, 5, 7, 11],
-        'smoothing': ['None', 'median', 'gaussian'],
-        'gaussian_variants': [],
-        'median_variatns': [],
-        'with_sample_weights': [True, False],
-        'with_background': [True, False],
-        'background_threshold': []
-    }'''
-
-    '''config_for_experiment = {
-        'WITH_SMALLER_DATASET': [True],
-        'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
-        #'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [10],
-        # [1, 3, 10, 20, 40]#[1, 2, 3, 4, 5, 6, 7, 8] + [*range(10, 42, 2)]
-        # 'CV_FIRST_SPLIT': [33]
-    }'''
-
-    '''config_for_experiment = {
-        'WITH_SMALLER_DATASET': [False],
-        'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID': [4, 10, 20]
-    }
-    #print(list(itertools.product()))
-    HowManyValidPatExcludeExperiment('ExperimentAllDataHowManyValidPatExclude', config_for_experiment)'''
