@@ -700,7 +700,7 @@
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
 		"SMOOTHING": {
-			"SMOOTHING_TYPE": "gaussian_filter",
+			"SMOOTHING_TYPE": null,
 			"SMOOTHING_DIMENSIONS": "1d",
 			"SMOOTHING_VALUE": 1
 		},
