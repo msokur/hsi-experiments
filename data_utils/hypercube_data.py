@@ -92,7 +92,7 @@ class Cube_Read(object):
         return data, pixely
 
 
-class cube(object):
+class Cube(object):
     def __init__(self, address, wavearea, Firstnm, Lastnm):
         self.address = address
         self.wavearea = wavearea
@@ -174,3 +174,29 @@ class HyperCube(object):
 
     def cube_matrix(self, first_nm: int, last_nm: int) -> np.ndarray:
         return self.hyper_cube[..., first_nm:last_nm + 1]
+
+    @staticmethod
+    def rgb_cube(cube: np.ndarray, red_band: slice = slice(17, 46), green_band: slice = slice(8, 19),
+                 blue_band: slice = slice(6, 13)) -> np.ndarray:
+        from skimage import exposure
+        # pixel rgb values
+        RGB_values = np.zeros(shape=tuple(cube.shape[:2]) + (3,), dtype=np.dtype("float32"))
+
+        # for the red pixel (idx=0) take 585-725nm (red_band)
+        # for the green pixel (idx=1) take 540-590nm (green_band)
+        # for blue pixel (idx=2) take the 530-560nm (blue_band)
+        for color, slice_ in enumerate([red_band, green_band, blue_band]):
+            RGB_values[..., color] = (cube[..., slice_].mean(axis=-1)) * 1.5
+
+        # for normalisation of pixels to be between (0,1)
+        # scaled RGB values
+        scaled_RGB = np.zeros(shape=RGB_values.shape, dtype=np.dtype('float32'))
+        for color in range(RGB_values.shape[-1]):
+            color_min = np.min(RGB_values[..., color])
+            color_max = np.max(RGB_values[..., color])
+            scaled_RGB[..., color] = (RGB_values[..., color] - color_min) / (color_max - color_min)
+
+        # add the gamma-factor
+        gamma_corrected = exposure.adjust_gamma(scaled_RGB, 0.5)
+
+        return gamma_corrected

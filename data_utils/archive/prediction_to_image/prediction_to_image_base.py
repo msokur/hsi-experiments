@@ -6,7 +6,7 @@ from matplotlib import colors as mcolor, pyplot as plt
 
 from data_utils.data_storage import DataStorage
 from models.model_randomness import set_tf_seed
-from data_utils.hypercube_data import cube
+from data_utils.hypercube_data import Cube
 
 from configuration.keys import DataLoaderKeys as DLK, TrainerKeys as TK
 
@@ -61,7 +61,7 @@ class PredictionToImage_base:
                              predict_mask: np.ndarray, diff_mask: np.ndarray, mask_alpha=0.75):
         masks_rgba = self.masks_to_rgba(masks=[annotation_mask, predict_mask, diff_mask])
 
-        cube_ = cube(background_path, self.CONFIG_DATALOADER[DLK.WAVE_AREA], self.CONFIG_DATALOADER[DLK.FIRST_NM],
+        cube_ = Cube(background_path, self.CONFIG_DATALOADER[DLK.WAVE_AREA], self.CONFIG_DATALOADER[DLK.FIRST_NM],
                      self.CONFIG_DATALOADER[DLK.LAST_NM])
         cube_img = cube_.get_rgb_cube()
         cube_img_rgb = cube_img * 255

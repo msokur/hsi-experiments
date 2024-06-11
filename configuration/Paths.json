@@ -6,7 +6,7 @@
     "MODE": "WITH_GPU",
     "DATABASE_ROOT_FOLDER": "/work/users/bn322dcei",
     "LOGS_FOLDER": ["/work/users/bn322dcei/hsi-experiments/model_logs"],
-    "RESULTS_FOLDER": "/work/users/bn322dcei/hsi-experiments/model_results"
+    "RESULTS_FOLDER": "/work/bn322dcei-perfusion/hsi-experiments/model_results"
   },
   "Win_Benny": {
     "MODE": "WITHOUT_GPU",

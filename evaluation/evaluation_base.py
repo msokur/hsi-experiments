@@ -5,10 +5,13 @@ import os
 import matplotlib.pylab as plt
 import abc
 
+from configuration.parameter import STORAGE_TYPE, ORIGINAL_NAME
 from evaluation.metrics import Metrics
 from evaluation.predictor import Predictor
+from data_utils.visualization import VisualizationFromData
 
 from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK
+from provider import get_data_storage
 
 
 class EvaluationBase(Metrics):
@@ -16,6 +19,9 @@ class EvaluationBase(Metrics):
     def __init__(self, config, *args, **kwargs):
         super().__init__(config)
         self.config = config
+        self.data_storage = get_data_storage(typ=STORAGE_TYPE)
+        self.visualization = VisualizationFromData(config=config,
+                                                   data_storage=self.data_storage)
 
         self.results_folder = self.create_joint_folder(self.config.CONFIG_PATHS[PK.RESULTS_FOLDER],
                                                        self.config.CONFIG_CV[CVK.NAME])
@@ -165,8 +171,9 @@ class EvaluationBase(Metrics):
 
                         for patient in data:
                             name = patient['name']
-                            gt = np.array(patient['gt'])
-                            predictions_raw = np.array(patient["predictions"])
+                            gt = patient['gt']
+                            predictions_raw = patient["predictions"]
+                            names = patient[ORIGINAL_NAME]
                             predictions = self.calculate_predictions(predictions_raw, threshold)
 
                             metrics_ = self.save_metrics(gt, predictions, predictions_raw, writer_cp)
@@ -174,10 +181,19 @@ class EvaluationBase(Metrics):
                             append_value(metrics_all, metrics_)
 
                             if save_curves:
+                                roc_folder = os.path.join(results_folder, f"roc_by_threshold_{threshold}")
+                                if not os.path.exists(results_folder):
+                                    os.mkdir(roc_folder)
                                 self.save_roc_curves(gt,
                                                      predictions_raw,
                                                      f'Image_{name}',
-                                                     results_folder)
+                                                     roc_folder)
+                                self.visualization.create_and_save_error_maps(save_path=results_folder,
+                                                                              threshold=threshold,
+                                                                              y_true=gt,
+                                                                              y_pred=predictions,
+                                                                              original_names=names,
+                                                                              patient_name=name)
 
                         self.write_total_metrics(writer_cp, metrics_all)
 

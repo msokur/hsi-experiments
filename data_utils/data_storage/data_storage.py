@@ -153,3 +153,8 @@ class DataStorage:
         elif b.__len__() > 0:
             not_in_data = ", ".join(b)
             raise warnings.warn(f"Data '{not_in_data}' will be not append to data archive!")
+
+    @staticmethod
+    @abc.abstractmethod
+    def get_extension() -> str:
+        pass

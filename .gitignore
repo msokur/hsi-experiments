@@ -39,3 +39,4 @@ archive_logs
 jupyter/*/*.png
 jupyter/*/*/*.png
 results
+scripts/output
