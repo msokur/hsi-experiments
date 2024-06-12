@@ -88,6 +88,11 @@ class TFRDatasets(Dataset):
                                                                                    use_pat_idx=names_int,
                                                                                    use_labels=labels))
 
+        # TODO: Maby refactoring by parsing the dataset to shuffle files
+        dataset = dataset.map(map_func=lambda X, y, sw: (X,
+                                                         tf.cast(x=tf.expand_dims(input=y, axis=-1), dtype=tf.float32),
+                                                         sw))
+
         if self.with_sample_weights:
             dataset = dataset.flat_map(map_func=lambda X, y, sw: tf.data.Dataset.from_tensor_slices(tensors=(X, y, sw)))
         else:

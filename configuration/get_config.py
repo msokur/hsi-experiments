@@ -9,6 +9,13 @@ if WITHOUT_RANDOMNESS:
 else:
     os.environ['TF_DETERMINISTIC_OPS'] = '0'
 
+# to mute tensorflow logs
+# 0 - all logs will be shown
+# 1 - info logs muted
+# 2 - info, warning logs muted
+# 3 - all logs muted
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
+
 # change here the name of the .py file for configuration import
 from configuration.meta_configs.Benny import *
 

@@ -55,9 +55,10 @@ class TrainerBinary(Trainer):
 
     def get_loss_and_metrics(self):
         loss = keras.losses.BinaryCrossentropy()
-        metric_dict = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS"]
+        metric_dict = self.config.CONFIG_TRAINER[TK.CUSTOM_OBJECTS]
         raw_metrics = [
-            keras.metrics.BinaryAccuracy(name="accuracy")
+            keras.metrics.BinaryAccuracy(name="accuracy"),
+            keras.metrics.F1Score(**self.config.CONFIG_TRAINER[TK.F1_SCORE])
         ]
 
         non_weightable_metrics = [

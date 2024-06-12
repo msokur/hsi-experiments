@@ -1,8 +1,6 @@
 import abc
 
-import tensorflow as tf
-import tensorflow.keras as keras
-from keras import layers
+from keras import layers, Model
 
 from models.kt_hypermodel_base import KtModelBase
 from models.model_randomness import get_dropout
@@ -11,10 +9,7 @@ from configuration.keys import TunerModelKeys as TMK
 
 
 class InceptionTunerModelBase(KtModelBase):
-    def _model(self):
-        input_ = layers.Input(shape=self.input_shape, name="input")
-
-        net = tf.expand_dims(input_, axis=-1)
+    def _model(self, input_layer: layers.Input, net: layers.Reshape):
         for bl in range(self.hp.Int("num_blocks", **self.model_config[TMK.NUM_BLOCK])):
             net = self.__model_block(input_=net, name=f"bl{bl}")
 
@@ -39,8 +34,8 @@ class InceptionTunerModelBase(KtModelBase):
         result = layers.Dense(number, activation=activation, name="output", kernel_initializer=self.kernel_initializer,
                               bias_initializer=self.bias_initializer, )(net)
 
-        model = keras.Model(
-            inputs=[input_],
+        model = Model(
+            inputs=[input_layer],
             outputs=[result]
         )
 

@@ -194,12 +194,16 @@
 				"COLOR": "red"
 			}
 		},
-		"WITH_BACKGROUND_EXTRACTION": false
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": true,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		}
 	},
 	"GASTRIC": {
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".dat",
-		"3D": false,
+		"3D": true,
 		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,
 		"LAST_NM": 100,
@@ -387,7 +391,11 @@
 				"COLOR": "saddlebrown"
 			}
 		},
-		"WITH_BACKGROUND_EXTRACTION": false,
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		},
 		"DATA_NAMES_FROM_FILE": "exvivo.csv"
 	},
 	"GASTRIC_INVIVO": {
@@ -482,7 +490,11 @@
 				"COLOR": "saddlebrown"
 			}
 		},
-		"WITH_BACKGROUND_EXTRACTION": false,
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		},
 		"DATA_NAMES_FROM_FILE": "invivo.csv"
 	},
 	"MAT_BRAIN": {
@@ -536,7 +548,11 @@
 				"COLOR": "green"
 			}
 		},
-		"WITH_BACKGROUND_EXTRACTION": false
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		}
 	},
 	"MAT_COLON": {
 		"TYPE": "normal",
@@ -574,7 +590,11 @@
 				"COLOR": "blue"
 			}
 		},
-		"WITH_BACKGROUND_EXTRACTION": false
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		}
 	},
 	"MAT_ESO": {
 		"TYPE": "normal",
@@ -618,7 +638,11 @@
 				"COLOR": "red"
 			}
 		},
-		"WITH_BACKGROUND_EXTRACTION": false
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		}
 	},
 	"MAT_COLON_SPAIN": {
 		"TYPE": "normal",
@@ -656,7 +680,11 @@
 				"COLOR": "blue"
 			}
 		},
-		"WITH_BACKGROUND_EXTRACTION": false
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		}
 	},
     "COLON": {
 		"TYPE": "normal",

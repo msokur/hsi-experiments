@@ -1,8 +1,7 @@
 import abc
 
 import keras_tuner as kt
-import tensorflow.keras as keras
-from keras import layers
+from keras import layers, losses, metrics
 
 from models.model_randomness import set_tf_seed, get_initializers
 
@@ -23,28 +22,28 @@ class KtModelBase(kt.HyperModel):
 
     def build(self, hp):
         self.hp = hp
-        model = self._model()
+        model = self._get_model()
 
         if self.num_of_classes == 2:
-            loss = keras.losses.BinaryCrossentropy(),
-            metrics = [keras.metrics.BinaryAccuracy(name="accuracy")]
+            loss = losses.BinaryCrossentropy(),
+            metrics_ = [metrics.BinaryAccuracy(name="accuracy")]
             if self.custom_metrics is not None:
                 for key in self.custom_metrics.keys():
-                    metrics.append(self.custom_metrics[key]["metric"](**self.custom_metrics[key]["args"]))
+                    metrics_.append(self.custom_metrics[key]["metric"](**self.custom_metrics[key]["args"]))
         else:
-            loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-            metrics = [keras.metrics.SparseCategoricalAccuracy(name="accuracy")]
+            loss = losses.SparseCategoricalCrossentropy(from_logits=True),
+            metrics_ = [metrics.SparseCategoricalAccuracy(name="accuracy")]
             if self.custom_metrics is not None:
                 for key in self.custom_metrics.keys():
-                    metrics.append(self.custom_metrics[key]["metric"](num_classes=self.num_of_classes,
-                                                                      **self.custom_metrics[key]["args"]))
+                    metrics_.append(self.custom_metrics[key]["metric"](num_classes=self.num_of_classes,
+                                                                       **self.custom_metrics[key]["args"]))
 
-        print("Keras tuner model metrics:", metrics)
+        print("Keras tuner model metrics:", metrics_)
 
         model.compile(
             optimizer=self._get_optimizer(),
             loss=loss,
-            metrics=metrics
+            metrics=metrics_
         )
 
         return model
@@ -58,8 +57,14 @@ class KtModelBase(kt.HyperModel):
             **kwargs
         )
 
+    def _get_model(self):
+        input_ = layers.Input(shape=self.input_shape, name="input")
+        input_expand = layers.Reshape(target_shape=input_.shape[1:] + (1,))(input_)
+
+        return self._model(input_layer=input_, net=input_expand)
+
     @abc.abstractmethod
-    def _model(self):
+    def _model(self, input_layer: layers.Input, net: layers.Reshape):
         pass
 
     def _get_activations(self, name):

@@ -5,18 +5,20 @@ from glob import glob
 
 from data_utils.dataset.tfrecord import TFRDatasets
 from ..conftest import (
-    D1_X_0, D1_X_1, D3_X_0, D3_X_1, Y, WEIGHTS, NAMES_IDX
+    USE_NAMES,
+    LABELS,
+    BATCH_X_DATA_1D,
+    BATCH_X_DATA_3D,
+    BATCH_Y_DATA,
+    BATCH_SW_DATA
 )
 from configuration.parameter import (
     TFR_FILE_EXTENSION,
 )
 from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
 
-LABELS = [0, 1, 2]
-USE_NAMES = ["test_0", "test_1", "test_2", "test_3"]
-
-GET_DATASETS_RANK = [("1d", False, [2, 1]), ("1d", True, [2, 1, 1]),
-                     ("3d", False, [4, 1]), ("3d", True, [4, 1, 1])]
+GET_DATASETS_RANK = [("1d", False, [2, 2]), ("1d", True, [2, 2, 1]),
+                     ("3d", False, [4, 2]), ("3d", True, [4, 2, 1])]
 
 
 def get_test_datasets(test_config, shape: str, with_sw: bool, file_dir: str, batch_size=5):
@@ -42,11 +44,6 @@ def test_get_datasets_len(test_config, tfr_data_dir: str, shape: str, with_sw: b
     assert len(dataset.element_spec) == len(ranks)
 
 
-RES_MASK = np.isin(Y, LABELS) * np.isin(NAMES_IDX, [0, 1, 2, 3])
-BATCH_X_DATA_1D = np.concatenate((D1_X_0[RES_MASK], D1_X_1[RES_MASK]))
-BATCH_X_DATA_3D = np.concatenate((D3_X_0[RES_MASK], D3_X_1[RES_MASK]))
-BATCH_Y_DATA = np.concatenate((Y[RES_MASK], Y[RES_MASK]))
-BATCH_SW_DATA = np.concatenate((WEIGHTS[RES_MASK], WEIGHTS[RES_MASK]))
 GET_DATASET_VALUE = [("1d", False, 5, (BATCH_X_DATA_1D, BATCH_Y_DATA)),
                      ("1d", True, 7, (BATCH_X_DATA_1D, BATCH_Y_DATA, BATCH_SW_DATA)),
                      ("3d", False, 55, (BATCH_X_DATA_3D, BATCH_Y_DATA)),
@@ -65,6 +62,6 @@ def test_get_datasets_value(test_config, tfr_data_dir: str, shape: str, with_sw:
         for value, result in zip(values, results):
             if start_slice == max_slice:
                 end_slice = length
-            assert (value.numpy() == result[start_slice:end_slice]).all()
+            assert np.all(value.numpy() == result[start_slice:end_slice])
         start_slice = end_slice
         end_slice += batch_size

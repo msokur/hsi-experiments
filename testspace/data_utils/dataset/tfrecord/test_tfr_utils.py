@@ -34,4 +34,4 @@ GET_NUMPY_X_DATA = [("1d", D1_X_0), ("3d", D3_X_0)]
 def test_get_numpy_X(tfr_data_dir: str, folder: str, result: np.ndarray):
     tfr_path = os.path.join(tfr_data_dir, folder, "shuffled", "shuffle0" + TFR_FILE_EXTENSION)
     X = get_numpy_X(tfr_path=tfr_path)
-    assert (X == result).all()
+    assert np.all(X == result)

@@ -1,4 +1,4 @@
-from tensorflow import keras
+import keras
 
 from models.model_randomness import get_initializers, set_tf_seed
 
@@ -14,8 +14,14 @@ class ModelBase:
         self.name = name
         set_tf_seed()
 
+    def get_model(self) -> keras.Model:
+        input_ = keras.layers.Input(shape=self.input_shape, name="input")
+        input_expand = keras.layers.Reshape(target_shape=input_.shape[1:] + (1,))(input_)
+
+        return self._get_model_body(input_layer=input_, input_expand_layer=input_expand)
+
     @abc.abstractmethod
-    def get_model(self):
+    def _get_model_body(self, input_layer: keras.layers.Input, input_expand_layer: keras.layers.Reshape) -> keras.Model:
         pass
 
     @staticmethod

@@ -12,7 +12,6 @@
 
 #SBATCH --output=output/CV_VISU_HNO_11x11%j.log
 
-module load cuDNN/8.2.2.26-CUDA-11.4.1
 module load Anaconda3/2023.09-0
 
 ## enter the name from your env
