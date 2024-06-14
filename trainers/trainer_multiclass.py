@@ -11,8 +11,7 @@ class TrainerMulticlass(TrainerBinary):
         loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True)  # TODO, check if from logits?
         metric_dict = self.config.CONFIG_TRAINER[TK.CUSTOM_OBJECTS]
         raw_metrics = [
-            keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
-            keras.metrics.F1Score(**self.config.CONFIG_TRAINER[TK.F1_SCORE])
+            keras.metrics.SparseCategoricalAccuracy(name="accuracy")
         ]
 
         non_weightable_metrics = [

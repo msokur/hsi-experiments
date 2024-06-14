@@ -1,6 +1,7 @@
 from typing import Tuple
 import warnings
 
+from util import tf_metric_multiclass, tf_metrics_binary
 from models.inception_model import InceptionModel1D, InceptionModel3D
 from models.paper_model import PaperModel1D, PaperModel3D
 
@@ -9,10 +10,10 @@ from configuration.configloader_base import read_config
 from configuration.keys import TrainerKeys as TK
 
 # --- multiclass custom metrics to load
-CUSTOM_OBJECTS_MULTI = {}
+CUSTOM_OBJECTS_MULTI = {"F1_score": tf_metric_multiclass.F1_score}
 
 # --- binary custom metrics to load
-CUSTOM_OBJECTS_BINARY = {}
+CUSTOM_OBJECTS_BINARY = {"F1_score": tf_metrics_binary.F1_score}
 
 # --- Models for patch sized data
 MODELS_3D = {"paper_model": PaperModel3D,

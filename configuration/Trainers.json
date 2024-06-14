@@ -7,8 +7,9 @@
     "MODEL": "paper_model",
     "MODEL_PARAMS": "paper_model",
     "LEARNING_RATE": 1e-4,
-    "CUSTOM_OBJECTS": {},
-    "F1_SCORE": {"average": "weighted", "name": "f1_score_weighted"},
+    "CUSTOM_OBJECTS": {
+      "F1_score": [{"name":  "f1_score_weighted", "average": "weighted"}]
+    },
     "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 50,
@@ -35,8 +36,10 @@
     "MODEL": "paper_model",
     "MODEL_PARAMS": "paper_model",
     "LEARNING_RATE": 1e-4,
-    "CUSTOM_OBJECTS": {},
-    "F1_SCORE": {"threshold":  0.5, "name": "f1_score"},
+    "CUSTOM_OBJECTS": {
+      "F1_score": [{"name":  "f1_score"}]
+
+    },
     "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 50,
@@ -63,8 +66,10 @@
     "MODEL": "paper_model",
     "MODEL_PARAMS": "paper_model_tuner",
     "LEARNING_RATE": 1e-4,
-    "CUSTOM_OBJECTS": {},
-    "F1_SCORE": {"average": "weighted", "name": "f1_score_weighted"},
+    "CUSTOM_OBJECTS": {
+      "F1_score": [{"name":  "f1_score_weighted", "average": "weighted"}]
+
+    },
     "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 1,
@@ -98,8 +103,10 @@
     "MODEL": "paper_model",
     "MODEL_PARAMS": "paper_model_tuner",
     "LEARNING_RATE": 1e-4,
-    "CUSTOM_OBJECTS": {},
-    "F1_SCORE": {"threshold":  0.5, "name": "f1_score"},
+    "CUSTOM_OBJECTS": {
+      "F1_score": [{"name":  "f1_score"}]
+
+    },
     "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 1,
@@ -164,8 +171,9 @@
     "MODEL": "inception_model",
     "MODEL_PARAMS": "inception_model",
     "LEARNING_RATE": 1e-4,
-    "CUSTOM_OBJECTS": {},
-      "F1_SCORE": {"threshold":  0.5, "name": "f1_score"},
+    "CUSTOM_OBJECTS": {
+      "F1_score": [{"name":  "f1_score"}]
+    },
     "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 1,

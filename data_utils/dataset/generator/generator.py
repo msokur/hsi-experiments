@@ -24,9 +24,7 @@ class GeneratorDataset:
     def __getitem__(self, idx):
         batch_data = self.data_storage.get_datas(data_path=self.batch_paths[idx])
 
-        data = (batch_data[self.X_name][:],
-                # TODO: Maby refactoring when parsing the dataset to shuffle files
-                np.expand_dims(a=batch_data[self.y_name][:].astype(np.float32), axis=-1))
+        data = (batch_data[self.X_name][:], batch_data[self.y_name][:])
 
         if self.with_sample_weights and self.weights_name in batch_data:
             data += (batch_data[self.weights_name][:].astype(np.float32),)
@@ -48,7 +46,7 @@ class GeneratorDataset:
         X, y = data[self.X_name], data[self.y_name]
         output_signature = (
             tf.TensorSpec(shape=((None,) + (X.shape[1:])), dtype=X.dtype, name=self.X_name),
-            tf.TensorSpec(shape=(None, 1) if len(y.shape) == 1 else ((None,) + (y.shape[1:])), dtype=tf.float32,
+            tf.TensorSpec(shape=(None,) if len(y.shape) == 1 else ((None,) + (y.shape[1:])), dtype=tf.float32,
                           name=self.y_name)
         )
 
