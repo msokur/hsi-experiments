@@ -125,7 +125,8 @@ class CrossValidatorBase:
             leave_out_paths = np.array(paths)[indexes]
 
             if self.__check_data_label__(leave_out_paths):
-                print(f"In files {leave_out_paths} are no needed labels for training!")
+                print(f"The patient file(s) '{', '.join(leave_out_paths)}' are no needed labels for training! "
+                      f"So we skip this patient(s)!")
                 continue
 
             except_names = [self.data_storage.get_name(path=p) for p in paths]
