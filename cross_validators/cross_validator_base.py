@@ -46,17 +46,20 @@ class CrossValidatorBase:
         #self.config.telegram.send_tg_message(f'Operations in cross_validation.py for {self.config.CONFIG_CV[CVK.NAME]} '
         #                                     f'are successfully completed!')
 
-    def evaluation(self, **kwargs):
-        training_csv_path = self.get_csv(os.path.join(self.config.CONFIG_PATHS[PK.LOGS_FOLDER][0],
-                                                      self.config.CONFIG_CV[CVK.NAME]))
-        print('training_csv_path', training_csv_path)
-
+    def evaluation(self, save_predictions=True, **kwargs):
         evaluator = provider.get_evaluation(config=self.config,
                                             labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
-
-        evaluator.save_predictions_and_metrics(training_csv_path=training_csv_path,
-                                               data_folder=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
-                                               **kwargs)
+        
+        if save_predictions:
+            training_csv_path = self.get_csv(os.path.join(self.config.CONFIG_PATHS[PK.LOGS_FOLDER][0],
+                                                      self.config.CONFIG_CV[CVK.NAME]))
+            print('training_csv_path', training_csv_path)
+            evaluator.save_predictions_and_metrics(training_csv_path=training_csv_path,
+                                                   data_folder=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
+                                                   save_predictions=save_predictions,
+                                                   **kwargs)
+        else:
+            evaluator.evaluate(**kwargs)
 
     def cross_validation_step(self, model_name: str, except_names: List[str], leave_out_names=None):
         if leave_out_names is None:

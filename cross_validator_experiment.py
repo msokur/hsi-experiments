@@ -7,6 +7,8 @@ import csv
 
 from cross_validators.cross_validator_base import CrossValidatorBase
 from data_utils.preprocessor import Preprocessor
+from evaluation.optimal_parameters import OptimalThreshold
+from configuration.keys import CrossValidationKeys as CVK
 
 
 class CrossValidatorExperiment(CrossValidatorBase):
@@ -35,8 +37,10 @@ class CrossValidatorExperiment(CrossValidatorBase):
             self.preprocess()
 
             super().__init__(self.config, *args, **kwargs)
-
+            
             self.pipeline(thresholds=np.round(np.linspace(0.001, 0.6, 100), 4))
+            
+            self.add_additional_thresholds_if_needed()
 
             rmtree(self.config.CONFIG_PATHS['RAW_NPZ_PATH'])
 
@@ -122,6 +126,58 @@ class CrossValidatorExperiment(CrossValidatorBase):
     def preprocess(self):
         preprocessor = Preprocessor(self.config)
         preprocessor.pipeline()
+        
+    def add_additional_thresholds_if_needed(self):
+        def get_executions_flags():
+            return {
+                CVK.EF_CROSS_VALIDATION: False,
+                CVK.EF_EVALUATION: True
+            }
+        
+        def evaluate_additional_thresholds(begin, end):
+            self.pipeline(execution_flags=get_executions_flags(), save_predictions=False, thresholds=np.round(np.linspace(begin, end, 10), 4))
+            
+        def calculate_optimal_threshold():
+            results = optimal_threshold_finder.find_optimal_threshold_in_checkpoint(folder_with_checkpoint)
+            threshold, sensitivity, specificity, _, completeness_options = results
+            print(threshold, sensitivity, specificity, completeness_options)
+            return completeness_options
+        
+        #self.config.CONFIG_PATHS['RESULTS_FOLDER'] = self.config.CONFIG_PATHS['RESULTS_FOLDER'].replace('Debug_thresholds', 'MainExperiment_3d_3_fixed_background') #TODO REMOVE!!!!!!!!!!!!
+        root_folder = self.config.CONFIG_PATHS['RESULTS_FOLDER']
+        optimal_threshold_finder = OptimalThreshold(self.config, root_folder, prints=False)
+        folder_with_checkpoint = os.path.join(root_folder, self.config.CONFIG_CV["NAME"], 'Results_with_EarlyStopping')
+        
+        completeness_options = calculate_optimal_threshold()
+        
+        while completeness_options['add_thresholds_to_the_beginning']:
+            begin = max(completeness_options['existing_thresholds_range'][0] - 0.1, 0)
+            end = completeness_options['existing_thresholds_range'][0]
+            print(f'-------------------Adding additional thresholds ({begin} - {end}) to the beginning of the existing range-------------------')
+            
+            evaluate_additional_thresholds(begin=begin, end=end)
+            
+            completeness_options = calculate_optimal_threshold()
+            
+        while completeness_options['add_thresholds_to_the_end']:
+            begin = completeness_options['existing_thresholds_range'][1]
+            end = min(completeness_options['existing_thresholds_range'][1] + 0.1, 1)
+            print(f'-------------------Adding additional thresholds ({begin} - {end}) to the end of the existing range-------------------')
+            
+            evaluate_additional_thresholds(begin=begin, end=end)
+            
+            completeness_options = calculate_optimal_threshold()
+        
+            
+        while completeness_options['if_additional_resolution_for_optimal_threshold_is_needed']:
+            begin = completeness_options['additional_resolution_range'][0]
+            end = completeness_options['additional_resolution_range'][1]
+            print(f'-------------------Adding additional thresholds ({begin} - {end}) to increase thresholds resolution-------------------')
+            
+            evaluate_additional_thresholds(begin=begin, end=end)
+            
+            completeness_options = calculate_optimal_threshold()
+        
 
 
 if __name__ == '__main__':

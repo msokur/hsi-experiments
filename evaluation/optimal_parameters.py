@@ -75,6 +75,49 @@ class OptimalThreshold:
         idx = thr == threshold
         return sens[idx], spec[idx], np.mean([sens[idx], spec[idx]]), idx
 
+    def check_if_thresholds_are_complete(self,
+                                         thresholds,
+                                         sensitivities,
+                                         specificities,
+                                         checkpoint_folder,
+                                         optimal_index):
+        difference_between_optimal_sens_and_spec = np.abs(sensitivities[optimal_index] -
+                                                          specificities[optimal_index])
+        additional_resolution_range_beginning = thresholds[optimal_index - 1]
+        if optimal_index == 0:
+            additional_resolution_range_beginning = thresholds[optimal_index]
+            
+        
+        if optimal_index == len(thresholds) - 1:
+            additional_resolution_range_end = thresholds[optimal_index]
+        else:
+            additional_resolution_range_end = thresholds[optimal_index + 1]
+        
+        completeness_options = {
+            'add_thresholds_to_the_beginning': False,
+            'add_thresholds_to_the_end': False,
+            'existing_thresholds_range': [thresholds[0], thresholds[-1]],
+            'difference_between_optimal_sens_and_spec': difference_between_optimal_sens_and_spec,
+            'if_additional_resolution_for_optimal_threshold_is_needed': difference_between_optimal_sens_and_spec > 0.01,
+            'additional_resolution_range': [additional_resolution_range_beginning, additional_resolution_range_end]
+        }
+        
+        signs = np.sign(sensitivities - specificities)
+        print(signs)
+        if_sensitivities_and_specificities_intersect = len(np.unique(signs)) > 1
+        if not if_sensitivities_and_specificities_intersect:
+            print(signs)
+            if signs[0] == 1:
+                completeness_options['add_thresholds_to_the_end'] = True
+                print(f'~~~~~~~~~~~~~~~~You need to add new thresholds to the end of the existing thresholds range '
+                      f'({thresholds[0]} - {thresholds[-1]}) for {checkpoint_folder}~~~~~~~~~~~~~~')
+            if signs[1] == -1:
+                completeness_options['add_thresholds_to_the_beginning'] = True
+                print(f'~~~~~~~~~~~~~~~~You need to add new thresholds to the beginning of the existing thresholds '
+                      f'range ({thresholds[0]} - {thresholds[-1]}) for {checkpoint_folder}~~~~~~~~~~~~~~')
+
+        return completeness_options
+
     def find_optimal_threshold_in_checkpoint(self, checkpoint_folder):
         data, sensitivity_column, specificity_column, threshold_column = self.get_data(checkpoint_folder)
 
@@ -95,33 +138,28 @@ class OptimalThreshold:
         # print('Sensitivities', sens)
         # print('Specificities', spec)
 
-        # print intermediate computations
-        # print(np.sign(sens - spec))
         differences = np.abs(sensitivities - specificities)
-        # print(diff)
-        # print(np.argmin(diff))
+        optimal_index = np.argmin(differences)
 
-        if_sensitivities_and_specificities_intersect = np.diff(np.sign(sensitivities - specificities))
-        if len(if_sensitivities_and_specificities_intersect[if_sensitivities_and_specificities_intersect == -2]) == 0:
-            print(if_sensitivities_and_specificities_intersect)
-            print(f'~~~~~~~~~~~~~~~~You need to add new thresholds for {checkpoint_folder}~~~~~~~~~~~~~~')
-
-        # get and print results
-        optimal_index = np.argmin(differences)  # .flatten() #+ 1
+        completeness_options = self.check_if_thresholds_are_complete(thresholds,
+                                                                     sensitivities,
+                                                                     specificities,
+                                                                     checkpoint_folder,
+                                                                     optimal_index)
 
         if self.prints:
-            print(f'optimal index and threshold for {checkpoint_folder}: ', optimal_index, thresholds[optimal_index])
-            print(f'optimal sensitivity and specificity for {checkpoint_folder}: ', sensitivities[optimal_index],
+            print(f'For checkpoint folder: {checkpoint_folder}:')
+            print(f'- optimal index and threshold: ', optimal_index, thresholds[optimal_index])
+            print(f'- optimal sensitivity and specificity: ', sensitivities[optimal_index],
                   specificities[optimal_index])
-            print(f'Mean value of optimal sensitivity and specificity for {checkpoint_folder}: ',
+            print(f'- mean value of optimal sensitivity and specificity: ',
                   np.mean([sensitivities[optimal_index], specificities[optimal_index]]))
 
         return thresholds[optimal_index], \
                sensitivities[optimal_index], \
                specificities[optimal_index], \
-               np.mean([sensitivities[optimal_index],
-                        specificities[optimal_index]]), \
-               optimal_index
+               optimal_index, \
+               completeness_options
 
 
 class OptimalCheckpoint(OptimalThreshold):
@@ -168,11 +206,11 @@ if __name__ == '__main__':
 
     root_folder = "D:\\mi186veva-results\\MainExperiment_3d_3_fixed_background"
     optimal_threshold_finder = OptimalThreshold(config, root_folder, prints=False)
-    folder_with_checkoint = 'D:\\mi186veva-results\\MainExperiment_3d_3_fixed_background\\0_3D3_Ns_WT_Sm_S3_BF_B0' \
+    folder_with_checkpoint = 'D:\\mi186veva-results\\MainExperiment_3d_3_fixed_background\\0_3D3_Ns_WT_Sm_S3_BF_B0' \
                             '.1_B0.25_\\Results_with_EarlyStopping'
-    results = optimal_threshold_finder.find_optimal_threshold_in_checkpoint(folder_with_checkoint)
-    threshold, sensitivity, specificity, mean, _ = results
-    print(threshold, sensitivity, specificity, mean)
+    results = optimal_threshold_finder.find_optimal_threshold_in_checkpoint(folder_with_checkpoint)
+    threshold, sensitivity, specificity, mean, completeness_options = results
+    print(threshold, sensitivity, specificity, mean, completeness_options)
 
     '''from evaluation.metrics_csvreader import MetricsCsvReader
     reader = MetricsCsvReader()
