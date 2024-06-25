@@ -130,7 +130,7 @@ class Experiment:
 
     def run_experiment(self):
         #for i in range(29, 30):
-        for i, combination in enumerate(self.combinations):
+        for i, combination in enumerate(self.combinations[:1]):
             #combination = self.combinations[i]
             # print('-----------------')
             #if i == 116:
@@ -182,7 +182,8 @@ class Experiment:
 
 
 if __name__ == '__main__':
-    gaussian_params = [0.5, 1, 1.5]
+    #gaussian_params = [0.5, 1, 1.5]
+    gaussian_params = [1, 2, 3]
     median_params = [3, 5, 7]
 
     config_for_experiment = {
@@ -205,7 +206,7 @@ if __name__ == '__main__':
         },
         "SMOOTHING.SMOOTHING_VALUE": {
             'config_section': 'CONFIG_DATALOADER',
-            'parameters': median_params + gaussian_params
+            'parameters': np.unique(median_params + gaussian_params).astype(float)
         },
         "BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
             'config_section': 'CONFIG_DATALOADER',
@@ -231,7 +232,7 @@ if __name__ == '__main__':
         }
     }
 
-    experiment = Experiment('MainExperiment_3d_3_fixed_background',
+    experiment = Experiment('MainExperiment_3d_3_fixed_background_smoothing_2d',
                             config_for_experiment,
                             background_params=background_config,
                             replace_combinations_file=True)
