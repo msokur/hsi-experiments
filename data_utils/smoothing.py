@@ -1,6 +1,6 @@
 from scipy.ndimage import gaussian_filter1d, gaussian_filter, median_filter
+from scipy.signal import savgol_filter
 import abc
-import numpy as np
 
 from configuration.keys import DataLoaderKeys as DLK
 
@@ -9,51 +9,79 @@ class Smoother:
     def __init__(self, config):
         self.config = config
         self.size = self.config.CONFIG_DATALOADER[DLK.SMOOTHING][DLK.SMOOTHING_VALUE]
-    
+        self.smoothing_dimension = self.config.CONFIG_DATALOADER[DLK.SMOOTHING][DLK.SMOOTHING_DIMENSIONS]
+
     @abc.abstractmethod
-    def smooth_1d(self, X):
+    def smooth_1d(self, spectrum):
         pass
 
     @abc.abstractmethod
-    def smooth_2d(self, X):
+    def smooth_2d(self, spectrum):
         pass
 
-    def smooth(self, X):
-        smoothing_dimension = self.config[DLK.SMOOTHING][DLK.SMOOTHING_DIMENSIONS]
-        if smoothing_dimension == '1d':
-            self.smooth_1d(X)
-        if smoothing_dimension == '2d':
-            self.smooth_2d(X)
+    @abc.abstractmethod
+    def smooth_3d(self, spectrum):
+        pass
 
-        raise NotImplementedError("There is no implementation for SMOOTHING_DIMENSIONS, look in Dataloader.json config")
+    def print_type_of_smoother(self, smoother_type):
+        print(f"Spectrum is smoothed with {smoother_type} filter! With dimensions: {self.smoothing_dimension};"
+              f" and value - {self.size}")
 
-    def smooth1d_from_2d_input(self, X_2d):
-        original_shape = X_2d.shape
+    def smooth(self, spectrum):
+        if self.smoothing_dimension == '1d':
+            print("1d smoothing")
+            return self.smooth_1d(spectrum)
+        elif self.smoothing_dimension == '2d':
+            print("2d smoothing")
+            return self.smooth_2d(spectrum)
+        elif self.smoothing_dimension == '3d':
+            print("3d smoothing")
+            return self.smooth_3d(spectrum)
 
-        X_1d = np.reshape(X_2d, [original_shape[0] * original_shape[1], original_shape[2]])
-        X_smoothed = self.smooth_1d(X_1d)
-        X_smoothed_2d = np.reshape(X_smoothed, original_shape)
+        raise NotImplementedError(f"There is no implementation for SMOOTHING_DIMENSIONS {self.smoothing_dimension}, "
+                                  "look in Dataloader.json config")
 
-        return X_smoothed_2d
-            
-    
+
 class MedianFilter(Smoother):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-    
-    def smooth_1d(self, X):
-        return median_filter(X, size=(1, self.size))
+        self.print_type_of_smoother('Median filter')
 
-    def smooth_2d(self, X):
-        return median_filter(X, size=self.size)
+    def smooth_1d(self, spectrum):
+        return median_filter(spectrum, size=(1, 1, self.size))
+
+    def smooth_2d(self, spectrum):
+        return median_filter(spectrum, size=(self.size, self.size, 1))
+
+    def smooth_3d(self, spectrum):
+        return median_filter(spectrum, size=self.size)
 
 
 class GaussianFilter(Smoother):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-    
-    def smooth_1d(self, X):
-        return gaussian_filter1d(X, sigma=self.size)
+        self.print_type_of_smoother('Gaussian filter')
 
-    def smooth_2d(self, X):
-        return gaussian_filter(X, sigma=self.size)
+    def smooth_1d(self, spectrum):
+        return gaussian_filter1d(spectrum, sigma=self.size)
+
+    def smooth_2d(self, spectrum):
+        return gaussian_filter(spectrum, sigma=self.size, axes=[0, 1])
+
+    def smooth_3d(self, spectrum):
+        return gaussian_filter(spectrum, sigma=self.size)
+
+
+class SavGolFilter(Smoother):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.print_type_of_smoother('Savatsky-Golai filter')
+
+    def smooth_1d(self, spectrum):
+        return savgol_filter(x=spectrum, window_length=self.size[0], polyorder=self.size[1], axis=-1)
+
+    def smooth_2d(self, spectrum):
+        raise NotImplementedError("There is no implementation for 2d Savatsky-Golai filter yet")
+
+    def smooth_3d(self, spectrum):
+        raise NotImplementedError("There is no implementation for 3d Savatsky-Golai filter yet")

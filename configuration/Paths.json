@@ -22,7 +22,7 @@
   },
   "Win_Mariia": {
     "MODE": "WITHOUT_GPU",
-    "DATABASE_ROOT_FOLDER": "C:\\Users\\tkachenko\\Desktop\\HSI\\colon",
+    "DATABASE_ROOT_FOLDER": "C:\\Users\\tkachenko\\Desktop\\HSI\\colon_for_debug",
     "LOGS_FOLDER": ["C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\logs"],
     "RESULTS_FOLDER": "C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\results"
   },

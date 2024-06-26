@@ -110,14 +110,14 @@ def get_evaluation(labels: list, config, *args, **kwargs):
 
 
 def get_smoother(typ: str, *args, **kwargs):
-    from data_utils.smoothing import MedianFilter, GaussianFilter
+    from data_utils.smoothing import MedianFilter, GaussianFilter, SavGolFilter
 
     if typ == "median_filter":
-        print("Spectrum is smoothed with median filter!")
         return MedianFilter(*args, **kwargs)
     elif typ == "gaussian_filter":
-        print("Spectrum is smoothed with gaussian filter!")
         return GaussianFilter(*args, **kwargs)
+    elif typ == "savgol_filter":
+        return SavGolFilter(*args, **kwargs)
 
     value_error("smoother", typ)
 

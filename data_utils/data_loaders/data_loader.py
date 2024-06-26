@@ -122,7 +122,7 @@ class DataLoader:
         if smoothing_section[DLK.SMOOTHING_TYPE] is not None:
             smoother = provider.get_smoother(typ=smoothing_section[DLK.SMOOTHING_TYPE],
                                              config=self.config)
-            spectrum = smoother.smooth1d_from_2d_input(spectrum)
+            spectrum = smoother.smooth(spectrum)
         return spectrum
 
     def read_spectrum_and_mask(self, path, mask_path):
