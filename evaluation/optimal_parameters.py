@@ -3,6 +3,7 @@ import csv
 import os
 import numpy as np
 from tqdm import tqdm
+from configuration.keys import CrossValidationKeys as CVK
 
 import inspect
 import sys
@@ -13,7 +14,7 @@ sys.path.insert(0, parentdir)
 
 
 class OptimalThreshold:
-    def __init__(self, config, root_path,
+    def __init__(self, config, root_path=None,
                  checkpoints_regex=None,
                  thresholds_filename='compare_all_thresholds.csv',
                  prints=True):
@@ -21,7 +22,11 @@ class OptimalThreshold:
         if checkpoints_regex is None:
             checkpoints_regex = 'cp-0000' + self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"]
 
-        self.root_path = root_path
+        if root_path is None:
+            self.root_path = self.config.CONFIG_PATHS['RESULTS_FOLDER']
+        else:
+            self.root_path = root_path
+
         self.checkpoints_regex = checkpoints_regex
         self.thresholds_filename = thresholds_filename
         self.prints = prints
@@ -86,13 +91,12 @@ class OptimalThreshold:
         additional_resolution_range_beginning = thresholds[optimal_index - 1]
         if optimal_index == 0:
             additional_resolution_range_beginning = thresholds[optimal_index]
-            
-        
+
         if optimal_index == len(thresholds) - 1:
             additional_resolution_range_end = thresholds[optimal_index]
         else:
             additional_resolution_range_end = thresholds[optimal_index + 1]
-        
+
         completeness_options = {
             'add_thresholds_to_the_beginning': False,
             'add_thresholds_to_the_end': False,
@@ -101,7 +105,7 @@ class OptimalThreshold:
             'if_additional_resolution_for_optimal_threshold_is_needed': difference_between_optimal_sens_and_spec > 0.01,
             'additional_resolution_range': [additional_resolution_range_beginning, additional_resolution_range_end]
         }
-        
+
         signs = np.sign(sensitivities - specificities)
         print(signs)
         if_sensitivities_and_specificities_intersect = len(np.unique(signs)) > 1
@@ -161,6 +165,64 @@ class OptimalThreshold:
                optimal_index, \
                completeness_options
 
+    def add_additional_thresholds_if_needed(self, CV):
+        def get_executions_flags():
+            return {
+                CVK.EF_CROSS_VALIDATION: False,
+                CVK.EF_EVALUATION: True
+            }
+
+        def evaluate_additional_thresholds(begin, end):
+            CV.pipeline(execution_flags=get_executions_flags(), save_predictions=False,
+                        thresholds=np.round(np.linspace(begin, end, 10), 4))
+
+        def calculate_optimal_threshold():
+            results = self.find_optimal_threshold_in_checkpoint(folder_with_checkpoint)
+            threshold, sensitivity, specificity, _, completeness_options = results
+            print(threshold, sensitivity, specificity, completeness_options)
+            return completeness_options
+
+        # self.config.CONFIG_PATHS['RESULTS_FOLDER'] = self.config.CONFIG_PATHS['RESULTS_FOLDER'].replace('Debug_thresholds', 'MainExperiment_3d_3_fixed_background') #TODO REMOVE!!!!!!!!!!!!
+
+        folder_with_checkpoint = os.path.join(self.root_path,
+                                              self.config.CONFIG_CV["NAME"],
+                                              'Results_with_EarlyStopping')
+
+        completeness_options = calculate_optimal_threshold()
+
+        while completeness_options['add_thresholds_to_the_beginning']:
+            begin = max(completeness_options['existing_thresholds_range'][0] - 0.1, 0)
+            end = completeness_options['existing_thresholds_range'][0]
+            print(
+                f'-------------------Adding additional thresholds ({begin} - {end}) '
+                f'to the beginning of the existing range-------------------')
+
+            evaluate_additional_thresholds(begin=begin, end=end)
+
+            completeness_options = calculate_optimal_threshold()
+
+        while completeness_options['add_thresholds_to_the_end']:
+            begin = completeness_options['existing_thresholds_range'][1]
+            end = min(completeness_options['existing_thresholds_range'][1] + 0.1, 1)
+            print(
+                f'-------------------Adding additional thresholds ({begin} - {end}) '
+                f'to the end of the existing range-------------------')
+
+            evaluate_additional_thresholds(begin=begin, end=end)
+
+            completeness_options = calculate_optimal_threshold()
+
+        while completeness_options['if_additional_resolution_for_optimal_threshold_is_needed']:
+            begin = completeness_options['additional_resolution_range'][0]
+            end = completeness_options['additional_resolution_range'][1]
+            print(
+                f'-------------------Adding additional thresholds ({begin} - {end}) '
+                f'to increase thresholds resolution-------------------')
+
+            evaluate_additional_thresholds(begin=begin, end=end)
+
+            completeness_options = calculate_optimal_threshold()
+
 
 class OptimalCheckpoint(OptimalThreshold):
     def __init__(self, *args, **kwargs):
@@ -204,13 +266,13 @@ class OptimalCheckpoint(OptimalThreshold):
 if __name__ == '__main__':
     from configuration import get_config as config
 
-    root_folder = "D:\\mi186veva-results\\MainExperiment_3d_3_fixed_background"
+    '''root_folder = "D:\\mi186veva-results\\MainExperiment_3d_3_fixed_background"
     optimal_threshold_finder = OptimalThreshold(config, root_folder, prints=False)
     folder_with_checkpoint = 'D:\\mi186veva-results\\MainExperiment_3d_3_fixed_background\\0_3D3_Ns_WT_Sm_S3_BF_B0' \
                             '.1_B0.25_\\Results_with_EarlyStopping'
     results = optimal_threshold_finder.find_optimal_threshold_in_checkpoint(folder_with_checkpoint)
     threshold, sensitivity, specificity, mean, completeness_options = results
-    print(threshold, sensitivity, specificity, mean, completeness_options)
+    print(threshold, sensitivity, specificity, mean, completeness_options)'''
 
     '''from evaluation.metrics_csvreader import MetricsCsvReader
     reader = MetricsCsvReader()

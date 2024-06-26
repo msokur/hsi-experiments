@@ -2,7 +2,7 @@ import numpy as np
 import provider
 from configuration.get_config import telegram
 from configuration.keys import CrossValidationKeys as CVK, DataLoaderKeys as DLK
-
+from evaluation.optimal_parameters import OptimalThreshold
 
 def out_of_the_box(config):
     cross_validator = provider.get_cross_validator(config=config, typ=config.CONFIG_CV[CVK.TYPE])
@@ -20,11 +20,12 @@ def out_of_the_box(config):
     # because they passed automatically
     thresholds = None
     if len(config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]) <= 2:
-        thresholds = np.round(np.linspace(0.1, 0.5, 5), 4)
+        thresholds = np.round(np.linspace(0.1, 0.5, 5), 4)  # specify thresholds if classification is binary
     cross_validator.pipeline(execution_flags=execution_flags,
-                             # specify thresholds if classification is binary
-                             thresholds=thresholds
-                             )
+                             thresholds=thresholds)
+
+    optimal_threshold_finder = OptimalThreshold(config, prints=False)
+    optimal_threshold_finder.add_additional_thresholds_if_needed(cross_validator)
 
 
 def postprocessing_for_one_model(config):
