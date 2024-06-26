@@ -107,6 +107,9 @@ class ChoiceNames:
                                      paths_names=raw_paths_names,
                                      excepts=except_names)
 
+        raise NotImplementedError("No implementation for CHOOSE_EXCLUDED_VALID in Crossvalidation.json, "
+                                  "probably it spelled wrong")
+
     def restore_valid_names(self):
         print("Restoring of valid patients...")
         print('WARNING! Check if an order of the excepted test patients in the RESTORE_VALID_PATIENTS_FOLDER '

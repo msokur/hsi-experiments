@@ -56,7 +56,6 @@ class CrossValidatorBase:
             print('training_csv_path', training_csv_path)
             evaluator.save_predictions_and_metrics(training_csv_path=training_csv_path,
                                                    data_folder=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
-                                                   save_predictions=save_predictions,
                                                    **kwargs)
         else:
             evaluator.evaluate(**kwargs)
