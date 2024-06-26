@@ -22,8 +22,8 @@ class CrossValidatorExperiment(CrossValidatorBase):
             print(f'Hi from CV! with {self.args.experiment_folder}, {self.args.cv_name} and config_index='
                   f'{self.args.config_index}')
 
-            print(self.config.CONFIG_PATHS)
-            print(self.config.CONFIG_CV)
+            #print(self.config.CONFIG_PATHS)
+            #print(self.config.CONFIG_CV)
             self.config.CONFIG_CV["TYPE"] = 'experiment'
             self.config.CONFIG_CV["NAME"] = self.args.config_index + '_' + self.args.abbreviation
             self.config.CONFIG_PATHS['RESULTS_FOLDER'] = self.args.results_folder
@@ -38,6 +38,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
 
             super().__init__(self.config, *args, **kwargs)
             
+            #self.pipeline(execution_flags={CVK.EF_CROSS_VALIDATION: False, CVK.EF_EVALUATION: True}, thresholds=np.round(np.linspace(0.001, 0.6, 100), 4))
             self.pipeline(thresholds=np.round(np.linspace(0.001, 0.6, 100), 4))
 
             optimal_threshold_finder = OptimalThreshold(self.config, prints=False)

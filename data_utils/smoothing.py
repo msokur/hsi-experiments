@@ -26,6 +26,9 @@ class Smoother:
     def print_type_of_smoother(self, smoother_type):
         print(f"Spectrum is smoothed with {smoother_type} filter! With dimensions: {self.smoothing_dimension};"
               f" and value - {self.size}")
+    
+    def can_convert_to_int(number):
+        return isinstance(number, (int, float)) and number == int(number)
 
     def smooth(self, spectrum):
         if self.smoothing_dimension == '1d':
@@ -46,6 +49,11 @@ class MedianFilter(Smoother):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.print_type_of_smoother('Median filter')
+        
+        if MedianFilter.can_convert_to_int(self.size):
+            self.size = int(self.size)
+        else:
+            raise ValueError("SMOOTHING_VALUE for Median filter could not be float")
 
     def smooth_1d(self, spectrum):
         return median_filter(spectrum, size=(1, 1, self.size))
