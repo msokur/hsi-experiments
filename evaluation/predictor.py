@@ -9,7 +9,7 @@ from configuration.keys import DataLoaderKeys as DLK, CrossValidationKeys as CVK
 from models.model_randomness import set_tf_seed
 from provider import get_data_loader, get_data_storage
 from configuration.parameter import (
-    STORAGE_TYPE, MAX_SIZE_PER_SPEC
+    STORAGE_TYPE, MAX_SIZE_PER_SPEC, ORIGINAL_NAME
 )
 
 tf.random.set_seed(1)
@@ -38,8 +38,6 @@ class Predictor:
         """
         custom_objects = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS_LOAD"]
         results_dictionary = []
-        data_loader = get_data_loader(typ=self.config.CONFIG_DATALOADER[DLK.TYPE], config=self.config,
-                                      data_storage=self.data_storage)
         with open(training_csv_path, newline='') as csvfile:
             report_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
             for row in tqdm(report_reader):
@@ -48,7 +46,7 @@ class Predictor:
                 model_path = self.edit_model_path_if_local(row[5])
                 checkpoint = self.get_checkpoint(checkpoint, model_path=model_path)
 
-                name = data_loader.get_name(row[4])
+                name = self.data_storage.get_name(row[4])
                 print(f'We get checkpoint {checkpoint} for {model_path}')
 
                 self.model = tf.keras.models.load_model(os.path.join(model_path,
@@ -56,12 +54,13 @@ class Predictor:
                                                                      checkpoint),
                                                         custom_objects=custom_objects)
                 # predictor = Predictor(self.config, checkpoint, MODEL_FOLDER=model_path)
-                predictions, gt, size = self.get_predictions_for_npz(os.path.join(folder_with_npz, name))
+                predictions, gt, size, names = self.get_predictions_for_npz(os.path.join(folder_with_npz, name))
 
                 results_dictionary.append({
                     'name': name,
                     'predictions': predictions,
                     'gt': gt,
+                    ORIGINAL_NAME: names,
                     'size': size,
                     'checkpoint': checkpoint
                 })
@@ -103,7 +102,15 @@ class Predictor:
 
         predictions = np.concatenate(predictions_, axis=0)
 
-        return predictions, gt, size
+        names = None
+        if ORIGINAL_NAME in data:
+            names = data[ORIGINAL_NAME][...][indexes]
+
+        # TODO can be deleted in future, is for old datasets
+        if "org_name" in data:
+            names = data["org_name"][...][indexes]
+
+        return predictions, gt, size, names
 
     def edit_model_path_if_local(self, model_path):
         if "LOCAL" in self.config.CONFIG_PATHS["MODE"]:

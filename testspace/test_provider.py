@@ -99,13 +99,13 @@ def test_get_evaluation_error(test_config):
         get_evaluation(labels=[0], config=test_config)
 
 
-GET_SMOOTHER_DATA = [("median_filter", "/work/folder", 5, MedianFilter),
-                     ("gaussian_filter", "/work/folder2", 2, GaussianFilter)]
+GET_SMOOTHER_DATA = [("median_filter", MedianFilter),
+                     ("gaussian_filter", GaussianFilter)]
 
 
-@pytest.mark.parametrize("typ,path,size,result", GET_SMOOTHER_DATA)
-def test_get_smoother(test_config, typ, path, size, result):
-    smoother = get_smoother(typ=typ, path=path, size=size)
+@pytest.mark.parametrize("typ,result", GET_SMOOTHER_DATA)
+def test_get_smoother(test_config, typ, result):
+    smoother = get_smoother(typ=typ, config=test_config)
 
     assert isinstance(smoother, result)
 

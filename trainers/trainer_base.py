@@ -17,8 +17,11 @@ from callbacks import CustomTensorboardCallback
 from data_utils.data_storage import DataStorage
 from configuration.copy_py_files import copy_files
 from configuration.keys import (
-    TrainerKeys as TK, PathKeys as PK, DataLoaderKeys as DLK, PreprocessorKeys as PPK,
-    CrossValidationKeys as CVK)
+    TrainerKeys as TK,
+    PathKeys as PK,
+    DataLoaderKeys as DLK,
+    CrossValidationKeys as CVK
+)
 from configuration.parameter import (
     DATASET_TYPE, FILE_WITH_VALID_NAME, HISTORY_FILE, TUNE
 )
@@ -115,7 +118,6 @@ class Trainer:
 
         class_weights = self.get_class_weights(root_data_paths)
         return train_ds, valid_ds, class_weights
-
 
     def get_callbacks(self):
         checkpoint_path = os.path.join(self.log_dir, self.config.CONFIG_PATHS[PK.CHECKPOINT_FOLDER], "cp-{epoch:04d}")

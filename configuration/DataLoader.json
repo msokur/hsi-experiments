@@ -66,8 +66,6 @@
 				"COLOR": "cornflowerblue"
 			}
 		},
-		"SPLIT_PATHS_BY": "Files",
-		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
 		"BACKGROUND": {
 			"WITH_BACKGROUND_EXTRACTION": false,
 			"BLOOD_THRESHOLD": 0.1,
@@ -142,8 +140,6 @@
 				"COLOR": "cornflowerblue"
 			}
 		},
-		"SPLIT_PATHS_BY": "Files",
-		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
 		"BACKGROUND": {
 			"WITH_BACKGROUND_EXTRACTION": true,
 			"BLOOD_THRESHOLD": 0.1,
@@ -198,9 +194,11 @@
 				"COLOR": "red"
 			}
 		},
-		"SPLIT_PATHS_BY": "Files",
-		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
-		"WITH_BACKGROUND_EXTRACTION": false
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": true,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		}
 	},
 	"GASTRIC": {
 		"TYPE": "normal",
@@ -212,7 +210,6 @@
 		"WAVE_AREA": 100,
 		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
 		"NAME_SPLIT": null,
-		"NUMBER_SORT": ["Laura_Daten", null],
 		"MASK_DIFF": [".dat", ".mk2"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
@@ -295,9 +292,11 @@
 				"COLOR": "saddlebrown"
 			}
 		},
-		"SPLIT_PATHS_BY": "Files",
-		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
-		"WITH_BACKGROUND_EXTRACTION": false,
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		},
 		"DATA_NAMES_FROM_FILE": null
 	},
 	"GASTRIC_EXVIVO": {
@@ -310,7 +309,6 @@
 		"WAVE_AREA": 100,
 		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6],
 		"NAME_SPLIT": null,
-		"NUMBER_SORT": ["Laura_Daten", null],
 		"MASK_DIFF": [".dat", ".mk2"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
@@ -393,9 +391,11 @@
 				"COLOR": "saddlebrown"
 			}
 		},
-		"SPLIT_PATHS_BY": "Files",
-		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
-		"WITH_BACKGROUND_EXTRACTION": false,
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		},
 		"DATA_NAMES_FROM_FILE": "exvivo.csv"
 	},
 	"GASTRIC_INVIVO": {
@@ -408,7 +408,6 @@
 		"WAVE_AREA": 100,
 		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6],
 		"NAME_SPLIT": null,
-		"NUMBER_SORT": ["Laura_Daten", null],
 		"MASK_DIFF": [".dat", ".mk2"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
@@ -491,9 +490,11 @@
 				"COLOR": "saddlebrown"
 			}
 		},
-		"SPLIT_PATHS_BY": "Files",
-		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
-		"WITH_BACKGROUND_EXTRACTION": false,
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		},
 		"DATA_NAMES_FROM_FILE": "invivo.csv"
 	},
 	"MAT_BRAIN": {
@@ -506,7 +507,6 @@
 		"OUTPUT_SIGNATURE_X_FEATURES": 128,
 		"LABELS_TO_TRAIN": [1, 2, 3, 4],
 		"NAME_SPLIT": null,
-		"NUMBER_SORT": ["Op", "C"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
 		"SMOOTHING": {
@@ -548,14 +548,11 @@
 				"COLOR": "green"
 			}
 		},
-		"SPLIT_PATHS_BY": "List",
-		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": [
-			["Op8C1", "Op8C2"],
-			["12C1", "12C2"],
-			["15C1"],
-			["20C1"]
-		],
-		"WITH_BACKGROUND_EXTRACTION": false
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		}
 	},
 	"MAT_COLON": {
 		"TYPE": "normal",
@@ -567,7 +564,6 @@
 		"OUTPUT_SIGNATURE_X_FEATURES": 81,
 		"LABELS_TO_TRAIN": [0, 1],
 		"NAME_SPLIT": null,
-		"NUMBER_SORT": ["Cp", null],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
 		"SMOOTHING": {
@@ -594,9 +590,11 @@
 				"COLOR": "blue"
 			}
 		},
-		"SPLIT_PATHS_BY": "Files",
-		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
-		"WITH_BACKGROUND_EXTRACTION": false
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		}
 	},
 	"MAT_ESO": {
 		"TYPE": "normal",
@@ -608,7 +606,6 @@
 		"OUTPUT_SIGNATURE_X_FEATURES": 81,
 		"LABELS_TO_TRAIN": [0, 1, 2],
 		"NAME_SPLIT": null,
-		"NUMBER_SORT": ["EP", null],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
 		"SMOOTHING": {
@@ -641,9 +638,11 @@
 				"COLOR": "red"
 			}
 		},
-		"SPLIT_PATHS_BY": "Files",
-		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
-		"WITH_BACKGROUND_EXTRACTION": false
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		}
 	},
 	"MAT_COLON_SPAIN": {
 		"TYPE": "normal",
@@ -655,7 +654,6 @@
 		"OUTPUT_SIGNATURE_X_FEATURES": 81,
 		"LABELS_TO_TRAIN": [0, 1],
 		"NAME_SPLIT": null,
-		"NUMBER_SPLIT": ["CP", null],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
 		"SMOOTHING": {
@@ -682,9 +680,11 @@
 				"COLOR": "blue"
 			}
 		},
-		"SPLIT_PATHS_BY": "Files",
-		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
-		"WITH_BACKGROUND_EXTRACTION": false
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		}
 	},
     "COLON": {
 		"TYPE": "normal",
@@ -722,8 +722,6 @@
 				"LABEL": "Cancer",
 				"COLOR": "yellow"
 		}},
-		"SPLIT_PATHS_BY": "Files",
-		"CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1,
 		"BACKGROUND": {
 			"WITH_BACKGROUND_EXTRACTION": false,
 			"BLOOD_THRESHOLD": 0.1,

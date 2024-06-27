@@ -57,3 +57,7 @@ class DataStorageNPZ(DataStorage):
         for k, v in data.items():
             new_data[k] = np.concatenate((v, append_datas[k]), axis=0)
         np.savez(file=file_path, **new_data)
+
+    @staticmethod
+    def get_extension() -> str:
+        return ".npz"

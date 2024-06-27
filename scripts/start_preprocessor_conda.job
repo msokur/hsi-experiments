@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=prepro
+#SBATCH --partition=clara
+#SBATCH --time=40:00:00
+#SBATCH --mem=100G
+##SBATCH --gres=gpu:v100:2
+##SBATCH --gres=gpu:rtx2080ti:2
+
+#SBATCH --output=output/PrePro_HNO_2__9x9_SNV_NO_SMOOTH%j.log
+
+module load Anaconda3/2023.09-0
+
+## enter the name from your env
+CONDA_ENV="hsi_env"
+
+## source your .bashrc to load conda
+source ~/.bashrc
+
+## activate conda env
+conda activate $CONDA_ENV
+
+## run python script
+python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/data_utils/preprocessor.py
+
+## deactivate conda env
+conda deactivate

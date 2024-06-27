@@ -1,5 +1,5 @@
-import pytest
 import numpy as np
+import pytest
 import os
 
 from shutil import rmtree
@@ -9,20 +9,16 @@ from data_utils.data_storage import DataStorageZARR, DataStorageNPZ
 from configuration.parameter import (
     TFR_FILE_EXTENSION,
 )
-from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK, PathKeys as PK
+from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
 
 from .conftest import (
-    D1_X_0, D1_X_1, D3_X_0, D3_X_1, Y, WEIGHTS, NAMES_IDX
+    USE_NAMES,
+    LABELS,
+    BATCH_X_DATA_1D,
+    BATCH_X_DATA_3D,
+    BATCH_Y_DATA,
+    BATCH_SW_DATA,
 )
-
-LABELS = [0, 1, 2]
-USE_NAMES = ["test_0", "test_1", "test_2", "test_3"]
-
-RES_MASK = np.isin(Y, LABELS) * np.isin(NAMES_IDX, [0, 1, 2, 3])
-BATCH_X_DATA_1D = np.concatenate((D1_X_0[RES_MASK], D1_X_1[RES_MASK]))
-BATCH_X_DATA_3D = np.concatenate((D3_X_0[RES_MASK], D3_X_1[RES_MASK]))
-BATCH_Y_DATA = np.concatenate((Y[RES_MASK], Y[RES_MASK]))
-BATCH_SW_DATA = np.concatenate((WEIGHTS[RES_MASK], WEIGHTS[RES_MASK]))
 
 
 @pytest.fixture
@@ -37,7 +33,6 @@ def get_test_datasets(test_config, data_typ: str, shape: str, with_sw: bool, fil
     test_config.CONFIG_TRAINER[TK.BATCH_SIZE] = batch_size
     test_config.CONFIG_DATALOADER[DLK.D3] = True if shape == "3d" else False
     test_config.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS] = with_sw
-    # test_config.CONFIG_PATHS[PK.BATCHED_PATH] = os.path.join(file_dir, f"test_batches_{data_typ}_{shape}_{with_sw}")
 
     sh_path = os.path.join(file_dir, f"{data_typ}_file", shape, "shuffled")
     if data_typ == "tfr":
@@ -83,10 +78,10 @@ def test_get_datasets_value(_delete_batches, test_config, data_dir: str, data_ty
         for value, result in zip(values, results):
             if start_slice == max_slice:
                 end_slice = length
-            if not (value.numpy() == result[start_slice:end_slice]).all():
+            if not np.all(value.numpy() == result[start_slice:end_slice]):
                 print(f"---- {start_slice} -- {end_slice} ----")
                 print(f"dataset:\n{value.numpy()}\n")
                 print(f"result:\n{result[start_slice:end_slice]}\n")
-            assert (value.numpy() == result[start_slice:end_slice]).all()
+            assert np.all(value.numpy() == result[start_slice:end_slice])
         start_slice = end_slice
         end_slice += batch_size

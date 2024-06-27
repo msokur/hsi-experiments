@@ -25,8 +25,8 @@ def create_training_instances():
 
 
 def create_boolean_masks():
-    masks = np.zeros([2] + SIZE)
-    masks[0, *TESTABLE_INDEX] = 1
+    masks = np.zeros([len(config.CONFIG_DATALOADER[DLK.LABELS])] + SIZE)
+    masks[0, TESTABLE_INDEX[0], TESTABLE_INDEX[1]] = 1
     return masks
 
 

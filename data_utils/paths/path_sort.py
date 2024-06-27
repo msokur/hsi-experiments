@@ -106,4 +106,7 @@ def folder_sort(paths: List[str], depth: int = 1) -> Dict[str, List[str]]:
         else:
             names_and_paths[folder_name].append(p)
 
+    for name in names_and_paths.keys():
+        sorted(names_and_paths[name])
+
     return names_and_paths

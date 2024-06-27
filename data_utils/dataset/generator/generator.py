@@ -46,7 +46,7 @@ class GeneratorDataset:
         X, y = data[self.X_name], data[self.y_name]
         output_signature = (
             tf.TensorSpec(shape=((None,) + (X.shape[1:])), dtype=X.dtype, name=self.X_name),
-            tf.TensorSpec(shape=(None,) if len(y.shape) == 1 else ((None,) + (y.shape[1:])), dtype=y.dtype,
+            tf.TensorSpec(shape=(None,) if len(y.shape) == 1 else ((None,) + (y.shape[1:])), dtype=tf.float32,
                           name=self.y_name)
         )
 

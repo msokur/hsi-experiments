@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import os
 
-from data_utils.data_loaders.path_splits import get_splits, split_int, split_list, split_name
+from data_utils.paths.path_splits import get_splits, split_int, split_list, split_name
 
 
 PATHS = [os.path.join(*["C:", "folder", "data0_1.dat"]), os.path.join(*["C:", "folder", "data1_1.dat"]),
@@ -33,13 +33,13 @@ def test_get_splits(typ, paths, values, result):
 GET_SPLITS_WARNING_DATA = [("Nothing", 2,
                             "'SPLIT_PATHS_BY' in configurations is not correct. Paths will be split by files with 1!"),
                            ("Name", 2,
-                            "'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST' in configurations is not correct. Paths will be "
+                            "'HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST' in configurations is not correct. Paths will be "
                             "split by files with 1!"),
                            ("List", 2,
-                            "'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST' in configurations is not correct. Paths will be "
+                            "'HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST' in configurations is not correct. Paths will be "
                             "split by files with 1!"),
                            ("Files", (0, 5),
-                            "'CV_HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST' in configurations is not correct. Paths will be "
+                            "'HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST' in configurations is not correct. Paths will be "
                             "split by files with 1!")]
 
 

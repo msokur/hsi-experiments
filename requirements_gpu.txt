@@ -1,0 +1,16 @@
+keras-tuner==1.4.0
+matplotlib==3.8.2
+opencv-python-headless==4.5.5.64
+pandas==1.4.4
+pillow==10.2.0
+psutil==5.9.0
+pytest==7.4.4
+scikit-learn==1.1.3
+scikit-image==0.23.2
+scipy==1.13.0
+statsmodels==0.13.2
+telegram-send==0.37
+tensorflow[and-cuda]==2.15.1
+tornado==6.2
+tqdm==4.64.1
+zarr==2.16.0

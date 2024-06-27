@@ -9,8 +9,7 @@ from tqdm import tqdm
 
 import provider
 
-from data_utils.data_loaders.path_splits import get_splits
-from data_utils.data_loaders.path_sort import get_sort, folder_sort
+from data_utils.paths.path_sort import folder_sort
 from data_utils._3d_patchifier import Patchifier
 from data_utils.data_loaders.pixel_masking import BorderMasking, ContaminationMask, Background
 from data_utils.data_storage import DataStorage
@@ -41,19 +40,6 @@ class DataLoader:
 
     def get_name(self, path: str) -> str:
         return self.data_storage.get_name(path=path)
-
-    def get_paths_and_splits(self, root_path=None):
-        if root_path is None:
-            root_path = self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH]
-        paths = self.get_paths(root_path=root_path)
-        number = DLK.NUMBER_SORT in self.config.CONFIG_DATALOADER.keys()
-        number_sort = self.config.CONFIG_DATALOADER[DLK.NUMBER_SORT] if number else None
-        paths = get_sort(paths=paths, number=number, split=number_sort)
-
-        splits = get_splits(typ=self.config.CONFIG_DATALOADER[DLK.SPLIT_PATHS_BY], paths=paths,
-                            values=self.config.CONFIG_DATALOADER[DLK.PATIENTS_EXCLUDE_FOR_TEST])
-
-        return paths, splits
 
     def get_paths(self, root_path) -> List[str]:
         return self.data_storage.get_paths(storage_path=root_path)

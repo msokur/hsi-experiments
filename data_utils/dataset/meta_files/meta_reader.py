@@ -8,7 +8,8 @@ from configuration.parameter import (
 )
 
 
-def get_class_weights_from_meta(files: list, labels: list, names: list, dataset_typ: str = DATASET_TYPE) -> Dict[str, float]:
+def get_class_weights_from_meta(files: list, labels: list, names: list, dataset_typ: str = DATASET_TYPE) \
+        -> Dict[str, float]:
     """Calculate class weights from meta file.
 
     :param files: Paths to datasets

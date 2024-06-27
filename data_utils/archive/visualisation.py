@@ -29,8 +29,8 @@ def get_csv_path(log_path: str, folder: str):
 
 
 def get_prediction_to_image(mode: str, data_storage):
-    from data_utils.prediction_to_image.prediction_to_image_npz import PredictionToImage_npz
-    from data_utils.prediction_to_image.prediction_to_image_png import PredictionToImage_png
+    from data_utils.archive.prediction_to_image.prediction_to_image_npz import PredictionToImage_npz
+    from data_utils.archive.prediction_to_image.prediction_to_image_png import PredictionToImage_png
     if mode == "npz":
         return PredictionToImage_npz(config, data_storage)
     elif mode == "png":
