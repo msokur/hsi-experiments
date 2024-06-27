@@ -1,6 +1,6 @@
 import numpy as np
 
-from data_utils.prediction_to_image.prediction_to_image_base import PredictionToImage_base
+from data_utils.archive.prediction_to_image.prediction_to_image_base import PredictionToImage_base
 
 from configuration.keys import DataLoaderKeys as DLK
 from configuration.parameter import (

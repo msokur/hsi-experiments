@@ -12,8 +12,11 @@
 		"MASK_DIFF": ["dat.dat", "mask.png"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
-		"SMOOTHING_TYPE": "median_filter",
-		"SMOOTHING_VALUE": 5,
+		"SMOOTHING": {
+			"SMOOTHING_TYP": null,
+			"SMOOTHING_DIMENSIONS": "1d",
+			"SMOOTHING_VALUE": 1
+		},
 		"BORDER_CONFIG": {
 			"enable": false,
 			"methode": "detect_core",

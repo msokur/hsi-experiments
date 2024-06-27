@@ -66,3 +66,7 @@ class DataStorageZARR(DataStorage):
             return (chunk,)
         else:
             return (chunk,) + D3_CHUNK
+
+    @staticmethod
+    def get_extension() -> str:
+        return ".zarr"

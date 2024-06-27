@@ -9,9 +9,9 @@ class TrainerMulticlass(TrainerBinary):
 
     def get_loss_and_metrics(self):
         loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True)  # TODO, check if from logits?
-        metric_dict = self.config.CONFIG_TRAINER["CUSTOM_OBJECTS"]
+        metric_dict = self.config.CONFIG_TRAINER[TK.CUSTOM_OBJECTS]
         raw_metrics = [
-            keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
+            keras.metrics.SparseCategoricalAccuracy(name="accuracy")
         ]
 
         non_weightable_metrics = [
@@ -21,6 +21,6 @@ class TrainerMulticlass(TrainerBinary):
 
         for key in metric_dict.keys():
             raw_metrics.append(metric_dict[key]["metric"](
-                num_classes=len(self.config.CONFIG_DATALOADER["LABELS_TO_TRAIN"]), **metric_dict[key]["args"]))
+                num_classes=len(self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]), **metric_dict[key]["args"]))
 
         return loss, raw_metrics, non_weightable_metrics

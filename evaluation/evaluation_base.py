@@ -5,10 +5,13 @@ import os
 import matplotlib.pylab as plt
 import abc
 
+from configuration.parameter import STORAGE_TYPE, ORIGINAL_NAME
 from evaluation.metrics import Metrics
 from evaluation.predictor import Predictor
+from data_utils.visualization import VisualizationFromData
 
 from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK
+from provider import get_data_storage
 
 
 class EvaluationBase(Metrics):
@@ -16,6 +19,9 @@ class EvaluationBase(Metrics):
     def __init__(self, config, *args, **kwargs):
         super().__init__(config)
         self.config = config
+        self.data_storage = get_data_storage(typ=STORAGE_TYPE)
+        self.visualization = VisualizationFromData(config=config,
+                                                   data_storage=self.data_storage)
 
         self.results_folder = self.create_joint_folder(self.config.CONFIG_PATHS[PK.RESULTS_FOLDER],
                                                        self.config.CONFIG_CV[CVK.NAME])
@@ -119,7 +125,7 @@ class EvaluationBase(Metrics):
                         dict_obj[key] = [dict_obj[key]]
                     dict_obj[key].append(value)
                 else:
-                    dict_obj[key] = value
+                    dict_obj[key] = [value]
 
         predictions_npy_filename = self.check_predictions_npy_filename(predictions_npy_filename)
 
@@ -165,8 +171,9 @@ class EvaluationBase(Metrics):
 
                         for patient in data:
                             name = patient['name']
-                            gt = np.array(patient['gt'])
-                            predictions_raw = np.array(patient["predictions"])
+                            gt = patient['gt']
+                            predictions_raw = patient["predictions"]
+                            names = patient[ORIGINAL_NAME]
                             predictions = self.calculate_predictions(predictions_raw, threshold)
 
                             metrics_ = self.save_metrics(gt, predictions, predictions_raw, writer_cp)
@@ -174,10 +181,19 @@ class EvaluationBase(Metrics):
                             append_value(metrics_all, metrics_)
 
                             if save_curves:
+                                roc_folder = os.path.join(results_folder, f"roc_by_threshold_{threshold}")
+                                if not os.path.exists(roc_folder):
+                                    os.mkdir(roc_folder)
                                 self.save_roc_curves(gt,
                                                      predictions_raw,
                                                      f'Image_{name}',
-                                                     results_folder)
+                                                     roc_folder)
+                                self.visualization.create_and_save_error_maps(save_path=results_folder,
+                                                                              threshold=threshold,
+                                                                              y_true=gt,
+                                                                              y_pred=predictions,
+                                                                              original_names=names,
+                                                                              patient_name=name)
 
                         self.write_total_metrics(writer_cp, metrics_all)
 
@@ -243,12 +259,10 @@ class EvaluationBase(Metrics):
         for k, v in metrics_all.items():
             nan_bool = np.isnan(v).all(axis=0)
             if np.any(nan_bool):
-                mean[k] = [np.nanmean(np.array(v)[:, idx], axis=0) if not nan else float("NaN")
-                           for idx, nan in enumerate(nan_bool)]
-                std[k] = [np.nanstd(np.array(v)[:, idx], axis=0) if not nan else float("NaN")
-                          for idx, nan in enumerate(nan_bool)]
-                median[k] = [np.nanmedian(np.array(v)[:, idx], axis=0) if not nan else float("NaN")
-                             for idx, nan in enumerate(nan_bool)]
+                if isinstance(nan_bool, np.bool_):
+                    mean[k], std[k], median[k] = float("NaN"), float("NaN"), float("NaN")
+                else:
+                    mean[k], std[k], median[k] = self.nan_calc_list(value=v, nan_bool_index=nan_bool)
             else:
                 mean[k] = np.nanmean(v, axis=0)
                 std[k] = np.nanstd(v, axis=0)
@@ -259,9 +273,20 @@ class EvaluationBase(Metrics):
         self.write_metrics_to_csv(writer_cp, median, time_string="TOTAL MEDIAN")
 
     @staticmethod
+    def nan_calc_list(value, nan_bool_index):
+        mean = [np.nanmean(np.array(value)[:, idx], axis=0) if not nan else float("NaN")
+                for idx, nan in enumerate(nan_bool_index)]
+        std = [np.nanstd(np.array(value)[:, idx], axis=0) if not nan else float("NaN")
+               for idx, nan in enumerate(nan_bool_index)]
+        median = [np.nanmedian(np.array(value)[:, idx], axis=0) if not nan else float("NaN")
+                  for idx, nan in enumerate(nan_bool_index)]
+
+        return mean, std, median
+
+    @staticmethod
     def plot_sensitivity_specificity(sensitivity_mean, specificity_mean, results_folder, threshold):
-        plt.plot(sensitivity_mean, label="sensitivity mean")
-        plt.plot(specificity_mean, label="specificity mean")
+        plt.plot(sensitivity_mean, "o", label="sensitivity mean")
+        plt.plot(specificity_mean, "o", label="specificity mean")
         plt.ylabel("Value")
         plt.xlabel("Labels of Classes")
         plt.legend(loc="lower right")

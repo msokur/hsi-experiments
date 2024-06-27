@@ -21,6 +21,11 @@ class Telegram:
                 message = "CLUSTER " + message
             try:
                 import telegram_send
+                import asyncio
+                import platform
+                if platform.system() == 'Windows':
+                    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
                 message = f"{self.tg_config[TGK.USER]}, " + message
                 asyncio.run(telegram_send.send(messages=[message], conf=self.tg_config[TGK.FILE]))
             except Exception as e:

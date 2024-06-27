@@ -40,3 +40,5 @@ jupyter/*/*.png
 jupyter/*/*/*.png
 results
 jupyter/results.png
+scripts/output
+tg_benny.config

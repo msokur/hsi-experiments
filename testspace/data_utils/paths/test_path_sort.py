@@ -1,6 +1,6 @@
 import pytest
 
-from data_utils.data_loaders.path_sort import get_sort, get_number, sort, folder_sort
+from data_utils.paths.path_sort import get_sort, get_number, sort, folder_sort
 
 DATE_PATHS = ["C:\\folder1\\folder2\\2023_07_04_10_10_30_cube.mat",
               "C:\\folder1\\folder2\\2022_01_30_12_30_01_cube.mat",

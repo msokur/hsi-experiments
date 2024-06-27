@@ -1,4 +1,3 @@
-from glob import glob
 from tensorflow import TensorSpec
 import numpy as np
 import os
@@ -8,7 +7,16 @@ import pytest
 from data_utils.data_storage import DataStorageZARR, DataStorageNPZ
 from data_utils.dataset.generator.generator import GeneratorDataset
 from testspace.data_utils.conftest import (
-    DATA_1D_X_0, DATA_1D_X_1, DATA_3D_X_0, DATA_3D_X_1, DATA_y_0, DATA_y_1, DATA_WEIGHTS_0, DATA_WEIGHTS_1,
+    DATA_1D_X_0,
+    DATA_1D_X_1,
+    DATA_3D_X_0,
+    DATA_3D_X_1,
+    DATA_WEIGHTS_0,
+    DATA_WEIGHTS_1,
+)
+from ..conftest import (
+    DATA_y_0,
+    DATA_y_1
 )
 
 X_NAME = "X"
@@ -27,7 +35,7 @@ D3_X_y_w_1 = D3_X_y_1 + (DATA_WEIGHTS_1,)
 
 X_1D_TF_SPEC = TensorSpec(shape=(None, 10), dtype=np.int32, name=X_NAME)
 X_3D_TF_SPEC = TensorSpec(shape=(None, 3, 3, 10), dtype=np.int32, name=X_NAME)
-y_TF_SPEC = TensorSpec(shape=(None,), dtype=np.int32, name=y_NAME)
+y_TF_SPEC = TensorSpec(shape=(None,), dtype=np.float32, name=y_NAME)
 WEIGHT_TF_SPEC = TensorSpec(shape=(None,), dtype=np.float32, name=WEIGHTS_NAME)
 
 
@@ -53,7 +61,7 @@ def test___getitem__(data_dir: str, data_storage, typ: str, patch: str, idx: int
                                 weights_name=WEIGHTS_NAME, with_sample_weights=with_weights)
     data = data_gen.__getitem__(idx=idx)
     for d, r in zip(data, results):
-        assert (d == r).all()
+        assert np.all(d == r)
 
 
 CALL_TEST_DATA = [(DataStorageZARR(), "zarr", "1d", True, [D1_X_y_w_0, D1_X_y_w_1]),
@@ -69,7 +77,7 @@ def test___call__(data_dir: str, data_storage, typ: str, patch: str, with_weight
                                 weights_name=WEIGHTS_NAME, with_sample_weights=with_weights)
     for datas, result in zip(data_gen.__call__(), results):
         for data, res in zip(datas, result):
-            assert (data == res).all()
+            assert np.all(data == res)
 
 
 SIGNATURE_TEST_DATA = [(DataStorageZARR(), "zarr", "1d", True, (X_1D_TF_SPEC, y_TF_SPEC, WEIGHT_TF_SPEC)),

@@ -62,7 +62,7 @@ class Metrics:
             fpr, tpr = [], []
             gt_unique = np.unique(gt)
             for idx in np.arange(predictions.shape[-1]):
-                if idx in gt_unique and gt_unique.shape[0] > 1:
+                if idx in gt_unique:
                     fpr_, tpr_, thresholds = roc_curve(gt, predictions[:, idx], pos_label=idx)
                 else:
                     fpr_, tpr_ = np.array("NaN"), np.array("NaN")
@@ -165,13 +165,13 @@ class Metrics:
         fpr, tpr = self.get_fpr_tpr(gt, predictions_raw)
         auc_ = self.auc(gt, predictions_raw)
 
-        if len(tpr) > 1:
-            for idx in self.labels_of_classes_to_train:
+        if not self.binary:
+            for idx in np.unique(gt):
                 plt.plot(fpr[idx], tpr[idx], color=self.label_color[idx], lw=2,
                          label='ROC curve of {0} (area = {1:0.2f})'
                                ''.format(self.labels_names[idx], auc_[idx]))
         else:
-            plt.plot(fpr, tpr, lw=2, label=f'ROC curve (area = {auc_})')
+            plt.plot(fpr, tpr, lw=2, label='ROC curve (area = {0:0.2f})'.format(auc_))
         plt.plot([0, 1], [0, 1], 'k--', lw=2)
         plt.xlim([-0.05, 1.0])
         plt.ylim([0.0, 1.05])
