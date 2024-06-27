@@ -17,8 +17,8 @@ from configuration.parameter import (
 )
 from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
 
-GET_DATASETS_RANK = [("1d", False, [2, 2]), ("1d", True, [2, 2, 1]),
-                     ("3d", False, [4, 2]), ("3d", True, [4, 2, 1])]
+GET_DATASETS_RANK = [("1d", False, [2, 1]), ("1d", True, [2, 1, 1]),
+                     ("3d", False, [4, 1]), ("3d", True, [4, 1, 1])]
 
 
 def get_test_datasets(test_config, shape: str, with_sw: bool, file_dir: str, batch_size=5):

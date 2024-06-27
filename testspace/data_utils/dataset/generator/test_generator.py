@@ -15,27 +15,27 @@ from testspace.data_utils.conftest import (
     DATA_WEIGHTS_1,
 )
 from ..conftest import (
-    DATA_y_0_expand,
-    DATA_y_1_expand
+    DATA_y_0,
+    DATA_y_1
 )
 
 X_NAME = "X"
 y_NAME = "y"
 WEIGHTS_NAME = "weights"
 
-D1_X_y_0 = (DATA_1D_X_0, DATA_y_0_expand)
+D1_X_y_0 = (DATA_1D_X_0, DATA_y_0)
 D1_X_y_w_0 = D1_X_y_0 + (DATA_WEIGHTS_0,)
-D3_X_y_0 = (DATA_3D_X_0, DATA_y_0_expand)
+D3_X_y_0 = (DATA_3D_X_0, DATA_y_0)
 D3_X_y_w_0 = D3_X_y_0 + (DATA_WEIGHTS_0,)
 
-D1_X_y_1 = (DATA_1D_X_1, DATA_y_1_expand)
+D1_X_y_1 = (DATA_1D_X_1, DATA_y_1)
 D1_X_y_w_1 = D1_X_y_1 + (DATA_WEIGHTS_1,)
-D3_X_y_1 = (DATA_3D_X_1, DATA_y_1_expand)
+D3_X_y_1 = (DATA_3D_X_1, DATA_y_1)
 D3_X_y_w_1 = D3_X_y_1 + (DATA_WEIGHTS_1,)
 
 X_1D_TF_SPEC = TensorSpec(shape=(None, 10), dtype=np.int32, name=X_NAME)
 X_3D_TF_SPEC = TensorSpec(shape=(None, 3, 3, 10), dtype=np.int32, name=X_NAME)
-y_TF_SPEC = TensorSpec(shape=(None, 1), dtype=np.float32, name=y_NAME)
+y_TF_SPEC = TensorSpec(shape=(None,), dtype=np.float32, name=y_NAME)
 WEIGHT_TF_SPEC = TensorSpec(shape=(None,), dtype=np.float32, name=WEIGHTS_NAME)
 
 

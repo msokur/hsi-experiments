@@ -24,8 +24,8 @@ DATA_y_1_expand = np.expand_dims(a=DATA_y_1, axis=-1)
 _y_list = []
 for i, size in enumerate([20, 40, 10, 30]):
     _y_list += [i] * size
-# Y = np.array(_y_list, dtype=np.float32).reshape(-1)
-Y = np.expand_dims(a=np.array(_y_list, dtype=np.float32), axis=-1)
+Y = np.array(_y_list, dtype=np.float32).reshape(-1)
+# Y = np.expand_dims(a=np.array(_y_list, dtype=np.float32), axis=-1)
 
 _sw_list = []
 for weights, size in [(20.1, 20), (100.23, 40), (2.0, 10), (50.09, 30)]:
