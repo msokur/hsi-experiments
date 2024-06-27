@@ -700,8 +700,8 @@
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
 		"SMOOTHING": {
-			"SMOOTHING_TYPE": null,
-			"SMOOTHING_DIMENSIONS": "1d",
+			"SMOOTHING_TYPE": "savgol_filter",
+			"SMOOTHING_DIMENSIONS": "2d",
 			"SMOOTHING_VALUE": [9, 2]
 		},
 		"BORDER_CONFIG": {

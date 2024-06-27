@@ -162,7 +162,7 @@
     }, 
 "COLON_SERVER": {
     "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
-      "RAW_NPZ_PATH": ["MainExperiment_3d_3_fixed_background_smoothing_2d", "run"],
+      "RAW_NPZ_PATH": ["MainExperiment_3d_3_fixed_background_smoothing_2d_", "run"],
       "RAW_SOURCE_PATH": ["data_dat"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {

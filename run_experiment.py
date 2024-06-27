@@ -130,11 +130,11 @@ class Experiment:
 
     def run_experiment(self):
         #for i in range(29, 30):
-        for i, combination in enumerate(self.combinations[:1]):
+        for i, combination in enumerate(self.combinations):
             #combination = self.combinations[i]
             # print('-----------------')
             #if i == 116:
-            if True:
+            if i == 28:
                 print('combination', combination)
                 #print(self.combinations_keys)
                 sample_dict = {name: c for name, c in zip(self.combinations_keys, combination)}
@@ -232,7 +232,7 @@ if __name__ == '__main__':
         }
     }
 
-    experiment = Experiment('MainExperiment_3d_3_fixed_background_smoothing_2d',
+    experiment = Experiment('MainExperiment_3d_3_fixed_background_smoothing_2d_',
                             config_for_experiment,
                             background_params=background_config,
                             replace_combinations_file=True)
