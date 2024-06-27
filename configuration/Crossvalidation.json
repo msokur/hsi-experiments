@@ -5,8 +5,8 @@
       "evaluation": true
     },
     "FIRST_SPLIT": 0,
-    "HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID": 1,
-    "CHOOSE_EXCLUDED_VALID": "by_class",
+    "HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID": 3,
+    "CHOOSE_EXCLUDED_VALID": "restore",
     "USE_ALL_LABELS": false,
     "SAVE_CURVES": true,
     "MODE": "RUN"

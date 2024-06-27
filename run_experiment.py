@@ -134,7 +134,7 @@ class Experiment:
             #combination = self.combinations[i]
             # print('-----------------')
             #if i == 116:
-            if i == 28:
+            if True:
                 print('combination', combination)
                 #print(self.combinations_keys)
                 sample_dict = {name: c for name, c in zip(self.combinations_keys, combination)}

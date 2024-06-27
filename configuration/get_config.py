@@ -17,7 +17,7 @@ else:
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
 
 # change here the name of the .py file for configuration import
-from configuration.meta_configs.Benny import *
+from configuration.meta_configs.Mariia_Server import *
 
 from configuration.configloader_base import read_config
 from configuration.configloader_paths import read_path_config
