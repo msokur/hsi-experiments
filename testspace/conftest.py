@@ -20,7 +20,6 @@ def sys_slash() -> str:
         return "/"
 
 
-
 @pytest.fixture
 def test_config():
     from configuration import get_config as config
