@@ -16,7 +16,7 @@ cd hsi-experiments
 ```
 Create a conda env with the python version `3.10.4`, the env name `hsi_env` and activate the environment.
 ```
-conda create -name hsi_env python=3.10.4
+conda create --name hsi_env python=3.10.4
 conda activate hsi_env
 ```
 When the env ist activ you see the name of this env before your current path in the terminal.
