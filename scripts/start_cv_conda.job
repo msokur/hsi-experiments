@@ -12,6 +12,16 @@
 
 #SBATCH --output=output/CV_VISU_HNO_11x11%j.log
 
+## remove all previously loaded modules
+module purge
+
+## source your .bashrc to load conda
+source ~/.bashrc
+
+## deactivate the conda base env
+conda deactivate
+
+## load the anaconda module 
 module load Anaconda3/2023.09-0
 
 ## enter the name from your env
@@ -23,8 +33,11 @@ source ~/.bashrc
 ## activate conda env
 conda activate $CONDA_ENV
 
+## load the check.py
+python $HOME/hsi-experiments/scripts/check.py
+
 ## run python script
-python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/cross_validation.py
+python $HOME/hsi-experiments/cross_validation.py
 
 ## deactivate conda env
 conda deactivate

@@ -65,20 +65,33 @@ The basic job file looks like this:
 
 #SBATCH --output=output/output_file_%j.log
 
+## remove all previously loaded modules
+module purge
+
+## source your .bashrc to load conda
+source ~/.bashrc
+
+## deactivate the conda base env
+conda deactivate
+
+## load the anaconda module 
 module load Anaconda3/2023.09-0
 
 ## enter the name from your env
 CONDA_ENV="hsi_env"
 
-## source your .bashrc to load conda
-source ~/.bashrc
-
 ## activate conda env
 conda activate $CONDA_ENV
 
+## print all loaded modules
+module list
+
+## load the check.py
+python $HOME/hsi-experiments/scripts/check.py
+
 ## run python script
-## edit here the path to the file you want to start
-python 'path/to/your/python/file.py'
+## edit here the file you want to start
+python $HOME/hsi-experiments/PATH_TO_FILE
 
 ## deactivate conda env
 conda deactivate

@@ -29,14 +29,14 @@ module purge
 
 module load Python/3.9.5-GCCcore-10.3.0
 module load cuDNN/8.2.2.26-CUDA-11.4.1
-source /home/sc.uni-leipzig.de/mi186veva/venv/old_versions/bin/activate
+source $HOME/venv/old_versions/bin/activate
 
 module list
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/check.py
+python $HOME/hsi-experiments/scripts/check.py
 
-#python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/cross_validation_experiment.py --experiment_folder=$1 --cv_name=$2 --abbreviation=$3 --config_index=$4 --results_folder=$5
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validator_experiment.py --experiment_folder=$1 --cv_name=$2 --abbreviation=$3 --config_index=$4 --results_folder=$5
+#python $HOME/hsi-experiments-BA/cross_validation_experiment.py --experiment_folder=$1 --cv_name=$2 --abbreviation=$3 --config_index=$4 --results_folder=$5
+python $HOME/hsi-experiments/cross_validator_experiment.py --experiment_folder=$1 --cv_name=$2 --abbreviation=$3 --config_index=$4 --results_folder=$5
 
 exit 0
 EOT
