@@ -8,7 +8,7 @@
     "HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID": 3,
     "CHOOSE_EXCLUDED_VALID": "restore",
     "USE_ALL_LABELS": false,
-    "SAVE_CURVES": true,
+    "SAVE_CURVES": false,
     "MODE": "RUN"
   },
   "CV_HNO_NORMAL": {
