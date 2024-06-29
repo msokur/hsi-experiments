@@ -127,34 +127,65 @@ class Experiment:
             print(f'WARNING!!! There is no cp-0000 for {folder}')
             continue
         checkpoint = checkpoints[0]'''
+    
+    def run_combination(self, combination, i):
+        print('combination', combination)
+        #print(self.combinations_keys)
+        sample_dict = {name: c for name, c in zip(self.combinations_keys, combination)}
+        print('sample_dict', sample_dict)
 
-    def run_experiment(self):
+        short_name = self.combine_short_name(sample_dict)
+        print('short_name', short_name)
+
+        print('self.root_folder', self.root_folder)
+        print('self.name + "_" + short_name', self.name + "_" + short_name)
+        print('short_name', short_name)
+        print('Index', i)
+        print('self.experiment_results_root_folder', self.experiment_results_root_folder)
+
+        stream = os.popen(
+            f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv.sh {self.root_folder} '
+            f'{self.name + "_" + short_name} {short_name} {i} {self.experiment_results_root_folder} {self.name}')
+        output = stream.read()
+        print('Prompt output:',output)
+        print('--------------------------------------------------------------------------------------------------')
+    
+    
+   
+            
+    def run_experiment_normal(self, combinations=None):
+        if combinations is None:
+            combinations = self.combinations
         #for i in range(29, 30):
-        for i, combination in enumerate(self.combinations):
-            #combination = self.combinations[i]
+        for i, combination in combinations:
             # print('-----------------')
             #if i == 28:
             if True:
-                print('combination', combination)
-                #print(self.combinations_keys)
-                sample_dict = {name: c for name, c in zip(self.combinations_keys, combination)}
-                print('sample_dict', sample_dict)
+                self.run_combination(combination, i)
+         
+    
+    def run_experiment_schedule(self):
+        self.combinations = [(i, combination) for i, combination in enumerate(self.combinations)]
+        import schedule
+        import time
+        import threading
 
-                short_name = self.combine_short_name(sample_dict)
-                print('short_name', short_name)
 
-                print('self.root_folder', self.root_folder)
-                print('self.name + "_" + short_name', self.name + "_" + short_name)
-                print('short_name', short_name)
-                print('Index', i)
-                print('self.experiment_results_root_folder', self.experiment_results_root_folder)
+        def job():
+            if self.combinations:
+                combinations_batch = self.combinations[:15]
+                self.combinations = self.combinations[15:]
+                threading.Thread(target=self.run_experiment_normal, args=(combinations_batch,)).start()
 
-                stream = os.popen(
-                    f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv.sh {self.root_folder} '
-                    f'{self.name + "_" + short_name} {short_name} {i} {self.experiment_results_root_folder} {self.name}')
-                output = stream.read()
-                print('Prompt output:',output)
-                print('--------------------------------------------------------------------------------------------------')
+
+        schedule.every(2).hours.do(job)
+
+        job()
+
+        # Основний цикл для перевірки планувальника
+        while self.combinations:
+            schedule.run_pending()
+            time.sleep(1)
 
     @staticmethod
     def combine_short_name(sample_dict):
@@ -236,5 +267,5 @@ if __name__ == '__main__':
                             config_for_experiment,
                             background_params=background_config,
                             replace_combinations_file=True)
-    experiment.run_experiment()
+    experiment.run_experiment_schedule()
     # print(exp.get_results())
