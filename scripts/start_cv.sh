@@ -5,7 +5,7 @@ sbatch <<EOT
 #SBATCH --ntasks-per-node=8
 #SBATCH --job-name=$4_$3
 #SBATCH --partition=clara
-#SBATCH --time=1-00:00:00
+#SBATCH --time=40:00:00
 #SBATCH --mem=16G
 ##SBATCH --gres=gpu:v100:2
 #SBATCH --gres=gpu:rtx2080ti:2

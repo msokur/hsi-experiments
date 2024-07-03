@@ -165,6 +165,7 @@ class Experiment:
          
     
     def run_experiment_schedule(self):
+        #self.combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[201, 214, 215, 228, 234]])
         self.combinations = [(i, combination) for i, combination in enumerate(self.combinations)]
         import schedule
         import time
@@ -213,8 +214,11 @@ class Experiment:
 
 
 if __name__ == '__main__':
-    #gaussian_params = [0.5, 1, 1.5]
-    gaussian_params = [1, 2, 3]
+    import time
+    #time.sleep(5 * 60 * 60)
+
+    gaussian_params = [0.5, 1, 1.5]
+    #gaussian_params = [1, 2, 3]
     median_params = [3, 5, 7]
 
     config_for_experiment = {
@@ -263,7 +267,7 @@ if __name__ == '__main__':
         }
     }
 
-    experiment = Experiment('MainExperiment_3d_3_fixed_background_smoothing_2d_',
+    experiment = Experiment('MainExperiment_3_smoothing_3d',
                             config_for_experiment,
                             background_params=background_config,
                             replace_combinations_file=True)

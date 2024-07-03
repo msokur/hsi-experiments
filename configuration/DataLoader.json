@@ -701,7 +701,7 @@
 		"CONTAMINATION_FILENAME": "contamination.csv",
 		"SMOOTHING": {
 			"SMOOTHING_TYPE": "savgol_filter",
-			"SMOOTHING_DIMENSIONS": "2d",
+			"SMOOTHING_DIMENSIONS": "3d",
 			"SMOOTHING_VALUE": [9, 2]
 		},
 		"BORDER_CONFIG": {
