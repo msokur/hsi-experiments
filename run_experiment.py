@@ -166,7 +166,7 @@ class Experiment:
     
     def run_experiment_schedule(self):
         #self.combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[201, 214, 215, 228, 234]])
-        self.combinations = [(i, combination) for i, combination in enumerate(self.combinations)]
+        self.combinations = [(i, combination) for i, combination in enumerate(self.combinations)][5:]
         import schedule
         import time
         import threading
@@ -224,7 +224,7 @@ if __name__ == '__main__':
     config_for_experiment = {
         '3D_SIZE': {
             'config_section': 'CONFIG_DATALOADER',
-            'parameters': [[3, 3]] #[[5, 5]]#, [7, 7], [11, 11]]
+            'parameters': [[5, 5]] #[[5, 5]]#, [7, 7], [11, 11]]
         },
         "NORMALIZATION_TYPE": {
            'config_section': 'CONFIG_PREPROCESSOR',
@@ -267,7 +267,7 @@ if __name__ == '__main__':
         }
     }
 
-    experiment = Experiment('MainExperiment_3_smoothing_3d',
+    experiment = Experiment('MainExperiment_5_smoothing_3d',
                             config_for_experiment,
                             background_params=background_config,
                             replace_combinations_file=True)

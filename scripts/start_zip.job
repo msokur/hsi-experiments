@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --job-name=zip
+#SBATCH --partition=clara
+#SBATCH --time=40:00:00
+#SBATCH --mem=4G
+##SBATCH --gres=gpu:v100:1
+##SBATCH --gres=gpu:rtx2080ti:2
+#SBATCH --output=outputs/_zip2d_%j.log
+
+
+zip -r /work/mi186veva-logs/MainExperiment_3_smoothing_2d.zip /work/mi186veva-logs/MainExperiment_3_smoothing_2d
