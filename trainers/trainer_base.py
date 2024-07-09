@@ -121,8 +121,12 @@ class Trainer:
         return train_ds, valid_ds, class_weights
 
     def get_callbacks(self):
-        checkpoint_path = os.path.join(self.log_dir, self.config.CONFIG_PATHS[PK.CHECKPOINT_FOLDER], "cp-{epoch:04d}")
-        #checkpoint_path = os.path.join(self.log_dir, self.config.CONFIG_PATHS[PK.CHECKPOINT_FOLDER], "cp-best")
+        #checkpoint_path = os.path.join(self.log_dir, self.config.CONFIG_PATHS[PK.CHECKPOINT_FOLDER], "cp-{epoch:04d}")
+        if self.config.CONFIG_TRAINER[TK.MODEL_CHECKPOINT]["save_best_only"]:
+            name = "cp-best"
+        else:
+            name = "cp-{epoch:04d}"
+        checkpoint_path = os.path.join(self.log_dir, self.config.CONFIG_PATHS[PK.CHECKPOINT_FOLDER], name)
 
         checkpoints_callback = keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,

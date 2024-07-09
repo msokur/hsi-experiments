@@ -200,8 +200,10 @@ class EvaluationBase(Metrics):
                     sensitivity_mean = np.nanmean(metrics_all['Sensitivity'], axis=0)
                     specificity_mean = np.nanmean(metrics_all['Specificity'], axis=0)
 
-                    self.plot_sensitivity_specificity(sensitivity_mean, specificity_mean,
-                                                      results_folder, threshold=threshold)
+                    if save_curves:
+                        self.plot_sensitivity_specificity(sensitivity_mean, specificity_mean,
+                                                          results_folder, threshold=threshold)
+
                     self.write_row_to_comparison_file(checkpoint, threshold, sensitivity_mean, specificity_mean, writer)
 
     def check_predictions_npy_filename(self, predictions_npy_filename):

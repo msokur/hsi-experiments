@@ -5,9 +5,9 @@ import numpy as np
 import os
 from glob import glob
 
-from configuration.keys import DataLoaderKeys as DLK, CrossValidationKeys as CVK, PathKeys as PK
+from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK
 from models.model_randomness import set_tf_seed
-from provider import get_data_loader, get_data_storage
+from provider import get_data_storage
 from configuration.parameter import (
     STORAGE_TYPE, MAX_SIZE_PER_SPEC, ORIGINAL_NAME
 )
@@ -132,9 +132,15 @@ class Predictor:
         if model_path is None:
             raise ValueError('Please specify model path!')
 
-        checkpoints_paths = sorted(glob(os.path.join(model_path,
-                                                     self.config.CONFIG_PATHS["CHECKPOINT_FOLDER"], "*"
-                                                     + self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])))
+        checkpoints_paths = glob(os.path.join(model_path,
+                                 self.config.CONFIG_PATHS["CHECKPOINT_FOLDER"], "*"
+                                 + self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"]))
+
+        if len(checkpoints_paths) > 1:
+            checkpoints_paths = sorted(glob(os.path.join(model_path,
+                                                         self.config.CONFIG_PATHS["CHECKPOINT_FOLDER"], "*"
+                                                         + self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])),
+                                       key=lambda x: int(os.path.basename(os.path.normpath(x)).split('-')[1]))
 
         best_checkpoint_path = checkpoints_paths[-1]
         return best_checkpoint_path.split(self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])[-2]
