@@ -4,7 +4,7 @@
 		"FILE_EXTENSION": ".dat",
 		"MASK_EXTENSION": ".png",
 		"3D": true,
-		"3D_SIZE": [3, 3],
+		"3D_SIZE": [5, 5],
 		"FIRST_NM": 8,
 		"LAST_NM": 100,
 		"WAVE_AREA": 100,
@@ -71,11 +71,10 @@
 			"WITH_BACKGROUND_EXTRACTION": false,
 			"BLOOD_THRESHOLD": 0.1,
 			"LIGHT_REFLECTION_THRESHOLD": 0.25
-		},
-		"COMBINE_DATA_FROM_FOLDER": true
+		}
 	},
 	"HNO_2": {
-		"TYPE": "normal",
+		"TYPE": "folder",
 		"FILE_EXTENSION": ".dat",
 		"MASK_EXTENSION": ".png",
 		"3D": true,
@@ -146,8 +145,7 @@
 			"WITH_BACKGROUND_EXTRACTION": true,
 			"BLOOD_THRESHOLD": 0.1,
 			"LIGHT_REFLECTION_THRESHOLD": 0.25
-		},
-		"COMBINE_DATA_FROM_FOLDER": true
+		}
 	},
 	"ESO": {
 		"TYPE": "normal",

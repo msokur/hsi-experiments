@@ -3,7 +3,7 @@ import os
 import pickle
 from typing import List
 from glob import glob
-from multiprocessing import Pool
+import multiprocessing as mp
 from functools import partial
 
 import numpy as np
@@ -24,7 +24,6 @@ from configuration.parameter import (
 from configuration.keys import (
     DataLoaderKeys as DLK
 )
-from ..._3d_patchifier import Patchifier
 
 
 class DataLoaderInterface:
@@ -44,7 +43,8 @@ class DataLoaderInterface:
             pickle.dump(self._get_labels(), f, pickle.HIGHEST_PROTOCOL)
 
         func = partial(self.read_and_save, destination_path, self.config)
-        with Pool() as pool:
+        print(f"----Reading and saving data parallel with {mp.cpu_count()} processors!----")
+        with mp.Pool() as pool:
             pool.map(func, paths)
 
         print('----Saving of archives is over----')
