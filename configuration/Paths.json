@@ -44,8 +44,8 @@
     "0.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
       "RAW_SOURCE_PATH": ["HNO", "Parotis_2", "*"]
     },
-    "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
-      "ROOT_PATH": ["data_3d", "hno_2", "9x9", "svn", "no_smooth"]
+    "1.CONCAT_WITH_PREPROCESS_ROOT_FOLDER": {
+      "ROOT_PATH": ["hno_2", "multiprocessing"]
     },
     "2.CONCAT_WITH_ROOT_PATH": {
       "RAW_NPZ_PATH": ["patient_data_npz"],
@@ -84,7 +84,7 @@
       "RAW_SOURCE_PATH": ["Gastric"]
     },
     "1.CONCAT_WITH_PREPROCESS_ROOT_FOLDER": {
-      "ROOT_PATH": ["gastric", "multiprocessing"]
+      "ROOT_PATH": ["gastric", "3x3", "svn", "no_smooth", "mk2"]
     },
     "2.CONCAT_WITH_ROOT_PATH": {
       "RAW_NPZ_PATH": ["patient_data_npz"],

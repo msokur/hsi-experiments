@@ -43,7 +43,7 @@ class DataLoaderInterface:
         with open(os.path.join(destination_path, self._get_labels_filename()), 'wb') as f:
             pickle.dump(self._get_labels(), f, pickle.HIGHEST_PROTOCOL)
 
-        func = partial(self.read_and_save, destination_path)
+        func = partial(self.read_and_save, destination_path, self.config)
         with Pool() as pool:
             pool.map(func, paths)
 
@@ -51,7 +51,7 @@ class DataLoaderInterface:
 
     @classmethod
     @abc.abstractmethod
-    def read_and_save(cls, destination_path: str, paths: str | List[str]):
+    def read_and_save(cls, destination_path: str, config, paths: str | List[str]):
         pass
 
     @classmethod
@@ -76,22 +76,12 @@ class DataLoaderInterface:
                                                                             cube_path=cube_path,
                                                                             config=config)
 
-        patchifier = Patchifier(config)
-        use_standard_3D_patchifier, use_onflow_3D_patchifier = patchifier.decide_3D_patchifier(cube.shape,
-                                                                                               cube.dtype)
-
-        if use_standard_3D_patchifier:
-            cube = patchifier.get_3D_patches_standard(cube)
+        if config.CONFIG_DATALOADER[DLK.D3]:
+            from ..patchifier import patching_as_view
+            cube = patching_as_view(cube=cube,
+                                    patch_size=config.CONFIG_DATALOADER[DLK.D3_SIZE])
 
         training_instances = cls.concatenate_train_instances(cube, boolean_masks, background_mask, config)
-
-        if use_onflow_3D_patchifier:
-            training_instances = patchifier.get_3D_patches_onflow(training_instances,
-                                                                  cube,
-                                                                  boolean_masks,
-                                                                  background_mask,
-                                                                  cls.concatenate_train_instances,
-                                                                  config)
 
         return name, training_instances
 
@@ -123,8 +113,8 @@ class DataLoaderInterface:
         return cube, boolean_masks, background_mask
 
     @classmethod
-    def concatenate_train_instances(cls, spectrum, boolean_masks, background_mask, config, labels=None):
-        labeled_spectrum = cls.get_labeled_spectrum_from_boolean_masks(spectrum, boolean_masks)
+    def concatenate_train_instances(cls, cube, boolean_masks, background_mask, config, labels=None):
+        labeled_spectrum = cls.get_labeled_spectrum_from_boolean_masks(cube, boolean_masks)
 
         coordinates = AnnotationMaskLoaderInterface.get_coordinates_from_boolean_masks(*boolean_masks)
 
@@ -140,9 +130,9 @@ class DataLoaderInterface:
         if np.unique(labels).shape[0] != len(labels):
             raise ValueError("Error! There are some non unique labels! Check get_labels()")
 
-        for spectrum, label, idx in zip(labeled_spectrum, labels, coordinates):
-            X += list(spectrum)
-            y += [label] * len(spectrum)
+        for cube, label, idx in zip(labeled_spectrum, labels, coordinates):
+            X += list(cube)
+            y += [label] * len(cube)
             indexes_in_datacube += list(np.array(idx).T)
 
         X, y, indexes_in_datacube = np.array(X), np.array(y), np.array(indexes_in_datacube)

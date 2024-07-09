@@ -10,14 +10,13 @@ from data_utils.preprocessor import Preprocessor
 from evaluation.optimal_parameters import OptimalThreshold
 
 
-
 class CrossValidatorExperiment(CrossValidatorBase):
     def __init__(self, *args, **kwargs):
         try:
             self.parse_args()
 
-            import configuration.get_config as config  # we need config from scratch every time
-            self.config = config
+            from configuration.get_config import Config # we need config from scratch every time
+            self.config = Config
 
             print(f'Hi from CV! with {self.args.experiment_folder}, {self.args.cv_name} and config_index='
                   f'{self.args.config_index}')

@@ -41,10 +41,10 @@ class Preprocessor:
     @staticmethod
     def get_execution_flags_for_pipeline_with_all_true():
         return {
-            "load_data_with_dataloader": True,
-            "add_sample_weights": True,
-            "scale": True,
-            "shuffle": True
+            PPK.EF_LOAD_DATA_WITH_DATALOADER: True,
+            PPK.EF_ADD_SAMPLE_WEIGHTS: True,
+            PPK.EF_SCALE: True,
+            PPK.EF_SHUFFLE: True
         }
 
     def pipeline(self, root_path=None, preprocessed_path=None, execution_flags=None):
@@ -74,7 +74,14 @@ class Preprocessor:
 
         # ---------Data reading part--------------
         if execution_flags['load_data_with_dataloader']:
-            dataloader = provider.get_data_loader(config=self.config, typ=self.config.CONFIG_DATALOADER[DLK.TYPE],
+            cube_loader = provider.get_cube_loader(typ=self.config[DLK.FILE_EXTENSION],
+                                                   config=self.config)
+            mask_loader = provider.get_annotation_mask_loader(typ=self.config[DLK.MASK_EXTENSION],
+                                                              config=self.config)
+            dataloader = provider.get_data_loader(typ=self.config.CONFIG_DATALOADER[DLK.TYPE],
+                                                  config=self.config,
+                                                  cube_loader=cube_loader,
+                                                  mask_loader=mask_loader,
                                                   data_storage=data_storage)
             dataloader.read_files_and_save_to_archive(root_path, preprocessed_path)
 
@@ -121,22 +128,15 @@ class Preprocessor:
 
 
 if __name__ == '__main__':
-    from configuration.get_config import telegram, CONFIG_PREPROCESSOR
-    import configuration.get_config as configuration
-
-    execution_flags_ = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
-    execution_flags_['load_data_with_dataloader'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["LOAD_DATA_WITH_DATALOADER"]
-    execution_flags_['add_sample_weights'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["ADD_SAMPLE_WEIGHTS"]
-    execution_flags_['scale'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["SCALE"]
-    execution_flags_['shuffle'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["SHUFFLE"]
+    from configuration.get_config import Config
 
     try:
-        preprocessor = Preprocessor(configuration)
-        preprocessor.pipeline(execution_flags=execution_flags_)
+        preprocessor = Preprocessor(config=Config)
+        preprocessor.pipeline(execution_flags=Config.CONFIG_PREPROCESSOR[PPK.EXECUTION_FLAGS])
 
-        telegram.send_tg_message("Operations in preprocessor.py are successfully completed!")
+        Config.telegram.send_tg_message("Operations in preprocessor.py are successfully completed!")
 
     except Exception as e:
-        telegram.send_tg_message(f"ERROR! in Preprocessor {e}")
+        Config.telegram.send_tg_message(f"ERROR! in Preprocessor {e}")
 
         raise e

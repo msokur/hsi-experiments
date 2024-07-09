@@ -1,6 +1,6 @@
 from data_utils._3d_patchifier import Patchifier
 from data_utils.data_loaders.data_loader import DataLoader
-import configuration.get_config as config
+from configuration.get_config import Config
 import provider
 from configuration.parameter import (
     STORAGE_TYPE, DICT_X, DICT_y, DICT_IDX, DICT_ORIGINAL_NAME, DICT_BACKGROUND_MASK
@@ -8,8 +8,8 @@ from configuration.parameter import (
 import numpy as np
 from configuration.keys import DataLoaderKeys as DLK
 
-SPECTRUM_SIZE = config.CONFIG_DATALOADER[DLK.LAST_NM] - config.CONFIG_DATALOADER[DLK.FIRST_NM]
-SIZE = config.CONFIG_DATALOADER[DLK.D3_SIZE]
+SPECTRUM_SIZE = Config.CONFIG_DATALOADER[DLK.LAST_NM] - Config.CONFIG_DATALOADER[DLK.FIRST_NM]
+SIZE = Config.CONFIG_DATALOADER[DLK.D3_SIZE]
 TESTABLE_INDEX = [SIZE[0] // 2, SIZE[1] // 2]
 
 
@@ -25,7 +25,7 @@ def create_training_instances():
 
 
 def create_boolean_masks():
-    masks = np.zeros([len(config.CONFIG_DATALOADER[DLK.LABELS])] + SIZE)
+    masks = np.zeros([len(Config.CONFIG_DATALOADER[DLK.LABELS])] + SIZE)
     masks[0, TESTABLE_INDEX[0], TESTABLE_INDEX[1]] = 1
     return masks
 
@@ -49,8 +49,8 @@ def test_if_background_mask_is_inside():
 
 
 data_storage = provider.get_data_storage(typ=STORAGE_TYPE)
-data_loader = DataLoader(config, data_storage=data_storage)
-patchifier = Patchifier(config)
+data_loader = DataLoader(Config, data_storage=data_storage)
+patchifier = Patchifier(Config)
 
 training_instances = create_training_instances()
 spectrum = np.random.rand(*SIZE, SPECTRUM_SIZE)
@@ -60,4 +60,5 @@ _3D_training_instances = patchifier.get_3D_patches_onflow(training_instances=tra
                                                           spectrum=spectrum,
                                                           boolean_masks=boolean_masks,
                                                           background_mask=None,
-                                                          concatenate_function=data_loader.concatenate_train_instances)
+                                                          concatenate_function=data_loader.concatenate_train_instances,
+                                                          config=Config)

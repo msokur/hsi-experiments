@@ -3,7 +3,7 @@ import numpy as np
 from skimage.util.shape import view_as_windows
 
 
-def __pad_width(patch_size: tuple, with_axis_2: bool) -> list:
+def __pad_width(patch_size: tuple | list, with_axis_2: bool) -> list:
     pad = [int((s - 1) / 2) for s in patch_size]
     pad_width = [[pad[idx], pad[idx]] if s % 2 == 1 else [pad[idx], pad[idx] + 1] for idx, s in enumerate(patch_size)]
     if with_axis_2:

@@ -40,11 +40,12 @@ class PNGAnnotationMask(RGBAAnnotationMaskInterface):
             else:
                 warnings.warn("Better use '.png' format. Alpha channel added.")
 
+        mask = np.reshape(img.getdata(), newshape=img.size[::-1] + (4,))
         self._check_shapes(mask_path=mask_path,
-                           mask_shape=img.size[:2],
+                           mask_shape=mask.shape[:2],
                            expected_shape=shape)
 
-        return np.reshape(img.getdata(), newshape=img.size[::-1] + (4,))
+        return mask
 
     @staticmethod
     def get_extension() -> str:

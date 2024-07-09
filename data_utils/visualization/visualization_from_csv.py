@@ -115,10 +115,10 @@ class VisualizationFromCSV(VisualizationBase):
 
 if __name__ == "__main__":
     from data_utils.data_storage import DataStorageNPZ
-    import configuration.get_config as config_
+    from configuration.get_config import Config
 
     ds = DataStorageNPZ()
 
-    visu = VisualizationFromCSV(config=config_, data_storage=ds)
+    visu = VisualizationFromCSV(config=Config, data_storage=ds)
 
     visu.create_and_save_error_maps()

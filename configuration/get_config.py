@@ -25,6 +25,7 @@ from configuration.configloader_paths import read_path_config
 from configuration.configloader_trainer import read_trainer_config
 from configuration.configloader_cv import read_cv_config
 from configuration.configloader_dataloader import read_dataloader_config
+from utils import Telegram
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
@@ -51,7 +52,7 @@ def get_dataloader(file_name: str, section: str, main_dir: str = current_dir) ->
     return read_dataloader_config(file=os.path.join(main_dir, file_name), section=section)
 
 
-# -------- Data Loader
+"""# -------- Data Loader
 loader_config = "DataLoader.json"
 CONFIG_DATALOADER = get_dataloader(file_name=loader_config, section=loader_section)
 
@@ -81,7 +82,7 @@ CONFIG_TRAINER = get_trainer(file_name=trainer_config, section=trainer_section, 
 
 # ----------- DISTRIBUTIONS CHECKING
 distro_config = "DistributionsCheck.json"
-CONFIG_DISTRIBUTION = get_config(file_name=distro_config, section=distro_section)
+CONFIG_DISTRIBUTION = get_config(file_name=distro_config, section=distro_section)"""
 
 # ----------- Augmentation
 '''aug_config = "Augmentation.json"
@@ -90,10 +91,51 @@ if CONFIG_AUG["enable"]:
     print("Augmentation is enabled!!!")
     CONFIG_TRAINER["BATCH_SIZE"] = int(CONFIG_TRAINER["BATCH_SIZE"] / CONFIG_AUG[CONFIG_AUG["use"]])'''
 
-# -------- Telegram --------
+"""# -------- Telegram --------
 tg_config = "Telegram.json"
 CONFIG_TELEGRAM = get_config(file_name=tg_config, section=tg_section)
 CONFIG_TELEGRAM["FILE"] = os.path.join(parent_dir, CONFIG_TELEGRAM["FILE"])
 from utils import Telegram
 
-telegram = Telegram(tg_config=CONFIG_TELEGRAM, mode=CONFIG_PATHS["MODE"])
+telegram = Telegram(tg_config=CONFIG_TELEGRAM, mode=CONFIG_PATHS["MODE"])"""
+
+
+class Config:
+    # -------- Data Loader
+    loader_config = "DataLoader.json"
+    CONFIG_DATALOADER = get_dataloader(file_name=loader_config, section=loader_section)
+
+    # --------- Paths
+    uname = platform.uname()
+
+    if "clara" in uname.node:
+        system_section = system_section_cluster
+    else:
+        system_section = system_section_local
+
+    path_config = "Paths.json"
+    CONFIG_PATHS = get_paths(file_name=path_config, sys_section=system_section, data_section=database_section)
+
+    # --------- Preprocessing
+    prepro_config = "Preprocessor.json"
+    CONFIG_PREPROCESSOR = get_config(file_name=prepro_config, section=prepro_section)
+
+    # --------- Cross validation
+    cv_config = "Crossvalidation.json"
+    CONFIG_CV = get_cv(file_name=cv_config, base_section="BASE", section=cv_section)
+
+    # --------- Trainer
+    trainer_config = "Trainers.json"
+    CONFIG_TRAINER = get_trainer(file_name=trainer_config, section=trainer_section, d3=CONFIG_DATALOADER["3D"],
+                                 classes=CONFIG_DATALOADER["LABELS_TO_TRAIN"])
+
+    # ----------- DISTRIBUTIONS CHECKING
+    distro_config = "DistributionsCheck.json"
+    CONFIG_DISTRIBUTION = get_config(file_name=distro_config, section=distro_section)
+
+    # -------- Telegram --------
+    tg_config = "Telegram.json"
+    CONFIG_TELEGRAM = get_config(file_name=tg_config, section=tg_section)
+    CONFIG_TELEGRAM["FILE"] = os.path.join(parent_dir, CONFIG_TELEGRAM["FILE"])
+
+    telegram = Telegram(tg_config=CONFIG_TELEGRAM, mode=CONFIG_PATHS["MODE"])

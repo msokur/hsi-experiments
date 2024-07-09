@@ -10,3 +10,9 @@ from .annotation_mask_loader import (
     PNGAnnotationMask,
     Mk2AnnotationMask,
 )
+
+from .data_loader import (
+    DataLoaderInterface,
+    DataLoaderNormal,
+    DataLoaderFolder,
+)

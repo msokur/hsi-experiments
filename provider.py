@@ -20,7 +20,7 @@ def get_trainer(typ: str, config, *args, **kwargs):
 
 
 def get_data_loader(typ: str, config, *args, **kwargs):
-    from data_utils.data_loaders.data_loader import DataLoader
+    from data_utils.data_loading.data_loader import DataLoaderNormal, DataLoaderFolder
     from data_utils.data_loaders.data_loader_whole import DataLoaderWhole
     # from data_utils.data_loaders.archive.data_loader_colon import DataLoaderColon
     # from data_utils.data_loaders.archive.data_loader_mat import DataLoaderMat
@@ -32,7 +32,9 @@ def get_data_loader(typ: str, config, *args, **kwargs):
     # from data_utils.data_loaders.archive.data_loader_whole_hno import DataLoaderWholeHNO
 
     if typ == "normal":
-        return DataLoader(config=config, *args, **kwargs)
+        return DataLoaderNormal(config=config, *args, **kwargs)
+    elif typ == "folder":
+        return DataLoaderFolder(config=config, *args, **kwargs)
     elif typ == "whole":
         return DataLoaderWhole(config=config, *args, **kwargs)
 

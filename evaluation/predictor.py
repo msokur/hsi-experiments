@@ -5,9 +5,9 @@ import numpy as np
 import os
 from glob import glob
 
-from configuration.keys import DataLoaderKeys as DLK, CrossValidationKeys as CVK, PathKeys as PK
+from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK
 from models.model_randomness import set_tf_seed
-from provider import get_data_loader, get_data_storage
+from provider import get_data_storage
 from configuration.parameter import (
     STORAGE_TYPE, MAX_SIZE_PER_SPEC, DICT_ORIGINAL_NAME
 )
@@ -161,6 +161,6 @@ class Predictor:
 
 
 if __name__ == "__main__":
-    import configuration.get_config as configuration
+    from configuration.get_config import Config
 
-    predictor_ = Predictor(configuration)
+    predictor_ = Predictor(Config)

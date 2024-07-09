@@ -17,8 +17,8 @@ class Experiment:
         self.experiment_results_root_folder = None
         self.root_folder = None
 
-        import configuration.get_config as config
-        self.config = config
+        from configuration.get_config import Config
+        self.config = Config
         self.name = name
         self.replace_combinations_file = replace_combinations_file
 

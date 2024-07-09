@@ -1,8 +1,11 @@
 import numpy as np
 import provider
-from configuration.get_config import telegram
-from configuration.keys import CrossValidationKeys as CVK, DataLoaderKeys as DLK
+from configuration.keys import (
+    CrossValidationKeys as CVK,
+    DataLoaderKeys as DLK,
+)
 from evaluation.optimal_parameters import OptimalThreshold
+
 
 def out_of_the_box(config):
     cross_validator = provider.get_cross_validator(config=config, typ=config.CONFIG_CV[CVK.TYPE])
@@ -65,16 +68,16 @@ def postprocessing_for_one_model(config):
 
 if __name__ == '__main__':
     try:
-        import configuration.get_config as configuration
+        from configuration.get_config import Config
 
-        out_of_the_box(configuration)
-        # postprocessing_for_one_model(config)
+        out_of_the_box(Config)
+        # postprocessing_for_one_model(Config)
 
-        telegram.send_tg_message(f'Operations in cross_validation.py for {configuration.CONFIG_CV[CVK.NAME]} '
-                                             f'are successfully completed!')
+        Config.telegram.send_tg_message(f'Operations in cross_validation.py for {Config.CONFIG_CV[CVK.NAME]} '
+                                        f'are successfully completed!')
 
     except Exception as e:
 
-        telegram.send_tg_message(f'ERROR!!!, In CV {configuration.CONFIG_CV[CVK.NAME]} error {e}')
+        Config.telegram.send_tg_message(f'ERROR!!!, In CV {Config.CONFIG_CV[CVK.NAME]} error {e}')
 
         raise e

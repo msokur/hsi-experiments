@@ -3,26 +3,64 @@ import os
 import numpy as np
 from shutil import rmtree
 
-from provider import get_trainer, get_data_loader, get_whole_analog_of_data_loader, get_evaluation, get_smoother, \
-    get_scaler, get_pixel_detection, get_cross_validator, get_extension_loader, get_data_storage
+from provider import (
+    get_trainer,
+    get_data_loader,
+    get_cube_loader,
+    get_annotation_mask_loader,
+    get_whole_analog_of_data_loader,
+    get_evaluation, get_smoother,
+    get_scaler,
+    get_pixel_detection,
+    get_cross_validator,
+    get_extension_loader,
+    get_data_storage
+)
 
 from trainers.trainer_tuner import TrainerTuner
 from trainers.trainer_binary import TrainerBinary
 from trainers.trainer_multiclass import TrainerMulticlass
 
-from data_utils.data_loaders.data_loader import DataLoader
+from data_utils.data_loading.data_loader import (
+    DataLoaderNormal,
+    DataLoaderFolder
+)
+
 from data_utils.data_loaders.data_loader_whole import DataLoaderWhole
+
+from data_utils.data_loading.annotation_mask_loader import (
+    MatAnnotationMask,
+    Mk2AnnotationMask,
+    PNGAnnotationMask
+)
+
+from data_utils.data_loading.cube_loader import (
+    MatCube,
+    DatCube
+)
 
 from evaluation.evaluation_binary import EvaluationBinary
 from evaluation.evaluation_multiclass import EvaluationMulticlass
 
-from data_utils.smoothing import MedianFilter, GaussianFilter
+from data_utils.smoothing import (
+    MedianFilter,
+    GaussianFilter
+)
 
-from data_utils.scaler import NormalizerScaler, StandardScalerTransposed
+from data_utils.scaler import (
+    NormalizerScaler,
+    StandardScalerTransposed
+)
 
-from data_utils.border import detect_border, detect_core
+from data_utils.border import (
+    detect_border,
+    detect_core
+)
 
-from data_utils.data_storage import DataStorageZARR, DataStorageNPZ
+from data_utils.data_storage import (
+    DataStorageZARR,
+    DataStorageNPZ
+)
 
 from cross_validators.cross_validator_base import CrossValidatorBase
 
@@ -47,13 +85,16 @@ def test_get_trainer_error(test_config):
         get_trainer(typ="test", config=test_config)
 
 
-GET_DATA_LOADER_DATA = [("normal", DataLoader),
-                        ("whole", DataLoaderWhole)]
+GET_DATA_LOADER_DATA = [("normal", DataLoaderNormal, {"cube_loader": DatCube, "mask_loader": PNGAnnotationMask}),
+                        ("folder", DataLoaderFolder, {"cube_loader": DatCube, "mask_loader": PNGAnnotationMask}),
+                        ("whole", DataLoaderWhole, {})]
 
 
-@pytest.mark.parametrize("typ,result", GET_DATA_LOADER_DATA)
-def test_get_data_loader(test_config, typ, result):
-    loader = get_data_loader(typ=typ, config=test_config, data_storage=DataStorageNPZ())
+@pytest.mark.parametrize("typ,result,kwargs", GET_DATA_LOADER_DATA)
+def test_get_data_loader(test_config, typ, result, kwargs):
+    for loader in kwargs.values():
+        loader(test_config)
+    loader = get_data_loader(typ=typ, config=test_config, data_storage=DataStorageNPZ(), **kwargs)
 
     assert isinstance(loader, result)
 
@@ -61,6 +102,43 @@ def test_get_data_loader(test_config, typ, result):
 def test_data_loader_error(test_config):
     with pytest.raises(ValueError, match="Error! No corresponding Data Loader for test"):
         get_data_loader(typ="test", config=test_config)
+
+
+GET_CUBE_LOADER_DATA = [(".dat", DatCube),
+                        (".mat", MatCube)]
+
+
+@pytest.mark.parametrize("typ,result", GET_CUBE_LOADER_DATA)
+def test_get_cube_loader(test_config, typ: str, result):
+    cube_loader = get_cube_loader(typ=typ,
+                                  config=test_config)
+
+    assert isinstance(cube_loader, result)
+
+
+def test_get_cube_loader_error(test_config):
+    with pytest.raises(ValueError, match="Error! No corresponding cube loader for test"):
+        get_cube_loader(typ="test",
+                        config=test_config)
+
+
+GET_MASK_LOADER_DATA = [(".png", PNGAnnotationMask),
+                        (".mk2", Mk2AnnotationMask),
+                        (".mat", MatAnnotationMask)]
+
+
+@pytest.mark.parametrize("typ,result", GET_MASK_LOADER_DATA)
+def test_get_annotation_maks_loader(test_config, typ: str, result):
+    mask_loader = get_annotation_mask_loader(typ=typ,
+                                             config=test_config)
+
+    assert isinstance(mask_loader, result)
+
+
+def test_get_annotation_maks_loader_error(test_config):
+    with pytest.raises(ValueError, match="Error! No corresponding annotation mask loader for test"):
+        get_annotation_mask_loader(typ="test",
+                                   config=test_config)
 
 
 GET_WHOLE_ANALOG_DATA = [("normal", "whole")]
