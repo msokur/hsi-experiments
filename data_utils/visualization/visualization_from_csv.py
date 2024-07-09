@@ -20,7 +20,7 @@ from configuration.parameter import (
     DICT_X,
     DICT_y,
     DICT_IDX,
-    ORIGINAL_NAME,
+    DICT_ORIGINAL_NAME,
     VISUALIZATION_FOLDER
 )
 
@@ -84,10 +84,10 @@ class VisualizationFromCSV(VisualizationBase):
         cube_idx = data[DICT_IDX]
         label_mask = np.isin(y, [label for label in self.label_number.keys()])
 
-        if ORIGINAL_NAME in data.keys():
-            names = np.unique(data[ORIGINAL_NAME])
+        if DICT_ORIGINAL_NAME in data.keys():
+            names = np.unique(data[DICT_ORIGINAL_NAME])
             for name in names:
-                name_mask = data[ORIGINAL_NAME] == name
+                name_mask = data[DICT_ORIGINAL_NAME] == name
                 mask = np.logical_and(name_mask, label_mask)
                 yield X[mask], y[mask], cube_idx[mask], name
         else:

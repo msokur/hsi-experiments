@@ -16,7 +16,7 @@ from data_utils.data_storage import DataStorage
 
 from configuration.keys import DataLoaderKeys as DLK, PathKeys as PK
 from configuration.parameter import (
-    DICT_X, DICT_y, DICT_IDX, ORIGINAL_NAME
+    DICT_X, DICT_y, DICT_IDX, DICT_ORIGINAL_NAME
 )
 
 
@@ -59,14 +59,15 @@ class DataLoader:
         if use_standard_3D_patchifier:
             spectrum = patchifier.get_3D_patches_standard(spectrum)
 
-        training_instances = self.concatenate_train_instances(spectrum, boolean_masks, background_mask)
+        training_instances = self.concatenate_train_instances(spectrum, boolean_masks, background_mask, self.config)
 
         if use_onflow_3D_patchifier:
             training_instances = patchifier.get_3D_patches_onflow(training_instances,
                                                                   spectrum,
                                                                   boolean_masks,
                                                                   background_mask,
-                                                                  self.concatenate_train_instances)
+                                                                  self.concatenate_train_instances,
+                                                                  self.config)
 
         return training_instances
 
@@ -154,7 +155,7 @@ class DataLoader:
             for path in paths:
                 name = self.get_cube_name(path=path)
                 values = self.read_file(path=path)
-                values[ORIGINAL_NAME] = np.array([name] * values[self.dict_names[0]].shape[0])
+                values[DICT_ORIGINAL_NAME] = np.array([name] * values[self.dict_names[0]].shape[0])
                 if first:
                     self.save_training_samples_to_archive(destination_path=destination_path, values=values,
                                                           name=pat_name)
@@ -177,7 +178,7 @@ class DataLoader:
         self.data_storage.save_group(save_path=destination_path, group_name=name,
                                      datas=values)
 
-    def concatenate_train_instances(self, spectrum, boolean_masks, background_mask, labels=None):
+    def concatenate_train_instances(self, spectrum, boolean_masks, background_mask, config, labels=None):
         labeled_spectrum = self.get_labeled_spectrum_from_boolean_masks(spectrum, boolean_masks)
 
         coordinates = self.get_coordinates_from_boolean_masks(*boolean_masks)

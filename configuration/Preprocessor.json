@@ -18,9 +18,9 @@
   "GASTRIC": {
     "EXECUTION_FLAGS": {
       "LOAD_DATA_WITH_DATALOADER": true,
-      "ADD_SAMPLE_WEIGHTS": true,
+      "ADD_SAMPLE_WEIGHTS": false,
       "SCALE": false,
-      "SHUFFLE": true
+      "SHUFFLE": false
     },
     "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
     "PILES_NUMBER": 100,

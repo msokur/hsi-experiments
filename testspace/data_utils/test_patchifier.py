@@ -3,7 +3,7 @@ from data_utils.data_loaders.data_loader import DataLoader
 import configuration.get_config as config
 import provider
 from configuration.parameter import (
-    STORAGE_TYPE, DICT_X, DICT_y, DICT_IDX, ORIGINAL_NAME, BACKGROUND_MASK
+    STORAGE_TYPE, DICT_X, DICT_y, DICT_IDX, DICT_ORIGINAL_NAME, DICT_BACKGROUND_MASK
 )
 import numpy as np
 from configuration.keys import DataLoaderKeys as DLK
@@ -18,8 +18,8 @@ def create_training_instances():
         DICT_X: np.random.rand(1, 92),
         DICT_y: np.array([0]),
         DICT_IDX: np.array([TESTABLE_INDEX]),
-        ORIGINAL_NAME: np.array(['Pat0']),
-        BACKGROUND_MASK: None
+        DICT_ORIGINAL_NAME: np.array(['Pat0']),
+        DICT_BACKGROUND_MASK: None
     }
     return instances
 
@@ -35,17 +35,17 @@ def test_patchifier_algorithm():
 
 
 def test_equality_of_items_of_instances():
-    for key in [DICT_y, DICT_IDX, ORIGINAL_NAME]:
+    for key in [DICT_y, DICT_IDX, DICT_ORIGINAL_NAME]:
         assert np.array_equal(_3D_training_instances[key][0], training_instances[key][0])
 
 
 def test_length_of_instances():
-    for key in [DICT_X, DICT_y, DICT_IDX, ORIGINAL_NAME]:
+    for key in [DICT_X, DICT_y, DICT_IDX, DICT_ORIGINAL_NAME]:
         assert len(_3D_training_instances[key]) == len(training_instances[key])
 
 
 def test_if_background_mask_is_inside():
-    assert BACKGROUND_MASK in _3D_training_instances
+    assert DICT_BACKGROUND_MASK in _3D_training_instances
 
 
 data_storage = provider.get_data_storage(typ=STORAGE_TYPE)

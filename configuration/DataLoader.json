@@ -2,6 +2,7 @@
 	"HNO": {
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".dat",
+		"MASK_EXTENSION": ".png",
 		"3D": true,
 		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,
@@ -76,6 +77,7 @@
 	"HNO_2": {
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".dat",
+		"MASK_EXTENSION": ".png",
 		"3D": true,
 		"3D_SIZE": [9, 9],
 		"FIRST_NM": 8,
@@ -150,6 +152,7 @@
 	"ESO": {
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".dat",
+		"MASK_EXTENSION": ".png",
 		"3D": true,
 		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,
@@ -203,6 +206,7 @@
 	"GASTRIC": {
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".dat",
+		"MASK_EXTENSION": ".mk2",
 		"3D": true,
 		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,
@@ -302,6 +306,7 @@
 	"GASTRIC_EXVIVO": {
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".dat",
+		"MASK_EXTENSION": ".mk2",
 		"3D": true,
 		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,
@@ -401,6 +406,7 @@
 	"GASTRIC_INVIVO": {
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".dat",
+		"MASK_EXTENSION": ".mk2",
 		"3D": true,
 		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,
@@ -500,6 +506,7 @@
 	"MAT_BRAIN": {
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".mat",
+		"MASK_EXTENSION": ".mat",
 		"SPECTRUM": "preProcessedImage",
 		"MASK": "gtMap",
 		"3D": true,
@@ -557,6 +564,7 @@
 	"MAT_COLON": {
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".mat",
+		"MASK_EXTENSION": ".mat",
 		"SPECTRUM": "cube",
 		"MASK": "gtMap",
 		"3D": true,
@@ -599,6 +607,7 @@
 	"MAT_ESO": {
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".mat",
+		"MASK_EXTENSION": ".mat",
 		"SPECTRUM": "cube",
 		"MASK": "gtMap",
 		"3D": true,
@@ -647,6 +656,7 @@
 	"MAT_COLON_SPAIN": {
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".mat",
+		"MASK_EXTENSION": ".mat",
 		"SPECTRUM": "cube",
 		"MASK": "gtMap",
 		"3D": true,
@@ -689,6 +699,7 @@
     "COLON": {
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".dat",
+		"MASK_EXTENSION": ".png",
 		"3D": true,
 		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,

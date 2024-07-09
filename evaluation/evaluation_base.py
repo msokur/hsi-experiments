@@ -5,7 +5,7 @@ import os
 import matplotlib.pylab as plt
 import abc
 
-from configuration.parameter import STORAGE_TYPE, ORIGINAL_NAME
+from configuration.parameter import STORAGE_TYPE, DICT_ORIGINAL_NAME
 from evaluation.metrics import Metrics
 from evaluation.predictor import Predictor
 from data_utils.visualization import VisualizationFromData
@@ -173,7 +173,7 @@ class EvaluationBase(Metrics):
                             name = patient['name']
                             gt = patient['gt']
                             predictions_raw = patient["predictions"]
-                            names = patient[ORIGINAL_NAME]
+                            names = patient[DICT_ORIGINAL_NAME]
                             predictions = self.calculate_predictions(predictions_raw, threshold)
 
                             metrics_ = self.save_metrics(gt, predictions, predictions_raw, writer_cp)

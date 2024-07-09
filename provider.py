@@ -173,6 +173,32 @@ def get_extension_loader(typ: str, config, *args, **kwargs):
         value_error(modul="file extension", typ=typ)
 
 
+def get_cube_loader(typ: str, config):
+    from data_utils.data_loading import DatCube, MatCube
+
+    if typ == ".dat":
+        return DatCube(config=config)
+    elif typ == ".mat":
+        return MatCube(config=config)
+
+    value_error(modul="cube loader",
+                typ=typ)
+
+
+def get_annotation_mask_loader(typ: str, config):
+    from data_utils.data_loading import PNGAnnotationMask, Mk2AnnotationMask, MatAnnotationMask
+
+    if typ == ".png":
+        return PNGAnnotationMask(config=config)
+    elif typ == ".mk2":
+        return Mk2AnnotationMask(config=config)
+    elif typ == ".mat":
+        return MatAnnotationMask(config=config)
+
+    value_error(modul="annotation mask loader",
+                typ=typ)
+
+
 def get_data_storage(typ: str):
     from data_utils.data_storage import DataStorageNPZ, DataStorageZARR
 

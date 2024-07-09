@@ -56,6 +56,7 @@ class PreprocessorKeys:
 class DataLoaderKeys:
     TYPE = "TYPE"
     FILE_EXTENSION = "FILE_EXTENSION"
+    MASK_EXTENSION = "MASK_EXTENSION"
     SPECTRUM = "SPECTRUM"
     MASK = "MASK"
     D3 = "3D"

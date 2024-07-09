@@ -62,11 +62,12 @@ class Patchifier:
                               spectrum,
                               boolean_masks,
                               background_mask,
-                              concatenate_function):
+                              concatenate_function,
+                              config):
         train_indexes = training_instances[DICT_IDX]
 
         extended_boolean_masks = self.extend_masks(boolean_masks)
-        extended_instances = concatenate_function(spectrum, extended_boolean_masks, background_mask)
+        extended_instances = concatenate_function(spectrum, extended_boolean_masks, background_mask, config)
         extended_spectrum = extended_instances['X']
         extended_indexes_in_datacube = extended_instances['indexes_in_datacube']
 

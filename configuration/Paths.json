@@ -12,7 +12,7 @@
   "Win_Benny": {
     "MODE": "WITHOUT_GPU",
     "DATABASE_ROOT_FOLDER": "C:\\Users\\benny\\Desktop\\Arbeit\\data",
-    "PREPROCESS_ROOT_FOLDER": "C:\\Users\\benny\\Desktop\\Arbeit\\data",
+    "PREPROCESS_ROOT_FOLDER": "C:\\Users\\benny\\Desktop\\Arbeit\\data_3d",
     "LOGS_FOLDER": ["C:\\Users\\benny\\Desktop\\Arbeit\\data\\hsi-experiments\\model_logs"],
     "RESULTS_FOLDER": "C:\\Users\\benny\\Desktop\\Arbeit\\data\\hsi-experiments\\model_results"
   },
@@ -84,7 +84,7 @@
       "RAW_SOURCE_PATH": ["Gastric"]
     },
     "1.CONCAT_WITH_PREPROCESS_ROOT_FOLDER": {
-      "ROOT_PATH": ["gastric", "3x3", "svn", "no_smooth", "mk2"]
+      "ROOT_PATH": ["gastric", "multiprocessing"]
     },
     "2.CONCAT_WITH_ROOT_PATH": {
       "RAW_NPZ_PATH": ["patient_data_npz"],
