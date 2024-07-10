@@ -73,7 +73,7 @@ class Preprocessor:
                    self.config.CONFIG_PREPROCESSOR["FILES_TO_COPY"])
 
         # ---------Data reading part--------------
-        if execution_flags['load_data_with_dataloader']:
+        if execution_flags[PPK.EF_LOAD_DATA_WITH_DATALOADER]:
             cube_loader = provider.get_cube_loader(typ=self.config[DLK.FILE_EXTENSION],
                                                    config=self.config)
             mask_loader = provider.get_annotation_mask_loader(typ=self.config[DLK.MASK_EXTENSION],
@@ -89,7 +89,7 @@ class Preprocessor:
               f'{get_used_memory(process_id=process_id)} ----')
 
         # ----------weights part------------------
-        if execution_flags['add_sample_weights']:
+        if execution_flags[PPK.EF_ADD_SAMPLE_WEIGHTS]:
             weight_calc = Weights(filename=self.weights_filename,
                                   data_storage=data_storage,
                                   label_file=os.path.join(preprocessed_path,
@@ -102,7 +102,7 @@ class Preprocessor:
         print(f'---- Memory, preprocessor 2, after sample weights {get_used_memory(process_id=process_id)} ----')
 
         # ----------scaler part ------------------
-        if execution_flags['scale'] and self.config.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE] is not None:
+        if execution_flags[PPK.EF_SCALE] and self.config.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE] is not None:
             print('SCALER TYPE', self.config.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE])
             scaler = provider.get_scaler(config=self.config,
                                          typ=self.config.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE],
@@ -117,7 +117,7 @@ class Preprocessor:
         print(f'---- Memory, preprocessor 3, after scaling {get_used_memory(process_id=process_id)}----')
 
         # ----------shuffle part------------------
-        if execution_flags['shuffle']:
+        if execution_flags[PPK.EF_SHUFFLE]:
             print(f"SHUFFLE PATHS {self.config.CONFIG_PATHS[PK.SHUFFLED_PATH]}")
             shuffle = provider.get_shuffle(config=self.config, typ=DATASET_TYPE, data_storage=data_storage,
                                            raw_path=preprocessed_path,
