@@ -74,9 +74,9 @@ class Preprocessor:
 
         # ---------Data reading part--------------
         if execution_flags[PPK.EF_LOAD_DATA_WITH_DATALOADER]:
-            cube_loader = provider.get_cube_loader(typ=self.config[DLK.FILE_EXTENSION],
+            cube_loader = provider.get_cube_loader(typ=self.config.CONFIG_DATALOADER[DLK.FILE_EXTENSION],
                                                    config=self.config)
-            mask_loader = provider.get_annotation_mask_loader(typ=self.config[DLK.MASK_EXTENSION],
+            mask_loader = provider.get_annotation_mask_loader(typ=self.config.CONFIG_DATALOADER[DLK.MASK_EXTENSION],
                                                               config=self.config)
             dataloader = provider.get_data_loader(typ=self.config.CONFIG_DATALOADER[DLK.TYPE],
                                                   config=self.config,
