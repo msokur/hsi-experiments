@@ -67,9 +67,10 @@ def postprocessing_for_one_model(config):
 
 
 if __name__ == '__main__':
-    try:
-        from configuration.get_config import Config
+    from configuration.get_config import CVConfig
 
+    Config = CVConfig()
+    try:
         out_of_the_box(Config)
         # postprocessing_for_one_model(Config)
 

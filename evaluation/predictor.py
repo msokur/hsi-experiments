@@ -161,6 +161,7 @@ class Predictor:
 
 
 if __name__ == "__main__":
-    from configuration.get_config import Config
+    from configuration.get_config import CVConfig
 
+    Config = CVConfig()
     predictor_ = Predictor(Config)

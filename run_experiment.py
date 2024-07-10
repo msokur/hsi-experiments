@@ -17,8 +17,8 @@ class Experiment:
         self.experiment_results_root_folder = None
         self.root_folder = None
 
-        from configuration.get_config import Config
-        self.config = Config
+        from configuration.get_config import CVConfig
+        self.config = CVConfig()
         self.name = name
         self.replace_combinations_file = replace_combinations_file
 
@@ -106,8 +106,8 @@ class Experiment:
         ticks = []
         for folder in folders:
             print(folder)
-            print('kaktus', folder.split(config.SYSTEM_PATHS_DELIMITER)[-2])
-            tick = '_'.join(folder.split(config.SYSTEM_PATHS_DELIMITER)[-2].split('_')[1:])
+            print('kaktus', folder.split(os.path.sep)[-2])
+            tick = '_'.join(folder.split(os.path.sep)[-2].split('_')[1:])
             ticks.append(tick)
             print(folder)
             checkpoints = glob(os.path.join(folder, 'cp-0000'))

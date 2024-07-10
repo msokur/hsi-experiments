@@ -17,7 +17,7 @@ class DataLoaderNormal(DataLoaderInterface):
 
     @classmethod
     def read_and_save(cls, destination_path: str, config, paths: str | List[str]):
-        print(f'Reading {paths}')
+        print(f'Reading {paths}', flush=True)
         name, values = cls.read_data_task(cube_path=paths,
                                           config=config)
         data_storage = get_data_storage(typ=STORAGE_TYPE)

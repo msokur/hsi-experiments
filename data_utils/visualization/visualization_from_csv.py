@@ -115,8 +115,9 @@ class VisualizationFromCSV(VisualizationBase):
 
 if __name__ == "__main__":
     from data_utils.data_storage import DataStorageNPZ
-    from configuration.get_config import Config
+    from configuration.get_config import CVConfig
 
+    Config = CVConfig()
     ds = DataStorageNPZ()
 
     visu = VisualizationFromCSV(config=Config, data_storage=ds)

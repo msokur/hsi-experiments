@@ -128,7 +128,9 @@ class Preprocessor:
 
 
 if __name__ == '__main__':
-    from configuration.get_config import Config
+    from configuration.get_config import PreprocessorConfig
+
+    Config = PreprocessorConfig()
 
     try:
         preprocessor = Preprocessor(config=Config)

@@ -23,11 +23,11 @@ class DataLoaderFolder(DataLoaderInterface):
 
     @classmethod
     def read_and_save(cls, destination_path: str, config, paths: str | List[str]):
-        print(f"Read data for patient {paths[0]}")
+        print(f"Read data for patient {paths[0]}", flush=True)
         data_storage = get_data_storage(typ=STORAGE_TYPE)
         first = True
         for path in paths[1]:
-            print(f"Reading {path}")
+            print(f"Reading {path}", flush=True)
             name, values = cls.read_data_task(cube_path=path,
                                               config=config)
             values[DICT_ORIGINAL_NAME] = np.array([name] * values[DICT_y].shape[0])

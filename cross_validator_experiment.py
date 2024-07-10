@@ -15,8 +15,8 @@ class CrossValidatorExperiment(CrossValidatorBase):
         try:
             self.parse_args()
 
-            from configuration.get_config import Config # we need config from scratch every time
-            self.config = Config
+            from configuration.get_config import CVConfig  # we need config from scratch every time
+            self.config = CVConfig()
 
             print(f'Hi from CV! with {self.args.experiment_folder}, {self.args.cv_name} and config_index='
                   f'{self.args.config_index}')
@@ -36,7 +36,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
             self.preprocess()
 
             super().__init__(self.config, *args, **kwargs)
-            
+
             self.pipeline(thresholds=np.round(np.linspace(0.001, 0.6, 100), 4))
 
             optimal_threshold_finder = OptimalThreshold(self.config, prints=False)
@@ -44,21 +44,24 @@ class CrossValidatorExperiment(CrossValidatorBase):
 
             rmtree(self.config.CONFIG_PATHS['RAW_NPZ_PATH'])
 
-            self.config.telegram.send_tg_message(f'Experiment step {self.args.cv_name} (index {self.args.config_index}) is successfully completed!')
-            
+            self.config.telegram.send_tg_message(
+                f'Experiment step {self.args.cv_name} (index {self.args.config_index}) is successfully completed!')
+
             self.write_status_to_csv("DONE")
 
         except Exception as e:
             rmtree(self.config.CONFIG_PATHS['RAW_NPZ_PATH'])
 
-            self.config.telegram.send_tg_message(f'ERROR!!!, In experiment step {self.args.cv_name} (index {self.args.config_index}) error {e}')
-            
+            self.config.telegram.send_tg_message(
+                f'ERROR!!!, In experiment step {self.args.cv_name} (index {self.args.config_index}) error {e}')
+
             self.write_status_to_csv("ERROR")
 
             raise e
-            
+
     def write_status_to_csv(self, status):
-        row_to_add = [self.args.config_index, status, self.args.abbreviation, self.args.experiment_folder, self.args.cv_name, self.args.results_folder]
+        row_to_add = [self.args.config_index, status, self.args.abbreviation, self.args.experiment_folder,
+                      self.args.cv_name, self.args.results_folder]
 
         file_path = os.path.join(self.args.experiment_folder, 'status.csv')
 
@@ -98,7 +101,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
             print(config_name, params)
             section, value = params
             config_section = getattr(self.config, section)
-            
+
             if '.' in config_name:  # for nested configs
                 splits = config_name.split('.')
                 subsection = splits[0]
@@ -113,8 +116,8 @@ class CrossValidatorExperiment(CrossValidatorBase):
                     raise ValueError(f"{config_name} is not inside {section}! Please check names of parameters!")
                 config_section[config_name] = value
 
-            #print('--------------', self.config.CONFIG_DATALOADER)
-            #print('--------------', self.config.CONFIG_PREPROCESSOR)
+            # print('--------------', self.config.CONFIG_DATALOADER)
+            # print('--------------', self.config.CONFIG_PREPROCESSOR)
 
         self.config.CONFIG_PATHS['BATCHED_PATH'] += '_' + self.args.cv_name
 
@@ -126,9 +129,6 @@ class CrossValidatorExperiment(CrossValidatorBase):
     def preprocess(self):
         preprocessor = Preprocessor(self.config)
         preprocessor.pipeline()
-        
-
-        
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 from data_utils._3d_patchifier import Patchifier
 from data_utils.data_loaders.data_loader import DataLoader
-from configuration.get_config import Config
+from configuration.get_config import CVConfig
 import provider
 from configuration.parameter import (
     STORAGE_TYPE, DICT_X, DICT_y, DICT_IDX, DICT_ORIGINAL_NAME, DICT_BACKGROUND_MASK
@@ -8,6 +8,7 @@ from configuration.parameter import (
 import numpy as np
 from configuration.keys import DataLoaderKeys as DLK
 
+Config = CVConfig()
 SPECTRUM_SIZE = Config.CONFIG_DATALOADER[DLK.LAST_NM] - Config.CONFIG_DATALOADER[DLK.FIRST_NM]
 SIZE = Config.CONFIG_DATALOADER[DLK.D3_SIZE]
 TESTABLE_INDEX = [SIZE[0] // 2, SIZE[1] // 2]
@@ -49,8 +50,8 @@ def test_if_background_mask_is_inside():
 
 
 data_storage = provider.get_data_storage(typ=STORAGE_TYPE)
-data_loader = DataLoader(Config, data_storage=data_storage)
-patchifier = Patchifier(Config)
+data_loader = DataLoader(CVConfig(), data_storage=data_storage)
+patchifier = Patchifier(CVConfig())
 
 training_instances = create_training_instances()
 spectrum = np.random.rand(*SIZE, SPECTRUM_SIZE)
@@ -61,4 +62,4 @@ _3D_training_instances = patchifier.get_3D_patches_onflow(training_instances=tra
                                                           boolean_masks=boolean_masks,
                                                           background_mask=None,
                                                           concatenate_function=data_loader.concatenate_train_instances,
-                                                          config=Config)
+                                                          config=CVConfig())
