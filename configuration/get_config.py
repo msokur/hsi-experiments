@@ -112,8 +112,10 @@ class PreprocessorConfig:
 
         if "clara" in uname.node:
             system_section = system_section_cluster
+            self.CLUSTER = True
         else:
             system_section = system_section_local
+            self.CLUSTER = False
 
         path_config = "Paths.json"
         self.CONFIG_PATHS = get_paths(file_name=path_config, sys_section=system_section, data_section=database_section)

@@ -43,7 +43,13 @@ class DataLoaderInterface:
             pickle.dump(self._get_labels(), f, pickle.HIGHEST_PROTOCOL)
 
         func = partial(self.read_and_save, destination_path, self.config)
-        print(f"----Reading and saving data parallel with {mp.cpu_count()} processors!----")
+
+        if self.config.CLUSTER:
+            # 16 CPUS are set in the job file, so don't change this number
+            cpus = 16
+        else:
+            cpus = mp.cpu_count()
+        print(f"----Reading and saving data parallel with {cpus} processors!----")
         with mp.Pool() as pool:
             pool.map(func, paths)
 

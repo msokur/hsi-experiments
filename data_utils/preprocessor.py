@@ -126,6 +126,9 @@ class Preprocessor:
 
         print(f'---- Memory, preprocessor 4, after shuffling {get_used_memory(process_id=process_id)} ----')
 
+        dt_string = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+        print("Time after the finish of preprocessing", dt_string)
+
 
 if __name__ == '__main__':
     from configuration.get_config import PreprocessorConfig
