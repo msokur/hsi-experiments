@@ -2,7 +2,7 @@ import os
 import argparse
 import json
 import numpy as np
-from shutil import rmtree
+from shutil import rmtree, copy
 import csv
 
 from cross_validators.cross_validator_base import CrossValidatorBase
@@ -87,10 +87,24 @@ class CrossValidatorExperiment(CrossValidatorBase):
             os.mkdir(results_folder)
         self.results_folder = results_folder
         print(f"Folder for results: {self.results_folder}")
+        
+    def copy_combinations_file(self):
+        #print(self.config.CONFIG_CV["NAME"])
+        destination_folder = os.path.join(self.config.CONFIG_PATHS['LOGS_FOLDER'][0], self.config.CONFIG_CV["NAME"])
+        print(destination_folder)
+        if not os.path.exists(destination_folder):
+            os.makedirs(destination_folder)
+        combinations_file = os.path.join(self.args.experiment_folder, 'combinations.json')
+        copy(combinations_file, destination_folder)
+        
+        return combinations_file
 
     def set_configs(self):
         configs = None
-        with open(os.path.join(self.args.experiment_folder, 'combinations.json'), 'r') as json_file:
+        
+        combinations_file = self.copy_combinations_file()
+
+        with open(combinations_file, 'r') as json_file:
             data = json.load(json_file)
             configs = data[int(self.args.config_index)]
             print(configs)
