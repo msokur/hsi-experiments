@@ -26,6 +26,8 @@ from data_utils.data_loading.data_loader import (
     DataLoaderFolder
 )
 
+from data_utils. data_loaders.data_loader import DataLoader
+
 from data_utils.data_loaders.data_loader_whole import DataLoaderWhole
 
 from data_utils.data_loading.annotation_mask_loader import (
@@ -87,6 +89,7 @@ def test_get_trainer_error(test_config):
 
 GET_DATA_LOADER_DATA = [("normal", DataLoaderNormal, {"cube_loader": DatCube, "mask_loader": PNGAnnotationMask}),
                         ("folder", DataLoaderFolder, {"cube_loader": DatCube, "mask_loader": PNGAnnotationMask}),
+                        ("old", DataLoader, {}),
                         ("whole", DataLoaderWhole, {})]
 
 

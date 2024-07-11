@@ -3,16 +3,15 @@ import os
 import pickle
 from typing import List
 from glob import glob
-import multiprocessing as mp
-from functools import partial
 
 import numpy as np
 
 import provider
-from data_utils.data_storage import DataStorage
 from ..cube_loader import CubeLoaderInterface
 from ..annotation_mask_loader import AnnotationMaskLoaderInterface
-from data_utils.data_loaders.pixel_masking import BorderMasking, ContaminationMask, Background
+from ...data_storage import DataStorage
+from ...data_loaders.pixel_masking import BorderMasking, ContaminationMask, Background
+from ...parallel_processing import start_pool_processing
 
 from configuration.parameter import (
     DICT_X,
@@ -42,64 +41,50 @@ class DataLoaderInterface:
         with open(os.path.join(destination_path, self._get_labels_filename()), 'wb') as f:
             pickle.dump(self._get_labels(), f, pickle.HIGHEST_PROTOCOL)
 
-        func = partial(self.read_and_save, destination_path, self.config)
-
-        if self.config.CLUSTER:
-            # 16 CPUS are set in the job file, so don't change this number
-            cpus = 16
-        else:
-            cpus = mp.cpu_count()
-        print(f"----Reading and saving data parallel with {cpus} processors!----")
-        with mp.Pool(processes=cpus) as pool:
-            pool.map(func, paths)
+        start_pool_processing(map_func=self.read_and_save,
+                              parallel_args=[paths],
+                              is_on_cluster=self.config.CLUSTER,
+                              fix_args=[destination_path],
+                              print_out="Reading and saving data")
 
         print('----Saving of archives is over----')
 
-    @classmethod
     @abc.abstractmethod
-    def read_and_save(cls, destination_path: str, config, paths: str | List[str]):
+    def read_and_save(self, destination_path: str, paths: str | List[str]):
         pass
 
-    @classmethod
-    def read_data_task(cls, cube_path: str, config):
-        cube_loader = provider.get_cube_loader(typ=config.CONFIG_DATALOADER[DLK.FILE_EXTENSION],
-                                               config=config)
-        mask_loader = provider.get_annotation_mask_loader(typ=config.CONFIG_DATALOADER[DLK.MASK_EXTENSION],
-                                                          config=config)
+    def read_data_task(self, cube_path: str):
+        name = self.cube_loader.get_cube_name(cube_path=cube_path)
 
-        name = cube_loader.get_cube_name(cube_path=cube_path)
+        cube = self.cube_loader.get_cube(cube_path=cube_path)
 
-        cube = cube_loader.get_cube(cube_path=cube_path)
+        mask_path = self.mask_loader.get_mask_path(cube_path=cube_path)
+        mask = self.mask_loader.get_mask(mask_path=mask_path,
+                                         shape=cube.shape[:2])
 
-        mask_path = mask_loader.get_mask_path(cube_path=cube_path)
-        mask = mask_loader.get_mask(mask_path=mask_path,
-                                    shape=cube.shape[:2])
+        boolean_masks = self.mask_loader.get_boolean_indexes_from_mask(mask=mask)
 
-        boolean_masks = mask_loader.get_boolean_indexes_from_mask(mask=mask)
+        cube, boolean_masks, background_mask = self.transformations_pipeline(cube=cube,
+                                                                             boolean_masks=boolean_masks,
+                                                                             cube_path=cube_path)
 
-        cube, boolean_masks, background_mask = cls.transformations_pipeline(cube=cube,
-                                                                            boolean_masks=boolean_masks,
-                                                                            cube_path=cube_path,
-                                                                            config=config)
-
-        if config.CONFIG_DATALOADER[DLK.D3]:
+        if self.config.CONFIG_DATALOADER[DLK.D3]:
             from ..patchifier import patching_as_view
             cube = patching_as_view(cube=cube,
-                                    patch_size=config.CONFIG_DATALOADER[DLK.D3_SIZE])
+                                    patch_size=self.config.CONFIG_DATALOADER[DLK.D3_SIZE])
 
-        training_instances = cls.concatenate_train_instances(cube, boolean_masks, background_mask, config)
+        training_instances = self.concatenate_train_instances(cube, boolean_masks, background_mask, self.config)
 
         return name, training_instances
 
-    @staticmethod
-    def transformations_pipeline(cube: np.ndarray, boolean_masks: List[np.ndarray], cube_path: str, config):
-        if config.CONFIG_DATALOADER[DLK.SMOOTHING][DLK.SMOOTHING_TYPE] is not None:
-            smoother = provider.get_smoother(typ=config.CONFIG_DATALOADER[DLK.SMOOTHING][DLK.SMOOTHING_TYPE],
-                                             config=config)
+    def transformations_pipeline(self, cube: np.ndarray, boolean_masks: List[np.ndarray], cube_path: str):
+        if self.config.CONFIG_DATALOADER[DLK.SMOOTHING][DLK.SMOOTHING_TYPE] is not None:
+            smoother = provider.get_smoother(typ=self.config.CONFIG_DATALOADER[DLK.SMOOTHING][DLK.SMOOTHING_TYPE],
+                                             config=self.config)
             cube = smoother.smooth(spectrum=cube)
 
         transformation_inputs = {
-            "config": config,
+            "config": self.config,
             "path": os.path.split(cube_path)[0],
             "spectrum": cube,
             "shape": cube.shape[:2]
@@ -118,9 +103,8 @@ class DataLoaderInterface:
 
         return cube, boolean_masks, background_mask
 
-    @classmethod
-    def concatenate_train_instances(cls, cube, boolean_masks, background_mask, config, labels=None):
-        labeled_spectrum = cls.get_labeled_spectrum_from_boolean_masks(cube, boolean_masks)
+    def concatenate_train_instances(self, cube, boolean_masks, background_mask, config, labels=None):
+        labeled_spectrum = self.get_labeled_spectrum_from_boolean_masks(cube, boolean_masks)
 
         coordinates = AnnotationMaskLoaderInterface.get_coordinates_from_boolean_masks(*boolean_masks)
 

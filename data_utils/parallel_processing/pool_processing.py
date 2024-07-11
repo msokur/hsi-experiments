@@ -3,8 +3,8 @@ import multiprocessing as mp
 from functools import partial
 
 
-def get_pool_processing(map_func, parallel_args: list, is_on_cluster: bool, fix_args: list = None,
-                        print_out: str = None):
+def start_pool_processing(map_func, parallel_args: list, is_on_cluster: bool, fix_args: list = None,
+                          print_out: str = None):
     """ Create a pool parallel processing pipeline
 
     :param map_func: The function with the parallel pipeline.
@@ -19,7 +19,6 @@ def get_pool_processing(map_func, parallel_args: list, is_on_cluster: bool, fix_
 
     Note
     ------
-    The map_func must be a static- or a classmethod.
     The fix arguments must be in the first argument that passed to the function.
 
     """
@@ -44,7 +43,7 @@ def get_pool_processing(map_func, parallel_args: list, is_on_cluster: bool, fix_
 
     if fix_args is not None:
         map_func = partial(map_func,
-                       *fix_args)
+                           *fix_args)
 
     with mp.Pool(processes=cpus) as pool:
         result = pool.starmap(map_func,

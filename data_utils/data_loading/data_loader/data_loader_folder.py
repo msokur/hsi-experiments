@@ -21,25 +21,22 @@ class DataLoaderFolder(DataLoaderInterface):
                  data_storage: DataStorage):
         super().__init__(config, cube_loader, mask_loader, data_storage)
 
-    @classmethod
-    def read_and_save(cls, destination_path: str, config, paths: str | List[str]):
+    def read_and_save(self, destination_path: str, paths: str | List[str]):
         print(f"Read data for patient {paths[0]}", flush=True)
-        data_storage = get_data_storage(typ=STORAGE_TYPE)
         first = True
         for path in paths[1]:
             print(f"Reading {path}", flush=True)
-            name, values = cls.read_data_task(cube_path=path,
-                                              config=config)
+            name, values = self.read_data_task(cube_path=path)
             values[DICT_ORIGINAL_NAME] = np.array([name] * values[DICT_y].shape[0])
 
             if first:
-                data_storage.save_group(save_path=destination_path,
-                                        group_name=paths[0],
-                                        datas=values)
+                self._save_training_samples_to_archive(destination_path=destination_path,
+                                                       values=values,
+                                                       name=name)
                 first = False
             else:
-                data_storage.append_data(file_path=os.path.join(destination_path, paths[0]),
-                                         append_datas=values)
+                self.data_storage.append_data(file_path=os.path.join(destination_path, paths[0]),
+                                              append_datas=values)
 
     def _paths_to_load(self, root_path: str) -> List[List[str | List[str]]]:
         name_and_paths = folder_sort(paths=self._get_raw_paths(root_path=root_path))
