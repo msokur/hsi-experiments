@@ -107,10 +107,8 @@ class OptimalThreshold:
         }
 
         signs = np.sign(sensitivities - specificities)
-        print(signs)
         if_sensitivities_and_specificities_intersect = len(np.unique(signs)) > 1
         if not if_sensitivities_and_specificities_intersect:
-            print(signs)
             if signs[0] == 1:
                 completeness_options['add_thresholds_to_the_end'] = True
                 print(f'~~~~~~~~~~~~~~~~You need to add new thresholds to the end of the existing thresholds range '
