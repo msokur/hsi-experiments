@@ -50,7 +50,7 @@ class DataLoaderInterface:
         else:
             cpus = mp.cpu_count()
         print(f"----Reading and saving data parallel with {cpus} processors!----")
-        with mp.Pool() as pool:
+        with mp.Pool(processes=cpus) as pool:
             pool.map(func, paths)
 
         print('----Saving of archives is over----')
