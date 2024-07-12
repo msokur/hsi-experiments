@@ -1,3 +1,4 @@
+import os
 import multiprocessing as mp
 
 from functools import partial
@@ -23,8 +24,7 @@ def start_pool_processing(map_func, parallel_args: list, is_on_cluster: bool, fi
 
     """
     if is_on_cluster:
-        # 16 CPUS are set in the job file, so don't change this number
-        cpus = 16
+        cpus = os.environ.get("SLURM_CPUS_PER_TASK")
     else:
         cpus = mp.cpu_count()
 
