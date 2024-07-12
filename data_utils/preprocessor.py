@@ -97,7 +97,7 @@ class Preprocessor:
                                   y_dict_name=self.load_name_for_y,
                                   weight_dict_name=self.dict_names[-1])
             weights = weight_calc.weights_get_or_save(preprocessed_path)
-            weight_calc.weighted_data_save(preprocessed_path, weights)
+            weight_calc.weighted_data_save(preprocessed_path, weights, self.config.CLUSTER)
 
         print(f'---- Memory, preprocessor 2, after sample weights {get_used_memory(process_id=process_id)} ----')
 

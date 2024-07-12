@@ -8,6 +8,7 @@ import pickle
 
 from util.compare_distributions import DistributionsChecker
 from data_utils.data_storage import DataStorage
+from data_utils.parallel_processing import start_pool_processing
 from configuration.parameter import (
     DICT_X, DICT_y, DICT_IDX,
     SCALER_FILE
@@ -101,13 +102,23 @@ class Scaler:
         if not os.path.exists(destination_path):
             os.mkdir(destination_path)
 
-        for data in tqdm(self.data_storage.all_data_generator(storage_path=self.preprocessed_path)):
-            X = data[self.dict_names[0]]
-            X = self.scale_X(X)
+        data_paths = self.data_storage.get_paths(storage_path=self.preprocessed_path)
 
-            self.data_storage.save_data(save_path=self.data_storage.get_path(file=data),
-                                        data_name=self.dict_names[0],
-                                        data=X)
+        start_pool_processing(map_func=self._scaled_X_and_save_task,
+                              parallel_args=[data_paths],
+                              is_on_cluster=self.config.CLUSTER,
+                              fix_args=[destination_path],
+                              print_out="Scaling and save X")
+
+    def _scaled_X_and_save_task(self, destination_path: str, data_path: str):
+        data = self.data_storage.get_datas(data_path=data_path)
+        X = data[self.dict_names[0]]
+        X = self.scale_X(X=X)
+
+        data_name = os.path.basename(p=data_path)
+        self.data_storage.save_data(save_path=os.path.join(destination_path, data_name),
+                                    data_name=self.dict_names[0],
+                                    data=X)
 
     def _get_shapes(self, path):
         datas = self.data_storage.get_datas(data_path=path)

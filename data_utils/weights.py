@@ -8,6 +8,7 @@ from tqdm import tqdm
 import numpy as np
 
 from data_utils.data_storage import DataStorage
+from data_utils.parallel_processing import start_pool_processing
 
 from configuration.parameter import (
     DICT_y, DICT_WEIGHT,
@@ -78,16 +79,25 @@ class Weights:
 
         return weights
 
-    def weighted_data_save(self, root_path: str, weights: np.ndarray):
+    def weighted_data_save(self, root_path: str, weights: np.ndarray, is_on_cluster=True):
         paths = self.data_storage.get_paths(storage_path=root_path)
-        for i, path in tqdm(enumerate(paths)):
-            y = self.__get_y__(path=path)
-            weights_ = np.zeros(y.shape)
 
-            for j in np.unique(y):
-                weights_[y == j] = weights[i, j]
+        path_indexes = [idx for idx in range(len(paths))]
 
-            self.save_data(path=path, weights=weights_)
+        start_pool_processing(map_func=self._weighted_data_save_task,
+                              parallel_args=[path_indexes, paths],
+                              is_on_cluster=is_on_cluster,
+                              fix_args=[weights],
+                              print_out="Save weighted data")
+
+    def _weighted_data_save_task(self, weights: np.ndarray, path_index: int, path: str):
+        y = self.__get_y__(path=path)
+        weights_ = np.zeros(y.shape)
+
+        for label in np.unique(y):
+            weights_[y == label] = weights[path_index, label]
+
+        self.save_data(path=path, weights=weights_)
 
     def get_class_weights(self, class_data_paths: List[str]) -> Dict[Union[int, str], float]:
         labels = np.array(self.labels)
