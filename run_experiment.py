@@ -123,7 +123,8 @@ class Experiment:
             
     def run_experiment_normal(self, combinations=None):
         if combinations is None:
-            combinations = self.combinations
+            #combinations = [(i, combination) for i, combination in enumerate(self.combinations)][251:]
+            combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[40, 439, 444, 447]])
         #for i in range(29, 30):
         for i, combination in combinations:
             # print('-----------------')
@@ -134,7 +135,7 @@ class Experiment:
     
     def run_experiment_schedule(self):
         #self.combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[201, 214, 215, 228, 234]])
-        self.combinations = [(i, combination) for i, combination in enumerate(self.combinations)][223:]
+        self.combinations = [(i, combination) for i, combination in enumerate(self.combinations)]
         import schedule
         import time
         import threading
@@ -243,5 +244,5 @@ if __name__ == '__main__':
                             config_for_experiment,
                             background_params=background_config,
                             replace_combinations_file=True)
-    experiment.run_experiment_schedule()
+    experiment.run_experiment_normal()
     # print(exp.get_results())

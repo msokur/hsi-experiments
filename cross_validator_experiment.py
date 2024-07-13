@@ -82,7 +82,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
         print('Parsed args:', self.args)
 
     def create_folder_for_results(self):
-        results_folder = os.path.join(self.args.results_folder, self.args.abbreviation)
+        results_folder = os.path.join(self.args.results_folder, self.config.CONFIG_CV["NAME"])
         if not os.path.exists(results_folder):
             os.mkdir(results_folder)
         self.results_folder = results_folder
@@ -135,7 +135,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
         self.config.CONFIG_PATHS['BATCHED_PATH'] += '_' + self.args.cv_name
 
     def set_preprocessor_paths(self):
-        self.config.CONFIG_PATHS['RAW_NPZ_PATH'] += '_' + self.args.abbreviation
+        self.config.CONFIG_PATHS['RAW_NPZ_PATH'] += '_' + self.config.CONFIG_CV["NAME"]
         self.config.CONFIG_PATHS['SHUFFLED_PATH'] = os.path.join(self.config.CONFIG_PATHS['RAW_NPZ_PATH'], 'shuffled')
         self.config.CONFIG_PATHS['BATCHED_PATH'] = os.path.join(self.config.CONFIG_PATHS['RAW_NPZ_PATH'], 'batch_sized')
 
