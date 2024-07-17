@@ -1,10 +1,20 @@
 import glob as glob
 import sys
+import os
+import inspect
 
-sys.path.insert(0, '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments') 
-sys.path.insert(0, '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/data_utils') 
+#sys.path.insert(0, '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments') 
+#sys.path.insert(0, '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/data_utils') 
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+sys.path.insert(0, os.path.join(parent_dir, 'data_utils'))
 
 import scaler
+import provider
+
+from configuration.parameter import STORAGE_TYPE
+import configuration.get_config as config
 
 class SpectraUtil:
     def __init__(self, source_folder, add_standard_scaler=False):
@@ -14,8 +24,9 @@ class SpectraUtil:
         self.init_scalers()
         
     def init_scalers(self):
-        self.normalizer = scaler.NormalizerScaler(self.source_folder)
-        self.standard_transposed_scaler = scaler.StandardScalerTransposed(self.source_folder)
+        data_storage = provider.get_data_storage(typ=STORAGE_TYPE)
+        self.normalizer = scaler.NormalizerScaler(config, self.source_folder, data_storage=data_storage)
+        self.standard_transposed_scaler = scaler.StandardScalerTransposed(config, self.source_folder, data_storage=data_storage)
         
         if self.add_standard_scaler:
             self.standard = scaler.StandardScaler(self.source_folder)
