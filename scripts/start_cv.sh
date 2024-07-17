@@ -7,7 +7,7 @@ sbatch <<EOT
 #SBATCH --job-name=$4_$3
 #SBATCH --partition=clara
 #SBATCH --time=40:00:00
-#SBATCH --mem=16G
+#SBATCH --mem=24G
 ##SBATCH --gres=gpu:v100:2
 #SBATCH --gres=gpu:rtx2080ti:2
 #SBATCH --output=$6/_ExperimentStep_$3_config_index_$4_%j.log
