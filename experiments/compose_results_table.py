@@ -1,4 +1,12 @@
+from pathlib import Path
 import os
+import sys
+
+currentdir = Path.cwd()
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir) 
+print(sys.path)
+
 from tqdm import tqdm
 import numpy as np
 
@@ -35,17 +43,20 @@ def compose_results(folders):
                 optimal_threshold_finder = OptimalThreshold(config, folder, prints=False)
                 #print(combination)
                 folder_with_checkpoint = os.path.join(folder, combination, "Results_with_EarlyStopping")
-                results = optimal_threshold_finder.find_optimal_threshold_in_checkpoint(folder_with_checkpoint)
-                '''data = MetricsCsvReaderComparisonFiles().read_metrics(os.path.join(folder_with_checkpoint,
-                                                                          'compare_all_thresholds.csv'),
-                                                                      names=['Threshold', 'Sensitivity', 'Specificity',
-                                                                             'F1-score', 'MCC', 'AUC'])'''
-                thr, sens, spec, _, _ = results
+                try:
+                    results = optimal_threshold_finder.find_optimal_threshold_in_checkpoint(folder_with_checkpoint)
+                    '''data = MetricsCsvReaderComparisonFiles().read_metrics(os.path.join(folder_with_checkpoint,
+                                                                              'compare_all_thresholds.csv'),
+                                                                          names=['Threshold', 'Sensitivity', 'Specificity',
+                                                                                 'F1-score', 'MCC', 'AUC'])'''
+                    thr, sens, spec, _, _ = results
 
-                row = [combination, folder] + list(parameters) + [thr, sens, spec, np.mean([sens, spec])]
-                row = {k: v for k, v in zip(column_names, row)}
+                    row = [combination, folder] + list(parameters) + [thr, sens, spec, np.mean([sens, spec])]
+                    row = {k: v for k, v in zip(column_names, row)}
 
-                table.append(row)
+                    table.append(row)
+                except Exception as e:
+                    print(e)
 
     df = pd.DataFrame(table)
     df.to_csv('results.csv')

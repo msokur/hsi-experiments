@@ -96,37 +96,6 @@ class Experiment:
         with open(self.json_name, 'w') as outfile:
             outfile.write(json.dumps(result_json))
 
-    def get_results(self):
-        from evaluation.validator import Validator  # totally old
-
-        folders = sorted(glob(os.path.join(self.experiment_results_root_folder, '*/')),
-                         key=lambda x: int(x.split('_C')[-1].split('_')[0]))
-
-        means_all = []
-        ticks = []
-        for folder in folders:
-            print(folder)
-            print('kaktus', folder.split(config.SYSTEM_PATHS_DELIMITER)[-2])
-            tick = '_'.join(folder.split(config.SYSTEM_PATHS_DELIMITER)[-2].split('_')[1:])
-            ticks.append(tick)
-            print(folder)
-            checkpoints = glob(os.path.join(folder, 'cp-0000'))
-            if len(checkpoints) == 0:
-                print(f'WARNING!!! There is no cp-0000 for {folder}')
-                continue
-            best_checkpoint, best_threshold, thresholds, means = Validator().find_best_checkpoint(folder)
-            means_all.append(means[0])
-        x = np.arange(len(means_all))
-        plt.xticks(x, ticks, rotation=90)
-        plt.plot(means_all)
-        plt.savefig(os.path.join(self.experiment_results_root_folder, 'means.png'))
-
-        '''print(folder)
-        checkpoints = glob(os.path.join(folder, 'cp-0000'))
-        if len(checkpoints) == 0:
-            print(f'WARNING!!! There is no cp-0000 for {folder}')
-            continue
-        checkpoint = checkpoints[0]'''
     
     def run_combination(self, combination, i):
         print('combination', combination)
@@ -150,12 +119,12 @@ class Experiment:
         print('Prompt output:',output)
         print('--------------------------------------------------------------------------------------------------')
     
-    
    
             
     def run_experiment_normal(self, combinations=None):
         if combinations is None:
-            combinations = self.combinations
+            #combinations = [(i, combination) for i, combination in enumerate(self.combinations)][:5]
+            combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[24]])
         #for i in range(29, 30):
         for i, combination in combinations:
             # print('-----------------')
@@ -166,7 +135,7 @@ class Experiment:
     
     def run_experiment_schedule(self):
         #self.combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[201, 214, 215, 228, 234]])
-        self.combinations = [(i, combination) for i, combination in enumerate(self.combinations)][5:]
+        self.combinations = [(i, combination) for i, combination in enumerate(self.combinations)]
         import schedule
         import time
         import threading
@@ -174,12 +143,12 @@ class Experiment:
 
         def job():
             if self.combinations:
-                combinations_batch = self.combinations[:15]
-                self.combinations = self.combinations[15:]
+                combinations_batch = self.combinations[:5]
+                self.combinations = self.combinations[5:]
                 threading.Thread(target=self.run_experiment_normal, args=(combinations_batch,)).start()
 
 
-        schedule.every(2).hours.do(job)
+        schedule.every(1).hours.do(job)
 
         job()
 
@@ -217,8 +186,8 @@ if __name__ == '__main__':
     import time
     #time.sleep(5 * 60 * 60)
 
-    gaussian_params = [0.5, 1, 1.5]
-    #gaussian_params = [1, 2, 3]
+    #gaussian_params = [0.5, 1, 1.5]
+    gaussian_params = [1, 2, 3]
     median_params = [3, 5, 7]
 
     config_for_experiment = {
@@ -234,15 +203,19 @@ if __name__ == '__main__':
             'config_section': 'CONFIG_TRAINER',
             'parameters': [True, False]
         },
-        "SMOOTHING.SMOOTHING_TYPE": {
-            'add_None': True,
-            'config_section': 'CONFIG_DATALOADER',
-            'parameters': ['median_filter', 'gaussian_filter']
-        },
-        "SMOOTHING.SMOOTHING_VALUE": {
-            'config_section': 'CONFIG_DATALOADER',
-            'parameters': np.unique(median_params + gaussian_params).astype(float)
-        },
+        #"SMOOTHING.SMOOTHING_DIMENSIONS": {
+        #    'config_section': 'CONFIG_DATALOADER',
+        #    'parameters': ['2d']
+        #},
+        #"SMOOTHING.SMOOTHING_TYPE": {
+        #    'add_None': True,
+        #    'config_section': 'CONFIG_DATALOADER',
+        #    'parameters': ['median_filter', 'gaussian_filter']
+        #},
+        #"SMOOTHING.SMOOTHING_VALUE": {
+        #    'config_section': 'CONFIG_DATALOADER',
+        #    'parameters': np.unique(median_params + gaussian_params).astype(float)
+        #},
         "BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
             'config_section': 'CONFIG_DATALOADER',
         },
@@ -267,9 +240,9 @@ if __name__ == '__main__':
         }
     }
 
-    experiment = Experiment('MainExperiment_5_smoothing_3d',
+    experiment = Experiment('MainExperiment_5_savgol',
                             config_for_experiment,
                             background_params=background_config,
                             replace_combinations_file=True)
-    experiment.run_experiment_schedule()
+    experiment.run_experiment_normal()
     # print(exp.get_results())
