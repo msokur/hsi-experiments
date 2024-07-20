@@ -7,9 +7,9 @@ sbatch <<EOT
 #SBATCH --job-name=$4_$3
 #SBATCH --partition=clara
 #SBATCH --time=40:00:00
-#SBATCH --mem=24G
+#SBATCH --mem=28G
 ##SBATCH --gres=gpu:v100:2
-#SBATCH --gres=gpu:rtx2080ti:2
+#SBATCH --gres=gpu:rtx2080ti:8
 #SBATCH --output=$6/_ExperimentStep_$3_config_index_$4_%j.log
 
 #module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"
@@ -50,5 +50,6 @@ echo "Job is running on the following node(s): $SLURM_NODELIST"
 python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validator_experiment.py --experiment_folder=$1 --cv_name=$2 --abbreviation=$3 --config_index=$4 --results_folder=$5
 
 conda deactivate
+
 exit 0
 EOT

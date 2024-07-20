@@ -123,8 +123,8 @@ class Experiment:
             
     def run_experiment_normal(self, combinations=None):
         if combinations is None:
-            #combinations = [(i, combination) for i, combination in enumerate(self.combinations)][:5]
-            combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[24]])
+            combinations = [(i, combination) for i, combination in enumerate(self.combinations)][17:]
+            #combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[24]])
         #for i in range(29, 30):
         for i, combination in combinations:
             # print('-----------------')
@@ -187,35 +187,38 @@ if __name__ == '__main__':
     #time.sleep(5 * 60 * 60)
 
     #gaussian_params = [0.5, 1, 1.5]
-    gaussian_params = [1, 2, 3]
-    median_params = [3, 5, 7]
+    #gaussian_params = [1, 2, 3]
+    #median_params = [3, 5, 7]
+    
+    gaussian_params = [0.5]
+    median_params = [3, 5]
 
     config_for_experiment = {
         '3D_SIZE': {
             'config_section': 'CONFIG_DATALOADER',
-            'parameters': [[5, 5]] #[[5, 5]]#, [7, 7], [11, 11]]
+            'parameters': [[7, 7]] #[[5, 5]]#, [7, 7], [11, 11]]
         },
         "NORMALIZATION_TYPE": {
            'config_section': 'CONFIG_PREPROCESSOR',
-            'parameters': ["svn", 'l2_norm']
+            'parameters': ["svn"]
         },
         "WITH_SAMPLE_WEIGHTS": {
             'config_section': 'CONFIG_TRAINER',
             'parameters': [True, False]
         },
-        #"SMOOTHING.SMOOTHING_DIMENSIONS": {
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    'parameters': ['2d']
-        #},
-        #"SMOOTHING.SMOOTHING_TYPE": {
-        #    'add_None': True,
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    'parameters': ['median_filter', 'gaussian_filter']
-        #},
-        #"SMOOTHING.SMOOTHING_VALUE": {
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    'parameters': np.unique(median_params + gaussian_params).astype(float)
-        #},
+        "SMOOTHING.SMOOTHING_DIMENSIONS": {
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': ['1d']
+        },
+        "SMOOTHING.SMOOTHING_TYPE": {
+            'add_None': True,
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': ['median_filter', 'gaussian_filter']
+        },
+        "SMOOTHING.SMOOTHING_VALUE": {
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': np.unique(median_params + gaussian_params).astype(float)
+        },
         "BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
             'config_section': 'CONFIG_DATALOADER',
         },
@@ -233,14 +236,14 @@ if __name__ == '__main__':
             'parameters': [True, False]
         },
         "BACKGROUND.BLOOD_THRESHOLD": {
-            'parameters': [0.1, 0.15]
+            'parameters': [0.1]
         },
         "BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
-            'parameters': [0.25, 0.4, 0.6, 0.7]
+            'parameters': [0.25, 0.4, 0.7]
         }
     }
 
-    experiment = Experiment('MainExperiment_5_savgol',
+    experiment = Experiment('MainExperiment_7_smoothing_1d',
                             config_for_experiment,
                             background_params=background_config,
                             replace_combinations_file=True)
