@@ -5,11 +5,11 @@ sbatch <<EOT
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 #SBATCH --job-name=$4_$3
-#SBATCH --partition=clara
-#SBATCH --time=40:00:00
+#SBATCH --partition=clara-long
+#SBATCH --time=10-00:00:00
 #SBATCH --mem=28G
 ##SBATCH --gres=gpu:v100:2
-#SBATCH --gres=gpu:rtx2080ti:6
+#SBATCH --gres=gpu:rtx2080ti:5
 #SBATCH --output=$6/_ExperimentStep_$3_config_index_$4_%j.log
 
 #module --ignore-cache load "CUDA/10.1.243-GCC-8.3.0"

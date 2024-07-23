@@ -124,7 +124,7 @@ class Experiment:
     def run_experiment_normal(self, combinations=None):
         if combinations is None:
             combinations = [(i, combination) for i, combination in enumerate(self.combinations)]
-            #combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[0, 3, 4, 7, 8]])
+            #combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[24]])
         #for i in range(29, 30):
         for i, combination in combinations:
             # print('-----------------')
@@ -207,7 +207,7 @@ if __name__ == '__main__':
         },
         "WITH_SAMPLE_WEIGHTS": {
             'config_section': 'CONFIG_TRAINER',
-            'parameters': [True, False]
+            'parameters': [True]
         },
         "SMOOTHING.SMOOTHING_DIMENSIONS": {
             'config_section': 'CONFIG_DATALOADER',
@@ -242,11 +242,11 @@ if __name__ == '__main__':
             'parameters': [0.1]
         },
         "BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
-            'parameters': [0.25, 0.4, 0.7]
+            'parameters': [0.25, 0.4]
         }
     }
 
-    experiment = Experiment('MainExperiment_7_smoothing_2d',
+    experiment = Experiment('WHOLE_MainExperiment_7_smoothing_2d',
                             config_for_experiment,
                             background_params=background_config,
                             replace_combinations_file=True)
