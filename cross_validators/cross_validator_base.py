@@ -61,7 +61,7 @@ class CrossValidatorBase:
         else:
             evaluator.evaluate(**kwargs)
 
-    def cross_validation_step(self, model_name: str, except_names: List[str], leave_out_names=None):
+    def cross_validation_step(self, model_name: str, all_patients: List[str], leave_out_names=None):
         if leave_out_names is None:
             leave_out_names = []
         choice_names = ChoiceNames(data_storage=self.data_storage, config_cv=self.config.CONFIG_CV,
@@ -70,7 +70,7 @@ class CrossValidatorBase:
                                    log_dir=model_name)
         valid_names = choice_names.get_valid_except_names(raw_path=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
                                                           except_names=leave_out_names)
-        train_names = list(set(except_names) - set(leave_out_names) - set(valid_names))
+        train_names = list(set(all_patients) - set(leave_out_names) - set(valid_names))
 
         print(f"Leave out patient data: {', '.join(n for n in leave_out_names)}.\n")
         print(f"Train patient data: {', '.join(n for n in train_names)}.\n")
@@ -131,8 +131,8 @@ class CrossValidatorBase:
                       f"So we skip this patient(s)!")
                 continue
 
-            except_names = [self.data_storage.get_name(path=p) for p in paths]
-            self.cross_validation_step(model_name=model_name, except_names=except_names,
+            all_patients = [self.data_storage.get_name(path=p) for p in paths]
+            self.cross_validation_step(model_name=model_name, all_patients=all_patients,
                                        leave_out_names=[self.data_storage.get_name(p) for p in leave_out_paths])
 
             for i, path_ in enumerate(leave_out_paths):
