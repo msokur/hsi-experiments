@@ -148,7 +148,7 @@ class CrossValidatorBase:
                                      'name': path_,
                                      'model_name': model_name})
 
-    def __get_paths_and_splits(self, root_path=None):
+    def _get_paths_and_splits(self, root_path=None):
         if root_path is None:
             root_path = self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH]
         paths = self.data_storage.get_paths(storage_path=root_path)

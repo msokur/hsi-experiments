@@ -111,10 +111,16 @@ class Experiment:
         print('short_name', short_name)
         print('Index', i)
         print('self.experiment_results_root_folder', self.experiment_results_root_folder)
-
-        stream = os.popen(
-            f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv.sh {self.root_folder} '
-            f'{self.name + "_" + short_name} {short_name} {i} {self.experiment_results_root_folder} {self.name}')
+        
+        parallel = ''
+        if PARALLEL:
+            parallel = '_parallel'
+        
+        execution = f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv{parallel}.sh {self.root_folder} '
+            f'{self.name + "_" + short_name} {short_name} {i} {self.experiment_results_root_folder} {self.name}'
+        
+        print(execution)
+        stream = os.popen(execution)
         output = stream.read()
         print('Prompt output:',output)
         print('--------------------------------------------------------------------------------------------------')
@@ -123,7 +129,7 @@ class Experiment:
             
     def run_experiment_normal(self, combinations=None):
         if combinations is None:
-            combinations = [(i, combination) for i, combination in enumerate(self.combinations)]
+            combinations = [(i, combination) for i, combination in enumerate(self.combinations)][1:2]
             #combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[24]])
         #for i in range(29, 30):
         for i, combination in combinations:
@@ -183,6 +189,7 @@ class Experiment:
 
 
 if __name__ == '__main__':
+    PARALLEL = True
     import time
     #time.sleep(5 * 60 * 60)
 
