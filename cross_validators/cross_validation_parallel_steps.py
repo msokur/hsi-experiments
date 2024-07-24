@@ -67,6 +67,7 @@ if __name__ == '__main__':
         cross_validation_step(model_name=args.model_name,
                               all_patients=args.all_patients.split('+'),
                               leave_out_names=args.leave_out_names.split('+'))
+        config.telegram.send_tg_message(f'CV step {args.model_name} successfully finished')
 
     except Exception as e:
         import configuration.get_config as config
