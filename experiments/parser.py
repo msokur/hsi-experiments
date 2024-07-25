@@ -27,6 +27,7 @@ class Parser:
         smoothing = parts[5]
         if len(smoothing) == 1:
             smoothing = 'no'
+            smoothing_dimension = -1
         else:
             smoothing = smoothing[1]
 
