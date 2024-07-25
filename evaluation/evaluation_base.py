@@ -173,7 +173,6 @@ class EvaluationBase(Metrics):
                             name = patient['name']
                             gt = patient['gt']
                             predictions_raw = patient["predictions"]
-                            names = patient[ORIGINAL_NAME]
                             predictions = self.calculate_predictions(predictions_raw, threshold)
 
                             metrics_ = self.save_metrics(gt, predictions, predictions_raw, writer_cp)
@@ -181,6 +180,7 @@ class EvaluationBase(Metrics):
                             append_value(metrics_all, metrics_)
 
                             if save_curves:
+                                names = patient[ORIGINAL_NAME]
                                 roc_folder = os.path.join(results_folder, f"roc_by_threshold_{threshold}")
                                 if not os.path.exists(roc_folder):
                                     os.mkdir(roc_folder)

@@ -4,6 +4,7 @@ from configuration.get_config import telegram
 from configuration.keys import CrossValidationKeys as CVK, DataLoaderKeys as DLK
 from evaluation.optimal_parameters import OptimalThreshold
 
+
 def out_of_the_box(config):
     cross_validator = provider.get_cross_validator(config=config, typ=config.CONFIG_CV[CVK.TYPE])
     # cross validation pipeline consists of 2 parts:
@@ -71,7 +72,7 @@ if __name__ == '__main__':
         # postprocessing_for_one_model(config)
 
         telegram.send_tg_message(f'Operations in cross_validation.py for {configuration.CONFIG_CV[CVK.NAME]} '
-                                             f'are successfully completed!')
+                                 f'are successfully completed!')
 
     except Exception as e:
 
