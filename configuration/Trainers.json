@@ -97,11 +97,11 @@
   },
   "BASE_BINARY_TUNER": {
     "TYPE":  "Tuner",
-    "RESTORE": false,
+    "RESTORE": true,
     "FILES_TO_COPY": [["*.py"], ["data_utils", "*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"], ["scripts", "*.job"], ["trainers", "*.py"], ["util", "*.py"], ["evaluation", "*.py"], ["cross_validators", "*.py"], ["configuration", "*.py"], ["configuration", "*.json"]],
-    "WITH_SAMPLE_WEIGHTS": false,
-    "MODEL": "paper_model",
-    "MODEL_PARAMS": "paper_model_tuner",
+    "WITH_SAMPLE_WEIGHTS": true,
+    "MODEL": "inception_model",
+    "MODEL_PARAMS": "inception_model_tuner",
     "LEARNING_RATE": 1e-4,
     "CUSTOM_OBJECTS": {
       "F1_score": [{"name":  "f1_score"}]
@@ -109,15 +109,17 @@
     },
     "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
-    "EPOCHS": 1,
+    "EPOCHS": 5,
     "USE_SMALLER_DATASET": false,
     "TUNER": "BayesianOptimization",
     "TUNER_PARAMS": {
       "objective": {"name": "val_f1_score", "direction":  "max"},
-      "max_trials": 20,
-      "overwrite": true
+      "max_trials": 3,
+      "overwrite": true,
+      "max_consecutive_failed_trials": 10,
+      "project_name": "HSI_inception"
     },
-    "TUNER_EPOCHS": 5,
+    "TUNER_EPOCHS": 1,
     "MODEL_CHECKPOINT": {
       "monitor": "val_f1_score",
       "save_best_only": true,
@@ -141,7 +143,7 @@
     "DROPOUT": 0.1
   },
   "inception_model_tuner": {
-    "WITH_ONES": false,
+    "WITH_ONES": "Boolean(True or False)",
     "NUM_BLOCK": {"min_value":  0, "max_value": 2},
     "NUM_BRANCHES": {"min_value":  1, "max_value": 3},
     "BLOCK_FILTERS": {"min_value": 16, "max_value": 128, "step": 16},

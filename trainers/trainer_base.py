@@ -141,6 +141,11 @@ class Trainer:
             custom_callback = CustomTensorboardCallback(process=psutil.Process(os.getpid()))
             callbacks_.append(custom_callback)
 
+        callbacks_ = self.add_early_stopping(callbacks_)
+
+        return callbacks_
+
+    def add_early_stopping(self, callbacks):
         if self.config.CONFIG_TRAINER[TK.EARLY_STOPPING]["enable"]:
             early_stopping_callback = keras.callbacks.EarlyStopping(
                 monitor=self.config.CONFIG_TRAINER[TK.EARLY_STOPPING]["monitor"],
@@ -150,9 +155,9 @@ class Trainer:
                 verbose=1,
                 restore_best_weights=self.config.CONFIG_TRAINER[TK.EARLY_STOPPING]["restore_best_weights"])
 
-            callbacks_.append(early_stopping_callback)
+            callbacks.append(early_stopping_callback)
 
-        return callbacks_
+        return callbacks
 
     def get_class_weights(self, root_data_paths):
         class_weights = None

@@ -7,8 +7,9 @@ from trainers.trainer_base import Trainer
 import pickle
 from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
 from configuration.parameter import (
-    MODEL_BATCH_SIZE
+    MODEL_BATCH_SIZE, STORAGE_TYPE
 )
+from models.model_randomness import set_tf_seed
 
 
 class TrainerTuner(Trainer):
@@ -62,7 +63,8 @@ class TrainerTuner(Trainer):
         with open(os.path.join(directory, "params.pickle"), "rb") as handle:
             params = pickle.load(handle)
 
-        params["objective"] = kt.Objective(**params["objective"])
+        #params["objective"] = kt.Objective(**params["objective"])
+        params["overwrite"] = False   # important, otherwise results could be overwriten and restoring will not work
 
         return model, params
 
@@ -113,9 +115,13 @@ class TrainerTuner(Trainer):
             base_model = self.get_model()
             params = self.get_params()
             TrainerTuner.save_tuner_params(base_model, **params)
+        tuner = self.config.CONFIG_TRAINER[TK.TUNER](base_model, **params, distribution_strategy=mirrored_strategy)
 
-        return base_model, self.config.CONFIG_TRAINER[TK.TUNER](base_model, **params,
-                                                                distribution_strategy=mirrored_strategy)
+        if self.config.CONFIG_TRAINER[TK.RESTORE]:
+            set_tf_seed()   # in case of restoration model is not initialized and seed is not set, that's why error is thrown
+            tuner.reload()
+
+        return base_model, tuner
 
     def get_model(self) -> kt.HyperModel:
         base_model = self.config.CONFIG_TRAINER[TK.MODEL](input_shape=self.get_output_shape(),
@@ -128,6 +134,70 @@ class TrainerTuner(Trainer):
 
 
 if __name__ == '__main__':
+    import configuration.get_config as config
+    import provider
+    from configuration.keys import PathKeys as PK
+    import numpy as np
+    from glob import glob
+    from pprint import pprint
+
+    data_storage = provider.get_data_storage(typ=STORAGE_TYPE)
+    log_dir = os.path.join(*config.CONFIG_PATHS[PK.LOGS_FOLDER], 'keras_tuner')
+
+    trainer = TrainerTuner(config=config, data_storage=data_storage, model_name=log_dir,
+                           leave_out_names=[], train_names=[],
+                           valid_names=[])
+
+    _, tuner = trainer.get_tuner()
+
+    #print(tuner.results_summary())
+
+    shuffled = ['C:\\Users\\tkachenko\\Desktop\\HSI\\colon_for_debug\\keras_tuner\\shuffled\\shuffled_example.npz']
+
+    data = np.load(shuffled[0])
+
+    #split = int(data['y'].shape[0] * config.CONFIG_TRAINER[TK.SPLIT_FACTOR])
+    #print(data['y'].shape[0], split)
+    # = tf.data.Dataset.from_tensor_slices((data['X'], #[:split][::20],
+    #                                                    data['y'], #[:split][::20],
+    #                                                    data['weights'])).batch(10) #[:split][::20])).batch(10)
+    #valid_dataset = tf.data.Dataset.from_tensor_slices((data['X'][split:][::20],
+    #                                                    data['y'][split:][::20],
+    #                                                    data['weights'][split:][::20])).batch(10)
+
+    callbacks = [keras.callbacks.TensorBoard(trainer.tuner_dir)]
+    callbacks = trainer.add_early_stopping(callbacks)
+
+    class_weigths = None
+    if not config.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS]:
+        dat_files = glob(config.CONFIG_PATHS(PK.DATABASE_ROOT_FOLDER), '*.dat')
+        trainer.train_names = [f.split(config.CONFIG_PATHS(PK.SYS_DELIMITER))[-1].split('_Spec')[0] for f in dat_files]
+        class_weigths = trainer.get_class_weights(shuffled)
+
+    tuner.search(x=data['X'],
+                 y=data['y'],
+                 epochs=config.CONFIG_TRAINER[TK.TUNER_EPOCHS],
+                 #validation_data=valid_dataset,
+                 class_weight=class_weigths,
+                 callbacks=callbacks,
+                 validation_split=1 - config.CONFIG_TRAINER[TK.SPLIT_FACTOR],
+                 batch_size=config.CONFIG_TRAINER[TK.BATCH_SIZE])
+
+    best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
+    best_model = tuner.get_best_models()[0]
+
+    print('Best hyperparams')
+    pprint(best_hps.values)
+    print('Best model summary')
+    print(best_model.summary())
+
+    '''best_model.fit(
+        x=data['X'][::10],
+        y=data['y'][::10],
+        epochs=config.CONFIG_TRAINER[TK.TUNER_EPOCHS]
+    )'''
+
+
     '''tuner_ = trainer.restore_tuner(
         directory='C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\tuner_results',
         project_name='inception_3d_17.02.2022-18_20_06')
