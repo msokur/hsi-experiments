@@ -107,7 +107,7 @@ class CrossValidatorBase:
         if not os.path.exists(root_folder):
             os.makedirs(root_folder)
 
-        paths, splits = self.__get_paths_and_splits()
+        paths, splits = self._get_paths_and_splits()
 
         date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
 

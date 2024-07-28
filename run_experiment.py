@@ -128,7 +128,7 @@ class Experiment:
             
     def run_experiment_normal(self, combinations=None):
         if combinations is None:
-            combinations = [(i, combination) for i, combination in enumerate(self.combinations)][1:2]
+            combinations = [(i, combination) for i, combination in enumerate(self.combinations)][2:3]
             #combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[24]])
         #for i in range(29, 30):
         for i, combination in combinations:

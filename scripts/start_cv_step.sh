@@ -9,7 +9,7 @@ sbatch <<EOT
 #SBATCH --time=40:00:00
 #SBATCH --mem=32G
 ##SBATCH --gres=gpu:v100:2
-#SBATCH --gres=gpu:rtx2080ti:6
+#SBATCH --gres=gpu:rtx2080ti:4
 #SBATCH --output=$4/$5/_$6_%j.log
 
 

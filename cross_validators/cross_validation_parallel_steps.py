@@ -53,6 +53,7 @@ def cross_validation_step(model_name: str, all_patients: List[str], leave_out_na
 
 if __name__ == '__main__':
     try:
+        import configuration.get_config as config
         import argparse
         parser = argparse.ArgumentParser()
 
@@ -70,7 +71,7 @@ if __name__ == '__main__':
         config.telegram.send_tg_message(f'CV step {args.model_name} successfully finished')
 
     except Exception as e:
-        import configuration.get_config as config
+        
 
         config.telegram.send_tg_message(f'ERROR!!!, In CV step {args.model_name} error {e}')
         raise e

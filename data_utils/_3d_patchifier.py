@@ -1,5 +1,6 @@
 from sklearn.feature_extraction import image
 import numpy as np
+import platform
 
 from configuration.keys import DataLoaderKeys as DLK
 from configuration.parameter import (
@@ -35,8 +36,8 @@ class Patchifier:
 
             needed_bytes = spectrum_volume * patch_volume * bytes_per_element
             needed_gb = needed_bytes
-
-            if needed_gb > 5:
+            
+            if needed_gb > self.get_maximal_gb():
                 use_onflow_3D_patchifier = True
                 print(f'Onflow 3D patchifier will be used, because needed amount of Gb is {needed_gb}')
             else:
@@ -44,6 +45,15 @@ class Patchifier:
                 print(f'Standard 3D  patchifier will be used. Needed amount of Gb is {needed_gb}')
         return use_standard_3D_patchifier, use_onflow_3D_patchifier
 
+    def get_maximal_gb(self):
+        maximal_gb = 5
+        
+        uname = platform.uname()
+        if "clara" in uname.node:
+            maximal_gb = 10
+            
+        return maximal_db
+    
     def get_3D_patches_standard(self, spectrum: np.ndarray):
         size = self.config.CONFIG_DATALOADER[DLK.D3_SIZE]
         # Better not to use non even sizes
