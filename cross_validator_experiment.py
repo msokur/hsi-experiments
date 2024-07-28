@@ -19,7 +19,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
             import configuration.get_config as config  # we need config from scratch every time
             self.config = config
 
-            print(f'Hi from CV! with {self.args.experiment_folder}, {self.args.cv_name} and config_index='
+            print(f'Hi from Experiment! with {self.args.experiment_folder}, {self.args.cv_name} and config_index='
                   f'{self.args.config_index}')
 
             #print(self.config.CONFIG_PATHS)
@@ -38,6 +38,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
 
             super().__init__(self.config, *args, **kwargs)
             
+            #self.pipeline(execution_flags={CVK.EF_CROSS_VALIDATION: True, CVK.EF_EVALUATION: False}, thresholds=np.round(np.linspace(0.001, 0.6, 100), 4))
             #self.pipeline(execution_flags={CVK.EF_CROSS_VALIDATION: False, CVK.EF_EVALUATION: True}, thresholds=np.round(np.linspace(0.001, 0.6, 100), 4))
             self.pipeline(thresholds=np.round(np.linspace(0.001, 0.6, 100), 4))
 

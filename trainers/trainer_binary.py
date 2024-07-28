@@ -33,20 +33,25 @@ class TrainerBinary(Trainer):
             for_tuning=self.config.CONFIG_TRAINER[TK.USE_SMALLER_DATASET])
 
         '''-------TRAINING---------'''
+        try:
 
-        history = model.fit(
-            x=train_dataset,
-            validation_data=valid_dataset,
-            epochs=self.config.CONFIG_TRAINER[TK.EPOCHS],
-            verbose=2,
-            initial_epoch=initial_epoch,
-            batch_size=MODEL_BATCH_SIZE,
-            callbacks=self.get_callbacks(),
-            use_multiprocessing=True,
-            class_weight=class_weights,
-            workers=int(os.cpu_count()))
+            history = model.fit(
+                x=train_dataset,
+                validation_data=valid_dataset,
+                epochs=self.config.CONFIG_TRAINER[TK.EPOCHS],
+                verbose=2,
+                initial_epoch=initial_epoch,
+                batch_size=MODEL_BATCH_SIZE,
+                callbacks=self.get_callbacks(),
+                use_multiprocessing=True,
+                class_weight=class_weights,
+                workers=int(os.cpu_count()))
 
-        self.save_history(history)
+            self.save_history(history)
+        except Exception as e:
+            if self.config.CONFIG_CV[CVK.MODE] == "RUN":
+                self.dataset.delete_batches(batch_path=self.batch_path)
+            raise e
 
         if self.config.CONFIG_CV[CVK.MODE] == "RUN":
             self.dataset.delete_batches(batch_path=self.batch_path)

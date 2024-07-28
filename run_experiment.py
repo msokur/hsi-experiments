@@ -111,10 +111,15 @@ class Experiment:
         print('short_name', short_name)
         print('Index', i)
         print('self.experiment_results_root_folder', self.experiment_results_root_folder)
-
-        stream = os.popen(
-            f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv.sh {self.root_folder} '
-            f'{self.name + "_" + short_name} {short_name} {i} {self.experiment_results_root_folder} {self.name}')
+        
+        parallel = ''
+        if PARALLEL:
+            parallel = '_parallel'
+        
+        execution = f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv{parallel}.sh {self.root_folder} {self.name + "_" + short_name} {short_name} {i} {self.experiment_results_root_folder} {self.name}'
+        
+        print(execution)
+        stream = os.popen(execution)
         output = stream.read()
         print('Prompt output:',output)
         print('--------------------------------------------------------------------------------------------------')
@@ -123,8 +128,8 @@ class Experiment:
             
     def run_experiment_normal(self, combinations=None):
         if combinations is None:
-            #combinations = [(i, combination) for i, combination in enumerate(self.combinations)][:5]
-            combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[24]])
+            combinations = [(i, combination) for i, combination in enumerate(self.combinations)][2:3]
+            #combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[24]])
         #for i in range(29, 30):
         for i, combination in combinations:
             # print('-----------------')
@@ -183,39 +188,46 @@ class Experiment:
 
 
 if __name__ == '__main__':
+    PARALLEL = True
     import time
     #time.sleep(5 * 60 * 60)
 
-    #gaussian_params = [0.5, 1, 1.5]
-    gaussian_params = [1, 2, 3]
-    median_params = [3, 5, 7]
-
+    #gaussian_params = [0.5, 1, 1.5]   #for size 3 and 5, smoothing 1d and 3d
+    #gaussian_params = [1, 2, 3]      #for size 3 and 5, smoothing 2d 
+    #median_params = [3, 5, 7]   #for size 3 and 5, all smoothing dimentions
+    
+    #gaussian_params = [0.5]   #for size 7, smoothing 1d
+    #median_params = [3, 5]   #for size 7, smoothing 1d
+    
+    gaussian_params = [2]   #for size 7, smoothing 2d
+    median_params = [3]   #for size 7, smoothing 2d
+ 
     config_for_experiment = {
         '3D_SIZE': {
             'config_section': 'CONFIG_DATALOADER',
-            'parameters': [[5, 5]] #[[5, 5]]#, [7, 7], [11, 11]]
+            'parameters': [[7, 7]] #[[5, 5]]#, [7, 7], [11, 11]]
         },
         "NORMALIZATION_TYPE": {
            'config_section': 'CONFIG_PREPROCESSOR',
-            'parameters': ["svn", 'l2_norm']
+            'parameters': ["svn"]
         },
         "WITH_SAMPLE_WEIGHTS": {
             'config_section': 'CONFIG_TRAINER',
-            'parameters': [True, False]
+            'parameters': [True]
         },
-        #"SMOOTHING.SMOOTHING_DIMENSIONS": {
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    'parameters': ['2d']
-        #},
-        #"SMOOTHING.SMOOTHING_TYPE": {
-        #    'add_None': True,
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    'parameters': ['median_filter', 'gaussian_filter']
-        #},
-        #"SMOOTHING.SMOOTHING_VALUE": {
-        #    'config_section': 'CONFIG_DATALOADER',
-        #    'parameters': np.unique(median_params + gaussian_params).astype(float)
-        #},
+        "SMOOTHING.SMOOTHING_DIMENSIONS": {
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': ['2d']
+        },
+        "SMOOTHING.SMOOTHING_TYPE": {
+            'add_None': True,
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': ['median_filter', 'gaussian_filter']
+        },
+        "SMOOTHING.SMOOTHING_VALUE": {
+            'config_section': 'CONFIG_DATALOADER',
+            'parameters': np.unique(median_params + gaussian_params).astype(float)
+        },
         "BACKGROUND.WITH_BACKGROUND_EXTRACTION": {
             'config_section': 'CONFIG_DATALOADER',
         },
@@ -233,14 +245,14 @@ if __name__ == '__main__':
             'parameters': [True, False]
         },
         "BACKGROUND.BLOOD_THRESHOLD": {
-            'parameters': [0.1, 0.15]
+            'parameters': [0.1]
         },
         "BACKGROUND.LIGHT_REFLECTION_THRESHOLD": {
-            'parameters': [0.25, 0.4, 0.6, 0.7]
+            'parameters': [0.25, 0.4]
         }
     }
 
-    experiment = Experiment('MainExperiment_5_savgol',
+    experiment = Experiment('WHOLE_MainExperiment_7_smoothing_2d',
                             config_for_experiment,
                             background_params=background_config,
                             replace_combinations_file=True)
