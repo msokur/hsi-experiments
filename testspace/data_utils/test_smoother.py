@@ -9,7 +9,6 @@ np.random.seed(106)
 spectrum = np.random.randn(20, 20, 100)
 
 
-
 def test_MF_1d(test_config):
     MF = MedianFilter(test_config)
     _1d_smoothed_spectrum = MF.smooth_1d(spectrum)

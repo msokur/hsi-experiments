@@ -24,7 +24,7 @@ def start_pool_processing(map_func, parallel_args: list, is_on_cluster: bool, fi
 
     """
     if is_on_cluster:
-        cpus = int(os.environ.get("SLURM_NTASKS"))
+        cpus = int(os.environ.get("SLURM_NTASKS_PER_NODE"))
     else:
         cpus = mp.cpu_count()
 
