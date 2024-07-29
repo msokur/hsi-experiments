@@ -114,12 +114,12 @@
     "TUNER": "BayesianOptimization",
     "TUNER_PARAMS": {
       "objective": {"name": "val_f1_score", "direction":  "max"},
-      "max_trials": 3,
+      "max_trials": 10000,
       "overwrite": true,
       "max_consecutive_failed_trials": 10,
       "project_name": "HSI_inception"
     },
-    "TUNER_EPOCHS": 1,
+    "TUNER_EPOCHS": 100,
     "MODEL_CHECKPOINT": {
       "monitor": "val_f1_score",
       "save_best_only": true,

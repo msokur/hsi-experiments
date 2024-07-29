@@ -690,7 +690,7 @@
 		"TYPE": "normal",
 		"FILE_EXTENSION": ".dat",
 		"3D": true,
-		"3D_SIZE": [3, 3],
+		"3D_SIZE": [7, 7],
 		"FIRST_NM": 8,
 		"LAST_NM": 100,
 		"WAVE_AREA": 100,
@@ -700,7 +700,7 @@
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
 		"SMOOTHING": {
-			"SMOOTHING_TYPE": "savgol_filter",
+			"SMOOTHING_TYPE": null,
 			"SMOOTHING_DIMENSIONS": "1d",
 			"SMOOTHING_VALUE": [9, 2]
 		},
