@@ -50,9 +50,9 @@ def test_start_pool_processing(test_config, map_func, parallel_args, fix_args, r
     assert pool_results == results
 
 
-def test_start_pool_processing_arg_length_error():
+def test_start_pool_processing_arg_length_error(test_config):
     with pytest.raises(AssertionError, match="Check your parallel args, they have not the same length!"):
         start_pool_processing(map_func=func_one,
                               parallel_args=[[0, 1, 2], [0, 1]],
                               fix_args=[1],
-                              is_on_cluster=True)
+                              is_on_cluster=test_config.CLUSTER)
