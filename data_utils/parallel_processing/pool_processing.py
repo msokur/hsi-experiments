@@ -24,7 +24,12 @@ def start_pool_processing(map_func, parallel_args: list, is_on_cluster: bool, fi
 
     """
     if is_on_cluster:
-        cpus = int(os.environ.get("SLURM_NTASKS"))
+        # This environ variable is used, when you start a python file on cluster with a job file
+        cpus = os.environ.get("SLURM_NTASKS")
+        if cpus is None:
+            # This environ variable is used, when you start a python file on cluster in a terminal
+            cpus = os.environ.get("SLURM_CPUS_ON_NODE")
+        cpus = int(cpus)
     else:
         cpus = mp.cpu_count()
 
