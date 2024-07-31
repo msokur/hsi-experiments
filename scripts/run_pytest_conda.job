@@ -1,0 +1,38 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=2
+#SBATCH --job-name=pytest
+#SBATCH --partition=clara
+#SBATCH --time=00:05:00
+
+#SBATCH --output=output/pytest/pytest_%j.log
+
+## remove all previously loaded modules
+module purge
+
+## source your .bashrc to load conda
+source ~/.bashrc
+
+## deactivate the conda base env
+conda deactivate
+
+## load the anaconda module 
+module load Anaconda3/2023.09-0
+
+## enter the name from your env
+CONDA_ENV="hsi_env"
+
+## source your .bashrc to load conda
+source ~/.bashrc
+
+## activate conda env
+conda activate $CONDA_ENV
+
+## load repository variables
+source repo_variables.sh
+
+## run pytest
+pytest $REPO_HOME/testspace
+
+## deactivate conda env
+conda deactivate
