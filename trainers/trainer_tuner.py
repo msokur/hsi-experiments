@@ -182,8 +182,8 @@ if __name__ == '__main__':
                      class_weight=class_weigths,
                      callbacks=callbacks,
                      validation_split=1 - config.CONFIG_TRAINER[TK.SPLIT_FACTOR],
-                     #batch_size=config.CONFIG_TRAINER[TK.BATCH_SIZE],
-                     batch_size=100,
+                     batch_size=config.CONFIG_TRAINER[TK.BATCH_SIZE],
+                     #batch_size=100,
                      verbose=2)
 
         best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]

@@ -6,8 +6,8 @@
 #SBATCH --partition=clara-long
 #SBATCH --time=10-00:00:00
 #SBATCH --mem=28G
-#SBATCH --gres=gpu:v100:8
-##SBATCH --gres=gpu:rtx2080ti:8
+##SBATCH --gres=gpu:v100:4
+#SBATCH --gres=gpu:rtx2080ti:4
 #SBATCH --output=tuner/_tuner_%j.log
 
 # prints out name of the script
