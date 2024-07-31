@@ -33,11 +33,14 @@ source ~/.bashrc
 ## activate conda env
 conda activate $CONDA_ENV
 
+## load repository variables
+source repo_variables.sh
+
 ## load the check.py
-python $HOME/hsi-experiments/scripts/check.py
+python $REPO_HOME/scripts/check.py
 
 ## run python script
-python $HOME/hsi-experiments/cross_validation.py
+python $REPO_HOME/cross_validation.py
 
 ## deactivate conda env
 conda deactivate

@@ -6,6 +6,7 @@
       "SCALE": true,
       "SHUFFLE": false
     },
+    "USE_PARALLEL_PROCESSING": true,
     "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",
@@ -22,6 +23,7 @@
       "SCALE": false,
       "SHUFFLE": false
     },
+    "USE_PARALLEL_PROCESSING": true,
     "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",
@@ -38,6 +40,7 @@
       "SCALE": true,
       "SHUFFLE": true
     },
+    "USE_PARALLEL_PROCESSING": true,
     "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",

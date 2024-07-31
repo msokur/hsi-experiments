@@ -41,11 +41,18 @@ class DataLoaderInterface:
         with open(os.path.join(destination_path, self._get_labels_filename()), 'wb') as f:
             pickle.dump(self._get_labels(), f, pickle.HIGHEST_PROTOCOL)
 
-        start_pool_processing(map_func=self.read_and_save,
-                              parallel_args=[paths],
-                              is_on_cluster=self.config.CLUSTER,
-                              fix_args=[destination_path],
-                              print_out="Reading and saving data")
+        if self.config.CONFIG_PREPROCESSOR["USE_PARALLEL_PROCESSING"]:
+            start_pool_processing(map_func=self.read_and_save,
+                                  parallel_args=[paths],
+                                  is_on_cluster=self.config.CLUSTER,
+                                  fix_args=[destination_path],
+                                  print_out="Reading and saving data")
+        else:
+            from tqdm import tqdm
+
+            for path in tqdm(paths):
+                self.read_and_save(destination_path=destination_path,
+                                   paths=path)
 
         print('----Saving of archives is over----')
 

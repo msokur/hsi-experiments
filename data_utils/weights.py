@@ -79,16 +79,22 @@ class Weights:
 
         return weights
 
-    def weighted_data_save(self, root_path: str, weights: np.ndarray, is_on_cluster=True):
+    def weighted_data_save(self, root_path: str, weights: np.ndarray, is_on_cluster=True, use_parallel_processing=True):
         paths = self.data_storage.get_paths(storage_path=root_path)
 
         path_indexes = [idx for idx in range(len(paths))]
 
-        start_pool_processing(map_func=self._weighted_data_save_task,
-                              parallel_args=[path_indexes, paths],
-                              is_on_cluster=is_on_cluster,
-                              fix_args=[weights],
-                              print_out="Save weighted data")
+        if use_parallel_processing:
+            start_pool_processing(map_func=self._weighted_data_save_task,
+                                  parallel_args=[path_indexes, paths],
+                                  is_on_cluster=is_on_cluster,
+                                  fix_args=[weights],
+                                  print_out="Save weighted data")
+        else:
+            for path_index, path in tqdm(zip(path_indexes, paths)):
+                self._weighted_data_save_task(weights=weights,
+                                              path_index=path_index,
+                                              path=path)
 
     def _weighted_data_save_task(self, weights: np.ndarray, path_index: int, path: str):
         y = self.__get_y__(path=path)

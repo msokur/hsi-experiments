@@ -24,6 +24,12 @@ def func_four(fix_arg_one: int, fix_arg_two: int, parallel_arg_one: int, paralle
     return parallel_arg_one / parallel_arg_two * fix_arg_one / fix_arg_two
 
 
+def func_error(parallel_arg_one: int) -> int:
+    if parallel_arg_one == 1:
+        raise ValueError("Some Error")
+    return parallel_arg_one * parallel_arg_one
+
+
 class SomeClass:
     def __init__(self, fix_number: int):
         self.fix_number = fix_number
@@ -55,4 +61,16 @@ def test_start_pool_processing_arg_length_error(test_config):
         start_pool_processing(map_func=func_one,
                               parallel_args=[[0, 1, 2], [0, 1]],
                               fix_args=[1],
+                              is_on_cluster=test_config.CLUSTER)
+
+
+POOL_ERROR_DATA = [([[0, 1, 2, 3, 4]], ValueError, "Some Error"),
+                   ([[0, "1", 2, 3, 4]], TypeError, "can't multiply sequence by non-int of type 'str'")]
+
+
+@pytest.mark.parametrize("parallel_args,error_typ,error_msg", POOL_ERROR_DATA)
+def test_start_pool_processing_errors(test_config, parallel_args, error_typ, error_msg):
+    with pytest.raises(error_typ, match=error_msg):
+        start_pool_processing(map_func=func_error,
+                              parallel_args=parallel_args,
                               is_on_cluster=test_config.CLUSTER)

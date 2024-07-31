@@ -104,11 +104,16 @@ class Scaler:
 
         data_paths = self.data_storage.get_paths(storage_path=self.preprocessed_path)
 
-        start_pool_processing(map_func=self._scaled_X_and_save_task,
-                              parallel_args=[data_paths],
-                              is_on_cluster=self.config.CLUSTER,
-                              fix_args=[destination_path],
-                              print_out="Scaling and save X")
+        if self.config.CONFIG_PREPROCESSOR["USE_PARALLEL_PROCESSING"]:
+            start_pool_processing(map_func=self._scaled_X_and_save_task,
+                                  parallel_args=[data_paths],
+                                  is_on_cluster=self.config.CLUSTER,
+                                  fix_args=[destination_path],
+                                  print_out="Scaling and save X")
+        else:
+            for data_path in tqdm(data_paths):
+                self._scaled_X_and_save_task(destination_path=destination_path,
+                                             data_path=data_path)
 
     def _scaled_X_and_save_task(self, destination_path: str, data_path: str):
         data = self.data_storage.get_datas(data_path=data_path)

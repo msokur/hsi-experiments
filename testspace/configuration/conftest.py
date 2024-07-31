@@ -52,6 +52,7 @@ def base_config_result() -> dict:
                                 "ADD_SAMPLE_WEIGHTS": True,
                                 "SCALE": True,
                                 "SHUFFLE": True},
+            "USE_PARALLEL_PROCESSING": True,
             "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
             "PILES_NUMBER": 100,
             "WEIGHT_FILENAME": "weights.weights",
