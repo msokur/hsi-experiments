@@ -14,8 +14,7 @@ def start_pool_processing(map_func, parallel_args: list, is_on_cluster: bool, fi
     :param fix_args: Arguments that are the same for every process.
     :param print_out: E.g. the function name to print.
 
-    :return: A list with the length of the number of parallel processes and the result for every process
-        (if the map_func returns some values).
+    :return: A list with the length of the number of parallel arguments (if the map_func returns some values).
 
 
     Note
