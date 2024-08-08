@@ -33,8 +33,9 @@ class GeneratorDatasets(Dataset):
 
         if self.config.CONFIG_CV[CVK.MODE] == "DEBUG" and len(
                 self.data_storage.get_paths(storage_path=os.path.join(batch_path, TRAIN))) > 0:
-            train_paths = self.data_storage.get_paths(storage_path=os.path.join(batch_path, TRAIN))
-            valid_paths = self.data_storage.get_paths(storage_path=os.path.join(batch_path, VALID))
+            train_paths = self.data_storage.get_paths(storage_path=os.path.join(batch_path, TRAIN))[::20]
+            valid_paths = self.data_storage.get_paths(storage_path=os.path.join(batch_path, VALID))[::20]
+            print(f"--- DEBUG: Len train paths: {len(train_paths)}, len valid paths: {len(valid_paths)} ---")
         else:
             batch_split = NameBatchSplit(data_storage=self.data_storage, batch_size=self.batch_size, use_labels=labels,
                                          dict_names=self.dict_names, with_sample_weights=self.with_sample_weights)
@@ -45,11 +46,10 @@ class GeneratorDatasets(Dataset):
         train_paths.sort(key=alphanum_key)
         valid_paths.sort(key=alphanum_key)
 
+        self._check_dataset_size(dataset=train_paths, dataset_typ="training")
         train_ds = self.__get_dataset__(batch_paths=train_paths, options=self.options)
-        if len(valid_paths) == 0:
-            valid_ds = None
-        else:
-            valid_ds = self.__get_dataset__(batch_paths=valid_paths, options=self.options)
+        self._check_dataset_size(dataset=valid_paths, dataset_typ="validation")
+        valid_ds = self.__get_dataset__(batch_paths=valid_paths, options=self.options)
 
         return train_ds, valid_ds
 
@@ -65,11 +65,11 @@ class GeneratorDatasets(Dataset):
     def delete_batches(self, batch_path: str):
         rmtree(batch_path)
 
-    def __get_dataset__(self, batch_paths: List[str], options: tf.data.Options):
-        if self.config.CONFIG_CV[CVK.MODE] == "DEBUG":
-            batch_paths = batch_paths[::20]
-            print('LeN', len(batch_paths))
+    def _check_dataset_size(self, dataset, dataset_typ: str):
+        if len(dataset) == 0:
+            self._error_dataset_size(dataset_typ=dataset_typ)
 
+    def __get_dataset__(self, batch_paths: List[str], options: tf.data.Options):
         dataset = GeneratorDataset(data_storage=self.data_storage, batch_paths=batch_paths, X_name=self.dict_names[0],
                                    y_name=self.dict_names[1], weights_name=self.dict_names[5],
                                    with_sample_weights=self.with_sample_weights)

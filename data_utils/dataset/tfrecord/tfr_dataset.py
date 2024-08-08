@@ -39,7 +39,9 @@ class TFRDatasets(Dataset):
             dataset = dataset.map(map_func=tfr_1d_train_parser)
 
         train_dataset = self.__get_dataset(dataset=dataset, names_int=train_ints, labels=tf_labels)
+        self._check_dataset_size(dataset=train_dataset, dataset_typ="training")
         valid_dataset = self.__get_dataset(dataset=dataset, names_int=valid_ints, labels=tf_labels)
+        self._check_dataset_size(dataset=valid_dataset, dataset_typ="validation")
 
         return train_dataset, valid_dataset
 
@@ -56,6 +58,12 @@ class TFRDatasets(Dataset):
 
     def delete_batches(self, batch_path: str):
         pass
+
+    def _check_dataset_size(self, dataset, dataset_typ: str):
+        try:
+            dataset.as_numpy_iterator().__next__()
+        except Exception:
+            self._error_dataset_size(dataset_typ=dataset_typ)
 
     @staticmethod
     def __get_names_int_list(dataset_paths: list, names: list) -> tf.Variable:

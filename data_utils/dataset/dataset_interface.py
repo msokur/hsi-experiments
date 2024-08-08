@@ -49,6 +49,14 @@ class Dataset:
     def delete_batches(self, batch_path: str):
         pass
 
+    @abc.abstractmethod
+    def _check_dataset_size(self, dataset, dataset_typ: str):
+        pass
+
+    @staticmethod
+    def _error_dataset_size(dataset_typ: str):
+        raise ValueError(f"There to less data for a {dataset_typ} dataset. Maybe lower the batch size!")
+
     @staticmethod
     @abc.abstractmethod
     def _get_dataset_options():

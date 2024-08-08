@@ -27,20 +27,29 @@ def get_test_datasets(test_config, shape: str, with_sw: bool, file_dir: str, bat
     test_config.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS] = with_sw
     tfr_datasets = TFRDatasets(config=test_config)
     paths = glob(os.path.join(file_dir, shape, "shuffled", "*" + TFR_FILE_EXTENSION))
-    return tfr_datasets.get_datasets(dataset_paths=paths, train_names=USE_NAMES, valid_names=[], labels=LABELS,
+    return tfr_datasets.get_datasets(dataset_paths=paths,
+                                     train_names=USE_NAMES,
+                                     valid_names=USE_NAMES,
+                                     labels=LABELS,
                                      batch_path="")
 
 
 @pytest.mark.parametrize("shape,with_sw,ranks", GET_DATASETS_RANK)
 def test_get_datasets_rank(test_config, tfr_data_dir: str, shape: str, with_sw: bool, ranks: list):
-    dataset = get_test_datasets(test_config=test_config, shape=shape, with_sw=with_sw, file_dir=tfr_data_dir)[0]
+    dataset = get_test_datasets(test_config=test_config,
+                                shape=shape,
+                                with_sw=with_sw,
+                                file_dir=tfr_data_dir)[0]
     for element, rank in zip(dataset.element_spec, ranks):
         assert element.shape.rank == rank
 
 
 @pytest.mark.parametrize("shape,with_sw,ranks", GET_DATASETS_RANK)
 def test_get_datasets_len(test_config, tfr_data_dir: str, shape: str, with_sw: bool, ranks: list):
-    dataset = get_test_datasets(test_config=test_config, shape=shape, with_sw=with_sw, file_dir=tfr_data_dir)[0]
+    dataset = get_test_datasets(test_config=test_config,
+                                shape=shape,
+                                with_sw=with_sw,
+                                file_dir=tfr_data_dir)[0]
     assert len(dataset.element_spec) == len(ranks)
 
 
@@ -52,7 +61,10 @@ GET_DATASET_VALUE = [("1d", False, 5, (BATCH_X_DATA_1D, BATCH_Y_DATA)),
 
 @pytest.mark.parametrize("shape,with_sw,batch_size,results", GET_DATASET_VALUE)
 def test_get_datasets_value(test_config, tfr_data_dir: str, shape: str, with_sw: bool, batch_size: int, results: tuple):
-    dataset = get_test_datasets(test_config=test_config, shape=shape, with_sw=with_sw, file_dir=tfr_data_dir,
+    dataset = get_test_datasets(test_config=test_config,
+                                shape=shape,
+                                with_sw=with_sw,
+                                file_dir=tfr_data_dir,
                                 batch_size=batch_size)[0]
     max_slice = results[0].shape[0] // batch_size
     length = results[0].shape[0]
