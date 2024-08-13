@@ -45,13 +45,13 @@
     "EPOCHS": 50,
     "USE_SMALLER_DATASET": true,
     "MODEL_CHECKPOINT": {
-      "monitor": "val_f1_score_weighted",
+      "monitor": "val_f1_score",
       "save_best_only": true,
       "mode": "max"
     },
     "EARLY_STOPPING": {
       "enable": true,
-      "monitor": "val_f1_score_weighted",
+      "monitor": "val_f1_score",
       "mode": "max",
       "min_delta": 0,
       "patience": 5,

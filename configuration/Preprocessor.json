@@ -14,7 +14,8 @@
       ["configuration", "*.py"], ["configuration", "*.json"]],
     "NORMALIZATION_TYPE": "svn",
     "SCALER_FILE": "scaler.scaler",
-    "SCALER_PATH": null
+    "SCALER_PATH": null,
+    "SMALL_REPRESENTATIVE_DATASET": ""
   },
   "GASTRIC": {
     "EXECUTION_FLAGS": {
@@ -31,7 +32,8 @@
       ["configuration", "*.py"], ["configuration", "*.json"]],
     "NORMALIZATION_TYPE": "svn",
     "SCALER_FILE": "scaler.scaler",
-    "SCALER_PATH": null
+    "SCALER_PATH": null,
+    "SMALL_REPRESENTATIVE_DATASET": ""
   },
   "COLON":{
     "EXECUTION_FLAGS": {
