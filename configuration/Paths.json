@@ -45,11 +45,11 @@
       "RAW_SOURCE_PATH": ["HNO", "Parotis_2", "*"]
     },
     "1.CONCAT_WITH_PREPROCESS_ROOT_FOLDER": {
-      "ROOT_PATH": ["hno_2", "multiprocessing_2"]
+      "ROOT_PATH": ["hno_2", "3x3"]
     },
     "2.CONCAT_WITH_ROOT_PATH": {
       "RAW_NPZ_PATH": ["patient_data_npz"],
-      "SHUFFLED_PATH": ["shuffled_tfr"],
+      "SHUFFLED_PATH": ["shuffled_npz"],
       "BATCHED_PATH": ["batch_sized_npz"]
     }
   },

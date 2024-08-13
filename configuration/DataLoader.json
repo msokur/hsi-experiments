@@ -78,7 +78,7 @@
 		"FILE_EXTENSION": ".dat",
 		"MASK_EXTENSION": ".png",
 		"3D": true,
-		"3D_SIZE": [9, 9],
+		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,
 		"LAST_NM": 100,
 		"WAVE_AREA": 100,
