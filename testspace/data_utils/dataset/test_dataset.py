@@ -29,8 +29,8 @@ def _delete_batches(data_dir: str):
         rmtree(path=path)
 
 
-def get_test_datasets(test_config, data_typ: str, shape: str, with_sw: bool, file_dir: str, batch_size=5,
-                      vaild_names=USE_NAMES):
+def get_test_datasets(test_config, data_typ: str, shape: str, with_sw: bool, file_dir: str, batch_size: int,
+                      valid_names=USE_NAMES):
     test_config.CONFIG_TRAINER[TK.BATCH_SIZE] = batch_size
     test_config.CONFIG_DATALOADER[DLK.D3] = True if shape == "3d" else False
     test_config.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS] = with_sw
@@ -52,7 +52,7 @@ def get_test_datasets(test_config, data_typ: str, shape: str, with_sw: bool, fil
 
     return datasets.get_datasets(dataset_paths=paths,
                                  train_names=USE_NAMES,
-                                 valid_names=vaild_names,
+                                 valid_names=valid_names,
                                  labels=LABELS,
                                  batch_path=os.path.join(file_dir, "test_batches"))
 
@@ -60,15 +60,15 @@ def get_test_datasets(test_config, data_typ: str, shape: str, with_sw: bool, fil
 GET_DATASET_VALUE = [("tfr", "1d", False, 5, (BATCH_X_DATA_1D, BATCH_Y_DATA)),
                      ("tfr", "1d", True, 7, (BATCH_X_DATA_1D, BATCH_Y_DATA, BATCH_SW_DATA)),
                      ("tfr", "3d", False, 55, (BATCH_X_DATA_3D, BATCH_Y_DATA)),
-                     ("tfr", "3d", True, 33, (BATCH_X_DATA_3D, BATCH_Y_DATA, BATCH_SW_DATA)),
+                     ("tfr", "3d", True, 119, (BATCH_X_DATA_3D, BATCH_Y_DATA, BATCH_SW_DATA)),
                      ("npz", "1d", False, 5, (BATCH_X_DATA_1D, BATCH_Y_DATA)),
                      ("npz", "1d", True, 7, (BATCH_X_DATA_1D, BATCH_Y_DATA, BATCH_SW_DATA)),
-                     ("npz", "3d", False, 55, (BATCH_X_DATA_3D, BATCH_Y_DATA)),
+                     ("npz", "3d", False, 120, (BATCH_X_DATA_3D, BATCH_Y_DATA)),
                      ("npz", "3d", True, 33, (BATCH_X_DATA_3D, BATCH_Y_DATA, BATCH_SW_DATA)),
-                     ("zarr", "1d", False, 45, (BATCH_X_DATA_1D, BATCH_Y_DATA)),
+                     ("zarr", "1d", False, 70, (BATCH_X_DATA_1D, BATCH_Y_DATA)),
                      ("zarr", "1d", True, 13, (BATCH_X_DATA_1D, BATCH_Y_DATA, BATCH_SW_DATA)),
                      ("zarr", "3d", False, 24, (BATCH_X_DATA_3D, BATCH_Y_DATA)),
-                     ("zarr", "3d", True, 47, (BATCH_X_DATA_3D, BATCH_Y_DATA, BATCH_SW_DATA))]
+                     ("zarr", "3d", True, 117, (BATCH_X_DATA_3D, BATCH_Y_DATA, BATCH_SW_DATA))]
 
 
 @pytest.mark.parametrize("data_type,shape,with_sw,batch_size,results", GET_DATASET_VALUE)
@@ -80,14 +80,10 @@ def test_get_datasets_value(_delete_batches, test_config, data_dir: str, data_ty
                                 with_sw=with_sw,
                                 file_dir=data_dir,
                                 batch_size=batch_size)[0]
-    max_slice = results[0].shape[0] // batch_size
-    length = results[0].shape[0]
     start_slice = 0
     end_slice = batch_size
     for values in dataset:
         for value, result in zip(values, results):
-            if start_slice == max_slice:
-                end_slice = length
             if not np.all(value.numpy() == result[start_slice:end_slice]):
                 print(f"---- {start_slice} -- {end_slice} ----")
                 print(f"dataset:\n{value.numpy()}\n")
@@ -97,19 +93,21 @@ def test_get_datasets_value(_delete_batches, test_config, data_dir: str, data_ty
         end_slice += batch_size
 
 
-GET_DATASET_VALUE_ERROR = [("tfr", "1d"),
-                           ("npz", "3d"),
-                           ("zarr", "1d"),
-                           ("zarr", "3d")]
+GET_DATASET_VALUE_ERROR = [("tfr", "1d", 105, "validation"),
+                           ("tfr", "3d", 205, "training"),
+                           ("npz", "3d", 105, "validation"),
+                           ("zarr", "1d", 205, "training")]
 
 
-@pytest.mark.parametrize("data_type,shape", GET_DATASET_VALUE_ERROR)
-def test_get_datasets_value_error(_delete_batches, test_config, data_dir: str, data_type: str, shape: str):
-    with pytest.raises(ValueError, match="There to less data for a validation dataset. Maybe lower the batch size!"):
+@pytest.mark.parametrize("data_type,shape,bach_size,dataset_typ", GET_DATASET_VALUE_ERROR)
+def test_get_datasets_value_error(_delete_batches, test_config, data_dir: str, data_type: str, shape: str,
+                                  bach_size: int, dataset_typ: str):
+    with pytest.raises(ValueError,
+                       match=f"There to less data for a {dataset_typ} dataset. Maybe lower the batch size!"):
         get_test_datasets(test_config=test_config,
                           data_typ=data_type,
                           shape=shape,
                           with_sw=False,
                           file_dir=data_dir,
-                          batch_size=55,
-                          vaild_names=[])
+                          batch_size=bach_size,
+                          valid_names=USE_NAMES if bach_size > 200 else USE_NAMES[0:2])

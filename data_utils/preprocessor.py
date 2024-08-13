@@ -131,9 +131,9 @@ class Preprocessor:
 
 
 if __name__ == '__main__':
-    from configuration.get_config import PreprocessorConfig
+    from configuration.get_config import CVConfig
 
-    Config = PreprocessorConfig()
+    Config = CVConfig()
 
     try:
         preprocessor = Preprocessor(config=Config)
