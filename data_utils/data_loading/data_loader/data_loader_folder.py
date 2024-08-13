@@ -32,7 +32,7 @@ class DataLoaderFolder(DataLoaderInterface):
             if first:
                 self._save_training_samples_to_archive(destination_path=destination_path,
                                                        values=values,
-                                                       name=name)
+                                                       name=paths[0])
                 first = False
             else:
                 self.data_storage.append_data(file_path=os.path.join(destination_path, paths[0]),
