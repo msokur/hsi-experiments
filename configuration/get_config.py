@@ -18,11 +18,10 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
 # change here the name of the .py file for configuration import
-from configuration.meta_configs.Benny import *
+from configuration.meta_configs.Benny_2 import *
 
 from configuration.configloader_base import read_config
 from configuration.configloader_paths import read_path_config
-# from configuration.configloader_trainer import read_trainer_config
 from configuration.configloader_cv import read_cv_config
 from configuration.configloader_dataloader import read_dataloader_config
 from utils import Telegram
@@ -33,79 +32,40 @@ sys.path.insert(0, parent_dir)
 
 
 def get_config(file_name: str, section: str, main_dir: str = current_dir) -> dict:
-    return read_config(file=os.path.join(main_dir, file_name), section=section)
+    return read_config(file=os.path.join(main_dir, file_name),
+                       section=section)
 
 
 def get_paths(file_name: str, sys_section: str, data_section: str, main_dir: str = current_dir) -> dict:
-    return read_path_config(file=os.path.join(main_dir, file_name), system_mode=sys_section, database=data_section)
+    return read_path_config(file=os.path.join(main_dir, file_name),
+                            system_mode=sys_section,
+                            database=data_section)
 
 
 def get_trainer(file_name: str, section: str, d3: bool, classes: list, main_dir: str = current_dir) -> dict:
     from configuration.configloader_trainer import read_trainer_config
-    return read_trainer_config(file=os.path.join(main_dir, file_name), section=section, d3=d3, classes=classes)
+    return read_trainer_config(file=os.path.join(main_dir, file_name),
+                               section=section,
+                               d3=d3,
+                               classes=classes)
 
 
 def get_cv(file_name: str, base_section: str, section: str, main_dir: str = current_dir) -> dict:
-    return read_cv_config(file=os.path.join(main_dir, file_name), base_section=base_section, section=section)
+    return read_cv_config(file=os.path.join(main_dir, file_name),
+                          base_section=base_section,
+                          section=section)
 
 
 def get_dataloader(file_name: str, section: str, main_dir: str = current_dir) -> dict:
-    return read_dataloader_config(file=os.path.join(main_dir, file_name), section=section)
-
-
-"""# -------- Data Loader
-loader_config = "DataLoader.json"
-CONFIG_DATALOADER = get_dataloader(file_name=loader_config, section=loader_section)
-
-# --------- Paths
-uname = platform.uname()
-
-if "clara" in uname.node:
-    system_section = system_section_cluster
-else:
-    system_section = system_section_local
-
-path_config = "Paths.json"
-CONFIG_PATHS = get_paths(file_name=path_config, sys_section=system_section, data_section=database_section)
-
-# --------- Preprocessing
-prepro_config = "Preprocessor.json"
-CONFIG_PREPROCESSOR = get_config(file_name=prepro_config, section=prepro_section)
-
-# --------- Cross validation
-cv_config = "Crossvalidation.json"
-CONFIG_CV = get_cv(file_name=cv_config, base_section="BASE", section=cv_section)
-
-# --------- Trainer
-trainer_config = "Trainers.json"
-CONFIG_TRAINER = get_trainer(file_name=trainer_config, section=trainer_section, d3=CONFIG_DATALOADER["3D"],
-                             classes=CONFIG_DATALOADER["LABELS_TO_TRAIN"])
-
-# ----------- DISTRIBUTIONS CHECKING
-distro_config = "DistributionsCheck.json"
-CONFIG_DISTRIBUTION = get_config(file_name=distro_config, section=distro_section)"""
-
-# ----------- Augmentation
-'''aug_config = "Augmentation.json"
-CONFIG_AUG = get_config(file_name=aug_config, section=aug_section)
-if CONFIG_AUG["enable"]:
-    print("Augmentation is enabled!!!")
-    CONFIG_TRAINER["BATCH_SIZE"] = int(CONFIG_TRAINER["BATCH_SIZE"] / CONFIG_AUG[CONFIG_AUG["use"]])'''
-
-"""# -------- Telegram --------
-tg_config = "Telegram.json"
-CONFIG_TELEGRAM = get_config(file_name=tg_config, section=tg_section)
-CONFIG_TELEGRAM["FILE"] = os.path.join(parent_dir, CONFIG_TELEGRAM["FILE"])
-from utils import Telegram
-
-telegram = Telegram(tg_config=CONFIG_TELEGRAM, mode=CONFIG_PATHS["MODE"])"""
+    return read_dataloader_config(file=os.path.join(main_dir, file_name),
+                                  section=section)
 
 
 class PreprocessorConfig:
     def __init__(self):
         # -------- Data Loader
-        loader_config = "DataLoader.json"
-        self.CONFIG_DATALOADER = get_dataloader(file_name=loader_config, section=loader_section)
+        self.CONFIG_DATALOADER = get_dataloader(file_name=loader_config_file,
+                                                section=loader_section)
 
         # --------- Paths
         uname = platform.uname()
@@ -117,23 +77,25 @@ class PreprocessorConfig:
             system_section = system_section_local
             self.CLUSTER = False
 
-        path_config = "Paths.json"
-        self.CONFIG_PATHS = get_paths(file_name=path_config, sys_section=system_section, data_section=database_section)
+        self.CONFIG_PATHS = get_paths(file_name=path_config_file,
+                                      sys_section=system_section,
+                                      data_section=database_section)
 
         # --------- Preprocessing
-        prepro_config = "Preprocessor.json"
-        self.CONFIG_PREPROCESSOR = get_config(file_name=prepro_config, section=prepro_section)
+        self.CONFIG_PREPROCESSOR = get_config(file_name=prepro_config_file,
+                                              section=prepro_section)
 
         # ----------- DISTRIBUTIONS CHECKING
-        distro_config = "DistributionsCheck.json"
-        self.CONFIG_DISTRIBUTION = get_config(file_name=distro_config, section=distro_section)
+        self.CONFIG_DISTRIBUTION = get_config(file_name=distro_config_file,
+                                              section=distro_section)
 
         # -------- Telegram --------
-        tg_config = "Telegram.json"
-        self.CONFIG_TELEGRAM = get_config(file_name=tg_config, section=tg_section)
+        self.CONFIG_TELEGRAM = get_config(file_name=tg_config_file,
+                                          section=tg_section)
         self.CONFIG_TELEGRAM["FILE"] = os.path.join(parent_dir, self.CONFIG_TELEGRAM["FILE"])
 
-        self.telegram = Telegram(tg_config=self.CONFIG_TELEGRAM, mode=self.CONFIG_PATHS["MODE"])
+        self.telegram = Telegram(tg_config=self.CONFIG_TELEGRAM,
+                                 mode=self.CONFIG_PATHS["MODE"])
 
 
 class CVConfig(PreprocessorConfig):
@@ -141,12 +103,12 @@ class CVConfig(PreprocessorConfig):
         super().__init__()
 
         # --------- Cross validation
-        cv_config = "Crossvalidation.json"
-        self.CONFIG_CV = get_cv(file_name=cv_config, base_section="BASE", section=cv_section)
+        self.CONFIG_CV = get_cv(file_name=cv_config_file,
+                                base_section="BASE",
+                                section=cv_section)
 
         # --------- Trainer
-        trainer_config = "Trainers.json"
-        self.CONFIG_TRAINER = get_trainer(file_name=trainer_config,
+        self.CONFIG_TRAINER = get_trainer(file_name=trainer_config_file,
                                           section=trainer_section,
                                           d3=self.CONFIG_DATALOADER["3D"],
                                           classes=self.CONFIG_DATALOADER["LABELS_TO_TRAIN"])
