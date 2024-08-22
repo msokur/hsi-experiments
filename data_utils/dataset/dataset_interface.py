@@ -54,6 +54,11 @@ class Dataset:
         pass
 
     @staticmethod
+    def _error_shuffle_path_size(shuffle_paths: list):
+        if len(shuffle_paths) < 1:
+            raise ValueError("No shuffle file to create a dataset. Check your path configs!")
+
+    @staticmethod
     def _error_dataset_size(dataset_typ: str):
         raise ValueError(f"There to less data for a {dataset_typ} dataset. Maybe lower the batch size!")
 

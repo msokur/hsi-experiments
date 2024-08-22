@@ -111,3 +111,17 @@ def test_get_datasets_value_error(_delete_batches, test_config, data_dir: str, d
                           file_dir=data_dir,
                           batch_size=bach_size,
                           valid_names=USE_NAMES if bach_size > 200 else USE_NAMES[0:2])
+
+
+GET_DATASET_NO_SH_FILES_DATA = ["tfr", "npz", "zarr"]
+
+
+@pytest.mark.parametrize("data_type", GET_DATASET_NO_SH_FILES_DATA)
+def test_get_datasets_no_shuffle_files_error(test_config, data_type: str):
+    with pytest.raises(ValueError, match="No shuffle file to create a dataset. Check your path configs!"):
+        get_test_datasets(test_config=test_config,
+                          data_typ=data_type,
+                          shape="1d",
+                          with_sw=False,
+                          file_dir="",
+                          batch_size=0)

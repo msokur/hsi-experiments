@@ -23,6 +23,7 @@ from configuration.parameter import (
 class TFRDatasets(Dataset):
     def get_datasets(self, dataset_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
                      batch_path: str):
+        self._error_shuffle_path_size(shuffle_paths=dataset_paths)
         dataset_paths.sort(key=alphanum_key)
         if self.config.CONFIG_CV[CVK.MODE] == "DEBUG":
             dataset_paths = [dataset_paths[0]]
