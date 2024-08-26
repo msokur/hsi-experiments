@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## set here the absolut root repository path
-REPO_HOME=$HOME/hsi-experiments
+REPOSITORY_ROOT=$(dirname $(dirname "$(readlink -f "${BASH_SOURCE}")"))
 
 ## export the absolut root repository path to the python paths
-export PYTHONPATH=$REPO_HOME
+export export PYTHONPATH=$REPOSITORY_ROOT

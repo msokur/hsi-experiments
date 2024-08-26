@@ -33,10 +33,10 @@ conda activate $CONDA_ENV
 source repo_variables.sh
 
 ## load the check.py
-python $REPO_HOME/scripts/check.py
+python $REPOSITORY_ROOT/scripts/check.py
 
 ## run python script
-python $REPO_HOME/data_utils/preprocessor.py
+python $REPOSITORY_ROOT/data_utils/preprocessor.py
 
 ## deactivate conda env
 conda deactivate

@@ -33,7 +33,7 @@ conda activate $CONDA_ENV
 source repo_variables.sh
 
 ## run pytest
-pytest $REPO_HOME/testspace
+pytest $REPOSITORY_ROOT/testspace
 
 ## deactivate conda env
 conda deactivate
