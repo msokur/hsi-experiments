@@ -2,6 +2,12 @@ import keras_tuner as kt
 import tensorflow.keras as keras
 
 import os
+import inspect
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
 
 from trainers.trainer_base import Trainer
 import pickle
@@ -140,56 +146,57 @@ if __name__ == '__main__':
     import numpy as np
     from glob import glob
     from pprint import pprint
+    
+    try:
 
-    data_storage = provider.get_data_storage(typ=STORAGE_TYPE)
-    log_dir = os.path.join(*config.CONFIG_PATHS[PK.LOGS_FOLDER], 'keras_tuner')
+        data_storage = provider.get_data_storage(typ=STORAGE_TYPE)
+        log_dir = os.path.join(*config.CONFIG_PATHS[PK.LOGS_FOLDER], 'keras_tuner')
 
-    trainer = TrainerTuner(config=config, data_storage=data_storage, model_name=log_dir,
-                           leave_out_names=[], train_names=[],
-                           valid_names=[])
+        trainer = TrainerTuner(config=config, data_storage=data_storage, model_name=log_dir,
+                               leave_out_names=[], train_names=[],
+                               valid_names=[])
 
-    _, tuner = trainer.get_tuner()
+        _, tuner = trainer.get_tuner()
 
-    #print(tuner.results_summary())
+        #print(tuner.results_summary())
 
-    shuffled = ['C:\\Users\\tkachenko\\Desktop\\HSI\\colon_for_debug\\keras_tuner\\shuffled\\shuffled_example.npz']
+        #shuffled = ['C:\\Users\\tkachenko\\Desktop\\HSI\\colon_for_debug\\keras_tuner\\shuffled\\shuffled_example.npz']
+        shuffled = ['/work/mi186veva-MySpace/WHOLE_MainExperiment_7_smoothing_2d/run/shuffled/shuffled_example.npz']
 
-    data = np.load(shuffled[0])
+        data = np.load(shuffled[0])
 
-    #split = int(data['y'].shape[0] * config.CONFIG_TRAINER[TK.SPLIT_FACTOR])
-    #print(data['y'].shape[0], split)
-    # = tf.data.Dataset.from_tensor_slices((data['X'], #[:split][::20],
-    #                                                    data['y'], #[:split][::20],
-    #                                                    data['weights'])).batch(10) #[:split][::20])).batch(10)
-    #valid_dataset = tf.data.Dataset.from_tensor_slices((data['X'][split:][::20],
-    #                                                    data['y'][split:][::20],
-    #                                                    data['weights'][split:][::20])).batch(10)
 
-    callbacks = [keras.callbacks.TensorBoard(trainer.tuner_dir)]
-    callbacks = trainer.add_early_stopping(callbacks)
+        callbacks = [keras.callbacks.TensorBoard(trainer.tuner_dir)]
+        callbacks = trainer.add_early_stopping(callbacks)
 
-    class_weigths = None
-    if not config.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS]:
-        dat_files = glob(config.CONFIG_PATHS(PK.DATABASE_ROOT_FOLDER), '*.dat')
-        trainer.train_names = [f.split(config.CONFIG_PATHS(PK.SYS_DELIMITER))[-1].split('_Spec')[0] for f in dat_files]
-        class_weigths = trainer.get_class_weights(shuffled)
+        class_weigths = None
+        if not config.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS]:
+            dat_files = glob(config.CONFIG_PATHS(PK.DATABASE_ROOT_FOLDER), '*.dat')
+            trainer.train_names = [f.split(config.CONFIG_PATHS(PK.SYS_DELIMITER))[-1].split('_Spec')[0] for f in dat_files]
+            class_weigths = trainer.get_class_weights(shuffled)
 
-    tuner.search(x=data['X'],
-                 y=data['y'],
-                 epochs=config.CONFIG_TRAINER[TK.TUNER_EPOCHS],
-                 #validation_data=valid_dataset,
-                 class_weight=class_weigths,
-                 callbacks=callbacks,
-                 validation_split=1 - config.CONFIG_TRAINER[TK.SPLIT_FACTOR],
-                 batch_size=config.CONFIG_TRAINER[TK.BATCH_SIZE])
+        tuner.search(x=data['X'],
+                     y=data['y'],
+                     epochs=config.CONFIG_TRAINER[TK.TUNER_EPOCHS],
+                     #validation_data=valid_dataset,
+                     class_weight=class_weigths,
+                     callbacks=callbacks,
+                     validation_split=1 - config.CONFIG_TRAINER[TK.SPLIT_FACTOR],
+                     batch_size=config.CONFIG_TRAINER[TK.BATCH_SIZE],
+                     #batch_size=100,
+                     verbose=2)
 
-    best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
-    best_model = tuner.get_best_models()[0]
+        best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
+        best_model = tuner.get_best_models()[0]
 
-    print('Best hyperparams')
-    pprint(best_hps.values)
-    print('Best model summary')
-    print(best_model.summary())
+        print('Best hyperparams')
+        pprint(best_hps.values)
+        print('Best model summary')
+        print(best_model.summary())
+        
+        config.telegram.send_tg_message(f'Tuner succesfully finished')
+    except Exception as e:
+        config.telegram.send_tg_message(f'TUNER ERROR!!! {e}')
 
     '''best_model.fit(
         x=data['X'][::10],

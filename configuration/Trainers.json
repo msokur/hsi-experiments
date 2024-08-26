@@ -107,19 +107,19 @@
       "F1_score": [{"name":  "f1_score"}]
 
     },
-    "BATCH_SIZE": 500,
+    "BATCH_SIZE": 100,
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 5,
     "USE_SMALLER_DATASET": false,
     "TUNER": "BayesianOptimization",
     "TUNER_PARAMS": {
       "objective": {"name": "val_f1_score", "direction":  "max"},
-      "max_trials": 3,
+      "max_trials": 10000,
       "overwrite": true,
       "max_consecutive_failed_trials": 10,
       "project_name": "HSI_inception"
     },
-    "TUNER_EPOCHS": 1,
+    "TUNER_EPOCHS": 100,
     "MODEL_CHECKPOINT": {
       "monitor": "val_f1_score",
       "save_best_only": true,
@@ -145,7 +145,7 @@
   "inception_model_tuner": {
     "WITH_ONES": "Boolean(True or False)",
     "NUM_BLOCK": {"min_value":  0, "max_value": 2},
-    "NUM_BRANCHES": {"min_value":  1, "max_value": 3},
+    "NUM_BRANCHES": {"min_value":  0, "max_value": 3},
     "BLOCK_FILTERS": {"min_value": 16, "max_value": 128, "step": 16},
     "BLOCK_KERNEL_SIZE": {"min_value": 1, "max_value": 7, "step":  2},
     "LEARNING_RATE": {"min_value": 1e-4, "max_value": 1e-2, "sampling": "log"},

@@ -52,7 +52,7 @@ class Patchifier:
         if "clara" in uname.node:
             maximal_gb = 10
             
-        return maximal_db
+        return maximal_gb
     
     def get_3D_patches_standard(self, spectrum: np.ndarray):
         size = self.config.CONFIG_DATALOADER[DLK.D3_SIZE]

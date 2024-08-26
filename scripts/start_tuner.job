@@ -1,0 +1,42 @@
+#!/bin/bash
+#SBATCH --exclude=clara11,clara15,clara19,clara20
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=8
+#SBATCH --job-name=tuner
+#SBATCH --partition=clara-long
+#SBATCH --time=10-00:00:00
+#SBATCH --mem=28G
+##SBATCH --gres=gpu:v100:4
+#SBATCH --gres=gpu:rtx2080ti:4
+#SBATCH --output=tuner/_tuner_%j.log
+
+# prints out name of the script
+echo "$(basename "$(readlink -f "$0")")"
+
+module purge
+
+module load Anaconda3/2021.11
+module load cuDNN/8.9.2.26-CUDA-12.2.0
+
+## enter the name from your env
+CONDA_ENV="hsi_env"
+
+## source your .bashrc to load conda
+source ~/.bashrc
+
+## activate conda env
+conda activate hsi_env
+
+
+module list
+
+python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/check.py
+
+echo "Job is running on the following node(s): $SLURM_NODELIST"
+
+python $HOME/hsi-experiments/trainers/trainer_tuner.py 
+
+conda deactivate
+
+exit 0
+EOT
