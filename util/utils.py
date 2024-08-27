@@ -4,7 +4,6 @@ import glob
 import numpy as np
 import inspect
 import psutil
-import asyncio
 import re
 
 from configuration.keys import TelegramKeys as TGK

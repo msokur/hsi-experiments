@@ -8,7 +8,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
 import provider
-from utils import get_used_memory
+from util.utils import get_used_memory
 from configuration.copy_py_files import copy_files
 from data_utils.weights import Weights
 

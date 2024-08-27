@@ -24,7 +24,7 @@ from configuration.configloader_base import read_config
 from configuration.configloader_paths import read_path_config
 from configuration.configloader_cv import read_cv_config
 from configuration.configloader_dataloader import read_dataloader_config
-from utils import Telegram
+from util.utils import Telegram
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
@@ -92,7 +92,7 @@ class PreprocessorConfig:
         # -------- Telegram --------
         self.CONFIG_TELEGRAM = get_config(file_name=tg_config_file,
                                           section=tg_section)
-        self.CONFIG_TELEGRAM["FILE"] = os.path.join(parent_dir, self.CONFIG_TELEGRAM["FILE"])
+        self.CONFIG_TELEGRAM["FILE"] = os.path.join(parent_dir, "util", self.CONFIG_TELEGRAM["FILE"])
 
         self.telegram = Telegram(tg_config=self.CONFIG_TELEGRAM,
                                  mode=self.CONFIG_PATHS["MODE"])

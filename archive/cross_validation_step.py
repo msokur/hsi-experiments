@@ -2,7 +2,7 @@ import argparse
 
 from archive import config
 from provider import get_trainer
-import utils
+from util import utils
 
 
 def cross_validation_step(model_name, except_names=[]):

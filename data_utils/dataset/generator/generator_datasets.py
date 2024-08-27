@@ -3,7 +3,7 @@ from shutil import rmtree
 
 import numpy as np
 
-from utils import alphanum_key
+from util.utils import alphanum_key
 from ..dataset_interface import Dataset
 from ..generator import GeneratorDataset
 from ..meta_files import get_shape_from_meta

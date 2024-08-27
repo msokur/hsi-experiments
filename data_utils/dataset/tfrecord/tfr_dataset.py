@@ -5,7 +5,7 @@ import tensorflow as tf
 import os
 
 from glob import glob
-from utils import alphanum_key
+from util.utils import alphanum_key
 
 from ..dataset_interface import Dataset
 from data_utils.dataset.meta_files import get_shape_from_meta

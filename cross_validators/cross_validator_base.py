@@ -6,7 +6,7 @@ from typing import List
 import numpy as np
 import csv
 
-import utils
+from util import utils
 import provider
 
 from data_utils.paths import get_sort, get_splits
