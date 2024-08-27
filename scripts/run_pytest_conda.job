@@ -35,5 +35,10 @@ source repo_variables.sh
 ## run pytest
 pytest $REPOSITORY_ROOT/testspace
 
+## restore these files after every test
+git restore $REPOSITORY_ROOT/testspace/data_utils/test_data/npz_file/1d/patient/data_test_0.npz
+git restore $REPOSITORY_ROOT/testspace/data_utils/test_data/npz_file/1d/patient/data_test_1.npz
+
+
 ## deactivate conda env
 conda deactivate
