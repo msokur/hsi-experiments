@@ -11,12 +11,12 @@ from ..dataset_interface import Dataset
 from data_utils.dataset.meta_files import get_shape_from_meta
 from data_utils.dataset.tfrecord.tfr_utils import get_numpy_X
 from data_utils.dataset.tfrecord.tfr_parser import tfr_1d_train_parser, tfr_3d_train_parser
-from data_utils.dataset.tfrecord.tfr_utils import filter_name_idx_and_labels
+from data_utils.dataset.tfrecord.tfr_utils import filter_name_idx_and_labels, skip_every_x_step
 from ..utils import parse_names_to_int
 
 from configuration.keys import CrossValidationKeys as CVK
 from configuration.parameter import (
-    TFR_FILE_EXTENSION, TFR_TYP
+    TFR_FILE_EXTENSION, TFR_TYP, SKIP_BATCHES
 )
 
 
@@ -25,8 +25,6 @@ class TFRDatasets(Dataset):
                      batch_path: str):
         self._error_shuffle_path_size(shuffle_paths=dataset_paths)
         dataset_paths.sort(key=alphanum_key)
-        if self.config.CONFIG_CV[CVK.MODE] == "DEBUG":
-            dataset_paths = [dataset_paths[0]]
 
         train_ints = self.__get_names_int_list(dataset_paths=dataset_paths, names=train_names)
         valid_ints = self.__get_names_int_list(dataset_paths=dataset_paths, names=valid_names)
@@ -105,7 +103,13 @@ class TFRDatasets(Dataset):
         # dataset = dataset.cache().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
         dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
-        return dataset.batch(batch_size=self.batch_size, drop_remainder=True).with_options(options=self.options)
+        dataset = dataset.batch(batch_size=self.batch_size, drop_remainder=True).with_options(options=self.options)
+
+        if self.config.CONFIG_CV[CVK.MODE] == "DEBUG":
+            dataset = skip_every_x_step(dataset=dataset,
+                                        x_step=SKIP_BATCHES)
+
+        return dataset
 
     @staticmethod
     def _get_dataset_options():

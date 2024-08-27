@@ -15,7 +15,7 @@ import os
 
 from configuration.keys import PreprocessorKeys as PPK, CrossValidationKeys as CVK
 from configuration.parameter import (
-    TRAIN, VALID, GEN_TYP
+    TRAIN, VALID, GEN_TYP, SKIP_BATCHES
 )
 
 
@@ -34,9 +34,8 @@ class GeneratorDatasets(Dataset):
 
         if self.config.CONFIG_CV[CVK.MODE] == "DEBUG" and len(
                 self.data_storage.get_paths(storage_path=os.path.join(batch_path, TRAIN))) > 0:
-            train_paths = self.data_storage.get_paths(storage_path=os.path.join(batch_path, TRAIN))[::20]
-            valid_paths = self.data_storage.get_paths(storage_path=os.path.join(batch_path, VALID))[::20]
-            print(f"--- DEBUG: Len train paths: {len(train_paths)}, len valid paths: {len(valid_paths)} ---")
+            train_paths = self.data_storage.get_paths(storage_path=os.path.join(batch_path, TRAIN))
+            valid_paths = self.data_storage.get_paths(storage_path=os.path.join(batch_path, VALID))
         else:
             batch_split = NameBatchSplit(data_storage=self.data_storage, batch_size=self.batch_size, use_labels=labels,
                                          dict_names=self.dict_names, with_sample_weights=self.with_sample_weights)
@@ -46,6 +45,10 @@ class GeneratorDatasets(Dataset):
 
         train_paths.sort(key=alphanum_key)
         valid_paths.sort(key=alphanum_key)
+
+        if self.config.CONFIG_CV[CVK.MODE] == "DEBUG":
+            train_paths = train_paths[::SKIP_BATCHES]
+            valid_paths = valid_paths[::SKIP_BATCHES]
 
         self._check_dataset_size(dataset=train_paths, dataset_typ="training")
         train_ds = self.__get_dataset__(batch_paths=train_paths, options=self.options)

@@ -8,8 +8,14 @@ from data_utils.dataset import TFRDatasets, GeneratorDatasets
 from data_utils.data_storage import DataStorageZARR, DataStorageNPZ
 from configuration.parameter import (
     TFR_FILE_EXTENSION,
+    SKIP_BATCHES
 )
-from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
+from configuration.keys import (
+    TrainerKeys as TK,
+    DataLoaderKeys as DLK,
+    CrossValidationKeys as CVK
+)
+
 
 from .conftest import (
     USE_NAMES,
@@ -84,13 +90,28 @@ def test_get_datasets_value(_delete_batches, test_config, data_dir: str, data_ty
     end_slice = batch_size
     for values in dataset:
         for value, result in zip(values, results):
-            if not np.all(value.numpy() == result[start_slice:end_slice]):
-                print(f"---- {start_slice} -- {end_slice} ----")
-                print(f"dataset:\n{value.numpy()}\n")
-                print(f"result:\n{result[start_slice:end_slice]}\n")
             assert np.all(value.numpy() == result[start_slice:end_slice])
         start_slice = end_slice
         end_slice += batch_size
+
+
+@pytest.mark.parametrize("data_type,shape,with_sw,batch_size,results", GET_DATASET_VALUE)
+def test_get_datasets_value_debug(_delete_batches, test_config, data_dir: str, data_type: str, shape: str,
+                                  with_sw: bool, batch_size: int, results: tuple):
+    test_config.CONFIG_CV[CVK.MODE] = "DEBUG"
+    dataset = get_test_datasets(test_config=test_config,
+                                data_typ=data_type,
+                                shape=shape,
+                                with_sw=with_sw,
+                                file_dir=data_dir,
+                                batch_size=batch_size)[0]
+    start_slice = 0
+    end_slice = batch_size
+    for values in dataset:
+        for value, result in zip(values, results):
+            assert np.all(value.numpy() == result[start_slice:end_slice])
+        start_slice = end_slice + batch_size * (SKIP_BATCHES - 1)
+        end_slice += batch_size * SKIP_BATCHES
 
 
 GET_DATASET_VALUE_ERROR = [("tfr", "1d", 105, "validation"),
