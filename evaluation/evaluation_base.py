@@ -5,7 +5,7 @@ import os
 import matplotlib.pylab as plt
 import abc
 
-from configuration.parameter import STORAGE_TYPE, ORIGINAL_NAME
+from configuration.parameter import STORAGE_TYPE, DICT_ORIGINAL_NAME
 from evaluation.metrics import Metrics
 from evaluation.predictor import Predictor
 from data_utils.visualization import VisualizationFromData

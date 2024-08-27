@@ -3,7 +3,7 @@ from shutil import rmtree
 
 import numpy as np
 
-from utils import alphanum_key
+from util.utils import alphanum_key
 from ..dataset_interface import Dataset
 from ..generator import GeneratorDataset
 from ..meta_files import get_shape_from_meta
@@ -15,7 +15,7 @@ import os
 
 from configuration.keys import PreprocessorKeys as PPK, CrossValidationKeys as CVK
 from configuration.parameter import (
-    TRAIN, VALID, GEN_TYP
+    TRAIN, VALID, GEN_TYP, SKIP_BATCHES
 )
 
 
@@ -27,6 +27,7 @@ class GeneratorDatasets(Dataset):
 
     def get_datasets(self, dataset_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
                      batch_path: str):
+        self._error_shuffle_path_size(shuffle_paths=dataset_paths)
         dataset_paths.sort(key=alphanum_key)
         if not os.path.exists(path=batch_path):
             os.makedirs(name=batch_path)
@@ -45,11 +46,14 @@ class GeneratorDatasets(Dataset):
         train_paths.sort(key=alphanum_key)
         valid_paths.sort(key=alphanum_key)
 
+        if self.config.CONFIG_CV[CVK.MODE] == "DEBUG":
+            train_paths = train_paths[::SKIP_BATCHES]
+            valid_paths = valid_paths[::SKIP_BATCHES]
+
+        self._check_dataset_size(dataset=train_paths, dataset_typ="training")
         train_ds = self.__get_dataset__(batch_paths=train_paths, options=self.options)
-        if len(valid_paths) == 0:
-            valid_ds = None
-        else:
-            valid_ds = self.__get_dataset__(batch_paths=valid_paths, options=self.options)
+        self._check_dataset_size(dataset=valid_paths, dataset_typ="validation")
+        valid_ds = self.__get_dataset__(batch_paths=valid_paths, options=self.options)
 
         return train_ds, valid_ds
 
@@ -65,11 +69,11 @@ class GeneratorDatasets(Dataset):
     def delete_batches(self, batch_path: str):
         rmtree(batch_path)
 
-    def __get_dataset__(self, batch_paths: List[str], options: tf.data.Options):
-        if self.config.CONFIG_CV[CVK.MODE] == "DEBUG":
-            batch_paths = batch_paths[::20]
-            print('LeN', len(batch_paths))
+    def _check_dataset_size(self, dataset, dataset_typ: str):
+        if len(dataset) == 0:
+            self._error_dataset_size(dataset_typ=dataset_typ)
 
+    def __get_dataset__(self, batch_paths: List[str], options: tf.data.Options):
         dataset = GeneratorDataset(data_storage=self.data_storage, batch_paths=batch_paths, X_name=self.dict_names[0],
                                    y_name=self.dict_names[1], weights_name=self.dict_names[5],
                                    with_sample_weights=self.with_sample_weights)

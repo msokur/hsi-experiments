@@ -12,7 +12,7 @@ from configuration.parameter import (
     VISUALIZATION_FOLDER,
     DICT_y,
     DICT_IDX,
-    ORIGINAL_NAME,
+    DICT_ORIGINAL_NAME,
 )
 
 
@@ -62,8 +62,8 @@ class VisualizationFromData(VisualizationBase):
             names = np.unique(original_names)
             for name in names:
                 name_mask = original_names == name
-                if ORIGINAL_NAME in data:
-                    mask = np.logical_and(label_mask, data[ORIGINAL_NAME] == name)
+                if DICT_ORIGINAL_NAME in data:
+                    mask = np.logical_and(label_mask, data[DICT_ORIGINAL_NAME] == name)
                 elif "org_name" in data:
                     mask = np.logical_and(label_mask, data["org_name"] == name)
                 else:

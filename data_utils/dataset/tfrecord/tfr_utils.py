@@ -38,6 +38,21 @@ def get_numpy_X(tfr_path: str) -> np.ndarray:
     return data.as_numpy_iterator().__next__()
 
 
+def skip_every_x_step(dataset, x_step: int):
+    """Skp every X step from a tensorflow dataset
+
+    :param dataset: The parsed dataset
+    :param x_step: Every X step will be skipped
+
+    :return: A filtered dataset
+    """
+    def debug_filter(iteration):
+        return tf.equal(iteration % x_step, 0)
+    enum_dataset = dataset.enumerate()
+    filtered_dataset = enum_dataset.filter(lambda i, _: debug_filter(i))
+    return filtered_dataset.map(lambda i, data: data)
+
+
 def _select(data: tf.Variable, allowed: tf.Variable):
     # get a boolean list for every element in allowed
     use = tf.map_fn(fn=lambda com: tf.equal(x=data, y=com), elems=allowed, fn_output_signature=tf.bool)

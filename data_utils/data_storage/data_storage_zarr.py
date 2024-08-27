@@ -18,10 +18,13 @@ class DataStorageZARR(DataStorage):
     @staticmethod
     def get_paths(storage_path: str) -> List[str]:
         paths = []
-        data = zarr.open_group(store=storage_path)
-        root_path = os.path.abspath(storage_path)
-        for group in data.group_keys():
-            paths.append(os.path.join(root_path, data[group].path))
+        try:
+            data = zarr.open_group(store=storage_path, mode="r+")
+            root_path = os.path.abspath(storage_path)
+            for group in data.group_keys():
+                paths.append(os.path.join(root_path, data[group].path))
+        except ValueError:
+            pass
 
         return sorted(paths)
 

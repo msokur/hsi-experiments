@@ -59,7 +59,7 @@ def test_X_y_concatenate(test_config, delete_scaler_file, data_dir: str, scaler_
     values = scaler.X_y_concatenate()
 
     for val, res in zip(values, (X_1D_CONCAT, Y_CONCAT, I_CONCAT)):
-        assert (val == res).all()
+        assert np.all(val == res)
 
 
 SCALE_X_DATA = [(NormalizerScaler, DATA_1D_X_0, L2_NORM_1D_SCALD), (NormalizerScaler, DATA_3D_X_0, L2_NORM_3D_SCALD),
@@ -72,4 +72,4 @@ def test_scale_X(delete_scaler_file, test_config, data_dir: str, scaler_class, x
     scaler = scaler_class(config=test_config, preprocessed_path=data_dir, data_storage=DataStorageNPZ,
                           scaler_file=SCALER_FILE)
     X = scaler.scale_X(X=x_raw)
-    assert (x_result == X).all()
+    assert np.all(x_result == X)

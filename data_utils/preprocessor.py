@@ -8,7 +8,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
 import provider
-from utils import get_used_memory
+from util.utils import get_used_memory
 from configuration.copy_py_files import copy_files
 from data_utils.weights import Weights
 
@@ -41,10 +41,10 @@ class Preprocessor:
     @staticmethod
     def get_execution_flags_for_pipeline_with_all_true():
         return {
-            "load_data_with_dataloader": True,
-            "add_sample_weights": True,
-            "scale": True,
-            "shuffle": True
+            PPK.EF_LOAD_DATA_WITH_DATALOADER: True,
+            PPK.EF_ADD_SAMPLE_WEIGHTS: True,
+            PPK.EF_SCALE: True,
+            PPK.EF_SHUFFLE: True
         }
 
     def pipeline(self, root_path=None, preprocessed_path=None, execution_flags=None):
@@ -73,8 +73,15 @@ class Preprocessor:
                    self.config.CONFIG_PREPROCESSOR["FILES_TO_COPY"])
 
         # ---------Data reading part--------------
-        if execution_flags['load_data_with_dataloader']:
-            dataloader = provider.get_data_loader(config=self.config, typ=self.config.CONFIG_DATALOADER[DLK.TYPE],
+        if execution_flags[PPK.EF_LOAD_DATA_WITH_DATALOADER]:
+            cube_loader = provider.get_cube_loader(typ=self.config.CONFIG_DATALOADER[DLK.FILE_EXTENSION],
+                                                   config=self.config)
+            mask_loader = provider.get_annotation_mask_loader(typ=self.config.CONFIG_DATALOADER[DLK.MASK_EXTENSION],
+                                                              config=self.config)
+            dataloader = provider.get_data_loader(typ=self.config.CONFIG_DATALOADER[DLK.TYPE],
+                                                  config=self.config,
+                                                  cube_loader=cube_loader,
+                                                  mask_loader=mask_loader,
                                                   data_storage=data_storage)
             dataloader.read_files_and_save_to_archive(root_path, preprocessed_path)
 
@@ -82,7 +89,7 @@ class Preprocessor:
               f'{get_used_memory(process_id=process_id)} ----')
 
         # ----------weights part------------------
-        if execution_flags['add_sample_weights']:
+        if execution_flags[PPK.EF_ADD_SAMPLE_WEIGHTS]:
             weight_calc = Weights(filename=self.weights_filename,
                                   data_storage=data_storage,
                                   label_file=os.path.join(preprocessed_path,
@@ -90,12 +97,12 @@ class Preprocessor:
                                   y_dict_name=self.load_name_for_y,
                                   weight_dict_name=self.dict_names[-1])
             weights = weight_calc.weights_get_or_save(preprocessed_path)
-            weight_calc.weighted_data_save(preprocessed_path, weights)
+            weight_calc.weighted_data_save(preprocessed_path, weights, self.config.CLUSTER)
 
         print(f'---- Memory, preprocessor 2, after sample weights {get_used_memory(process_id=process_id)} ----')
 
         # ----------scaler part ------------------
-        if execution_flags['scale'] and self.config.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE] is not None:
+        if execution_flags[PPK.EF_SCALE] and self.config.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE] is not None:
             print('SCALER TYPE', self.config.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE])
             scaler = provider.get_scaler(config=self.config,
                                          typ=self.config.CONFIG_PREPROCESSOR[PPK.NORMALIZATION_TYPE],
@@ -110,7 +117,7 @@ class Preprocessor:
         print(f'---- Memory, preprocessor 3, after scaling {get_used_memory(process_id=process_id)}----')
 
         # ----------shuffle part------------------
-        if execution_flags['shuffle']:
+        if execution_flags[PPK.EF_SHUFFLE]:
             print(f"SHUFFLE PATHS {self.config.CONFIG_PATHS[PK.SHUFFLED_PATH]}")
             shuffle = provider.get_shuffle(config=self.config, typ=DATASET_TYPE, data_storage=data_storage,
                                            raw_path=preprocessed_path,
@@ -119,24 +126,22 @@ class Preprocessor:
 
         print(f'---- Memory, preprocessor 4, after shuffling {get_used_memory(process_id=process_id)} ----')
 
+        dt_string = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+        print("Time after the finish of preprocessing", dt_string)
+
 
 if __name__ == '__main__':
-    from configuration.get_config import telegram, CONFIG_PREPROCESSOR
-    import configuration.get_config as configuration
+    from configuration.get_config import CVConfig
 
-    execution_flags_ = Preprocessor.get_execution_flags_for_pipeline_with_all_true()
-    execution_flags_['load_data_with_dataloader'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["LOAD_DATA_WITH_DATALOADER"]
-    execution_flags_['add_sample_weights'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["ADD_SAMPLE_WEIGHTS"]
-    execution_flags_['scale'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["SCALE"]
-    execution_flags_['shuffle'] = CONFIG_PREPROCESSOR["EXECUTION_FLAGS"]["SHUFFLE"]
+    Config = CVConfig()
 
     try:
-        preprocessor = Preprocessor(configuration)
-        preprocessor.pipeline(execution_flags=execution_flags_)
+        preprocessor = Preprocessor(config=Config)
+        preprocessor.pipeline(execution_flags=Config.CONFIG_PREPROCESSOR[PPK.EXECUTION_FLAGS])
 
-        telegram.send_tg_message("Operations in preprocessor.py are successfully completed!")
+        Config.telegram.send_tg_message("Operations in preprocessor.py are successfully completed!")
 
     except Exception as e:
-        telegram.send_tg_message(f"ERROR! in Preprocessor {e}")
+        Config.telegram.send_tg_message(f"ERROR! in Preprocessor {e}")
 
         raise e

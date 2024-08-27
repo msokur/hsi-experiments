@@ -1,7 +1,9 @@
 import numpy as np
 import provider
-from configuration.get_config import telegram
-from configuration.keys import CrossValidationKeys as CVK, DataLoaderKeys as DLK
+from configuration.keys import (
+    CrossValidationKeys as CVK,
+    DataLoaderKeys as DLK,
+)
 from evaluation.optimal_parameters import OptimalThreshold
 
 
@@ -21,7 +23,7 @@ def out_of_the_box(config):
     # because they passed automatically
     thresholds = None
     if len(config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]) <= 2:
-        thresholds = np.round(np.linspace(0.001, 0.6, 100), 4)  # specify thresholds if classification is binary
+        thresholds = np.round(np.linspace(0.1, 0.5, 5), 4)  # specify thresholds if classification is binary
     cross_validator.pipeline(execution_flags=execution_flags,
                              thresholds=thresholds)
 
@@ -65,17 +67,18 @@ def postprocessing_for_one_model(config):
 
 
 if __name__ == '__main__':
+    from configuration.get_config import CVConfig
+
+    Config = CVConfig()
     try:
-        import configuration.get_config as configuration
+        out_of_the_box(Config)
+        # postprocessing_for_one_model(Config)
 
-        out_of_the_box(configuration)
-        # postprocessing_for_one_model(config)
-
-        telegram.send_tg_message(f'Operations in cross_validation.py for {configuration.CONFIG_CV[CVK.NAME]} '
-                                 f'are successfully completed!')
+        Config.telegram.send_tg_message(f'Operations in cross_validation.py for {Config.CONFIG_CV[CVK.NAME]} '
+                                        f'are successfully completed!')
 
     except Exception as e:
 
-        telegram.send_tg_message(f'ERROR!!!, In CV {configuration.CONFIG_CV[CVK.NAME]} error {e}')
+        Config.telegram.send_tg_message(f'ERROR!!!, In CV {Config.CONFIG_CV[CVK.NAME]} error {e}')
 
         raise e

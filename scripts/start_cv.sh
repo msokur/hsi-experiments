@@ -24,7 +24,7 @@ sbatch <<EOT
 
 #module load Python
 #module load cuDNN
-#source /home/sc.uni-leipzig.de/mi186veva/venv/tf/bin/activate
+#source $HOME/venv/tf/bin/activate
 
 echo "start_cv.sh"
 
@@ -45,11 +45,11 @@ conda activate hsi_env
 
 module list
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/check.py
+python $HOME/hsi-experiments/scripts/check.py
 
 echo "Job is running on the following node(s): $SLURM_NODELIST"
 
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validator_experiment.py --experiment_folder=$1 --cv_name=$2 --abbreviation=$3 --config_index=$4 --results_folder=$5
+python $HOME/hsi-experiments/cross_validator_experiment.py --experiment_folder=$1 --cv_name=$2 --abbreviation=$3 --config_index=$4 --results_folder=$5
 
 conda deactivate
 

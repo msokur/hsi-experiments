@@ -92,8 +92,11 @@ class NameBatchSplit:
             for n in self.save_dict_names:
                 arch[n] = np.concatenate((rest[n], mask_data[n][:batch_diff]))
 
-            self.data_storage.save_group(save_path=save_path, group_name=f"{BATCH_FILE}{idx}", datas=arch)
-            idx += 1
+            if arch[self.save_dict_names[0]].shape[0] < self.batch_size:
+                return arch
+            else:
+                self.data_storage.save_group(save_path=save_path, group_name=f"{BATCH_FILE}{idx}", datas=arch)
+                idx += 1
 
         # ---------------splitting into archives----------
         chunks = (data_indexes.sum() - batch_diff) // self.batch_size

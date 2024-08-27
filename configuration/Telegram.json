@@ -2,7 +2,7 @@
   "Benny": {
     "USER": "Benny",
     "FILE": "tg_benny.config",
-    "SENDING" : true
+    "SENDING" : false
   },
     "Mariia": {
         "USER": "Mariia",

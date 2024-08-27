@@ -9,7 +9,7 @@ sys.path.insert(1, os.path.join(parentdir, 'utils'))
 
 #import config
 #import configuration.get_config as conf
-import utils
+from util import utils
 import provider
 from data_utils.data_loaders.archive.data_loader_base import DataLoader
 

@@ -17,8 +17,8 @@ class Experiment:
         self.experiment_results_root_folder = None
         self.root_folder = None
 
-        import configuration.get_config as config
-        self.config = config
+        from configuration.get_config import CVConfig
+        self.config = CVConfig()
         self.name = name
         self.replace_combinations_file = replace_combinations_file
 
@@ -96,7 +96,7 @@ class Experiment:
         with open(self.json_name, 'w') as outfile:
             outfile.write(json.dumps(result_json))
 
-    
+
     def run_combination(self, combination, i):
         print('combination', combination)
         #print(self.combinations_keys)
@@ -111,21 +111,21 @@ class Experiment:
         print('short_name', short_name)
         print('Index', i)
         print('self.experiment_results_root_folder', self.experiment_results_root_folder)
-        
+
         parallel = ''
         if PARALLEL:
             parallel = '_parallel'
-        
+
         execution = f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv{parallel}.sh {self.root_folder} {self.name + "_" + short_name} {short_name} {i} {self.experiment_results_root_folder} {self.name}'
-        
+
         print(execution)
         stream = os.popen(execution)
         output = stream.read()
         print('Prompt output:',output)
         print('--------------------------------------------------------------------------------------------------')
-    
-   
-            
+
+
+
     def run_experiment_normal(self, combinations=None):
         if combinations is None:
             combinations = [(i, combination) for i, combination in enumerate(self.combinations)][2:3]
@@ -136,8 +136,8 @@ class Experiment:
             #if i == 28:
             if True:
                 self.run_combination(combination, i)
-         
-    
+
+
     def run_experiment_schedule(self):
         #self.combinations = list(np.array([(i, combination) for i, combination in enumerate(self.combinations)])[[201, 214, 215, 228, 234]])
         self.combinations = [(i, combination) for i, combination in enumerate(self.combinations)]
@@ -193,15 +193,15 @@ if __name__ == '__main__':
     #time.sleep(5 * 60 * 60)
 
     #gaussian_params = [0.5, 1, 1.5]   #for size 3 and 5, smoothing 1d and 3d
-    #gaussian_params = [1, 2, 3]      #for size 3 and 5, smoothing 2d 
+    #gaussian_params = [1, 2, 3]      #for size 3 and 5, smoothing 2d
     #median_params = [3, 5, 7]   #for size 3 and 5, all smoothing dimentions
-    
+
     #gaussian_params = [0.5]   #for size 7, smoothing 1d
     #median_params = [3, 5]   #for size 7, smoothing 1d
-    
+
     gaussian_params = [2]   #for size 7, smoothing 2d
     median_params = [3]   #for size 7, smoothing 2d
- 
+
     config_for_experiment = {
         '3D_SIZE': {
             'config_section': 'CONFIG_DATALOADER',

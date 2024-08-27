@@ -32,14 +32,16 @@ def get_data_storage(typ: str):
 
 
 def test_weights_get_from_file(data_dir: str):
-    weights = Weights(filename="weights_test.weights", data_storage=get_data_storage(typ="npz"),
+    weights = Weights(filename="weights_test.weights",
+                      data_storage=get_data_storage(typ="npz"),
                       labels=LABELS).weights_get_from_file(root_path=data_dir)
-    assert (weights == WEIGHTS_RESULT).all()
+    assert np.all(weights == WEIGHTS_RESULT)
 
 
 def test_weights_get_from_file_error(data_dir: str):
     with pytest.raises(ValueError, match=f"No .weights file was found in the directory, check given path!"):
-        Weights(filename=FILENAME, data_storage=get_data_storage(typ="npz"),
+        Weights(filename=FILENAME,
+                data_storage=get_data_storage(typ="npz"),
                 labels=LABELS).weights_get_from_file(root_path=data_dir)
 
 
@@ -50,45 +52,67 @@ WEIGHT_GET_OR_SAVE_DATA = [("npz", "1d"),
 @pytest.mark.parametrize("typ,folder", WEIGHT_GET_OR_SAVE_DATA)
 def test_weights_get_or_save_only_get(data_dir: str, typ: str, folder: str):
     main_path = os.path.join(data_dir, f"{typ}_file", folder, "patient")
-    weights_class = Weights(filename=FILENAME, data_storage=get_data_storage(typ=typ), labels=LABELS)
+    weights_class = Weights(filename=FILENAME,
+                            data_storage=get_data_storage(typ=typ),
+                            labels=LABELS)
     weights = weights_class.weights_get_or_save(root_path=main_path)
     os.remove(os.path.join(main_path, FILENAME))
-    assert (weights == WEIGHTS_RESULT).all()
+    assert np.all(weights == WEIGHTS_RESULT)
 
 
 @pytest.mark.parametrize("typ,folder", WEIGHT_GET_OR_SAVE_DATA)
 def test_weights_get_or_save_only_save(data_dir: str, typ: str, folder: str):
     main_path = os.path.join(data_dir, f"{typ}_file", folder, "patient")
-    weights_class = Weights(filename=FILENAME, data_storage=get_data_storage(typ=typ), labels=LABELS)
+    weights_class = Weights(filename=FILENAME,
+                            data_storage=get_data_storage(typ=typ),
+                            labels=LABELS)
     weights_class.weights_get_or_save(root_path=main_path)
     data = pickle.load(open(os.path.join(main_path, FILENAME), 'rb'))
     os.remove(os.path.join(main_path, FILENAME))
     for (k0, v0), (k1, v1) in zip(data.items(), WEIGHTS_SAVE_RESULT.items()):
-        assert k0 == k1 and (v0 == v1).all()
+        assert k0 == k1 and np.all(v0 == v1)
 
 
-def test_weighted_data_save_npz(npz_1d_data_dir: str):
-    weight = Weights(filename=FILENAME, data_storage=get_data_storage(typ="npz"), labels=LABELS,
-                     y_dict_name=Y_DICT_NAME, weight_dict_name=WEIGHT_DICT_NAME)
+DATA_WEIGHTED_DATA_SAVE = [(True,),
+                           (False,)]
+
+
+@pytest.mark.parametrize("use_parallel_processing", DATA_WEIGHTED_DATA_SAVE)
+def test_weighted_data_save_npz(test_config, use_parallel_processing: bool, npz_1d_data_dir: str):
+    weight = Weights(filename=FILENAME,
+                     data_storage=get_data_storage(typ="npz"),
+                     labels=LABELS,
+                     y_dict_name=Y_DICT_NAME,
+                     weight_dict_name=WEIGHT_DICT_NAME)
     root_path = os.path.join(npz_1d_data_dir, "patient")
-    weight.weighted_data_save(root_path=root_path, weights=WEIGHTS_RESULT)
+    weight.weighted_data_save(root_path=root_path,
+                              weights=WEIGHTS_RESULT,
+                              is_on_cluster=test_config.CLUSTER,
+                              use_parallel_processing=use_parallel_processing)
     data_weights = []
     for file in ["data_test_0.npz", "data_test_1.npz"]:
         data = np.load(os.path.join(root_path, file))
         data_weights.append(data[WEIGHT_DICT_NAME])
         np.savez(file=os.path.join(root_path, file), **{k: v for k, v in data.items() if k != WEIGHT_DICT_NAME})
-    assert (data_weights == WEIGHT_DATA_SAVE_RESULT).all()
+    assert np.all(data_weights == WEIGHT_DATA_SAVE_RESULT)
 
 
-def test_weighted_data_save_zarr(zarr_1d_data_dir: str):
-    weight = Weights(filename=FILENAME, data_storage=get_data_storage(typ="zarr"), labels=LABELS,
-                     y_dict_name=Y_DICT_NAME, weight_dict_name=WEIGHT_DICT_NAME)
+@pytest.mark.parametrize("use_parallel_processing", DATA_WEIGHTED_DATA_SAVE)
+def test_weighted_data_save_zarr(test_config, use_parallel_processing: bool, zarr_1d_data_dir: str):
+    weight = Weights(filename=FILENAME,
+                     data_storage=get_data_storage(typ="zarr"),
+                     labels=LABELS,
+                     y_dict_name=Y_DICT_NAME,
+                     weight_dict_name=WEIGHT_DICT_NAME)
     root_path = os.path.join(zarr_1d_data_dir, "patient")
-    weight.weighted_data_save(root_path=root_path, weights=WEIGHTS_RESULT)
+    weight.weighted_data_save(root_path=root_path,
+                              weights=WEIGHTS_RESULT,
+                              is_on_cluster=test_config.CLUSTER,
+                              use_parallel_processing=use_parallel_processing)
     data_weights = []
     for file in ["data_test_0", "data_test_1"]:
         data = zarr.open_group(store=os.path.join(root_path, file), mode="a")
         data_weights.append(data[WEIGHT_DICT_NAME][...].copy())
         data.pop(WEIGHT_DICT_NAME)
 
-    assert (data_weights == WEIGHT_DATA_SAVE_RESULT).all()
+    assert np.all(data_weights == WEIGHT_DATA_SAVE_RESULT)

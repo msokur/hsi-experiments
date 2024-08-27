@@ -20,6 +20,7 @@ def get_trainer(typ: str, config, *args, **kwargs):
 
 
 def get_data_loader(typ: str, config, *args, **kwargs):
+    from data_utils.data_loading.data_loader import DataLoaderNormal, DataLoaderFolder
     from data_utils.data_loaders.data_loader import DataLoader
     from data_utils.data_loaders.data_loader_whole import DataLoaderWhole
     # from data_utils.data_loaders.archive.data_loader_colon import DataLoaderColon
@@ -32,7 +33,11 @@ def get_data_loader(typ: str, config, *args, **kwargs):
     # from data_utils.data_loaders.archive.data_loader_whole_hno import DataLoaderWholeHNO
 
     if typ == "normal":
-        return DataLoader(config=config, *args, **kwargs)
+        return DataLoaderNormal(config=config, *args, **kwargs)
+    elif typ == "folder":
+        return DataLoaderFolder(config=config, *args, **kwargs)
+    elif typ == "old":
+        return DataLoader(config=config, data_storage=kwargs["data_storage"])
     elif typ == "whole":
         return DataLoaderWhole(config=config, *args, **kwargs)
 
@@ -171,6 +176,32 @@ def get_extension_loader(typ: str, config, *args, **kwargs):
         return MatFile(config=config, *args, **kwargs)
     else:
         value_error(modul="file extension", typ=typ)
+
+
+def get_cube_loader(typ: str, config):
+    from data_utils.data_loading import DatCube, MatCube
+
+    if typ == ".dat":
+        return DatCube(config=config)
+    elif typ == ".mat":
+        return MatCube(config=config)
+
+    value_error(modul="cube loader",
+                typ=typ)
+
+
+def get_annotation_mask_loader(typ: str, config):
+    from data_utils.data_loading import PNGAnnotationMask, Mk2AnnotationMask, MatAnnotationMask
+
+    if typ == ".png":
+        return PNGAnnotationMask(config=config)
+    elif typ == ".mk2":
+        return Mk2AnnotationMask(config=config)
+    elif typ == ".mat":
+        return MatAnnotationMask(config=config)
+
+    value_error(modul="annotation mask loader",
+                typ=typ)
 
 
 def get_data_storage(typ: str):

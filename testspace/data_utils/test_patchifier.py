@@ -1,15 +1,16 @@
 from data_utils._3d_patchifier import Patchifier
 from data_utils.data_loaders.data_loader import DataLoader
-import configuration.get_config as config
+from configuration.get_config import CVConfig
 import provider
 from configuration.parameter import (
-    STORAGE_TYPE, DICT_X, DICT_y, DICT_IDX, ORIGINAL_NAME, BACKGROUND_MASK
+    STORAGE_TYPE, DICT_X, DICT_y, DICT_IDX, DICT_ORIGINAL_NAME, DICT_BACKGROUND_MASK
 )
 import numpy as np
 from configuration.keys import DataLoaderKeys as DLK
 
-SPECTRUM_SIZE = config.CONFIG_DATALOADER[DLK.LAST_NM] - config.CONFIG_DATALOADER[DLK.FIRST_NM]
-SIZE = config.CONFIG_DATALOADER[DLK.D3_SIZE]
+Config = CVConfig()
+SPECTRUM_SIZE = Config.CONFIG_DATALOADER[DLK.LAST_NM] - Config.CONFIG_DATALOADER[DLK.FIRST_NM]
+SIZE = Config.CONFIG_DATALOADER[DLK.D3_SIZE]
 TESTABLE_INDEX = [SIZE[0] // 2, SIZE[1] // 2]
 
 
@@ -18,14 +19,14 @@ def create_training_instances():
         DICT_X: np.random.rand(1, 92),
         DICT_y: np.array([0]),
         DICT_IDX: np.array([TESTABLE_INDEX]),
-        ORIGINAL_NAME: np.array(['Pat0']),
-        BACKGROUND_MASK: None
+        DICT_ORIGINAL_NAME: np.array(['Pat0']),
+        DICT_BACKGROUND_MASK: None
     }
     return instances
 
 
 def create_boolean_masks():
-    masks = np.zeros([len(config.CONFIG_DATALOADER[DLK.LABELS])] + SIZE)
+    masks = np.zeros([len(Config.CONFIG_DATALOADER[DLK.LABELS])] + SIZE)
     masks[0, TESTABLE_INDEX[0], TESTABLE_INDEX[1]] = 1
     return masks
 
@@ -35,22 +36,22 @@ def test_patchifier_algorithm():
 
 
 def test_equality_of_items_of_instances():
-    for key in [DICT_y, DICT_IDX, ORIGINAL_NAME]:
+    for key in [DICT_y, DICT_IDX, DICT_ORIGINAL_NAME]:
         assert np.array_equal(_3D_training_instances[key][0], training_instances[key][0])
 
 
 def test_length_of_instances():
-    for key in [DICT_X, DICT_y, DICT_IDX, ORIGINAL_NAME]:
+    for key in [DICT_X, DICT_y, DICT_IDX, DICT_ORIGINAL_NAME]:
         assert len(_3D_training_instances[key]) == len(training_instances[key])
 
 
 def test_if_background_mask_is_inside():
-    assert BACKGROUND_MASK in _3D_training_instances
+    assert DICT_BACKGROUND_MASK in _3D_training_instances
 
 
 data_storage = provider.get_data_storage(typ=STORAGE_TYPE)
-data_loader = DataLoader(config, data_storage=data_storage)
-patchifier = Patchifier(config)
+data_loader = DataLoader(CVConfig(), data_storage=data_storage)
+patchifier = Patchifier(CVConfig())
 
 training_instances = create_training_instances()
 spectrum = np.random.rand(*SIZE, SPECTRUM_SIZE)
@@ -60,4 +61,5 @@ _3D_training_instances = patchifier.get_3D_patches_onflow(training_instances=tra
                                                           spectrum=spectrum,
                                                           boolean_masks=boolean_masks,
                                                           background_mask=None,
-                                                          concatenate_function=data_loader.concatenate_train_instances)
+                                                          concatenate_function=data_loader.concatenate_train_instances,
+                                                          config=CVConfig())

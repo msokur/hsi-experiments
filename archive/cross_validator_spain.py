@@ -4,7 +4,7 @@ import csv
 import numpy as np
 
 from cross_validators.cross_validator_base import CrossValidatorBase
-import utils
+from util import utils
 
 
 class CrossValidatorSpain(CrossValidatorBase):

@@ -6,6 +6,7 @@
       "SCALE": true,
       "SHUFFLE": false
     },
+    "USE_PARALLEL_PROCESSING": true,
     "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",
@@ -13,15 +14,17 @@
       ["configuration", "*.py"], ["configuration", "*.json"]],
     "NORMALIZATION_TYPE": "svn",
     "SCALER_FILE": "scaler.scaler",
-    "SCALER_PATH": null
+    "SCALER_PATH": null,
+    "SMALL_REPRESENTATIVE_DATASET": ""
   },
   "GASTRIC": {
     "EXECUTION_FLAGS": {
       "LOAD_DATA_WITH_DATALOADER": true,
       "ADD_SAMPLE_WEIGHTS": true,
-      "SCALE": false,
+      "SCALE": true,
       "SHUFFLE": true
     },
+    "USE_PARALLEL_PROCESSING": true,
     "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",
@@ -29,7 +32,8 @@
       ["configuration", "*.py"], ["configuration", "*.json"]],
     "NORMALIZATION_TYPE": "svn",
     "SCALER_FILE": "scaler.scaler",
-    "SCALER_PATH": null
+    "SCALER_PATH": null,
+    "SMALL_REPRESENTATIVE_DATASET": ""
   },
   "COLON":{
     "EXECUTION_FLAGS": {
@@ -38,6 +42,7 @@
       "SCALE": true,
       "SHUFFLE": true
     },
+    "USE_PARALLEL_PROCESSING": true,
     "DICT_NAMES": ["X", "y", "PatientName", "PatientIndex", "indexes_in_datacube", "weights"],
     "PILES_NUMBER": 100,
     "WEIGHT_FILENAME": "weights.weights",

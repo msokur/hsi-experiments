@@ -16,8 +16,8 @@ class CrossValidatorExperiment(CrossValidatorBase):
         try:
             self.parse_args()
 
-            import configuration.get_config as config  # we need config from scratch every time
-            self.config = config
+            from configuration.get_config import CVConfig  # we need config from scratch every time
+            self.config = CVConfig()
 
             print(f'Hi from Experiment! with {self.args.experiment_folder}, {self.args.cv_name} and config_index='
                   f'{self.args.config_index}')
@@ -37,7 +37,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
             self.preprocess()
 
             super().__init__(self.config, *args, **kwargs)
-            
+
             #self.pipeline(execution_flags={CVK.EF_CROSS_VALIDATION: True, CVK.EF_EVALUATION: False}, thresholds=np.round(np.linspace(0.001, 0.6, 100), 4))
             #self.pipeline(execution_flags={CVK.EF_CROSS_VALIDATION: False, CVK.EF_EVALUATION: True}, thresholds=np.round(np.linspace(0.001, 0.6, 100), 4))
             self.pipeline(thresholds=np.round(np.linspace(0.001, 0.6, 100), 4))
@@ -47,21 +47,24 @@ class CrossValidatorExperiment(CrossValidatorBase):
 
             rmtree(self.config.CONFIG_PATHS['RAW_NPZ_PATH'])
 
-            self.config.telegram.send_tg_message(f'Experiment step {self.args.cv_name} (index {self.args.config_index}) is successfully completed!')
-            
+            self.config.telegram.send_tg_message(
+                f'Experiment step {self.args.cv_name} (index {self.args.config_index}) is successfully completed!')
+
             self.write_status_to_csv("DONE")
 
         except Exception as e:
             rmtree(self.config.CONFIG_PATHS['RAW_NPZ_PATH'])
 
-            self.config.telegram.send_tg_message(f'ERROR!!!, In experiment step {self.args.cv_name} (index {self.args.config_index}) error {e}')
-            
+            self.config.telegram.send_tg_message(
+                f'ERROR!!!, In experiment step {self.args.cv_name} (index {self.args.config_index}) error {e}')
+
             self.write_status_to_csv("ERROR")
 
             raise e
-            
+
     def write_status_to_csv(self, status):
-        row_to_add = [self.args.config_index, status, self.args.abbreviation, self.args.experiment_folder, self.args.cv_name, self.args.results_folder]
+        row_to_add = [self.args.config_index, status, self.args.abbreviation, self.args.experiment_folder,
+                      self.args.cv_name, self.args.results_folder]
 
         file_path = os.path.join(self.args.experiment_folder, 'status.csv')
 
@@ -88,7 +91,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
             os.mkdir(results_folder)
         self.results_folder = results_folder
         print(f"Folder for results: {self.results_folder}")
-        
+
     def copy_combinations_file(self):
         #print(self.config.CONFIG_CV["NAME"])
         destination_folder = os.path.join(self.config.CONFIG_PATHS['LOGS_FOLDER'][0], self.config.CONFIG_CV["NAME"])
@@ -97,12 +100,12 @@ class CrossValidatorExperiment(CrossValidatorBase):
             os.makedirs(destination_folder)
         combinations_file = os.path.join(self.args.experiment_folder, 'combinations.json')
         copy(combinations_file, destination_folder)
-        
+
         return combinations_file
 
     def set_configs(self):
         configs = None
-        
+
         combinations_file = self.copy_combinations_file()
 
         with open(combinations_file, 'r') as json_file:
@@ -115,7 +118,7 @@ class CrossValidatorExperiment(CrossValidatorBase):
             print(config_name, params)
             section, value = params
             config_section = getattr(self.config, section)
-            
+
             if '.' in config_name:  # for nested configs
                 splits = config_name.split('.')
                 subsection = splits[0]
@@ -146,7 +149,6 @@ class CrossValidatorExperiment(CrossValidatorBase):
         
 
         
-
 
 if __name__ == '__main__':
     CrossValidatorExperiment()

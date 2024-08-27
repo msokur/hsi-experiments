@@ -9,7 +9,7 @@ from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK
 from models.model_randomness import set_tf_seed
 from provider import get_data_storage
 from configuration.parameter import (
-    STORAGE_TYPE, MAX_SIZE_PER_SPEC, ORIGINAL_NAME
+    STORAGE_TYPE, MAX_SIZE_PER_SPEC, DICT_ORIGINAL_NAME
 )
 
 tf.random.set_seed(1)
@@ -60,7 +60,7 @@ class Predictor:
                     'name': name,
                     'predictions': predictions,
                     'gt': gt,
-                    ORIGINAL_NAME: names,
+                    DICT_ORIGINAL_NAME: names,
                     'size': size,
                     'checkpoint': checkpoint
                 })
@@ -103,8 +103,8 @@ class Predictor:
         predictions = np.concatenate(predictions_, axis=0)
 
         names = None
-        if ORIGINAL_NAME in data:
-            names = data[ORIGINAL_NAME][...][indexes]
+        if DICT_ORIGINAL_NAME in data:
+            names = data[DICT_ORIGINAL_NAME][...][indexes]
 
         # TODO can be deleted in future, is for old datasets
         if "org_name" in data:
@@ -167,6 +167,7 @@ class Predictor:
 
 
 if __name__ == "__main__":
-    import configuration.get_config as configuration
+    from configuration.get_config import CVConfig
 
-    predictor_ = Predictor(configuration)
+    Config = CVConfig()
+    predictor_ = Predictor(Config)

@@ -262,7 +262,7 @@ class OptimalCheckpoint(OptimalThreshold):
 
 
 if __name__ == '__main__':
-    from configuration import get_config as config
+    from configuration.get_config import CVConfig
 
     '''root_folder = "D:\\mi186veva-results\\MainExperiment_3d_3_fixed_background"
     optimal_threshold_finder = OptimalThreshold(config, root_folder, prints=False)

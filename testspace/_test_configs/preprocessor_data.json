@@ -6,6 +6,7 @@
       "SCALE": true,
       "SHUFFLE": true
     },
+    "USE_PARALLEL_PROCESSING": true,
     "DICT_NAMES": [
       "X",
       "y",

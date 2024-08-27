@@ -47,7 +47,7 @@ LABELS = [0, 1, 2]
 USE_NAMES = ["test_0", "test_1", "test_2", "test_3"]
 
 RES_MASK = np.isin(Y, LABELS).reshape(-1) * np.isin(NAMES_IDX, [0, 1, 2, 3])
-BATCH_X_DATA_1D = np.concatenate((D1_X_0[RES_MASK], D1_X_1[RES_MASK]))
-BATCH_X_DATA_3D = np.concatenate((D3_X_0[RES_MASK], D3_X_1[RES_MASK]))
-BATCH_Y_DATA = np.concatenate((Y[RES_MASK], Y[RES_MASK]))
-BATCH_SW_DATA = np.concatenate((WEIGHTS[RES_MASK], WEIGHTS[RES_MASK]))
+BATCH_X_DATA_1D = np.concatenate((D1_X_0[RES_MASK], D1_X_1[RES_MASK], D1_X_0[RES_MASK]))
+BATCH_X_DATA_3D = np.concatenate((D3_X_0[RES_MASK], D3_X_1[RES_MASK], D3_X_0[RES_MASK]))
+BATCH_Y_DATA = np.concatenate((Y[RES_MASK], Y[RES_MASK], Y[RES_MASK]))
+BATCH_SW_DATA = np.concatenate((WEIGHTS[RES_MASK], WEIGHTS[RES_MASK], WEIGHTS[RES_MASK]))
