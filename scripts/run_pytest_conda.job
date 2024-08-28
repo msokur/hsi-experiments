@@ -23,9 +23,6 @@ module load Anaconda3/2023.09-0
 ## enter the name from your env
 CONDA_ENV="hsi_env"
 
-## source your .bashrc to load conda
-source ~/.bashrc
-
 ## activate conda env
 conda activate $CONDA_ENV
 
