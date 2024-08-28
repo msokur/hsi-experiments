@@ -140,13 +140,15 @@ class TrainerTuner(Trainer):
 
 
 if __name__ == '__main__':
-    import configuration.get_config as config
+    from configuration.get_config import CVConfig
     import provider
     from configuration.keys import PathKeys as PK
     import numpy as np
     from glob import glob
     from pprint import pprint
-    
+
+    config = CVConfig()
+
     try:
 
         data_storage = provider.get_data_storage(typ=STORAGE_TYPE)
