@@ -23,7 +23,7 @@ from configuration.parameter import (
 )
 
 
-class Trainer:
+class TrainerInterface:
     def __init__(self, config, data_storage: DataStorage, log_dir: str):
         self.config = config
         self.data_storage = data_storage

@@ -3,7 +3,7 @@ from typing import Dict
 import tensorflow.keras as keras
 import os
 
-from trainers.trainer_base import Trainer
+from trainers.trainer_interface import TrainerInterface
 from .utils import get_loss_and_metrics
 from configuration.keys import (
     TrainerKeys as TK,
@@ -15,7 +15,7 @@ from configuration.parameter import (
 )
 
 
-class TrainerBinary(Trainer):
+class TrainerNormal(TrainerInterface):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

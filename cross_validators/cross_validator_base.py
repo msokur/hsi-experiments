@@ -11,7 +11,7 @@ from util.compare_distributions import DistributionsChecker
 import provider
 
 from data_utils.paths import get_sort, get_splits
-from trainers import CVStepNames, Trainer
+from trainers import CVStepNames, TrainerInterface
 
 from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, \
     PreprocessorKeys as PPK, TrainerKeys as TK
@@ -60,7 +60,7 @@ class CrossValidatorBase:
         else:
             evaluator.evaluate(**kwargs)
 
-    def cross_validation_step(self, trainer: Trainer, dataset_paths: List[str], train_step_name: str,
+    def cross_validation_step(self, trainer: TrainerInterface, dataset_paths: List[str], train_step_name: str,
                               cv_step_names: CVStepNames):
         cv_step_names.print_names()
         trainer.train(dataset_paths=dataset_paths,

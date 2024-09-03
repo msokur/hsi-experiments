@@ -1,9 +1,9 @@
 import tensorflow.keras as keras
-from trainers.trainer_binary import TrainerBinary
+from trainers.trainer_normal import TrainerNormal
 from configuration.keys import TrainerKeys as TK, DataLoaderKeys as DLK
 
 
-class TrainerMulticlass(TrainerBinary):
+class TrainerMulticlass(TrainerNormal):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 

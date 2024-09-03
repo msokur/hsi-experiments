@@ -6,7 +6,7 @@ import tensorflow.keras as keras
 import os
 import pickle
 
-from trainers.trainer_base import Trainer
+from trainers.trainer_interface import TrainerInterface
 from .utils import get_early_stopping
 
 from configuration.keys import (
@@ -22,7 +22,7 @@ from configuration.parameter import (
 from models.model_randomness import set_tf_seed
 
 
-class TrainerTuner(Trainer):
+class TrainerTuner(TrainerInterface):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.tuner_dir = os.path.join(self.log_dir, TUNER_FOLDER)

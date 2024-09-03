@@ -18,7 +18,7 @@ from provider import (
 )
 
 from trainers.trainer_tuner import TrainerTuner
-from trainers.trainer_binary import TrainerBinary
+from trainers.trainer_normal import TrainerNormal
 
 from data_utils.data_loading.data_loader import (
     DataLoaderNormal,
@@ -69,7 +69,7 @@ from data_utils.data_loaders.dat_file import DatFile
 from data_utils.data_loaders.mat_file import MatFile
 
 GET_TRAINER_DATA = [("Tuner", "trainer_tuner", TrainerTuner),
-                    ("Normal", "trainer_normal", TrainerBinary)]
+                    ("Normal", "trainer_normal", TrainerNormal)]
 
 
 @pytest.mark.parametrize("typ,log_dir,result", GET_TRAINER_DATA)
