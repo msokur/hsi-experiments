@@ -34,6 +34,21 @@ class Dataset:
         pass
 
     @abc.abstractmethod
+    def get_dataset(self, dataset_paths: List[str], names: List[str], labels: List[int], batch_path: str,
+                    dataset_type: str):
+        """Loads a parsed dataset
+
+        :param dataset_paths: Paths for the Dataset
+        :param names: List with names for the dataset
+        :param labels: List with labels to use for the dataset
+        :param batch_path: Root path to save batches
+        :param dataset_type: Name of dataset
+
+        :return: A tuple with the parsed training and validation dataset
+        """
+        pass
+
+    @abc.abstractmethod
     def get_dataset_paths(self, root_paths: str) -> List[str]:
         pass
 

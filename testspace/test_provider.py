@@ -19,7 +19,6 @@ from provider import (
 
 from trainers.trainer_tuner import TrainerTuner
 from trainers.trainer_binary import TrainerBinary
-from trainers.trainer_multiclass import TrainerMulticlass
 
 from data_utils.data_loading.data_loader import (
     DataLoaderNormal,
@@ -70,14 +69,15 @@ from data_utils.data_loaders.dat_file import DatFile
 from data_utils.data_loaders.mat_file import MatFile
 
 GET_TRAINER_DATA = [("Tuner", "trainer_tuner", TrainerTuner),
-                    ("Easy", "trainer_easy", TrainerBinary),
-                    ("SeveralOutput", "trainer_multiclass", TrainerMulticlass)]
+                    ("Normal", "trainer_normal", TrainerBinary)]
 
 
-@pytest.mark.parametrize("typ,model_name,result", GET_TRAINER_DATA)
-def test_get_trainer(test_config, typ, model_name, result):
-    trainer = get_trainer(typ=typ, config=test_config, data_storage=DataStorageNPZ(), model_name=model_name,
-                          leave_out_names=[""], train_names=[""], valid_names=[""])
+@pytest.mark.parametrize("typ,log_dir,result", GET_TRAINER_DATA)
+def test_get_trainer(test_config, typ, log_dir, result):
+    trainer = get_trainer(typ=typ, config=test_config, data_storage=DataStorageNPZ(), log_dir=log_dir)
+
+    if os.path.exists(log_dir):
+        rmtree(log_dir)
 
     assert isinstance(trainer, result)
 

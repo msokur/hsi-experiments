@@ -1,23 +1,23 @@
 import abc
 
 import keras_tuner as kt
-from keras import layers, losses, metrics
+from keras import layers
 
-import provider
+from trainers.utils import get_loss_and_metrics
 from models.model_randomness import set_tf_seed, get_initializers
 
 from configuration.keys import TunerModelKeys as TMK
-import configuration.get_config as config
 
 
 class KtModelBase(kt.HyperModel):
-    def __init__(self, input_shape: tuple, model_config: dict, num_of_labels: int, custom_metrics=None, name=None,
-                 tunable=True):
+    def __init__(self, input_shape: tuple, model_config: dict, num_of_labels: int, with_sample_weights: bool,
+                 custom_metrics=None, name=None, tunable=True):
         super().__init__(name, tunable)
         self.hp = None
         self.input_shape = input_shape
         self.model_config = model_config
         self.num_of_classes = num_of_labels
+        self.with_sample_weights = with_sample_weights
         self.custom_metrics = custom_metrics
         self.kernel_initializer, self.bias_initializer = get_initializers()
         set_tf_seed()
@@ -26,7 +26,6 @@ class KtModelBase(kt.HyperModel):
         self.hp = hp
         self.model_config[TMK.WITH_ONES] = self.hp.Boolean("with_ones")
         model = self._get_model()
-
 
         '''if self.num_of_classes == 2:
             loss = losses.BinaryCrossentropy(),
@@ -45,24 +44,18 @@ class KtModelBase(kt.HyperModel):
                     metrics_.append(self.custom_metrics[key]["metric"](num_classes=self.num_of_classes,
                                                                        **self.custom_metrics[key]["args"]))'''
 
-        if self.num_of_classes == 2:
-            typ = 'Easy'
-        else:
-            typ = 'SeveralOutput'
-        trainer = provider.get_trainer(typ=typ, config=config, data_storage=None,
-                                       model_name="",
-                                       leave_out_names=[], train_names=[], valid_names=[])
-        loss, raw_metrics, non_weightable_metrics = trainer.get_loss_and_metrics()
-        METRICS, WEIGHTED_METRICS = trainer.fill_metrics(raw_metrics, non_weightable_metrics)
+        loss, metrics, weighted_metrics = (get_loss_and_metrics(label_count=self.num_of_classes,
+                                                                custom_metrics=self.custom_metrics,
+                                                                with_sample_weights=self.with_sample_weights))
 
-        print("Keras tuner model metrics:", METRICS)
-        print("Keras tuner model weighted metrics:", WEIGHTED_METRICS)
+        print("Keras tuner model metrics:", metrics)
+        print("Keras tuner model weighted metrics:", weighted_metrics)
 
         model.compile(
             optimizer=self._get_optimizer(),
             loss=loss,
-            metrics=METRICS,
-            weighted_metrics=WEIGHTED_METRICS
+            metrics=metrics,
+            weighted_metrics=weighted_metrics
         )
 
         return model

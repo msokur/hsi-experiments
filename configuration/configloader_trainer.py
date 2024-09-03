@@ -1,7 +1,7 @@
 from typing import Tuple
 import warnings
 
-from util import tf_metric_multiclass, tf_metrics_binary
+from trainers.utils.custom_metrics import binary, multiclass
 from models.inception_model import InceptionModel1D, InceptionModel3D
 from models.paper_model import PaperModel1D, PaperModel3D
 
@@ -10,10 +10,10 @@ from configuration.configloader_base import read_config
 from configuration.keys import TrainerKeys as TK
 
 # --- multiclass custom metrics to load
-CUSTOM_OBJECTS_MULTI = {"F1_score": tf_metric_multiclass.F1_score}
+CUSTOM_OBJECTS_MULTI = {"F1_score": multiclass.F1_score}
 
 # --- binary custom metrics to load
-CUSTOM_OBJECTS_BINARY = {"F1_score": tf_metrics_binary.F1_score}
+CUSTOM_OBJECTS_BINARY = {"F1_score": binary.F1_score}
 
 # --- Models for patch sized data
 MODELS_3D = {"paper_model": PaperModel3D,
@@ -37,7 +37,7 @@ def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dic
     trainer = read_config(file=file, section=section)
 
     trainer[TK.CUSTOM_OBJECTS], trainer[TK.CUSTOM_OBJECTS_LOAD] = get_metric_objects(metrics=trainer[TK.CUSTOM_OBJECTS],
-                                                                                     multiclass=len(classes) > 2)
+                                                                                     multiclass_=len(classes) > 2)
 
     model = get_model(d3=d3, typ=trainer[TK.TYPE])
 
@@ -59,14 +59,14 @@ def read_trainer_config(file: str, section: str, d3: bool, classes: list) -> dic
     return trainer
 
 
-def get_metric_objects(metrics: dict, multiclass: bool) -> Tuple[dict, dict]:
+def get_metric_objects(metrics: dict, multiclass_: bool) -> Tuple[dict, dict]:
     """Add metric objects and args to configuration data.
 
     :param metrics: Metrics with args
-    :param multiclass: When True use multi-classification metric
+    :param multiclass_: When True use multi-classification metric
 
     :raise UserWarning: If metric not implemented"""
-    custom_objects = get_metric(multiclass=multiclass)
+    custom_objects = get_metric(multiclass_=multiclass_)
 
     obj_load_dict = {}
     obj_dict = {}
@@ -81,13 +81,13 @@ def get_metric_objects(metrics: dict, multiclass: bool) -> Tuple[dict, dict]:
     return obj_dict, obj_load_dict
 
 
-def get_metric(multiclass: bool) -> dict:
+def get_metric(multiclass_: bool) -> dict:
     """Select custom metrics
 
-    :param multiclass: When True, returns metrics for multi-classification
+    :param multiclass_: When True, returns metrics for multi-classification
 
     :return: Dictionary with custom metrics"""
-    if multiclass:
+    if multiclass_:
         return CUSTOM_OBJECTS_MULTI
     else:
         return CUSTOM_OBJECTS_BINARY

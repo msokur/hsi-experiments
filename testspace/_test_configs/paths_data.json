@@ -4,17 +4,20 @@
   },
   "SYSTEM": {
     "MODE": "WITH_GPU",
-    "PREFIX": "/work/users/xyz",
-    "MODEL_NAME_PATHS": ["/home/sc.uni-leipzig.de/xyz/hsi-experiments-BA/logs"],
+    "DATABASE_ROOT_FOLDER": "/work/users/xyz",
+    "PREPROCESS_ROOT_FOLDER": "/work/users/xyz/prepro",
+    "LOGS_FOLDER": ["logs"],
     "RESULTS_FOLDER": "results"
   },
   "DATABASE": {
-    "1.CONCAT_WITH_PREFIX": {
-      "RAW_NPZ_PATH": ["data_3d", "gastric", "3x3"],
-      "RAW_SOURCE_PATH": ["Gastric"],
-      "TEST_NPZ_PATH": ["data_3d", "hno", "3x3"]
+    "0.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
+      "RAW_SOURCE_PATH": ["raw_database"]
     },
-    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+    "1.CONCAT_WITH_PREPROCESS_ROOT_FOLDER": {
+      "ROOT_PATH": ["database", "3x3"]
+    },
+    "2.CONCAT_WITH_ROOT_PATH": {
+      "RAW_NPZ_PATH": ["patient_data"],
       "SHUFFLED_PATH": ["shuffled"],
       "BATCHED_PATH": ["batch_sized"]
     },

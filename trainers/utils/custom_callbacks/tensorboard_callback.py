@@ -18,11 +18,11 @@ def distributed_train_step(strategy, func, batch, weights):
     return strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses[0], axis=0)
 
 
-class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
+class TensorboardCallback(tf.keras.callbacks.TensorBoard):
 
     def __init__(self, except_indexes=[], train_generator=None, strategy=None, process=None, **kwargs):
 
-        super(CustomTensorboardCallback, self).__init__(**kwargs)
+        super(TensorboardCallback, self).__init__(**kwargs)
 
         self.test_name = '2019_09_04_12_43_40_SpecCube.dat'
         # gt_image, spectrum_data, gesund_indexes, ill_indexes, not_certain_indexes = data_loader.get_data_for_showing(self.test_name, config.DATA_PATHS[0])
@@ -162,7 +162,7 @@ class CustomTensorboardCallback(tf.keras.callbacks.TensorBoard):
 
     def on_epoch_end(self, epoch, logs=None):
 
-        super(CustomTensorboardCallback, self).on_epoch_end(epoch, logs)
+        super(TensorboardCallback, self).on_epoch_end(epoch, logs)
 
         if self.process is not None:
             print("Memory : ", self.process.memory_info().rss)

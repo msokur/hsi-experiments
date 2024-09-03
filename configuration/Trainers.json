@@ -1,6 +1,6 @@
 {
   "BASE_MULTICLASS": {
-    "TYPE":  "SeveralOutput",
+    "TYPE":  "Normal",
     "RESTORE": false,
     "FILES_TO_COPY": [["*.py"], ["data_utils", "*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"], ["scripts", "*.job"], ["trainers", "*.py"], ["util", "*.py"], ["evaluation", "*.py"], ["cross_validators", "*.py"], ["configuration", "*.py"], ["configuration", "*.json"]],
     "WITH_SAMPLE_WEIGHTS": false,
@@ -14,22 +14,24 @@
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 50,
     "USE_SMALLER_DATASET": false,
-    "MODEL_CHECKPOINT": {
-      "monitor": "val_f1_score_weighted",
-      "save_best_only": true,
-      "mode": "max"
-    },
-    "EARLY_STOPPING": {
-      "enable": true,
-      "monitor": "val_f1_score_weighted",
-      "mode": "max",
-      "min_delta": 0,
-      "patience": 5,
-      "restore_best_weights": true
+    "CALLBACKS": {
+        "MODEL_CHECKPOINT": {
+        "monitor": "val_f1_score_weighted",
+        "save_best_only": true,
+        "mode": "max"
+      },
+      "EARLY_STOPPING": {
+        "enable": true,
+        "monitor": "val_f1_score_weighted",
+        "mode": "max",
+        "min_delta": 0,
+        "patience": 5,
+        "restore_best_weights": true
+      }
     }
   },
   "BASE_BINARY": {
-    "TYPE":  "Easy",
+    "TYPE":  "Normal",
     "RESTORE": false,
     "FILES_TO_COPY": [["*.py"], ["data_utils", "*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"], ["scripts", "*.job"], ["trainers", "*.py"], ["util", "*.py"], ["evaluation", "*.py"], ["cross_validators", "*.py"], ["configuration", "*.py"], ["configuration", "*.json"]],
     "WITH_SAMPLE_WEIGHTS": false,
@@ -44,18 +46,20 @@
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 50,
     "USE_SMALLER_DATASET": true,
-    "MODEL_CHECKPOINT": {
-      "monitor": "val_f1_score",
-      "save_best_only": true,
-      "mode": "max"
-    },
-    "EARLY_STOPPING": {
-      "enable": true,
-      "monitor": "val_f1_score",
-      "mode": "max",
-      "min_delta": 0,
-      "patience": 5,
-      "restore_best_weights": true
+    "CALLBACKS": {
+      "MODEL_CHECKPOINT": {
+        "monitor": "val_f1_score",
+        "save_best_only": true,
+        "mode": "max"
+      },
+      "EARLY_STOPPING": {
+        "enable": true,
+        "monitor": "val_f1_score",
+        "mode": "max",
+        "min_delta": 0,
+        "patience": 5,
+        "restore_best_weights": true
+      }
     }
   },
   "BASE_MULTICLASS_TUNER": {
@@ -72,7 +76,7 @@
     },
     "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
-    "EPOCHS": 1,
+    "EPOCHS": 10,
     "USE_SMALLER_DATASET": false,
     "TUNER": "BayesianOptimization",
     "TUNER_PARAMS": {
@@ -81,18 +85,20 @@
       "overwrite": true
     },
     "TUNER_EPOCHS": 5,
-    "MODEL_CHECKPOINT": {
-      "monitor": "val_f1_score_weighted",
-      "save_best_only": true,
-      "mode": "max"
-    },
-    "EARLY_STOPPING": {
-      "enable": true,
-      "monitor": "val_f1_score_weighted",
-      "mode": "max",
-      "min_delta": 0,
-      "patience": 5,
-      "restore_best_weights": true
+    "CALLBACKS": {
+      "MODEL_CHECKPOINT": {
+        "monitor": "val_f1_score_weighted",
+        "save_best_only": true,
+        "mode": "max"
+      },
+      "EARLY_STOPPING": {
+        "enable": true,
+        "monitor": "val_f1_score_weighted",
+        "mode": "max",
+        "min_delta": 0,
+        "patience": 5,
+        "restore_best_weights": true
+        }
     }
   },
   "BASE_BINARY_TUNER": {
@@ -120,18 +126,20 @@
       "project_name": "HSI_inception"
     },
     "TUNER_EPOCHS": 100,
-    "MODEL_CHECKPOINT": {
-      "monitor": "val_f1_score",
-      "save_best_only": true,
-      "mode": "max"
-    },
-    "EARLY_STOPPING": {
-      "enable": true,
-      "monitor": "val_f1_score",
-      "mode": "max",
-      "min_delta": 0,
-      "patience": 5,
-      "restore_best_weights": true
+    "CALLBACKS": {
+      "MODEL_CHECKPOINT": {
+        "monitor": "val_f1_score",
+        "save_best_only": true,
+        "mode": "max"
+      },
+      "EARLY_STOPPING": {
+        "enable": true,
+        "monitor": "val_f1_score",
+        "mode": "max",
+        "min_delta": 0,
+        "patience": 5,
+        "restore_best_weights": true
+      }
     }
   },
   "paper_model": {
@@ -166,7 +174,7 @@
     "DROPOUT": {"min_value": 0.1, "max_value": 0.9, "step": 0.1}
   },
     "INCEPTION_BINARY": {
-    "TYPE":  "Easy",
+    "TYPE":  "Normal",
     "RESTORE": false,
     "FILES_TO_COPY": [["*.py"], ["data_utils", "*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"], ["scripts", "*.job"], ["trainers", "*.py"], ["util", "*.py"], ["evaluation", "*.py"], ["cross_validators", "*.py"], ["configuration", "*.py"], ["configuration", "*.json"]],
     "WITH_SAMPLE_WEIGHTS": false,
@@ -180,18 +188,20 @@
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 50,
     "USE_SMALLER_DATASET": false,
-    "MODEL_CHECKPOINT": {
-      "monitor": "val_f1_score",
-      "save_best_only": true,
-      "mode": "max"
-    },
-    "EARLY_STOPPING": {
-      "enable": true,
-      "monitor": "val_f1_score",
-      "mode": "max",
-      "min_delta": 0,
-      "patience": 5,
-      "restore_best_weights": true
+    "CALLBACKS": {
+      "MODEL_CHECKPOINT": {
+        "monitor": "val_f1_score",
+        "save_best_only": true,
+        "mode": "max"
+      },
+      "EARLY_STOPPING": {
+        "enable": true,
+        "monitor": "val_f1_score",
+        "mode": "max",
+        "min_delta": 0,
+        "patience": 5,
+        "restore_best_weights": true
+      }
     }
   }
 }

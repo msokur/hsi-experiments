@@ -6,15 +6,15 @@ def get_trainer(typ: str, config, *args, **kwargs):
     from trainers.trainer_multiclass import TrainerMulticlass
 
     if typ == "Tuner":
-        print('TrainerTuner')
+        print("TrainerTuner")
         from trainers.trainer_tuner import TrainerTuner
         return TrainerTuner(config=config, *args, **kwargs)
-    elif typ == "Easy":
-        print('TrainerEasy')
+    elif typ == "Normal":
+        print("TrainerNormal")
         return TrainerBinary(config=config, *args, **kwargs)
-    elif typ == "SeveralOutput":
+    """elif typ == "SeveralOutput":
         print('TrainerEasySeveralOutputs')
-        return TrainerMulticlass(config=config, *args, **kwargs)
+        return TrainerMulticlass(config=config, *args, **kwargs)"""
 
     value_error("Trainer", typ)
 

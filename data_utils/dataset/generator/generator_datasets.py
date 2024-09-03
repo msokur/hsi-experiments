@@ -15,7 +15,7 @@ import os
 
 from configuration.keys import PreprocessorKeys as PPK, CrossValidationKeys as CVK
 from configuration.parameter import (
-    TRAIN, VALID, GEN_TYP, SKIP_BATCHES
+    TRAIN, VALID, GEN_TYP, SKIP_BATCHES, TUNE
 )
 
 
@@ -56,6 +56,33 @@ class GeneratorDatasets(Dataset):
         valid_ds = self.__get_dataset__(batch_paths=valid_paths, options=self.options)
 
         return train_ds, valid_ds
+
+    def get_dataset(self, dataset_paths: List[str], names: List[str], labels: List[int], batch_path: str,
+                    dataset_type: str):
+        self._error_shuffle_path_size(shuffle_paths=dataset_paths)
+        dataset_paths.sort(key=alphanum_key)
+        if not os.path.exists(path=batch_path):
+            os.makedirs(name=batch_path)
+
+        if self.config.CONFIG_CV[CVK.MODE] == "DEBUG" and len(
+                self.data_storage.get_paths(storage_path=os.path.join(batch_path, TRAIN))) > 0:
+            batch_paths = self.data_storage.get_paths(storage_path=os.path.join(batch_path, dataset_type))
+        else:
+            batch_split = NameBatchSplit(data_storage=self.data_storage, batch_size=self.batch_size, use_labels=labels,
+                                         dict_names=self.dict_names, with_sample_weights=self.with_sample_weights)
+            batch_paths, _ = batch_split.split(data_paths=dataset_paths, batch_save_path=batch_path,
+                                               train_names=names, valid_names=[],
+                                               train_folder=dataset_type, valid_folder="")
+
+        batch_paths.sort(key=alphanum_key)
+
+        if self.config.CONFIG_CV[CVK.MODE] == "DEBUG":
+            batch_paths = batch_paths[::SKIP_BATCHES]
+
+        self._check_dataset_size(dataset=batch_paths, dataset_typ=dataset_type)
+        dataset = self.__get_dataset__(batch_paths=batch_paths, options=self.options)
+
+        return dataset
 
     def get_dataset_paths(self, root_paths: str) -> List[str]:
         return self.data_storage.get_paths(storage_path=root_paths)

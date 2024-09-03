@@ -1,4 +1,4 @@
-from util.tf_metric_multiclass import F1_score
+from trainers.utils.custom_metrics.multiclass.f1_score import F1_score
 import pytest
 import numpy as np
 

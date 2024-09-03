@@ -21,22 +21,24 @@
       "overwrite": true
     },
     "TUNER_EPOCHS": 10,
-    "MODEL_CHECKPOINT": {
-      "monitor": "val_f1_score_weighted",
-      "save_best_only": true,
-      "mode": "max"
-    },
-    "EARLY_STOPPING": {
-      "enable": true,
-      "monitor": "val_f1_score_weighted",
-      "mode": "max",
-      "min_delta": 0,
-      "patience": 5,
-      "restore_best_weights": true
+    "CALLBACKS": {
+      "MODEL_CHECKPOINT": {
+        "monitor": "val_f1_score_weighted",
+        "save_best_only": true,
+        "mode": "max"
+      },
+      "EARLY_STOPPING": {
+        "enable": true,
+        "monitor": "val_f1_score_weighted",
+        "mode": "max",
+        "min_delta": 0,
+        "patience": 5,
+        "restore_best_weights": true
+      }
     }
   },
   "NORMAL": {
-    "TYPE":  "SeveralOutput",
+    "TYPE":  "Normal",
     "RESTORE": false,
     "FILES_TO_COPY": [["*.py"]],
     "WITH_SAMPLE_WEIGHTS": false,
@@ -50,22 +52,24 @@
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 50,
     "SMALLER_DATASET": false,
-    "MODEL_CHECKPOINT": {
-      "monitor": "val_f1_score_weighted",
-      "save_best_only": true,
-      "mode": "max"
-    },
-    "EARLY_STOPPING": {
-      "enable": true,
-      "monitor": "val_f1_score_weighted",
-      "mode": "max",
-      "min_delta": 0,
-      "patience": 5,
-      "restore_best_weights": true
+    "CALLBACKS": {
+      "MODEL_CHECKPOINT": {
+        "monitor": "val_f1_score_weighted",
+        "save_best_only": true,
+        "mode": "max"
+      },
+      "EARLY_STOPPING": {
+        "enable": true,
+        "monitor": "val_f1_score_weighted",
+        "mode": "max",
+        "min_delta": 0,
+        "patience": 5,
+        "restore_best_weights": true
+      }
     }
   },
   "ERROR": {
-    "TYPE": "SeveralOutput",
+    "TYPE": "Normal",
     "RESTORE": false,
     "FILES_TO_COPY": [
       [
@@ -88,18 +92,20 @@
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 50,
     "SMALLER_DATASET": false,
-    "MODEL_CHECKPOINT": {
-      "monitor": "val_f1_score_weighted",
-      "save_best_only": true,
-      "mode": "max"
-    },
-    "EARLY_STOPPING": {
-      "enable": true,
-      "monitor": "val_f1_score_weighted",
-      "mode": "max",
-      "min_delta": 0,
-      "patience": 5,
-      "restore_best_weights": true
+    "CALLBACKS": {
+      "MODEL_CHECKPOINT": {
+        "monitor": "val_f1_score_weighted",
+        "save_best_only": true,
+        "mode": "max"
+      },
+      "EARLY_STOPPING": {
+        "enable": true,
+        "monitor": "val_f1_score_weighted",
+        "mode": "max",
+        "min_delta": 0,
+        "patience": 5,
+        "restore_best_weights": true
+      }
     }
   },
   "model_param_1": {

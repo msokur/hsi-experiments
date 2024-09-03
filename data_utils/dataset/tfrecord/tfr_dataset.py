@@ -23,12 +23,27 @@ from configuration.parameter import (
 class TFRDatasets(Dataset):
     def get_datasets(self, dataset_paths: List[str], train_names: List[str], valid_names: List[str], labels: List[int],
                      batch_path: str):
+        train_dataset = self.get_dataset(dataset_paths=dataset_paths,
+                                         names=train_names,
+                                         labels=labels,
+                                         batch_path=batch_path,
+                                         dataset_type="training")
+        valid_dataset = self.get_dataset(dataset_paths=dataset_paths,
+                                         names=valid_names,
+                                         labels=labels,
+                                         batch_path=batch_path,
+                                         dataset_type="validation")
+
+        return train_dataset, valid_dataset
+
+    def get_dataset(self, dataset_paths: List[str], names: List[str], labels: List[int], batch_path: str,
+                    dataset_type: str):
         self._error_shuffle_path_size(shuffle_paths=dataset_paths)
         dataset_paths.sort(key=alphanum_key)
-
-        train_ints = self.__get_names_int_list(dataset_paths=dataset_paths, names=train_names)
-        valid_ints = self.__get_names_int_list(dataset_paths=dataset_paths, names=valid_names)
-        tf_labels = tf.Variable(initial_value=labels, dtype=tf.int64)
+        name_ints = self.__get_names_int_list(dataset_paths=dataset_paths,
+                                              names=names)
+        tf_labels = tf.Variable(initial_value=labels,
+                                dtype=tf.int64)
 
         dataset = tf.data.TFRecordDataset(filenames=dataset_paths)
 
@@ -37,12 +52,13 @@ class TFRDatasets(Dataset):
         else:
             dataset = dataset.map(map_func=tfr_1d_train_parser)
 
-        train_dataset = self.__get_dataset(dataset=dataset, names_int=train_ints, labels=tf_labels)
-        self._check_dataset_size(dataset=train_dataset, dataset_typ="training")
-        valid_dataset = self.__get_dataset(dataset=dataset, names_int=valid_ints, labels=tf_labels)
-        self._check_dataset_size(dataset=valid_dataset, dataset_typ="validation")
+        dataset = self.__map_dataset(dataset=dataset,
+                                     names_int=name_ints,
+                                     labels=tf_labels)
+        self._check_dataset_size(dataset=dataset,
+                                 dataset_typ=dataset_type)
 
-        return train_dataset, valid_dataset
+        return dataset
 
     def get_dataset_paths(self, root_paths: str) -> List[str]:
         return sorted(glob(os.path.join(root_paths, "*" + TFR_FILE_EXTENSION)))
@@ -81,7 +97,7 @@ class TFRDatasets(Dataset):
 
         return tf.Variable(initial_value=names_int, dtype=tf.int64)
 
-    def __get_dataset(self, dataset, names_int: tf.Variable, labels: tf.Variable):
+    def __map_dataset(self, dataset, names_int: tf.Variable, labels: tf.Variable):
         """Load a TFRecord dataset and pares the date.
 
         :param dataset: TFRDataset with X, y, sample weights and name indexes

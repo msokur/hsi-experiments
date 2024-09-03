@@ -4,12 +4,12 @@
       "cross_validation": true,
       "evaluation": true
     },
-    "FIRST_SPLIT": 0,
+    "FIRST_SPLIT": -5,
     "HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID": 3,
-    "CHOOSE_EXCLUDED_VALID": "restore",
+    "CHOOSE_EXCLUDED_VALID": "by_class",
     "USE_ALL_LABELS": false,
     "SAVE_CURVES": false,
-    "MODE": "RUN"
+    "MODE": "DEBUG"
   },
   "CV_HNO_NORMAL": {
     "TYPE": "normal",
@@ -28,7 +28,7 @@
   },
   "CV_GASTRIC_MK": {
     "TYPE": "normal",
-    "NAME": "2023-09-26_CV_GASTRIC_INVIVO_3x3_snvT_no_smooth_mk",
+    "NAME": "2024-09-02_CV_GASTRIC_3x3_snvT_no_smooth_mk_tune",
     "GET_CHECKPOINT_FROM_EARLYSTOPPING": true,
     "NUMBER_SORT": ["Laura_Daten", null],
     "SPLIT_PATHS_BY": "Files",
