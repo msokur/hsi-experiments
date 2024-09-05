@@ -103,7 +103,7 @@
   },
   "BASE_BINARY_TUNER": {
     "TYPE":  "Tuner",
-    "RESTORE": true,
+    "RESTORE": false,
     "FILES_TO_COPY": [["*.py"], ["data_utils", "*.py"], ["models", "*.py"], ["data_utils", "data_loaders", "*.py"], ["scripts", "*.job"], ["trainers", "*.py"], ["util", "*.py"], ["evaluation", "*.py"], ["cross_validators", "*.py"], ["configuration", "*.py"], ["configuration", "*.json"]],
     "WITH_SAMPLE_WEIGHTS": true,
     "MODEL": "inception_model",
@@ -111,7 +111,6 @@
     "LEARNING_RATE": 1e-4,
     "CUSTOM_OBJECTS": {
       "F1_score": [{"name":  "f1_score"}]
-
     },
     "BATCH_SIZE": 100,
     "SPLIT_FACTOR": 0.8,

@@ -20,10 +20,8 @@ def get_loss_and_metrics(label_count: int, custom_metrics: dict, with_sample_wei
 
 def __binary(custom_metrics: dict):
     loss = keras.losses.BinaryCrossentropy()
-    # metric_dict = self.config.CONFIG_TRAINER[TK.CUSTOM_OBJECTS]
     raw_metrics = [
-        # keras.metrics.BinaryAccuracy(name="accuracy")
-        # keras.metrics.F1Score(name="f1_score")
+        keras.metrics.BinaryAccuracy(name="accuracy")
     ]
 
     not_weighted_metric = [
