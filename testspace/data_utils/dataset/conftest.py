@@ -1,11 +1,20 @@
+import os
+from shutil import rmtree
+
 import numpy as np
+import pytest
 
 from ..conftest import (
+    X_NAME,
+    y_NAME,
+    IDX_IN_CUBE_NAME,
     DATA_y_0,
     DATA_y_1
 )
 
 # --- Test data
+
+DICT_NAMES = [X_NAME, y_NAME, "PatientName", "PatientIndex", IDX_IN_CUBE_NAME, "weights"]
 
 SPEC = 15
 SAMPLES = 100
@@ -51,3 +60,14 @@ BATCH_X_DATA_1D = np.concatenate((D1_X_0[RES_MASK], D1_X_1[RES_MASK], D1_X_0[RES
 BATCH_X_DATA_3D = np.concatenate((D3_X_0[RES_MASK], D3_X_1[RES_MASK], D3_X_0[RES_MASK]))
 BATCH_Y_DATA = np.concatenate((Y[RES_MASK], Y[RES_MASK], Y[RES_MASK]))
 BATCH_SW_DATA = np.concatenate((WEIGHTS[RES_MASK], WEIGHTS[RES_MASK], WEIGHTS[RES_MASK]))
+
+
+BATCH_FOLDER = "test_batches"
+
+
+@pytest.fixture
+def _delete_batches(data_dir: str):
+    yield
+    path = os.path.join(data_dir, BATCH_FOLDER)
+    if os.path.exists(path=path):
+        rmtree(path=path)

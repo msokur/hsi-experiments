@@ -38,7 +38,7 @@ class TrainerTuner(TrainerInterface):
 
     def train_process(self, train_log_dir: str, datasets: tuple, class_weights: Dict[int, float], batch_path: str):
         # -------TRAINING---------
-        if self.base_model or self.best_hp or self.best_model:
+        if not self.base_model or not self.best_hp or not self.best_model:
             raise TypeError("Execute 'search_for_hyper_parameter' before hyper model training!")
 
         history = self.base_model.fit(hp=self.best_hp,
@@ -96,11 +96,10 @@ class TrainerTuner(TrainerInterface):
         if not os.path.exists(tune_batch_path):
             os.makedirs(tune_batch_path)
 
-        dataset_t = self.dataset.get_dataset(dataset_paths=tuning_data_paths,
-                                             names=patient_names,
-                                             labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
-                                             batch_path=tune_batch_path,
-                                             dataset_type="tuning")
+        dataset_t = self.dataset.get_datasets_split_factor(dataset_paths=tuning_data_paths,
+                                                           split_factor=self.config.CONFIG_TRAINER[TK.SPLIT_FACTOR],
+                                                           labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
+                                                           batch_path=tune_batch_path)
         class_weights_t = self.get_class_weights(train_names=patient_names,
                                                  dataset_paths=tuning_data_paths)
 
@@ -109,11 +108,10 @@ class TrainerTuner(TrainerInterface):
                          early_stopping_config=self.config.CONFIG_TRAINER[TK.CALLBACKS][TK.EARLY_STOPPING])]
 
         print("------ Start search tuning parameter ---------")
-        # TODO split dataset in valid an train by validation split
-        tuner.search(x=dataset_t,
+        tuner.search(x=dataset_t[0],
+                     validation_data=dataset_t[1],
                      epochs=self.config.CONFIG_TRAINER[TK.TUNER_EPOCHS],
                      callbacks=callbacks,
-                     validation_split=1 - self.config.CONFIG_TRAINER[TK.SPLIT_FACTOR],
                      batch_size=self.config.CONFIG_TRAINER[TK.BATCH_SIZE],
                      class_weight=class_weights_t,
                      verbose=2)

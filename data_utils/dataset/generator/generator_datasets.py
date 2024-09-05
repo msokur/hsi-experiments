@@ -7,7 +7,7 @@ from util.utils import alphanum_key
 from ..dataset_interface import Dataset
 from ..generator import GeneratorDataset
 from ..meta_files import get_shape_from_meta
-from .name_batch_split import NameBatchSplit
+from .batch_split import NameBatchSplit, FactorBatchSplit
 from data_utils.data_storage import DataStorage
 
 import tensorflow as tf
@@ -15,7 +15,10 @@ import os
 
 from configuration.keys import PreprocessorKeys as PPK, CrossValidationKeys as CVK
 from configuration.parameter import (
-    TRAIN, VALID, GEN_TYP, SKIP_BATCHES, TUNE
+    TRAIN,
+    VALID,
+    GEN_TYP,
+    SKIP_BATCHES
 )
 
 
@@ -57,8 +60,9 @@ class GeneratorDatasets(Dataset):
 
         return train_ds, valid_ds
 
-    def get_dataset(self, dataset_paths: List[str], names: List[str], labels: List[int], batch_path: str,
-                    dataset_type: str):
+    def get_datasets_split_factor(self, dataset_paths: List[str], split_factor: float, labels: List[int],
+                                  batch_path: str):
+
         self._error_shuffle_path_size(shuffle_paths=dataset_paths)
         dataset_paths.sort(key=alphanum_key)
         if not os.path.exists(path=batch_path):
@@ -66,23 +70,33 @@ class GeneratorDatasets(Dataset):
 
         if self.config.CONFIG_CV[CVK.MODE] == "DEBUG" and len(
                 self.data_storage.get_paths(storage_path=os.path.join(batch_path, TRAIN))) > 0:
-            batch_paths = self.data_storage.get_paths(storage_path=os.path.join(batch_path, dataset_type))
+            train_paths = self.data_storage.get_paths(storage_path=os.path.join(batch_path, TRAIN))
+            valid_paths = self.data_storage.get_paths(storage_path=os.path.join(batch_path, VALID))
         else:
-            batch_split = NameBatchSplit(data_storage=self.data_storage, batch_size=self.batch_size, use_labels=labels,
-                                         dict_names=self.dict_names, with_sample_weights=self.with_sample_weights)
-            batch_paths, _ = batch_split.split(data_paths=dataset_paths, batch_save_path=batch_path,
-                                               train_names=names, valid_names=[],
-                                               train_folder=dataset_type, valid_folder="")
+            batch_split = FactorBatchSplit(data_storage=self.data_storage,
+                                           batch_size=self.batch_size,
+                                           use_labels=labels,
+                                           dict_names=self.dict_names,
+                                           with_sample_weights=self.with_sample_weights)
+            train_paths, valid_paths = batch_split.split(data_paths=dataset_paths,
+                                                         batch_save_path=batch_path,
+                                                         split_factor=split_factor,
+                                                         train_folder=TRAIN,
+                                                         valid_folder=VALID)
 
-        batch_paths.sort(key=alphanum_key)
+        train_paths.sort(key=alphanum_key)
+        valid_paths.sort(key=alphanum_key)
 
         if self.config.CONFIG_CV[CVK.MODE] == "DEBUG":
-            batch_paths = batch_paths[::SKIP_BATCHES]
+            train_paths = train_paths[::SKIP_BATCHES]
+            valid_paths = valid_paths[::SKIP_BATCHES]
 
-        self._check_dataset_size(dataset=batch_paths, dataset_typ=dataset_type)
-        dataset = self.__get_dataset__(batch_paths=batch_paths, options=self.options)
+        self._check_dataset_size(dataset=train_paths, dataset_typ="training")
+        train_ds = self.__get_dataset__(batch_paths=train_paths, options=self.options)
+        self._check_dataset_size(dataset=valid_paths, dataset_typ="validation")
+        valid_ds = self.__get_dataset__(batch_paths=valid_paths, options=self.options)
 
-        return dataset
+        return train_ds, valid_ds
 
     def get_dataset_paths(self, root_paths: str) -> List[str]:
         return self.data_storage.get_paths(storage_path=root_paths)
