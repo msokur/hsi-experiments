@@ -11,7 +11,7 @@ from configuration.keys import (
 )
 
 
-class CVStepNames:
+class ExcludedPatients:
     def __init__(self, data_storage: DataStorage, config, log_dir: str, all_patients: List[str]):
         self.data_storage = data_storage
         self.config = config

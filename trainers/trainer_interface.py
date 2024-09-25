@@ -8,7 +8,7 @@ import pickle
 
 from data_utils.dataset.meta_files import get_class_weights_from_meta
 from provider import get_dataset
-from .utils import get_callbacks, CVStepNames
+from .utils import get_callbacks, ExcludedPatients
 
 from data_utils.data_storage import DataStorage
 from configuration.copy_py_files import copy_files
@@ -55,7 +55,7 @@ class TrainerInterface:
             self.config.telegram.send_tg_message(f'ERROR!!!, training {self.log_dir} has finished with error {e}')
             raise e  # TODO REMOVE!!
 
-    def train(self, dataset_paths: list[str], train_step_names: CVStepNames, step_name: str, batch_path: str):
+    def train(self, dataset_paths: list[str], train_step_names: ExcludedPatients, step_name: str, batch_path: str):
         train_step_dir = os.path.join(self.log_dir, step_name)
 
         self.logging_and_copying(store_dir=train_step_dir)
@@ -104,7 +104,7 @@ class TrainerInterface:
     def train_process(self, train_log_dir: str, datasets: tuple, class_weights: Dict[int, float], batch_path: str):
         pass
 
-    def get_datasets(self, dataset_paths: list[str], train_step_names: CVStepNames, batch_path: str):
+    def get_datasets(self, dataset_paths: list[str], train_step_names: ExcludedPatients, batch_path: str):
         train_ds, valid_ds = self.dataset.get_datasets(dataset_paths=dataset_paths,
                                                        train_names=train_step_names.TRAIN_NAMES,
                                                        valid_names=train_step_names.VALID_NAMES,

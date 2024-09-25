@@ -11,7 +11,7 @@ from util.compare_distributions import DistributionsChecker
 import provider
 
 from data_utils.paths import get_sort, get_splits
-from trainers import CVStepNames, TrainerInterface
+from trainers import ExcludedPatients, TrainerInterface
 
 from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, \
     PreprocessorKeys as PPK, TrainerKeys as TK
@@ -61,7 +61,7 @@ class CrossValidatorBase:
             evaluator.evaluate(**kwargs)
 
     def cross_validation_step(self, trainer: TrainerInterface, dataset_paths: List[str], train_step_name: str,
-                              cv_step_names: CVStepNames):
+                              cv_step_names: ExcludedPatients):
         cv_step_names.print_names()
         trainer.train(dataset_paths=dataset_paths,
                       train_step_names=cv_step_names,
@@ -83,10 +83,10 @@ class CrossValidatorBase:
                                        config=self.config,
                                        data_storage=self.data_storage,
                                        log_dir=log_dir)
-        cv_step_names = CVStepNames(data_storage=self.data_storage,
-                                    config=self.config,
-                                    log_dir=log_dir,
-                                    all_patients=all_patients_names)
+        cv_step_names = ExcludedPatients(data_storage=self.data_storage,
+                                         config=self.config,
+                                         log_dir=log_dir,
+                                         all_patients=all_patients_names)
 
         dataset_paths = trainer.get_dataset_paths()
 
