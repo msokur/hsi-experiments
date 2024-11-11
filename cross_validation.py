@@ -23,12 +23,14 @@ def out_of_the_box(config):
     # because they passed automatically
     thresholds = None
     if len(config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]) <= 2:
-        thresholds = np.round(np.linspace(0.1, 0.5, 5), 4)  # specify thresholds if classification is binary
+        # specify thresholds if classification is binary
+        thresholds = np.round(np.linspace(0.1, 0.5, 5), 4)
     cross_validator.pipeline(execution_flags=execution_flags,
                              thresholds=thresholds)
 
-    optimal_threshold_finder = OptimalThreshold(config, prints=False)
-    optimal_threshold_finder.add_additional_thresholds_if_needed(cross_validator)
+    if len(config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]) <= 2:
+        optimal_threshold_finder = OptimalThreshold(config, prints=False)
+        optimal_threshold_finder.add_additional_thresholds_if_needed(cross_validator)
 
 
 def postprocessing_for_one_model(config):

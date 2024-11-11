@@ -87,7 +87,7 @@ def get_metric_objects_result(request, metric: dict) -> Tuple[tuple, bool]:
 
 def test_get_metric_objects(get_metric_objects_result: tuple):
     result, multiclass = get_metric_objects_result
-    metrics_obj = get_metric_objects(metrics=GET_METRIC_OBJECTS_DATA, multiclass=multiclass)
+    metrics_obj = get_metric_objects(metrics=GET_METRIC_OBJECTS_DATA, multiclass_=multiclass)
     assert metrics_obj == result
 
 
@@ -97,7 +97,7 @@ def test_get_metric_objects_warning(get_metric_objects_result: tuple):
     warning_data.update({"test": []})
 
     with pytest.warns(UserWarning, match="WARNING! Custom object 'test', not implemented!"):
-        metrics_obj = get_metric_objects(metrics=warning_data, multiclass=multiclass)
+        metrics_obj = get_metric_objects(metrics=warning_data, multiclass_=multiclass)
     assert metrics_obj == result
 
 
@@ -107,7 +107,7 @@ GET_METRIC_DATA = [("multi", True),
 
 @pytest.mark.parametrize("typ,multi", GET_METRIC_DATA)
 def test_get_metric(metric: dict, typ: str, multi: bool):
-    assert get_metric(multiclass=multi) == metric[typ]
+    assert get_metric(multiclass_=multi) == metric[typ]
 
 
 def test_get_model(get_model_result: tuple):

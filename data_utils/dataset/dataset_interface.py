@@ -34,6 +34,20 @@ class Dataset:
         pass
 
     @abc.abstractmethod
+    def get_datasets_split_factor(self, dataset_paths: List[str], split_factor: float, labels: List[int],
+                                  batch_path: str):
+        """Loads a parsed dataset that is split by a float factor
+
+        :param dataset_paths: Paths for the Dataset
+        :param split_factor: Float factor to split the dataset
+        :param labels: List with labels to use for the dataset
+        :param batch_path: Root path to save batches
+
+        :return: A tuple with the parsed training and validation dataset
+        """
+        pass
+
+    @abc.abstractmethod
     def get_dataset_paths(self, root_paths: str) -> List[str]:
         pass
 

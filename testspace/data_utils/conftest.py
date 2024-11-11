@@ -65,6 +65,11 @@ def tfr_3d_data_dir(tfr_data_dir) -> str:
 # --- datas ---
 import numpy as np
 
+X_NAME = "X"
+y_NAME = "y"
+WEIGHTS_NAME = "weights"
+IDX_IN_CUBE_NAME = "indexes_in_datacube"
+
 SPEC = 10
 SAMPLES = 12
 
@@ -82,8 +87,8 @@ DATA_WEIGHTS_1 = np.array([2.] * DATA_y_1.shape[0])
 
 DATA_i = np.array([[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8], [9, 9], [10, 10], [11, 11]])
 
-DATA_1D_0 = {"X": DATA_1D_X_0, "indexes_in_datacube": DATA_i, "weights": DATA_WEIGHTS_0, "y": DATA_y_0}
-DATA_1D_1 = {"X": DATA_1D_X_1, "indexes_in_datacube": DATA_i, "weights": DATA_WEIGHTS_1, "y": DATA_y_1}
+DATA_1D_0 = {X_NAME: DATA_1D_X_0, IDX_IN_CUBE_NAME: DATA_i, WEIGHTS_NAME: DATA_WEIGHTS_0, y_NAME: DATA_y_0}
+DATA_1D_1 = {X_NAME: DATA_1D_X_1, IDX_IN_CUBE_NAME: DATA_i, WEIGHTS_NAME: DATA_WEIGHTS_1, y_NAME: DATA_y_1}
 
-DATA_3D_0 = {"X": DATA_3D_X_0, "indexes_in_datacube": DATA_i, "weights": DATA_WEIGHTS_0, "y": DATA_y_0}
-DATA_3D_1 = {"X": DATA_3D_X_1, "indexes_in_datacube": DATA_i, "weights": DATA_WEIGHTS_1, "y": DATA_y_1}
+DATA_3D_0 = {X_NAME: DATA_3D_X_0, IDX_IN_CUBE_NAME: DATA_i, WEIGHTS_NAME: DATA_WEIGHTS_0, y_NAME: DATA_y_0}
+DATA_3D_1 = {X_NAME: DATA_3D_X_1, IDX_IN_CUBE_NAME: DATA_i, WEIGHTS_NAME: DATA_WEIGHTS_1, y_NAME: DATA_y_1}

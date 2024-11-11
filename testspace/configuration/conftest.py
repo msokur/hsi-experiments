@@ -10,7 +10,8 @@ from tensorflow.keras.activations import relu, tanh, selu, exponential, elu
 
 from models.paper_model import PaperModel1D, PaperModel3D
 from models.inception_model import InceptionModel1D, InceptionModel3D
-from util import tf_metric_multiclass, tf_metrics_binary
+
+from trainers.utils.custom_metrics import binary, multiclass
 
 
 # --- pytest fixtures for the paths to load test data --
@@ -120,18 +121,24 @@ def path_prefix() -> str:
 
 
 @pytest.fixture
-def path_result(sys_slash: str, path_prefix: str):
+def path_prepro_prefix(path_prefix) -> str:
+    return f"{path_prefix}/prepro"
+
+
+@pytest.fixture
+def path_result(sys_slash: str, path_prefix: str, path_prepro_prefix: str):
     return {"CHECKPOINT_PATH": "checkpoints",
             "RESULTS_FOLDER": "results",
+            "LOGS_FOLDER": ["logs"],
             "MODE": "WITH_GPU",
-            "PREFIX": path_prefix,
-            "MODEL_NAME_PATHS": ["/home/sc.uni-leipzig.de/xyz/hsi-experiments-BA/logs"],
-            "RAW_NPZ_PATH": f"{path_prefix}{sys_slash}data_3d{sys_slash}gastric{sys_slash}3x3",
-            "RAW_SOURCE_PATH": f"{path_prefix}{sys_slash}Gastric",
-            "TEST_NPZ_PATH": f"{path_prefix}{sys_slash}data_3d{sys_slash}hno{sys_slash}3x3",
-            "SHUFFLED_PATH": f"{path_prefix}{sys_slash}data_3d{sys_slash}gastric{sys_slash}3x3{sys_slash}shuffled",
-            "BATCHED_PATH": f"{path_prefix}{sys_slash}data_3d{sys_slash}gastric{sys_slash}3x3{sys_slash}batch_sized",
-            "MASK_PATH": f"{path_prefix}{sys_slash}Gastric{sys_slash}annotation",
+            "DATABASE_ROOT_FOLDER": path_prefix,
+            "PREPROCESS_ROOT_FOLDER": path_prepro_prefix,
+            "RAW_SOURCE_PATH": f"{path_prefix}{sys_slash}raw_database",
+            "ROOT_PATH": f"{path_prepro_prefix}{sys_slash}database{sys_slash}3x3",
+            "RAW_NPZ_PATH": f"{path_prepro_prefix}{sys_slash}database{sys_slash}3x3{sys_slash}patient_data",
+            "SHUFFLED_PATH": f"{path_prepro_prefix}{sys_slash}database{sys_slash}3x3{sys_slash}shuffled",
+            "BATCHED_PATH": f"{path_prepro_prefix}{sys_slash}database{sys_slash}3x3{sys_slash}batch_sized",
+            "MASK_PATH": f"{path_prefix}{sys_slash}raw_database{sys_slash}annotation",
             "SYSTEM_PATHS_DELIMITER": sys_slash}
 
 
@@ -183,13 +190,13 @@ def model_normal() -> dict:
 
 @pytest.fixture
 def metric() -> dict:
-    return {"binary": {"F1_score": tf_metrics_binary.F1_score},
-            "multi": {"F1_score": tf_metric_multiclass.F1_score}}
+    return {"binary": {"F1_score": binary.F1_score},
+            "multi": {"F1_score": multiclass.F1_score}}
 
 
 @pytest.fixture
 def trainer_normal_base() -> dict:
-    return {"TYPE": "SeveralOutput",
+    return {"TYPE": "Normal",
             "RESTORE": False,
             "FILES_TO_COPY": [["*.py"]],
             "WITH_SAMPLE_WEIGHTS": False,
@@ -204,15 +211,17 @@ def trainer_normal_base() -> dict:
             "SPLIT_FACTOR": 0.8,
             "EPOCHS": 50,
             "SMALLER_DATASET": False,
-            "MODEL_CHECKPOINT": {"monitor": "val_f1_score_weighted",
-                                 "save_best_only": True,
-                                 "mode": "max"},
-            "EARLY_STOPPING": {"enable": True,
-                               "monitor": "val_f1_score_weighted",
-                               "mode": "max",
-                               "min_delta": 0,
-                               "patience": 5,
-                               "restore_best_weights": True}}
+            "CALLBACKS": {
+                "MODEL_CHECKPOINT": {"monitor": "val_f1_score_weighted",
+                                     "save_best_only": True,
+                                     "mode": "max"},
+                "EARLY_STOPPING": {"enable": True,
+                                   "monitor": "val_f1_score_weighted",
+                                   "mode": "max",
+                                   "min_delta": 0,
+                                   "patience": 5,
+                                   "restore_best_weights": True}
+            }}
 
 
 @pytest.fixture

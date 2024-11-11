@@ -5,6 +5,7 @@ import numpy as np
 import inspect
 import psutil
 import re
+import warnings
 
 from configuration.keys import TelegramKeys as TGK
 
@@ -13,6 +14,7 @@ class Telegram:
     def __init__(self, tg_config: dict, mode: str):
         self.tg_config = tg_config
         self.mode = mode
+        self._check_tg_config()
 
     def send_tg_message(self, message):
         if self.tg_config[TGK.SENDING]:
@@ -38,6 +40,14 @@ class Telegram:
                 f"has finished after {len(history.history['loss'])} epochs")
         else:
             self.send_tg_message(f"{self.tg_config[TGK.USER]}, training {log_dir} has finished")
+
+    def _check_tg_config(self):
+        if not os.path.exists(self.tg_config[TGK.FILE]) and self.tg_config[TGK.SENDING]:
+            self.tg_config[TGK.SENDING] = False
+            file_dir, file_name = os.path.split(self.tg_config[TGK.FILE])
+            warnings.warn(f"The Telegram config file '{file_name}' does not exist.\n"
+                          f"Make sure there the file exist in the directory '{file_dir}'.\n"
+                          f"Telegram is now disable and will not send any messages.")
 
 
 def glob_multiple_file_types(path, *patterns):

@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 import os
 
-from shutil import rmtree
 from glob import glob
 from data_utils.dataset import TFRDatasets, GeneratorDatasets
 from data_utils.data_storage import DataStorageZARR, DataStorageNPZ
@@ -16,7 +15,6 @@ from configuration.keys import (
     CrossValidationKeys as CVK
 )
 
-
 from .conftest import (
     USE_NAMES,
     LABELS,
@@ -24,19 +22,33 @@ from .conftest import (
     BATCH_X_DATA_3D,
     BATCH_Y_DATA,
     BATCH_SW_DATA,
+    BATCH_FOLDER,
+    D1_X_0,
+    D1_X_1,
+    D3_X_0,
+    D3_X_1,
+    Y,
+    WEIGHTS,
 )
 
 
-@pytest.fixture
-def _delete_batches(data_dir: str):
-    yield
-    path = os.path.join(data_dir, "test_batches")
-    if os.path.exists(path=path):
-        rmtree(path=path)
+def get_test_name_datasets(test_config, data_typ: str, shape: str, with_sw: bool, file_dir: str, batch_size: int,
+                           valid_names=USE_NAMES):
+    dataset, dataset_paths = init_datasets(test_config=test_config,
+                                           data_typ=data_typ,
+                                           shape=shape,
+                                           with_sw=with_sw,
+                                           file_dir=file_dir,
+                                           batch_size=batch_size)
+
+    return dataset.get_datasets(dataset_paths=dataset_paths,
+                                train_names=USE_NAMES,
+                                valid_names=valid_names,
+                                labels=LABELS,
+                                batch_path=os.path.join(file_dir, BATCH_FOLDER))
 
 
-def get_test_datasets(test_config, data_typ: str, shape: str, with_sw: bool, file_dir: str, batch_size: int,
-                      valid_names=USE_NAMES):
+def init_datasets(test_config, data_typ: str, shape: str, with_sw: bool, file_dir: str, batch_size: int):
     test_config.CONFIG_TRAINER[TK.BATCH_SIZE] = batch_size
     test_config.CONFIG_DATALOADER[DLK.D3] = True if shape == "3d" else False
     test_config.CONFIG_TRAINER[TK.WITH_SAMPLE_WEIGHTS] = with_sw
@@ -56,11 +68,7 @@ def get_test_datasets(test_config, data_typ: str, shape: str, with_sw: bool, fil
                                      data_storage=zarr_storage)
         paths = zarr_storage.get_paths(storage_path=sh_path)
 
-    return datasets.get_datasets(dataset_paths=paths,
-                                 train_names=USE_NAMES,
-                                 valid_names=valid_names,
-                                 labels=LABELS,
-                                 batch_path=os.path.join(file_dir, "test_batches"))
+    return datasets, paths
 
 
 GET_DATASET_VALUE = [("tfr", "1d", False, 5, (BATCH_X_DATA_1D, BATCH_Y_DATA)),
@@ -80,12 +88,12 @@ GET_DATASET_VALUE = [("tfr", "1d", False, 5, (BATCH_X_DATA_1D, BATCH_Y_DATA)),
 @pytest.mark.parametrize("data_type,shape,with_sw,batch_size,results", GET_DATASET_VALUE)
 def test_get_datasets_value(_delete_batches, test_config, data_dir: str, data_type: str, shape: str, with_sw: bool,
                             batch_size: int, results: tuple):
-    dataset = get_test_datasets(test_config=test_config,
-                                data_typ=data_type,
-                                shape=shape,
-                                with_sw=with_sw,
-                                file_dir=data_dir,
-                                batch_size=batch_size)[0]
+    dataset = get_test_name_datasets(test_config=test_config,
+                                     data_typ=data_type,
+                                     shape=shape,
+                                     with_sw=with_sw,
+                                     file_dir=data_dir,
+                                     batch_size=batch_size)[0]
     start_slice = 0
     end_slice = batch_size
     for values in dataset:
@@ -99,12 +107,12 @@ def test_get_datasets_value(_delete_batches, test_config, data_dir: str, data_ty
 def test_get_datasets_value_debug(_delete_batches, test_config, data_dir: str, data_type: str, shape: str,
                                   with_sw: bool, batch_size: int, results: tuple):
     test_config.CONFIG_CV[CVK.MODE] = "DEBUG"
-    dataset = get_test_datasets(test_config=test_config,
-                                data_typ=data_type,
-                                shape=shape,
-                                with_sw=with_sw,
-                                file_dir=data_dir,
-                                batch_size=batch_size)[0]
+    dataset = get_test_name_datasets(test_config=test_config,
+                                     data_typ=data_type,
+                                     shape=shape,
+                                     with_sw=with_sw,
+                                     file_dir=data_dir,
+                                     batch_size=batch_size)[0]
     start_slice = 0
     end_slice = batch_size
     for values in dataset:
@@ -125,13 +133,13 @@ def test_get_datasets_value_error(_delete_batches, test_config, data_dir: str, d
                                   bach_size: int, dataset_typ: str):
     with pytest.raises(ValueError,
                        match=f"There to less data for a {dataset_typ} dataset. Maybe lower the batch size!"):
-        get_test_datasets(test_config=test_config,
-                          data_typ=data_type,
-                          shape=shape,
-                          with_sw=False,
-                          file_dir=data_dir,
-                          batch_size=bach_size,
-                          valid_names=USE_NAMES if bach_size > 200 else USE_NAMES[0:2])
+        get_test_name_datasets(test_config=test_config,
+                               data_typ=data_type,
+                               shape=shape,
+                               with_sw=False,
+                               file_dir=data_dir,
+                               batch_size=bach_size,
+                               valid_names=USE_NAMES if bach_size > 200 else USE_NAMES[0:2])
 
 
 GET_DATASET_NO_SH_FILES_DATA = ["tfr", "npz", "zarr"]
@@ -140,9 +148,85 @@ GET_DATASET_NO_SH_FILES_DATA = ["tfr", "npz", "zarr"]
 @pytest.mark.parametrize("data_type", GET_DATASET_NO_SH_FILES_DATA)
 def test_get_datasets_no_shuffle_files_error(test_config, data_type: str):
     with pytest.raises(ValueError, match="No shuffle file to create a dataset. Check your path configs!"):
-        get_test_datasets(test_config=test_config,
-                          data_typ=data_type,
-                          shape="1d",
-                          with_sw=False,
-                          file_dir="",
-                          batch_size=0)
+        get_test_name_datasets(test_config=test_config,
+                               data_typ=data_type,
+                               shape="1d",
+                               with_sw=False,
+                               file_dir="",
+                               batch_size=0)
+
+
+def get_test_split_factor_datasets(test_config, data_type: str, shape: str, with_sw: bool, file_dir: str,
+                                   batch_size: int, split_factor: float, first_part: bool):
+    datasets, dataset_paths = init_datasets(test_config=test_config,
+                                            data_typ=data_type,
+                                            shape=shape,
+                                            with_sw=with_sw,
+                                            file_dir=file_dir,
+                                            batch_size=batch_size)
+
+    label_indexes = np.isin(Y, LABELS)
+    true_indexes = np.where(label_indexes)[0]
+    split_border = int(split_factor * len(true_indexes))
+
+    if first_part:
+        selected_indexes = true_indexes[:split_border]
+    else:
+        selected_indexes = true_indexes[split_border:]
+
+    mask = np.zeros_like(Y, dtype=bool)
+    mask[selected_indexes] = True
+
+    result = ()
+    if shape == "1d":
+        result += (np.concatenate((D1_X_0[mask], D1_X_1[mask], D1_X_0[mask]), axis=0),)
+    else:
+        result += (np.concatenate((D3_X_0[mask], D3_X_1[mask], D3_X_0[mask]), axis=0),)
+
+    result += (np.concatenate((Y[mask], Y[mask], Y[mask]), axis=0),)
+
+    if with_sw:
+        result += (np.concatenate((WEIGHTS[mask], WEIGHTS[mask], WEIGHTS[mask]), axis=0),)
+
+    datasets_ = datasets.get_datasets_split_factor(dataset_paths=dataset_paths,
+                                                   split_factor=split_factor,
+                                                   labels=LABELS,
+                                                   batch_path=os.path.join(file_dir, BATCH_FOLDER))
+
+    dataset = datasets_[0] if first_part else datasets_[1]
+
+    return dataset, result
+
+
+SPLIT_FACTOR_VALUE = [("tfr", "1d", False, 0.8, True, 5),
+                      ("tfr", "1d", True, 0.75, False, 7),
+                      ("tfr", "3d", False, 0.5, True, 55),
+                      ("tfr", "3d", True, 0.49, False, 91),
+                      ("npz", "1d", False, 0.65, True, 5),
+                      ("npz", "1d", True, 0.53, False, 7),
+                      ("npz", "3d", False, 0.9, True, 20),
+                      ("npz", "3d", True, 0.77, False, 33),
+                      ("zarr", "1d", False, 0.58, True, 70),
+                      ("zarr", "1d", True, 0.64, False, 13),
+                      ("zarr", "3d", False, 0.33, False, 24),
+                      ("zarr", "3d", True, 0.52, True, 99)]
+
+
+@pytest.mark.parametrize("data_type,shape,with_sw,split_factor,first_part,batch_size", SPLIT_FACTOR_VALUE)
+def test_get_dataset_split_factor(_delete_batches, test_config, data_dir: str, data_type: str, shape: str,
+                                  with_sw: bool, split_factor: float, first_part: bool, batch_size: int):
+    dataset, results = get_test_split_factor_datasets(test_config=test_config,
+                                                      data_type=data_type,
+                                                      shape=shape,
+                                                      with_sw=with_sw,
+                                                      file_dir=data_dir,
+                                                      batch_size=batch_size,
+                                                      split_factor=split_factor,
+                                                      first_part=first_part)
+    start_slice = 0
+    end_slice = batch_size
+    for values in dataset:
+        for value, result in zip(values, results):
+            assert np.all(value.numpy() == result[start_slice:end_slice])
+        start_slice = end_slice
+        end_slice += batch_size

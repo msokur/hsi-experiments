@@ -1,4 +1,4 @@
-from util.tf_metrics_binary import F1_score
+from trainers.utils.custom_metrics.binary.f1_score import F1_score
 import pytest
 import tensorflow as tf
 

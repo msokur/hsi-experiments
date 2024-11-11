@@ -13,15 +13,14 @@ from testspace.data_utils.conftest import (
     DATA_3D_X_1,
     DATA_WEIGHTS_0,
     DATA_WEIGHTS_1,
+    X_NAME,
+    y_NAME,
+    WEIGHTS_NAME,
 )
 from ..conftest import (
     DATA_y_0,
     DATA_y_1
 )
-
-X_NAME = "X"
-y_NAME = "y"
-WEIGHTS_NAME = "weights"
 
 D1_X_y_0 = (DATA_1D_X_0, DATA_y_0)
 D1_X_y_w_0 = D1_X_y_0 + (DATA_WEIGHTS_0,)

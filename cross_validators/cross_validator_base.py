@@ -7,10 +7,11 @@ import numpy as np
 import csv
 
 from util import utils
+from util.compare_distributions import DistributionsChecker
 import provider
 
 from data_utils.paths import get_sort, get_splits
-from data_utils.dataset.choice_names import ChoiceNames
+from trainers import ExcludedPatients, TrainerInterface
 
 from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, \
     PreprocessorKeys as PPK, TrainerKeys as TK
@@ -23,6 +24,7 @@ class CrossValidatorBase:
     def __init__(self, config):
         self.config = config
         self.data_storage = provider.get_data_storage(typ=STORAGE_TYPE)
+        self.log_root_folder = os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER])
 
     @staticmethod
     def get_execution_flags():
@@ -44,16 +46,13 @@ class CrossValidatorBase:
         if execution_flags[CVK.EF_EVALUATION]:
             self.evaluation(**kwargs)
 
-        #self.config.telegram.send_tg_message(f'Operations in cross_validation.py for {self.config.CONFIG_CV[CVK.NAME]} '
-        #                                     f'are successfully completed!')
-
     def evaluation(self, save_predictions=True, **kwargs):
         evaluator = provider.get_evaluation(config=self.config,
                                             labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
-        
+
         if save_predictions:
             training_csv_path = self.get_csv(os.path.join(self.config.CONFIG_PATHS[PK.LOGS_FOLDER][0],
-                                                      self.config.CONFIG_CV[CVK.NAME]))
+                                                          self.config.CONFIG_CV[CVK.NAME]))
             print('training_csv_path', training_csv_path)
             evaluator.save_predictions_and_metrics(training_csv_path=training_csv_path,
                                                    data_folder=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
@@ -61,68 +60,64 @@ class CrossValidatorBase:
         else:
             evaluator.evaluate(**kwargs)
 
-    def cross_validation_step(self, model_name: str, all_patients: List[str], leave_out_names=None):
-        if leave_out_names is None:
-            leave_out_names = []
-        choice_names = ChoiceNames(data_storage=self.data_storage, config_cv=self.config.CONFIG_CV,
-                                   labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
-                                   y_dict_name=self.config.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1],
-                                   log_dir=model_name)
-        valid_names = choice_names.get_valid_except_names(raw_path=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
-                                                          except_names=leave_out_names)
-        train_names = list(set(all_patients) - set(leave_out_names) - set(valid_names))
-
-        print(f"Leave out patient data: {', '.join(n for n in leave_out_names)}.\n")
-        print(f"Train patient data: {', '.join(n for n in train_names)}.\n")
-        print(f"Valid patient data: {', '.join(n for n in valid_names)}.\n")
-
-        trainer = provider.get_trainer(typ=self.config.CONFIG_TRAINER[TK.TYPE], config=self.config,
-                                       data_storage=self.data_storage, model_name=model_name,
-                                       leave_out_names=leave_out_names, train_names=train_names,
-                                       valid_names=valid_names)
-        trainer.train()
-
-    """def get_paths_and_splits(self, root_path=None):
-        if root_path is None:
-            root_path = self.config.CONFIG_PATHS["RAW_NPZ_PATH"]
-
-        paths = glob(os.path.join(root_path, "*.npz"))
-        extension = provider.get_extension_loader(config=self.config,
-                                                  typ=self.config.CONFIG_DATALOADER["FILE_EXTENSION"])
-        paths = extension.sort(paths)
-
-        splits = get_splits(typ=self.config.CONFIG_DATALOADER["SPLIT_PATHS_BY"], paths=paths,
-                            values=self.config.CONFIG_CV["HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST"],
-                            delimiter=self.config.CONFIG_PATHS["SYSTEM_PATHS_DELIMITER"])
-
-        return paths, splits"""
+    def cross_validation_step(self, trainer: TrainerInterface, dataset_paths: List[str], train_step_name: str,
+                              cv_step_names: ExcludedPatients):
+        cv_step_names.print_names()
+        trainer.train(dataset_paths=dataset_paths,
+                      train_step_names=cv_step_names,
+                      step_name=train_step_name,
+                      batch_path=os.path.join(self.config.CONFIG_PATHS[PK.BATCHED_PATH], train_step_name))
 
     def cross_validation(self, csv_filename=None):
-        name = self.config.CONFIG_CV[CVK.NAME]
-        self.config.CONFIG_PATHS[PK.LOGS_FOLDER].append(name)
-
-        root_folder = os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER])
-        path_template = os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER], 'step')
+        root_folder = str(os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER]))
 
         if not os.path.exists(root_folder):
             os.makedirs(root_folder)
 
         paths, splits = self._get_paths_and_splits()
 
+        name = self.config.CONFIG_CV[CVK.NAME]
+        log_dir = os.path.join(root_folder, name)
+        all_patients_names = [self.data_storage.get_name(path=p) for p in paths]
+        trainer = provider.get_trainer(typ=self.config.CONFIG_TRAINER[TK.TYPE],
+                                       config=self.config,
+                                       data_storage=self.data_storage,
+                                       log_dir=log_dir)
+        cv_step_names = ExcludedPatients(data_storage=self.data_storage,
+                                         config=self.config,
+                                         log_dir=log_dir,
+                                         all_patients=all_patients_names)
+
+        dataset_paths = trainer.get_dataset_paths()
+
+        if self.config.CONFIG_TRAINER[TK.TYPE] == "Tuner" or self.config.CONFIG_TRAINER[TK.USE_SMALLER_DATASET]:
+            print("--- Searching for representative smaller dataset ---")
+            dc = DistributionsChecker(paths=dataset_paths,
+                                      dataset=trainer.dataset,
+                                      local_config=self.config.CONFIG_DISTRIBUTION)
+            tuning_index = dc.get_small_database_for_tuning()
+
+            if self.config.CONFIG_TRAINER[TK.TYPE] == "Tuner":
+                trainer.search_for_hyper_parameter(tuning_data_paths=[dataset_paths[tuning_index]],
+                                                   patient_names=all_patients_names)
+
+            if self.config.CONFIG_TRAINER[TK.USE_SMALLER_DATASET]:
+                dataset_paths = [dataset_paths[tuning_index]]
+
         date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
 
         if csv_filename is None:
-            csv_filename = os.path.join(root_folder, name + "_stats" + date_ + ".csv")
+            csv_file = os.path.join(log_dir, name + "_stats" + date_ + ".csv")
         else:
-            csv_filename = os.path.join(root_folder, csv_filename)
+            csv_file = os.path.join(log_dir, csv_filename)
 
         for indexes in splits[self.config.CONFIG_CV[CVK.FIRST_SPLIT]:]:
-            model_name = path_template
+            train_step_name = "step"
             if len(indexes) > 1:
                 for i in indexes:
-                    model_name += "_" + str(i)
+                    train_step_name += "_" + str(i)
             else:
-                model_name += "_" + str(indexes[0]) + "_" + self.data_storage.get_name(np.array(paths)[indexes][0])
+                train_step_name += "_" + str(indexes[0]) + "_" + self.data_storage.get_name(np.array(paths)[indexes][0])
 
             leave_out_paths = np.array(paths)[indexes]
 
@@ -131,13 +126,16 @@ class CrossValidatorBase:
                       f"So we skip this patient(s)!")
                 continue
 
-            all_patients = [self.data_storage.get_name(path=p) for p in paths]
-            self.cross_validation_step(model_name=model_name, all_patients=all_patients,
-                                       leave_out_names=[self.data_storage.get_name(p) for p in leave_out_paths])
+            cv_step_names.set_names(leave_out_names=[self.data_storage.get_name(p) for p in leave_out_paths],
+                                    train_step_name=train_step_name)
+            self.cross_validation_step(trainer=trainer,
+                                       dataset_paths=dataset_paths,
+                                       train_step_name=train_step_name,
+                                       cv_step_names=cv_step_names)
 
             for i, path_ in enumerate(leave_out_paths):
                 sensitivity, specificity = 0, 0
-                with open(csv_filename, 'a', newline='') as csvfile:  # for full cross_valid and for separate file
+                with open(csv_file, 'a', newline='') as csvfile:  # for full cross_valid and for separate file
                     fieldnames = ['time', 'index', 'sensitivity', 'specificity', 'name', 'model_name']
                     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
@@ -146,7 +144,7 @@ class CrossValidatorBase:
                                      'sensitivity': str(sensitivity),
                                      'specificity': str(specificity),
                                      'name': path_,
-                                     'model_name': model_name})
+                                     'model_name': os.path.join(log_dir, train_step_name)})
 
     def _get_paths_and_splits(self, root_path=None):
         if root_path is None:

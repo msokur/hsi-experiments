@@ -123,6 +123,6 @@ class ChoiceNames:
             np.flatnonzero(np.core.defchararray.find(restore_log_paths, "3d_" + str(log_index)) != -1)[0]]
 
         valid_except_indexes = pickle.load(open(os.path.join(restore_log_path, FILE_WITH_VALID_NAME), "rb"))
-        valid_except_indexes = [v[:-1] if v[-1]=='_' else v for v in valid_except_indexes]
+        valid_except_indexes = [v[:-1] if v[-1] == '_' else v for v in valid_except_indexes]
         print(f"We restore {valid_except_indexes} from {restore_log_path} ")
         return valid_except_indexes
