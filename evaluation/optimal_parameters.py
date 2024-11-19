@@ -172,7 +172,7 @@ class OptimalThreshold:
 
         def evaluate_additional_thresholds(begin, end):
             CV.pipeline(execution_flags=get_executions_flags(), save_predictions=False,
-                        thresholds=np.round(np.linspace(begin, end, 10), 4))
+                        thresholds=np.linspace(begin, end, 10))
 
         def calculate_optimal_threshold():
             results = self.find_optimal_threshold_in_checkpoint(folder_with_checkpoint)
