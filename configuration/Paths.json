@@ -28,12 +28,25 @@
     "LOGS_FOLDER": ["C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\logs"],
     "RESULTS_FOLDER": "C:\\Users\\tkachenko\\Desktop\\HSI\\hsi-experiments\\results"
   },
-  "HNO_Database": {
+  "HNO_Database_backup": {
     "0.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
       "RAW_SOURCE_PATH": ["Parotis-Faelle_unsorted", "data"]
     },
     "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
       "RAW_NPZ_PATH": ["data_3d", "hno", "3x3", "svn", "median"]
+    },
+    "2.CONCAT_WITH_RAW_NPZ_PATH": {
+      "SHUFFLED_PATH": ["shuffled"],
+      "BATCHED_PATH": ["batch_sized"]
+    }
+  },
+  "HNO_Database": {
+    "0.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
+      "RAW_SOURCE_PATH": ["data", "*"]
+    },
+
+    "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
+      "RAW_NPZ_PATH": ["results", "3x3", "data_3d", "hno", "svn", "median"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
       "SHUFFLED_PATH": ["shuffled"],
@@ -190,5 +203,18 @@
       "BATCHED_PATH": ["batch_sized"]
     }
 
+  },
+  "Win_Abtahi": {
+    "MODE": "WITH_GPU",
+    "DATABASE_ROOT_FOLDER": "D:\\Work\\Project\\ICCAS\\outputs", 
+    "PREPROCESS_ROOT_FOLDER": "D:\\Work\\Project\\ICCAS\\outputs\\prepro_data",
+    "LOGS_FOLDER": ["D:\\Work\\Project\\ICCAS\\outputs\\results\\3x3\\model_logs"],
+    "RESULTS_FOLDER": "D:\\Work\\Project\\ICCAS\\outputs\\results\\3x3\\model_results"
+  },
+  "Win_Abtahi_Ext": {
+    "MODE": "WITHOUT_GPU",
+    "DATABASE_ROOT_FOLDER": "E:\\Documents\\Work\\MSc\\Project\\ICCAS",
+    "LOGS_FOLDER": ["D:\\Work\\Project\\ICCAS\\Code\\branch\\hsi-experiments\\5x5\\model_logs"],
+    "RESULTS_FOLDER": "E:\\Documents\\Work\\MSc\\Project\\ICCAS\\5x5"
   }
 }

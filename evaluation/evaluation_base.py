@@ -176,7 +176,7 @@ class EvaluationBase(Metrics):
                             predictions = self.calculate_predictions(predictions_raw, threshold)
 
                             metrics_ = self.save_metrics(gt, predictions, predictions_raw, writer_cp)
-
+                            print('EB - 179', metrics_, patient['name'])
                             append_value(metrics_all, metrics_)
 
                             if save_curves:
@@ -194,7 +194,7 @@ class EvaluationBase(Metrics):
                                                                               y_pred=predictions,
                                                                               original_names=names,
                                                                               patient_name=name)
-
+                        print(f'EB - 197: metrics all {metrics_all}')
                         self.write_total_metrics(writer_cp, metrics_all)
 
                     sensitivity_mean = np.nanmean(metrics_all['Sensitivity'], axis=0)

@@ -41,7 +41,8 @@ class CrossValidatorBase:
         if CVK.CSV_FILENAME in self.config.CONFIG_CV:
             csv_filename = self.config.CONFIG_CV[CVK.CSV_FILENAME]
 
-        if execution_flags[CVK.EF_CROSS_VALIDATION]:
+        print('CVB-44: CSV FILE BASE', csv_filename)
+        if execution_flags[CVK.EF_CROSS_VALIDATION]:            
             self.cross_validation(csv_filename=csv_filename)
         if execution_flags[CVK.EF_EVALUATION]:
             self.evaluation(**kwargs)
@@ -63,6 +64,7 @@ class CrossValidatorBase:
     def cross_validation_step(self, trainer: TrainerInterface, dataset_paths: List[str], train_step_name: str,
                               cv_step_names: ExcludedPatients):
         cv_step_names.print_names()
+        print('CVB-66: dataset paths -', dataset_paths)
         trainer.train(dataset_paths=dataset_paths,
                       train_step_names=cv_step_names,
                       step_name=train_step_name,
@@ -70,7 +72,7 @@ class CrossValidatorBase:
 
     def cross_validation(self, csv_filename=None):
         root_folder = str(os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER]))
-
+        print(f'Root Folder = {root_folder}')
         if not os.path.exists(root_folder):
             os.makedirs(root_folder)
 
@@ -79,6 +81,8 @@ class CrossValidatorBase:
         name = self.config.CONFIG_CV[CVK.NAME]
         log_dir = os.path.join(root_folder, name)
         all_patients_names = [self.data_storage.get_name(path=p) for p in paths]
+        print(f'*******all pat name = {all_patients_names}')
+        print(f'************* {self.config.CONFIG_TRAINER[TK.TYPE]}')
         trainer = provider.get_trainer(typ=self.config.CONFIG_TRAINER[TK.TYPE],
                                        config=self.config,
                                        data_storage=self.data_storage,
@@ -87,9 +91,10 @@ class CrossValidatorBase:
                                          config=self.config,
                                          log_dir=log_dir,
                                          all_patients=all_patients_names)
-
+        print(f'CV step names = {cv_step_names}')
+        print(f'Trainer = {trainer}')
         dataset_paths = trainer.get_dataset_paths()
-
+        print(f'Dataset paths= {dataset_paths}')
         if self.config.CONFIG_TRAINER[TK.TYPE] == "Tuner" or self.config.CONFIG_TRAINER[TK.USE_SMALLER_DATASET]:
             print("--- Searching for representative smaller dataset ---")
             dc = DistributionsChecker(paths=dataset_paths,
@@ -120,9 +125,10 @@ class CrossValidatorBase:
                 train_step_name += "_" + str(indexes[0]) + "_" + self.data_storage.get_name(np.array(paths)[indexes][0])
 
             leave_out_paths = np.array(paths)[indexes]
+            print(leave_out_paths)
 
             if self.__check_data_label__(leave_out_paths):
-                print(f"The patient file(s) '{', '.join(leave_out_paths)}' are no needed labels for training! "
+                print(f"The patient file(s) '{', '.join(leave_out_paths)}' are not needed labels for training! "
                       f"So we skip this patient(s)!")
                 continue
 
@@ -135,6 +141,7 @@ class CrossValidatorBase:
 
             for i, path_ in enumerate(leave_out_paths):
                 sensitivity, specificity = 0, 0
+                print(f'Leave Out Paths = {leave_out_paths}')
                 with open(csv_file, 'a', newline='') as csvfile:  # for full cross_valid and for separate file
                     fieldnames = ['time', 'index', 'sensitivity', 'specificity', 'name', 'model_name']
                     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)

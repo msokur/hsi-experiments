@@ -4,9 +4,9 @@
       "cross_validation": true,
       "evaluation": true
     },
-    "FIRST_SPLIT": -5,
-    "HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID": 3,
-    "CHOOSE_EXCLUDED_VALID": "by_class",
+    "FIRST_SPLIT": 0,
+    "HOW_MANY_PATIENTS_EXCLUDE_FOR_VALID": 1,
+    "CHOOSE_EXCLUDED_VALID": "randomly",
     "USE_ALL_LABELS": false,
     "SAVE_CURVES": false,
     "MODE": "DEBUG"

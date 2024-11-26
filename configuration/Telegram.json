@@ -8,5 +8,10 @@
         "USER": "Mariia",
         "FILE": "tg.config",
         "SENDING" : true
-    }
+    },
+    "Abtahi": {
+      "USER": "Abtahi",
+      "FILE": "tg_abtahi.config",
+      "SENDING" : true
+  }
 }

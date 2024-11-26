@@ -1,16 +1,16 @@
 {
-	"HNO": {
-		"TYPE": "normal",
+	"HNO_old": {
+		"TYPE": "folder",
 		"FILE_EXTENSION": ".dat",
 		"MASK_EXTENSION": ".png",
 		"3D": true,
-		"3D_SIZE": [5, 5],
+		"3D_SIZE": [3, 3],
 		"FIRST_NM": 8,
 		"LAST_NM": 100,
 		"WAVE_AREA": 100,
 		"LABELS_TO_TRAIN": [0, 1, 2, 3, 4, 5, 6],
 		"NAME_SPLIT": "_SpecCube",
-		"MASK_DIFF": ["_SpecCube.dat", ".png"],
+		"MASK_DIFF": [".dat", "_mask.png"],
 		"LABELS_FILENAME": "labels.labels",
 		"CONTAMINATION_FILENAME": "contamination.csv",
 		"SMOOTHING": {
@@ -73,6 +73,52 @@
 			"LIGHT_REFLECTION_THRESHOLD": 0.25
 		}
 	},
+	
+	"HNO": {
+		"TYPE": "folder",
+		"FILE_EXTENSION": ".dat",
+		"MASK_EXTENSION": ".png",
+		"3D": true,
+		"3D_SIZE": [3, 3],
+		"FIRST_NM": 8,
+		"LAST_NM": 100,
+		"WAVE_AREA": 100,
+		"LABELS_TO_TRAIN": [0, 1],
+		"NAME_SPLIT": ".dat",
+		"MASK_DIFF": [".dat", "_mask.png"],
+		"LABELS_FILENAME": "labels.labels",
+		"CONTAMINATION_FILENAME": "contamination.csv",
+		"SMOOTHING": {
+			"SMOOTHING_TYPE": null,
+			"SMOOTHING_DIMENSIONS": "1d",
+			"SMOOTHING_VALUE": 5
+		},
+		"BORDER_CONFIG": {
+			"enable": false,
+			"methode": "detect_core",
+			"depth": 5,
+			"axis": [],
+			"not_used_labels": []
+		},
+		"LABEL_DATA": {
+			"0": {
+				"MASK": [[0, 0, 255]],
+				"LABEL": "Healthy",
+				"COLOR": "blue"
+			},
+			"1": {
+				"MASK": [[255, 0, 0]],
+				"LABEL": "Tumor",
+				"COLOR": "red"
+			}
+		},
+		"BACKGROUND": {
+			"WITH_BACKGROUND_EXTRACTION": false,
+			"BLOOD_THRESHOLD": 0.1,
+			"LIGHT_REFLECTION_THRESHOLD": 0.25
+		}
+	},
+
 	"HNO_2": {
 		"TYPE": "folder",
 		"FILE_EXTENSION": ".dat",

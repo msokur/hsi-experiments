@@ -139,9 +139,9 @@ if __name__ == '__main__':
         preprocessor = Preprocessor(config=Config)
         preprocessor.pipeline(execution_flags=Config.CONFIG_PREPROCESSOR[PPK.EXECUTION_FLAGS])
 
-        Config.telegram.send_tg_message("Operations in preprocessor.py are successfully completed!")
+        # Config.telegram.send_tg_message("Operations in preprocessor.py are successfully completed!")
 
     except Exception as e:
-        Config.telegram.send_tg_message(f"ERROR! in Preprocessor {e}")
+        # Config.telegram.send_tg_message(f"ERROR! in Preprocessor {e}")
 
         raise e
