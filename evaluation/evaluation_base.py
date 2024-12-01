@@ -180,7 +180,7 @@ class EvaluationBase(Metrics):
                             append_value(metrics_all, metrics_)
 
                             if save_curves:
-                                names = patient[ORIGINAL_NAME]
+                                names = patient[DICT_ORIGINAL_NAME]
                                 roc_folder = os.path.join(results_folder, f"roc_by_threshold_{threshold}")
                                 if not os.path.exists(roc_folder):
                                     os.mkdir(roc_folder)
