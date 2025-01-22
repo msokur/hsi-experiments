@@ -1,4 +1,5 @@
 # modules are imported inside functions to avoid circular imports
+from configuration.logview import logview
 
 
 def get_trainer(typ: str, config, *args, **kwargs):
@@ -77,6 +78,8 @@ def get_whole_analog_of_data_loader(original_database):  # maybe out of date
     analog = ""
     if original_database == 'normal':
         analog = 'whole'
+    if original_database == 'folder':
+        analog = 'folder'
     '''if original_database == 'colon':
         analog = 'colon_whole'
     if original_database == 'bea_brain':
@@ -146,10 +149,13 @@ def get_pixel_detection(typ: str):
 
 def get_cross_validator(typ: str, config, *args, **kwargs):
     from cross_validators.cross_validator_base import CrossValidatorBase
+    from cross_validators.cross_validator_base_parallel import CrossValidatorBaseParallel
     from cross_validators.cross_validator_postprocessing import CrossValidatorPostProcessing
 
     if typ == "normal":
         return CrossValidatorBase(config=config, *args, **kwargs)
+    if typ == "parallel":
+        return CrossValidatorBaseParallel(config=config, *args, **kwargs)
     elif typ == "spain":
         from archive.cross_validator_spain import CrossValidatorSpain
         return CrossValidatorSpain(config=config, *args, **kwargs)
@@ -213,6 +219,7 @@ def get_data_storage(typ: str):
 
 def get_dataset(typ: str, config, data_storage):
     from data_utils.dataset import TFRDatasets, GeneratorDatasets
+
     if typ == "tfr":
         return TFRDatasets(config=config)
     elif typ == "generator":
@@ -225,6 +232,7 @@ def get_shuffle(typ: str, config, data_storage, raw_path: str, dict_names: list,
                 small: bool = False):
     from data_utils.shuffle import TFRShuffle, GeneratorShuffle
     from data_utils.small_shuffle import SmallShuffle
+
     if typ == "tfr":
         sh_class = TFRShuffle(config=config, data_storage=data_storage, raw_path=raw_path, dict_names=dict_names,
                               dataset_typ=typ, set_seed=set_seed)

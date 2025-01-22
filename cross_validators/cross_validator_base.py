@@ -9,15 +9,24 @@ import csv
 from util import utils
 from util.compare_distributions import DistributionsChecker
 import provider
+import pickle
 
 from data_utils.paths import get_sort, get_splits
 from trainers import ExcludedPatients, TrainerInterface
 
 from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, \
     PreprocessorKeys as PPK, TrainerKeys as TK
-from configuration.parameter import (
-    STORAGE_TYPE,
-)
+from configuration.parameter import (STORAGE_TYPE, )
+from configuration.logview import logview
+
+
+class ConfigWrapper:
+    def __init__(self, config_module):
+        self.CONFIG_CV = config_module.CONFIG_CV
+        self.CONFIG_DATALOADER = config_module.CONFIG_DATALOADER
+        self.CONFIG_PATHS = config_module.CONFIG_PATHS
+        self.CONFIG_TRAINER = config_module.CONFIG_TRAINER
+        self.CONFIG_PREPROCESSOR = config_module.CONFIG_PREPROCESSOR
 
 
 class CrossValidatorBase:
@@ -41,11 +50,13 @@ class CrossValidatorBase:
         if CVK.CSV_FILENAME in self.config.CONFIG_CV:
             csv_filename = self.config.CONFIG_CV[CVK.CSV_FILENAME]
 
-        print('CSV FILE BASE', csv_filename)
-        if execution_flags[CVK.EF_CROSS_VALIDATION]:            
+        if execution_flags[CVK.EF_CROSS_VALIDATION]:
             self.cross_validation(csv_filename=csv_filename)
         if execution_flags[CVK.EF_EVALUATION]:
             self.evaluation(**kwargs)
+
+        # self.config.telegram.send_tg_message(f'Operations in cross_validation.py for {self.config.CONFIG_CV[CVK.NAME]} '
+        #                                     f'are successfully completed!')
 
     def evaluation(self, save_predictions=True, **kwargs):
         evaluator = provider.get_evaluation(config=self.config,

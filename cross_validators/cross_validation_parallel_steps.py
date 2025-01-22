@@ -3,7 +3,11 @@ import datetime
 from typing import List
 import sys
 
-sys.path.insert(0, '/home/sc.uni-leipzig.de/mi186veva/hsi-experiments/')
+import inspect
+
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
 
 import numpy as np
 import csv
@@ -23,7 +27,7 @@ def cross_validation_step(model_name: str, all_patients: List[str], leave_out_na
     print(f'model_name {model_name}')
     print(f'all_patients {all_patients}')
     print(f'leave_out_names {leave_out_names}')
-    
+
     with open(os.path.join(model_name, 'cross_validation_config.pkl'), 'rb') as file:
         config = pickle.load(file)
     with open(os.path.join(model_name, 'cross_validation_data_storage.pkl'), 'rb') as file:
@@ -48,13 +52,13 @@ def cross_validation_step(model_name: str, all_patients: List[str], leave_out_na
                                    leave_out_names=leave_out_names, train_names=train_names,
                                    valid_names=valid_names)
     trainer.train()
-    
 
 
 if __name__ == '__main__':
     try:
         import configuration.get_config as config
         import argparse
+
         parser = argparse.ArgumentParser()
 
         parser.add_argument('--model_name', type=str)
@@ -71,7 +75,6 @@ if __name__ == '__main__':
         config.telegram.send_tg_message(f'CV step {args.model_name} successfully finished')
 
     except Exception as e:
-        
 
         config.telegram.send_tg_message(f'ERROR!!!, In CV step {args.model_name} error {e}')
         raise e
