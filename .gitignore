@@ -41,3 +41,5 @@ jupyter/*/*/*.png
 results
 jupyter/results.png
 scripts/output
+experiments/figures
+experiments/statistical_analysis
