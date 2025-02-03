@@ -75,7 +75,7 @@ class Metrics:
         f1_result = np.array([float('NaN')] * len(self.labels_of_classes_to_train))
         gt_unique = np.unique(gt)
 
-        f1 = f1_score(gt, predictions, average='weighted', labels=gt_unique)
+        f1 = f1_score(gt, predictions, average=None, labels=gt_unique)
         f1_result[gt_unique] = f1
         return f1_result
 

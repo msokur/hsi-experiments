@@ -42,7 +42,7 @@
       "F1_score": [{"name":  "f1_score"}]
 
     },
-    "BATCH_SIZE": 20,
+    "BATCH_SIZE": 500,
     "SPLIT_FACTOR": 0.8,
     "EPOCHS": 50,
     "USE_SMALLER_DATASET": false,

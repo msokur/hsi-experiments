@@ -41,7 +41,7 @@ class CrossValidatorBase:
         if CVK.CSV_FILENAME in self.config.CONFIG_CV:
             csv_filename = self.config.CONFIG_CV[CVK.CSV_FILENAME]
 
-        print('CVB-44: CSV FILE BASE', csv_filename)
+        print('CSV FILE BASE', csv_filename)
         if execution_flags[CVK.EF_CROSS_VALIDATION]:            
             self.cross_validation(csv_filename=csv_filename)
         if execution_flags[CVK.EF_EVALUATION]:
@@ -64,7 +64,7 @@ class CrossValidatorBase:
     def cross_validation_step(self, trainer: TrainerInterface, dataset_paths: List[str], train_step_name: str,
                               cv_step_names: ExcludedPatients):
         cv_step_names.print_names()
-        print('CVB-66: dataset paths -', dataset_paths)
+        print('dataset paths -', dataset_paths)
         trainer.train(dataset_paths=dataset_paths,
                       train_step_names=cv_step_names,
                       step_name=train_step_name,
