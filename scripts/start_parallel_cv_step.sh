@@ -4,18 +4,18 @@ sbatch <<EOT
 ##SBATCH --exclude=clara11,clara15,clara19,clara20
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
-#SBATCH --job-name=$6
+#SBATCH --job-name=$2
 #SBATCH --partition=clara
 #SBATCH --time=40:00:00
 #SBATCH --mem=32G
 ##SBATCH --gres=gpu:v100:2
 #SBATCH --gres=gpu:rtx2080ti:4
-#SBATCH --output=_$3_%j.log
+#SBATCH --output=$1/_$2_%j.log
 
 
 echo $1
 echo $2
-echo $3
+#echo $3
 
 ## remove all previously loaded modules
 module purge
@@ -44,7 +44,8 @@ source repo_variables.sh
 python /home/sc.uni-leipzig.de/ze43enib/Peritoneum/hsi-experiments/scripts/check.py
 echo "Job is running on the following node(s): $SLURM_NODELIST"
 
-python /home/sc.uni-leipzig.de/ze43enib/Peritoneum/hsi-experiments/cross_validators/cross_validation_parallel_steps.py --model_name=$1 --all_patients=$2 --leave_out_names=$3
+python /home/sc.uni-leipzig.de/ze43enib/Peritoneum/hsi-experiments/cross_validators/parallel_CV_step.py --CV_folder=$1 --CV_step_name=$2
+#--all_patients=$2 --leave_out_names=$3
 
 conda deactivate
 

@@ -1,12 +1,14 @@
 import os
-import datetime
+# import datetime
 
-import numpy as np
-import csv
+# import numpy as np
+# import csv
 
 import pickle
 from cross_validators.cross_validator_base import CrossValidatorBase
-from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK
+
+
+# from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK
 
 
 class ConfigWrapper:
@@ -22,7 +24,7 @@ class CrossValidatorBaseParallel(CrossValidatorBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def cross_validation(self, csv_filename=None):
+    '''def cross_validation(self, csv_filename=None):
         name = self.config.CONFIG_CV[CVK.NAME]
         self.config.CONFIG_PATHS[PK.LOGS_FOLDER].append(name)
 
@@ -34,12 +36,7 @@ class CrossValidatorBaseParallel(CrossValidatorBase):
 
         paths, splits = self._get_paths_and_splits()
 
-        date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
-
-        if csv_filename is None:
-            csv_filename = os.path.join(root_folder, name + "_stats" + date_ + ".csv")
-        else:
-            csv_filename = os.path.join(root_folder, csv_filename)
+        csv_file = CrossValidatorBase.compose_csv_filename(csv_filename, log_dir, name)
 
         for indexes in splits[self.config.CONFIG_CV[CVK.FIRST_SPLIT]:]:
             model_name = path_template
@@ -58,36 +55,38 @@ class CrossValidatorBaseParallel(CrossValidatorBase):
                       f"So we skip this patient(s)!")
                 continue
 
-            # all_patients = [self.data_storage.get_name(path=p) for p in paths]
-            # self.cross_validation_step(model_name=model_name, all_patients=all_patients, leave_out_names=[self.data_storage.get_name(p) for p in leave_out_paths])
+            # all_patients = [self.data_storage.get_name(path=p) for p in paths] # self.cross_validation_step(
+            model_name=model_name, all_patients=all_patients, leave_out_names=[self.data_storage.get_name(p) for p in 
+            leave_out_paths]) 
 
-            all_patients = '+'.join([self.data_storage.get_name(path=p) for p in paths])
-            leave_out_names = '+'.join([self.data_storage.get_name(p) for p in leave_out_paths])
 
-            config_wrapper = ConfigWrapper(self.config)
-            CV_config_filename = os.path.join(model_name, 'cross_validation_config.pkl')
-            with open(CV_config_filename, 'wb') as file:
-                pickle.dump(config_wrapper, file)
 
-            CV_data_storage_filename = os.path.join(model_name, 'cross_validation_data_storage.pkl')
-            with open(CV_data_storage_filename, 'wb') as file:
-                pickle.dump(self.data_storage, file)
+            self.write_rows_to_csv(leave_out_paths, csv_file, log_dir, CV_step_folder)'''
 
-            stream = os.popen(
-                f"bash $HOME/Peritoneum/hsi-experiments/scripts/start_cv_step.sh {model_name} {all_patients} {leave_out_names}")
+    def cross_validation_step(self, trainer, dataset_paths, CV_step_name, CV_step_split):
+        # all_patients = '+'.join([self.data_storage.get_name(path=p) for p in CV_step_split.all_patients])
+        # test_patients = '+'.join([self.data_storage.get_name(p) for p in CV_step_split.TEST_NAMES])
 
-            output = stream.read()
-            print('Prompt output:', output)
+        self.save_configurations(CV_step_name, CV_step_split)
 
-            for i, path_ in enumerate(leave_out_paths):
-                sensitivity, specificity = 0, 0
-                with open(csv_filename, 'a', newline='') as csvfile:  # for full cross_valid and for separate file
-                    fieldnames = ['time', 'index', 'sensitivity', 'specificity', 'name', 'model_name']
-                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        stream = os.popen(
+            f"bash $HOME/Peritoneum/hsi-experiments/scripts/start_parallel_cv_step.sh {trainer.log_dir} {CV_step_name}")
+        # {all_patients} "
+        # f"{test_patients}")
 
-                    writer.writerow({'time': datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
-                                     'index': str(i),
-                                     'sensitivity': str(sensitivity),
-                                     'specificity': str(specificity),
-                                     'name': path_,
-                                     'model_name': model_name})
+        output = stream.read()
+        print('Prompt output:', output)
+
+    def save_configurations(self, CV_step_folder, CV_step_split):
+        config_wrapper = ConfigWrapper(self.config)
+        CV_config_filename = os.path.join(CV_step_folder, 'CV_config.pkl')
+        with open(CV_config_filename, 'wb') as file:
+            pickle.dump(config_wrapper, file)
+
+        CV_data_storage_filename = os.path.join(CV_step_folder, 'CV_data_storage.pkl')
+        with open(CV_data_storage_filename, 'wb') as file:
+            pickle.dump(self.data_storage, file)
+
+        CV_step_split_filename = os.path.join(CV_step_folder, 'CV_step_split.pkl')
+        with open(CV_step_split_filename, 'wb') as file:
+            pickle.dump(CV_step_split, file)
