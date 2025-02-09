@@ -9,7 +9,6 @@ import csv
 from util import utils
 from util.compare_distributions import DistributionsChecker
 import provider
-import pickle
 
 from data_utils.paths import get_sort, get_splits
 from trainers import ExcludedPatients, TrainerInterface
@@ -17,16 +16,6 @@ from trainers import ExcludedPatients, TrainerInterface
 from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, \
     PreprocessorKeys as PPK, TrainerKeys as TK
 from configuration.parameter import (STORAGE_TYPE, )
-from configuration.logview import logview
-
-
-class ConfigWrapper:
-    def __init__(self, config_module):
-        self.CONFIG_CV = config_module.CONFIG_CV
-        self.CONFIG_DATALOADER = config_module.CONFIG_DATALOADER
-        self.CONFIG_PATHS = config_module.CONFIG_PATHS
-        self.CONFIG_TRAINER = config_module.CONFIG_TRAINER
-        self.CONFIG_PREPROCESSOR = config_module.CONFIG_PREPROCESSOR
 
 
 class CrossValidatorBase:
@@ -55,8 +44,8 @@ class CrossValidatorBase:
         if execution_flags[CVK.EF_EVALUATION]:
             self.evaluation(**kwargs)
 
-        # self.config.telegram.send_tg_message(f'Operations in cross_validation.py for {self.config.CONFIG_CV[CVK.NAME]} '
-        #                                     f'are successfully completed!')
+        # self.config.telegram.send_tg_message(f'Operations in cross_validation.py for {self.config.CONFIG_CV[
+        # CVK.NAME]} are successfully completed!')
 
     def evaluation(self, save_predictions=True, **kwargs):
         evaluator = provider.get_evaluation(config=self.config,
@@ -81,88 +70,92 @@ class CrossValidatorBase:
                       step_name=train_step_name,
                       batch_path=os.path.join(self.config.CONFIG_PATHS[PK.BATCHED_PATH], train_step_name))
 
+    def tune_first(self, dataset_paths, trainer, all_patients_names):
+        print("--- Searching for representative smaller dataset ---")
+        dc = DistributionsChecker(paths=dataset_paths,
+                                  dataset=trainer.dataset,
+                                  local_config=self.config.CONFIG_DISTRIBUTION)
+        tuning_index = dc.get_small_database_for_tuning()
+
+        if self.config.CONFIG_TRAINER[TK.TYPE] == "Tuner":
+            trainer.search_for_hyper_parameter(tuning_data_paths=[dataset_paths[tuning_index]],
+                                               patient_names=all_patients_names)
+
+        if self.config.CONFIG_TRAINER[TK.USE_SMALLER_DATASET]:
+            dataset_paths = [dataset_paths[tuning_index]]
+
     def cross_validation(self, csv_filename=None):
-        root_folder = str(os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER]))
-        print(f'Root Folder = {root_folder}')
-        if not os.path.exists(root_folder):
-            os.makedirs(root_folder)
-
+        root_folder = self.create_root_folder()
         paths, splits = self._get_paths_and_splits()
-
         name = self.config.CONFIG_CV[CVK.NAME]
         log_dir = os.path.join(root_folder, name)
         all_patients_names = [self.data_storage.get_name(path=p) for p in paths]
-        print(f'*******all pat name = {all_patients_names}')
-        print(f'************* {self.config.CONFIG_TRAINER[TK.TYPE]}')
+
         trainer = provider.get_trainer(typ=self.config.CONFIG_TRAINER[TK.TYPE],
                                        config=self.config,
                                        data_storage=self.data_storage,
                                        log_dir=log_dir)
-        cv_step_names = ExcludedPatients(data_storage=self.data_storage,
-                                         config=self.config,
-                                         log_dir=log_dir,
-                                         all_patients=all_patients_names)
-        print(f'CV step names = {cv_step_names}')
-        print(f'Trainer = {trainer}')
+        excluded_patients = ExcludedPatients(data_storage=self.data_storage,
+                                             config=self.config,
+                                             log_dir=log_dir,
+                                             all_patients=all_patients_names)
         dataset_paths = trainer.get_dataset_paths()
-        print(f'Dataset paths= {dataset_paths}')
+
         if self.config.CONFIG_TRAINER[TK.TYPE] == "Tuner" or self.config.CONFIG_TRAINER[TK.USE_SMALLER_DATASET]:
-            print("--- Searching for representative smaller dataset ---")
-            dc = DistributionsChecker(paths=dataset_paths,
-                                      dataset=trainer.dataset,
-                                      local_config=self.config.CONFIG_DISTRIBUTION)
-            tuning_index = dc.get_small_database_for_tuning()
+            self.tune_first(dataset_paths, trainer, all_patients_names)
 
-            if self.config.CONFIG_TRAINER[TK.TYPE] == "Tuner":
-                trainer.search_for_hyper_parameter(tuning_data_paths=[dataset_paths[tuning_index]],
-                                                   patient_names=all_patients_names)
-
-            if self.config.CONFIG_TRAINER[TK.USE_SMALLER_DATASET]:
-                dataset_paths = [dataset_paths[tuning_index]]
-
-        date_ = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
-
-        if csv_filename is None:
-            csv_file = os.path.join(log_dir, name + "_stats" + date_ + ".csv")
-        else:
-            csv_file = os.path.join(log_dir, csv_filename)
+        csv_file = CrossValidatorBase.compose_csv_filename(csv_filename, log_dir, name)
 
         for indexes in splits[self.config.CONFIG_CV[CVK.FIRST_SPLIT]:]:
-            train_step_name = "step"
-            if len(indexes) > 1:
-                for i in indexes:
-                    train_step_name += "_" + str(i)
-            else:
-                train_step_name += "_" + str(indexes[0]) + "_" + self.data_storage.get_name(np.array(paths)[indexes][0])
+            CV_step_folder = self.concatenate_CV_step_folder(indexes, paths)
 
             leave_out_paths = np.array(paths)[indexes]
-            print(leave_out_paths)
 
             if self.__check_data_label__(leave_out_paths):
-                print(f"The patient file(s) '{', '.join(leave_out_paths)}' are not needed labels for training! "
-                      f"So we skip this patient(s)!")
+                print(f"The patient file(s) '{', '.join(leave_out_paths)}' doesn't contain all needed classes for "
+                      f"training! So we skip this patient(s)!")
                 continue
 
-            cv_step_names.set_names(leave_out_names=[self.data_storage.get_name(p) for p in leave_out_paths],
-                                    train_step_name=train_step_name)
+            excluded_patients.set_names(leave_out_names=[self.data_storage.get_name(p) for p in leave_out_paths],
+                                        train_step_name=CV_step_folder)
             self.cross_validation_step(trainer=trainer,
                                        dataset_paths=dataset_paths,
-                                       train_step_name=train_step_name,
-                                       cv_step_names=cv_step_names)
+                                       train_step_name=CV_step_folder,
+                                       cv_step_names=excluded_patients)
 
-            for i, path_ in enumerate(leave_out_paths):
-                sensitivity, specificity = 0, 0
-                print(f'Leave Out Paths = {leave_out_paths}')
-                with open(csv_file, 'a', newline='') as csvfile:  # for full cross_valid and for separate file
-                    fieldnames = ['time', 'index', 'sensitivity', 'specificity', 'name', 'model_name']
-                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            for index, path in enumerate(leave_out_paths):
+                self.write_row_to_csv(leave_out_paths, csv_file, index, path, log_dir, CV_step_folder)
 
-                    writer.writerow({'time': datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
-                                     'index': str(i),
-                                     'sensitivity': str(sensitivity),
-                                     'specificity': str(specificity),
-                                     'name': path_,
-                                     'model_name': os.path.join(log_dir, train_step_name)})
+    def create_root_folder(self):
+        root_folder = str(os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER]))
+        print(f'Root Folder = {root_folder}')
+        if not os.path.exists(root_folder):
+            os.makedirs(root_folder)
+        return root_folder
+
+    def write_row_to_csv(self, leave_out_paths, csv_file, index, path, log_dir, train_step_name):
+        sensitivity, specificity = 0, 0
+        print(f'Leave Out Paths = {leave_out_paths}')
+        with open(csv_file, 'a', newline='') as csvfile:  # for full cross_valid and for separate file
+            fieldnames = ['time', 'index', 'sensitivity', 'specificity', 'name', 'model_name']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+            writer.writerow({'time': datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+                             'index': str(index),
+                             'sensitivity': str(sensitivity),
+                             'specificity': str(specificity),
+                             'name': path,
+                             'model_name': os.path.join(log_dir, train_step_name)})
+
+    def concatenate_CV_step_folder(self, indexes, paths):
+        train_step_name = "step"
+        if len(indexes) > 1:
+            for i in indexes:
+                train_step_name += "_" + str(i)
+        else:
+            train_step_name += "_" + str(indexes[0]) + "_" + self.data_storage.get_name(np.array(paths)[indexes][0])
+
+        return train_step_name
 
     def _get_paths_and_splits(self, root_path=None):
         if root_path is None:
@@ -226,3 +219,13 @@ class CrossValidatorBase:
         if len(history.shape) == 0:
             history = history.item()
         return history, history_path
+
+    @staticmethod
+    def compose_csv_filename(csv_filename, log_dir, name):
+        date = datetime.datetime.now().strftime("_%d.%m.%Y-%H_%M_%S")
+
+        if csv_filename is None:
+            csv_file = os.path.join(log_dir, name + "_stats" + date + ".csv")
+        else:
+            csv_file = os.path.join(log_dir, csv_filename)
+        return csv_file
