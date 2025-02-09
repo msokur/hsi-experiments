@@ -8,7 +8,7 @@ import pickle
 
 from data_utils.dataset.meta_files import get_class_weights_from_meta
 from provider import get_dataset
-from .utils import get_callbacks, ExcludedPatients
+from .utils import get_callbacks, CV_StepSplit
 
 from data_utils.data_storage import DataStorage
 from configuration.copy_py_files import copy_files
@@ -55,16 +55,16 @@ class TrainerInterface:
             self.config.telegram.send_tg_message(f'ERROR!!!, training {self.log_dir} has finished with error {e}')
             raise e  # TODO REMOVE!!
 
-    def train(self, dataset_paths: list[str], train_step_names: ExcludedPatients, step_name: str, batch_path: str):
+    def train(self, dataset_paths: list[str], cv_step_split: CV_StepSplit, step_name: str, batch_path: str):
         train_step_dir = os.path.join(self.log_dir, step_name)
 
         self.logging_and_copying(store_dir=train_step_dir)
 
-        self.save_except_names(store_dir=train_step_dir,
-                               except_names=train_step_names.VALID_NAMES)
+        self.save_validation_names(store_dir=train_step_dir,
+                                   validation_patients=cv_step_split.VALID_NAMES)
 
         datasets_and_class_weights = self.get_datasets(dataset_paths=dataset_paths,
-                                                       train_step_names=train_step_names,
+                                                       cv_step_split=cv_step_split,
                                                        batch_path=batch_path)
         try:
             model, history = self.train_process(train_log_dir=train_step_dir,
@@ -104,21 +104,21 @@ class TrainerInterface:
     def train_process(self, train_log_dir: str, datasets: tuple, class_weights: Dict[int, float], batch_path: str):
         pass
 
-    def get_datasets(self, dataset_paths: list[str], train_step_names: ExcludedPatients, batch_path: str):
+    def get_datasets(self, dataset_paths: list[str], cv_step_split: CV_StepSplit, batch_path: str):
         train_ds, valid_ds = self.dataset.get_datasets(dataset_paths=dataset_paths,
-                                                       train_names=train_step_names.TRAIN_NAMES,
-                                                       valid_names=train_step_names.VALID_NAMES,
+                                                       train_names=cv_step_split.TRAIN_NAMES,
+                                                       valid_names=cv_step_split.VALID_NAMES,
                                                        labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
                                                        batch_path=batch_path)
 
-        class_weights = self.get_class_weights(train_names=train_step_names.TRAIN_NAMES,
+        class_weights = self.get_class_weights(train_names=cv_step_split.TRAIN_NAMES,
                                                dataset_paths=dataset_paths)
         return train_ds, valid_ds, class_weights
 
     @staticmethod
-    def save_except_names(store_dir: str, except_names: List[str]):
+    def save_validation_names(store_dir: str, validation_patients: List[str]):
         with open(os.path.join(store_dir, FILE_WITH_VALID_NAME), "wb") as f:
-            pickle.dump(except_names, f, pickle.HIGHEST_PROTOCOL)
+            pickle.dump(validation_patients, f, pickle.HIGHEST_PROTOCOL)
 
     def get_class_weights(self, train_names: list[str], dataset_paths: list[str]):
         class_weights = None
