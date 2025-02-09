@@ -84,7 +84,7 @@ class CrossValidatorBase:
         csv_file = CrossValidatorBase.compose_csv_filename(csv_filename, log_dir, name)
 
         for indexes in splits[self.config.CONFIG_CV[CVK.FIRST_SPLIT]:]:
-            CV_step_folder = self.concatenate_CV_step_folder(indexes, paths)
+            CV_step_name = self.concatenate_CV_step_name(indexes, paths)
 
             leave_out_paths = np.array(paths)[indexes]
 
@@ -94,22 +94,24 @@ class CrossValidatorBase:
                 continue
 
             cv_step_split.set_names(leave_out_names=[self.data_storage.get_name(p) for p in leave_out_paths],
-                                    CV_step_folder=CV_step_folder)
+                                    CV_step_name=CV_step_name)
             self.cross_validation_step(trainer=trainer,
                                        dataset_paths=dataset_paths,
-                                       CV_step_folder=CV_step_folder,
+                                       CV_step_name=CV_step_name,
                                        CV_step_split=cv_step_split)
 
-            self.write_rows_to_csv(leave_out_paths, csv_file, log_dir, CV_step_folder)
+            self.write_rows_to_csv(leave_out_paths, csv_file, log_dir, CV_step_name)
 
-    def cross_validation_step(self, trainer: TrainerInterface, dataset_paths: List[str], CV_step_folder: str,
+    def cross_validation_step(self, trainer: TrainerInterface,
+                              dataset_paths: List[str],
+                              CV_step_name: str,
                               CV_step_split: CV_StepSplit):
         CV_step_split.print_names()
         print('dataset paths -', dataset_paths)
         trainer.train(dataset_paths=dataset_paths,
                       cv_step_split=CV_step_split,
-                      step_name=CV_step_folder,
-                      batch_path=os.path.join(self.config.CONFIG_PATHS[PK.BATCHED_PATH], CV_step_folder))
+                      step_name=CV_step_name,
+                      batch_path=os.path.join(self.config.CONFIG_PATHS[PK.BATCHED_PATH], CV_step_name))
 
     def tune_first(self, dataset_paths, trainer, all_patients_names):
         print("--- Searching for representative smaller dataset ---")
@@ -149,15 +151,15 @@ class CrossValidatorBase:
                                  'name': path,
                                  'model_name': os.path.join(log_dir, train_step_name)})
 
-    def concatenate_CV_step_folder(self, indexes, paths):
-        train_step_name = "step"
+    def concatenate_CV_step_name(self, indexes, paths):
+        CV_step_name = "step"
         if len(indexes) > 1:
             for i in indexes:
-                train_step_name += "_" + str(i)
+                CV_step_name += "_" + str(i)
         else:
-            train_step_name += "_" + str(indexes[0]) + "_" + self.data_storage.get_name(np.array(paths)[indexes][0])
+            CV_step_name += "_" + str(indexes[0]) + "_" + self.data_storage.get_name(np.array(paths)[indexes][0])
 
-        return train_step_name
+        return CV_step_name
 
     def _get_paths_and_splits(self, root_path=None):
         if root_path is None:

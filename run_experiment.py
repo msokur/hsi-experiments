@@ -114,7 +114,7 @@ class Experiment:
 
         parallel = ''
         if PARALLEL:
-            parallel = '_parallel'
+            parallel = '_meta_parallel'
 
         execution = f'bash /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/scripts/start_cv{parallel}.sh {self.root_folder} {self.name + "_" + short_name} {short_name} {i} {self.experiment_results_root_folder} {self.name}'
 

@@ -21,12 +21,12 @@ class CV_StepSplit:
         self.TRAIN_NAMES = None
         self.VALID_NAMES = None
 
-    def set_names(self, leave_out_names: List[str], CV_step_folder: str):
+    def set_names(self, leave_out_names: List[str], CV_step_name: str):
         self.TEST_NAMES = leave_out_names
         choice_names = ChoiceNames(data_storage=self.data_storage, config_cv=self.config.CONFIG_CV,
                                    labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN],
                                    y_dict_name=self.config.CONFIG_PREPROCESSOR[PPK.DICT_NAMES][1],
-                                   log_dir=os.path.join(self.log_dir, CV_step_folder))
+                                   log_dir=os.path.join(self.log_dir, CV_step_name))
 
         self.VALID_NAMES = choice_names.get_valid_except_names(raw_path=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
                                                                except_names=self.TEST_NAMES)
