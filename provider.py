@@ -149,7 +149,7 @@ def get_pixel_detection(typ: str):
 
 def get_cross_validator(typ: str, config, *args, **kwargs):
     from cross_validators.cross_validator_base import CrossValidatorBase
-    from cross_validators.cross_validator_base_parallel import CrossValidatorBaseParallel
+    from cross_validators.parallel_cross_validator_base import CrossValidatorBaseParallel
     from cross_validators.cross_validator_postprocessing import CrossValidatorPostProcessing
 
     if typ == "normal":
