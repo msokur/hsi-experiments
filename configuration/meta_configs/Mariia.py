@@ -18,6 +18,7 @@ cv_section = "CV_COLON"
 
 # --- Trainer configuration ---
 trainer_config_file = "Trainers.json"
+#trainer_section = "BASE_BINARY_TUNER"
 trainer_section = "INCEPTION_BINARY"
 
 # --- Distribution checking configuration ---

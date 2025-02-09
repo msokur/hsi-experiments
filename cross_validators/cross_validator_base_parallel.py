@@ -1,21 +1,12 @@
 import os
-from glob import glob
 import datetime
-from typing import List
 
 import numpy as np
 import csv
 
-from util import utils
-import provider
 import pickle
 from cross_validators.cross_validator_base import CrossValidatorBase
-
-from data_utils.paths import get_sort, get_splits
-from data_utils.dataset.choice_names import ChoiceNames
-from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK, DataLoaderKeys as DLK, \
-    PreprocessorKeys as PPK, TrainerKeys as TK
-from configuration.parameter import (STORAGE_TYPE,)
+from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK
 
 
 class ConfigWrapper:
@@ -27,12 +18,9 @@ class ConfigWrapper:
         self.CONFIG_PREPROCESSOR = config_module.CONFIG_PREPROCESSOR
 
 
-
 class CrossValidatorBaseParallel(CrossValidatorBase):
-    def __init__(self, config):
-        self.config = config
-        self.data_storage = provider.get_data_storage(typ=STORAGE_TYPE)
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def cross_validation(self, csv_filename=None):
         name = self.config.CONFIG_CV[CVK.NAME]
@@ -41,7 +29,6 @@ class CrossValidatorBaseParallel(CrossValidatorBase):
         root_folder = os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER])
         path_template = os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER], 'step')
 
-        print("190021" + str(root_folder))
         if not os.path.exists(root_folder):
             os.makedirs(root_folder)
 
@@ -71,8 +58,8 @@ class CrossValidatorBaseParallel(CrossValidatorBase):
                       f"So we skip this patient(s)!")
                 continue
 
-            #all_patients = [self.data_storage.get_name(path=p) for p in paths]
-            #self.cross_validation_step(model_name=model_name, all_patients=all_patients, leave_out_names=[self.data_storage.get_name(p) for p in leave_out_paths])
+            # all_patients = [self.data_storage.get_name(path=p) for p in paths]
+            # self.cross_validation_step(model_name=model_name, all_patients=all_patients, leave_out_names=[self.data_storage.get_name(p) for p in leave_out_paths])
 
             all_patients = '+'.join([self.data_storage.get_name(path=p) for p in paths])
             leave_out_names = '+'.join([self.data_storage.get_name(p) for p in leave_out_paths])
@@ -92,7 +79,6 @@ class CrossValidatorBaseParallel(CrossValidatorBase):
             output = stream.read()
             print('Prompt output:', output)
 
-
             for i, path_ in enumerate(leave_out_paths):
                 sensitivity, specificity = 0, 0
                 with open(csv_filename, 'a', newline='') as csvfile:  # for full cross_valid and for separate file
@@ -105,4 +91,3 @@ class CrossValidatorBaseParallel(CrossValidatorBase):
                                      'specificity': str(specificity),
                                      'name': path_,
                                      'model_name': model_name})
-

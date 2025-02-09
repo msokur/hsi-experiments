@@ -9,7 +9,7 @@
     "CHOOSE_EXCLUDED_VALID": "randomly",
     "USE_ALL_LABELS": false,
     "SAVE_CURVES": false,
-    "MODE": "DEBUG"
+    "MODE": "RUN"
   },
   "CV_HNO_NORMAL": {
     "TYPE": "normal",
