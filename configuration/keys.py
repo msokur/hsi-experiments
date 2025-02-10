@@ -117,6 +117,7 @@ class TrainerKeys:
     TUNER_PARAMS = "TUNER_PARAMS"
     TUNER_OPTIMIZER = "OPTIMIZER"
     TUNER_ACTIVATION = "ACTIVATION"
+    SEARCH = "SEARCH"
 
 
 class ModelKeys:

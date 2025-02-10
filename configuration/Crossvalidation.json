@@ -54,7 +54,7 @@
   },
     "CV_COLON": {
     "TYPE": "normal",
-    "NAME": "experiment",
+    "NAME": "keras_tuner",
     "RESTORE_VALID_PATIENTS_FOLDER": "/work/mi186veva-logs/ExperimentALLHowManyValidPatExclude/ExperimentALLHowManyValidPatExclude_WF_C3_/",
     "GET_CHECKPOINT_FROM_EARLYSTOPPING": true,
       "SPLIT_PATHS_BY": "Files",

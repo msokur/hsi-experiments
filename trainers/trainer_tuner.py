@@ -29,17 +29,16 @@ class TrainerTuner(TrainerInterface):
         self.base_model = None
         self.best_hp = None
         self.best_model = None
+        self.base_model, self.tuner = self.get_tuner(mirrored_strategy=self.mirrored_strategy)
 
     def search_for_hyper_parameter(self, tuning_data_paths: List[str], patient_names: List[str]):
-        self.base_model, tuner = self.get_tuner(mirrored_strategy=self.mirrored_strategy)
-        self.best_hp, self.best_model = self.search(tuner=tuner,
-                                                    tuning_data_paths=tuning_data_paths,
-                                                    patient_names=patient_names)
+        if self.config.CONFIG_TRAINER[TK.SEARCH]:
+            self.best_hp, self.best_model = self.search(tuner=self.tuner,
+                                                        tuning_data_paths=tuning_data_paths,
+                                                        patient_names=patient_names)
 
     def train_process(self, train_log_dir: str, datasets: tuple, class_weights: Dict[int, float], batch_path: str):
-        # -------TRAINING---------
-        if not self.base_model or not self.best_hp or not self.best_model:
-            raise TypeError("Execute 'search_for_hyper_parameter' before hyper model training!")
+        self.check_tuner()
 
         history = self.base_model.fit(hp=self.best_hp,
                                       model=self.best_model,
@@ -55,20 +54,45 @@ class TrainerTuner(TrainerInterface):
 
         return self.best_model, history
 
-    def restore_tuner(self, directory=''):
-        if directory == '':
-            directory = self.tuner_dir
+    def check_tuner(self):
+        if not self.base_model or not self.best_hp or not self.best_model:
+            if self.config.CONFIG_TRAINER[TK.RESTORE]:
+                raise TypeError("Your RESTORE parameter in Trainer.json configuration is set to True, but there is no "
+                                "saved tuner trials to restore. "
+                                "Set SEARCH in Trainer.json to True to tune something first.")
+            raise TypeError("Both you SEARCH and RESTORE parameters in Trainer.json configuration are set to False: "
+                            "neither saved tuner could be loaded, not a new search could be started. "
+                            "Change these parameters accordingly")
 
-        with open(os.path.join(directory, "model.pickle"), "rb") as handle:
-            model = pickle.load(handle)
+    def restore_tuner(self):
+        is_restoration_successful = False
+        if not os.path.exists(os.path.join(self.tuner_dir,
+                                           self.config.CONFIG_TRAINER[TK.TUNER_PARAMS]['project_name'],
+                                           'oracle.json')):
+            return *self.initialize_new_tuner(), is_restoration_successful
 
-        with open(os.path.join(directory, "params.pickle"), "rb") as handle:
-            params = pickle.load(handle)
+        try:
+            with open(os.path.join(self.tuner_dir, "model.pickle"), "rb") as handle:
+                model = pickle.load(handle)
 
-        # params["objective"] = kt.Objective(**params["objective"])
-        params["overwrite"] = False  # important, otherwise results could be overwritten and restoring will not work
+            with open(os.path.join(self.tuner_dir, "params.pickle"), "rb") as handle:
+                params = pickle.load(handle)
 
-        return model, params
+            params["overwrite"] = False  # important, otherwise results could be overwritten and restoring will not work
+
+            # rewrite tuner parameters in case they were changed (this will give the opportunity to change max_trials
+            # etc. before restoring
+            tuner_params = self.config.CONFIG_TRAINER[TK.TUNER_PARAMS]
+            for name in ["max_consecutive_failed_trials", 'max_trials']:
+                params[name] = tuner_params[name]
+            params["objective"] = kt.Objective(**tuner_params["objective"])
+
+            is_restoration_successful = True
+        except FileNotFoundError as e:
+            print("!WARNING! No tuner was found for restoring! New one will be initialized!")
+            model, params = self.initialize_new_tuner()
+
+        return model, params, is_restoration_successful
 
     @staticmethod
     def save_tuner_params(model, **kwargs):
@@ -89,8 +113,7 @@ class TrainerTuner(TrainerInterface):
 
         return params_obj
 
-    def search(self, tuner: kt.Tuner, tuning_data_paths: List[str], patient_names: List[str]) \
-            -> tuple[kt.HyperParameters, keras.Model]:
+    def search(self, tuner, tuning_data_paths, patient_names):
         print("---- Get tuning datasets ----")
         tune_batch_path = os.path.join(self.config.CONFIG_PATHS[PK.BATCHED_PATH], TUNE)
         if not os.path.exists(tune_batch_path):
@@ -126,21 +149,31 @@ class TrainerTuner(TrainerInterface):
 
         return best_hp, best_model
 
-    def get_tuner(self, mirrored_strategy=None) -> tuple[kt.HyperModel, kt.Tuner]:
+    def get_tuner(self, mirrored_strategy=None):
         if self.config.CONFIG_TRAINER[TK.RESTORE]:
-            base_model, params = self.restore_tuner()
+            base_model, params, successful_restoration = self.restore_tuner()
         else:
-            base_model = self.get_model()
-            params = self.get_params()
-            TrainerTuner.save_tuner_params(base_model, **params)
+            base_model, params = self.initialize_new_tuner()
+
         tuner = self.config.CONFIG_TRAINER[TK.TUNER](base_model, **params, distribution_strategy=mirrored_strategy)
 
-        if self.config.CONFIG_TRAINER[TK.RESTORE]:
+        if self.config.CONFIG_TRAINER[TK.RESTORE] and successful_restoration:
             # in case of restoration model is not initialized and seed is not set, that's why error is thrown
             set_tf_seed()
             tuner.reload()
+            self.best_hp = tuner.get_best_hyperparameters()[0]
+            self.best_model = tuner.get_best_models()[0]
+
+        if tuner.remaining_trials < 0:
+            self.config.CONFIG_TRAINER[TK.SEARCH] = False
 
         return base_model, tuner
+
+    def initialize_new_tuner(self):
+        base_model = self.get_model()
+        params = self.get_params()
+
+        return base_model, params
 
     def get_model(self) -> kt.HyperModel:
         base_model = self.config.CONFIG_TRAINER[TK.MODEL](

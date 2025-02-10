@@ -66,6 +66,7 @@ class CrossValidatorBase:
         paths, splits = self._get_paths_and_splits()
         name = self.config.CONFIG_CV[CVK.NAME]
         log_dir = os.path.join(root_folder, name)
+        print(f'Log Folder = {log_dir}')
         all_patients_names = [self.data_storage.get_name(path=p) for p in paths]
 
         trainer = provider.get_trainer(typ=self.config.CONFIG_TRAINER[TK.TYPE],
@@ -114,24 +115,25 @@ class CrossValidatorBase:
                       batch_path=os.path.join(self.config.CONFIG_PATHS[PK.BATCHED_PATH], CV_step_name))
 
     def tune_first(self, dataset_paths, trainer, all_patients_names):
-        print("--- Searching for representative smaller dataset ---")
-        dc = DistributionsChecker(paths=dataset_paths,
-                                  dataset=trainer.dataset,
-                                  local_config=self.config.CONFIG_DISTRIBUTION)
-        tuning_index = dc.get_small_database_for_tuning()
+        use_smaller_dataset = self.config.CONFIG_TRAINER[TK.USE_SMALLER_DATASET]
+        trainer_type = self.config.CONFIG_TRAINER[TK.TYPE]
+
+        if use_smaller_dataset or (trainer_type == "Tuner" and self.config.CONFIG_TRAINER[TK.SEARCH]):
+            print("--- Searching for representative smaller dataset ---")
+            dc = DistributionsChecker(paths=dataset_paths,
+                                      dataset=trainer.dataset,
+                                      local_config=self.config.CONFIG_DISTRIBUTION)
+            representative_dataset_index = dc.get_small_database_for_tuning()
+            dataset_paths = [dataset_paths[representative_dataset_index]]
 
         if self.config.CONFIG_TRAINER[TK.TYPE] == "Tuner":
-            trainer.search_for_hyper_parameter(tuning_data_paths=[dataset_paths[tuning_index]],
+            trainer.search_for_hyper_parameter(tuning_data_paths=dataset_paths,
                                                patient_names=all_patients_names)
-
-        if self.config.CONFIG_TRAINER[TK.USE_SMALLER_DATASET]:
-            dataset_paths = [dataset_paths[tuning_index]]
 
         return dataset_paths
 
     def create_root_folder(self):
         root_folder = str(os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER]))
-        print(f'Root Folder = {root_folder}')
         if not os.path.exists(root_folder):
             os.makedirs(root_folder)
         return root_folder

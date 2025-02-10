@@ -94,11 +94,10 @@ class TrainerInterface:
         return model, history
 
     def logging_and_copying(self, store_dir: str):
-        if not self.config.CONFIG_TRAINER[TK.RESTORE]:
-            if not os.path.exists(store_dir):
-                os.mkdir(store_dir)
+        if not os.path.exists(store_dir):
+            os.mkdir(store_dir)
 
-            copy_files(store_dir, self.config.CONFIG_TRAINER["FILES_TO_COPY"])
+        copy_files(store_dir, self.config.CONFIG_TRAINER["FILES_TO_COPY"])
 
     @abc.abstractmethod
     def train_process(self, train_log_dir: str, datasets: tuple, class_weights: Dict[int, float], batch_path: str):
