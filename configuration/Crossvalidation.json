@@ -53,8 +53,8 @@
     "HOW_MANY_PATIENTS_EXCLUDE_FOR_TEST": 1
   },
     "CV_COLON": {
-    "TYPE": "normal",
-    "NAME": "keras_tuner",
+    "TYPE": "parallel",
+    "NAME": "test_parallel_CV",
     "RESTORE_VALID_PATIENTS_FOLDER": "/work/mi186veva-logs/ExperimentALLHowManyValidPatExclude/ExperimentALLHowManyValidPatExclude_WF_C3_/",
     "GET_CHECKPOINT_FROM_EARLYSTOPPING": true,
       "SPLIT_PATHS_BY": "Files",

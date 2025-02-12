@@ -48,7 +48,9 @@ def start_pool_processing(map_func, parallel_args: list, is_on_cluster: bool, fi
     if fix_args is not None:
         map_func = partial(map_func,
                            *fix_args)
-
+    if cpus == 0:
+        print('WARNING! 0 processes were calculated as needed, probably it means that there is no data, probably paths in '
+              'Paths.json are configured wrong')
     with mp.Pool(processes=cpus) as pool:
         result = pool.starmap(map_func,
                               parallel_args)

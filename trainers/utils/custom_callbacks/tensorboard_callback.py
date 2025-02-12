@@ -6,7 +6,7 @@ import numpy as np
 import os
 import glob
 import datetime
-from sklearn import preprocessing
+
 
 
 # @tf.function(experimental_relax_shapes=True)
@@ -30,6 +30,7 @@ class TensorboardCallback(tf.keras.callbacks.TensorBoard):
         # indexes = np.array(indexes)
 
         # scaler = data_loader.restore_scaler(self.log_dir) #TODO return normal scaling
+        from sklearn import preprocessing
         self.scaler = preprocessing.Normalizer()
         # spectrum = spectrum_data[indexes[:, 0], indexes[:, 1]]
         # spectrum = self.scaler.transform(spectrum_data[indexes[:, 0], indexes[:, 1]])

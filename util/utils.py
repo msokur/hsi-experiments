@@ -47,7 +47,7 @@ class Telegram:
             file_dir, file_name = os.path.split(self.tg_config[TGK.FILE])
             warnings.warn(f"The Telegram config file '{file_name}' does not exist.\n"
                           f"Make sure there the file exist in the directory '{file_dir}'.\n"
-                          f"Telegram is now disable and will not send any messages.")
+                          f"Telegram is now disabled and will not send any messages.")
 
 
 def glob_multiple_file_types(path, *patterns):

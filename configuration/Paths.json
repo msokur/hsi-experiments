@@ -18,7 +18,7 @@
   },
   "Cluster_Mariia": {
     "MODE": "WITH_GPU",
-    "DATABASE_ROOT_FOLDER": "/work/mi186veva-MySpace/",
+    "DATABASE_ROOT_FOLDER": "/work/mi186veva-data/",
     "LOGS_FOLDER": ["/work/mi186veva-logs/"],
     "RESULTS_FOLDER": "/work/mi186veva-results/"
   },
@@ -195,7 +195,7 @@
     }, 
 "COLON_SERVER": {
     "1.CONCAT_WITH_DATABASE_ROOT_FOLDER": {
-      "RAW_NPZ_PATH": ["WHOLE_MainExperiment_7_smoothing_2d", "run"],
+      "RAW_NPZ_PATH": ["test_parallel_CV"],
       "RAW_SOURCE_PATH": ["data_dat"]
     },
     "2.CONCAT_WITH_RAW_NPZ_PATH": {
