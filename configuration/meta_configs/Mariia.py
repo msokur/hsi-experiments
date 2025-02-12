@@ -6,7 +6,7 @@ loader_section = "COLON"
 path_config_file = "Paths.json"
 system_section_cluster = "Cluster_Mariia"
 system_section_local = "Win_Mariia"
-database_section = "COLON"
+database_section = "COLON_SERVER"
 
 # --- Preprocessing configurations ---
 prepro_config_file = "Preprocessor.json"

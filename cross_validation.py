@@ -28,7 +28,7 @@ def out_of_the_box(config):
     cross_validator.pipeline(execution_flags=execution_flags,
                              thresholds=thresholds)
 
-    if len(config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]) <= 2:
+    if len(config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN]) <= 2 and cross_validator.execution_flags[CVK.EF_EVALUATION]:
         optimal_threshold_finder = OptimalThreshold(config, prints=False)
         optimal_threshold_finder.add_additional_thresholds_if_needed(cross_validator)
 

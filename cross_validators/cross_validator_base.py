@@ -2,6 +2,7 @@ import os
 from glob import glob
 import datetime
 from typing import List
+from pprint import pprint
 
 import numpy as np
 import csv
@@ -22,7 +23,8 @@ class CrossValidatorBase:
     def __init__(self, config):
         self.config = config
         self.data_storage = provider.get_data_storage(typ=STORAGE_TYPE)
-        self.log_root_folder = os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER])
+        self.log_dir = os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER])
+        self.execution_flags = CrossValidatorBase.get_execution_flags()
 
     @staticmethod
     def get_execution_flags():
@@ -32,34 +34,22 @@ class CrossValidatorBase:
         }
 
     def pipeline(self, execution_flags=None, **kwargs):
-        if execution_flags is None:
-            execution_flags = CrossValidatorBase.get_execution_flags()
+        if execution_flags:
+            self.execution_flags = execution_flags
 
         csv_filename = None
         if CVK.CSV_FILENAME in self.config.CONFIG_CV:
             csv_filename = self.config.CONFIG_CV[CVK.CSV_FILENAME]
 
-        if execution_flags[CVK.EF_CROSS_VALIDATION]:
+        if self.execution_flags[CVK.EF_CROSS_VALIDATION]:
             self.cross_validation(csv_filename=csv_filename)
-        if execution_flags[CVK.EF_EVALUATION]:
+        if self.execution_flags[CVK.EF_EVALUATION]:
             self.evaluation(**kwargs)
 
         # self.config.telegram.send_tg_message(f'Operations in cross_validation.py for {self.config.CONFIG_CV[
         # CVK.NAME]} are successfully completed!')
 
-    def evaluation(self, save_predictions=True, **kwargs):
-        evaluator = provider.get_evaluation(config=self.config,
-                                            labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
 
-        if save_predictions:
-            training_csv_path = self.get_csv(os.path.join(self.config.CONFIG_PATHS[PK.LOGS_FOLDER][0],
-                                                          self.config.CONFIG_CV[CVK.NAME]))
-            print('training_csv_path', training_csv_path)
-            evaluator.save_predictions_and_metrics(training_csv_path=training_csv_path,
-                                                   data_folder=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
-                                                   **kwargs)
-        else:
-            evaluator.evaluate(**kwargs)
 
     def cross_validation(self, csv_filename=None):
         root_folder = self.create_root_folder()
@@ -103,12 +93,27 @@ class CrossValidatorBase:
 
             self.write_rows_to_csv(leave_out_paths, csv_file, log_dir, CV_step_name)
 
+    def evaluation(self, save_predictions=True, **kwargs):
+        evaluator = provider.get_evaluation(config=self.config,
+                                            labels=self.config.CONFIG_DATALOADER[DLK.LABELS_TO_TRAIN])
+
+        if save_predictions:
+            training_csv_path = self.get_csv(os.path.join(self.config.CONFIG_PATHS[PK.LOGS_FOLDER][0],
+                                                          self.config.CONFIG_CV[CVK.NAME]))
+            print('training_csv_path', training_csv_path)
+            evaluator.save_predictions_and_metrics(training_csv_path=training_csv_path,
+                                                   data_folder=self.config.CONFIG_PATHS[PK.RAW_NPZ_PATH],
+                                                   **kwargs)
+        else:
+            evaluator.evaluate(**kwargs)
+
     def cross_validation_step(self, trainer: TrainerInterface,
                               dataset_paths: List[str],
                               CV_step_name: str,
                               CV_step_split: CV_StepSplit):
         CV_step_split.print_names()
-        print('dataset paths -', dataset_paths)
+        print('dataset paths -')
+        pprint(dataset_paths)
         trainer.train(dataset_paths=dataset_paths,
                       cv_step_split=CV_step_split,
                       step_name=CV_step_name,
@@ -141,7 +146,7 @@ class CrossValidatorBase:
     def write_rows_to_csv(self, leave_out_paths, csv_file, log_dir, train_step_name):
         for index, path in enumerate(leave_out_paths):
             sensitivity, specificity = 0, 0
-            print(f'Leave Out Paths = {leave_out_paths}')
+            pprint(f'Leave Out Paths = {leave_out_paths}')
             with open(csv_file, 'a', newline='') as csvfile:  # for full cross_valid and for separate file
                 fieldnames = ['time', 'index', 'sensitivity', 'specificity', 'name', 'model_name']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)

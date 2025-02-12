@@ -1,14 +1,8 @@
 import os
-# import datetime
-
-# import numpy as np
-# import csv
 
 import pickle
 from cross_validators.cross_validator_base import CrossValidatorBase
-
-
-# from configuration.keys import CrossValidationKeys as CVK, PathKeys as PK
+from configuration.keys import CrossValidationKeys as CVK
 
 
 class ConfigWrapper:
@@ -24,60 +18,22 @@ class CrossValidatorBaseParallel(CrossValidatorBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    '''def cross_validation(self, csv_filename=None):
-        name = self.config.CONFIG_CV[CVK.NAME]
-        self.config.CONFIG_PATHS[PK.LOGS_FOLDER].append(name)
-
-        root_folder = os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER])
-        path_template = os.path.join(*self.config.CONFIG_PATHS[PK.LOGS_FOLDER], 'step')
-
-        if not os.path.exists(root_folder):
-            os.makedirs(root_folder)
-
-        paths, splits = self._get_paths_and_splits()
-
-        csv_file = CrossValidatorBase.compose_csv_filename(csv_filename, log_dir, name)
-
-        for indexes in splits[self.config.CONFIG_CV[CVK.FIRST_SPLIT]:]:
-            model_name = path_template
-            if len(indexes) > 1:
-                for i in indexes:
-                    model_name += "_" + str(i)
-            else:
-                model_name += "_" + str(indexes[0]) + "_" + self.data_storage.get_name(np.array(paths)[indexes][0])
-                if not os.path.exists(model_name):
-                    os.makedirs(model_name)
-
-            leave_out_paths = np.array(paths)[indexes]
-
-            if self.__check_data_label__(leave_out_paths):
-                print(f"The patient file(s) '{', '.join(leave_out_paths)}' are no needed labels for training! "
-                      f"So we skip this patient(s)!")
-                continue
-
-            # all_patients = [self.data_storage.get_name(path=p) for p in paths] # self.cross_validation_step(
-            model_name=model_name, all_patients=all_patients, leave_out_names=[self.data_storage.get_name(p) for p in 
-            leave_out_paths]) 
-
-
-
-            self.write_rows_to_csv(leave_out_paths, csv_file, log_dir, CV_step_folder)'''
-
     def cross_validation_step(self, trainer, dataset_paths, CV_step_name, CV_step_split):
-        # all_patients = '+'.join([self.data_storage.get_name(path=p) for p in CV_step_split.all_patients])
-        # test_patients = '+'.join([self.data_storage.get_name(p) for p in CV_step_split.TEST_NAMES])
+        self.execution_flags[CVK.EF_EVALUATION] = False # parallel CV is used to start jobs, it's not possible to start evaluation immideately, because we should wait until this jobs finish
+        dataset_paths = '+'.join(dataset_paths)
 
-        self.save_configurations(CV_step_name, CV_step_split)
+        self.save_configurations(os.path.join(trainer.log_dir, CV_step_name), CV_step_split)
 
         stream = os.popen(
-            f"bash $HOME/Peritoneum/hsi-experiments/scripts/start_parallel_cv_step.sh {trainer.log_dir} {CV_step_name}")
-        # {all_patients} "
-        # f"{test_patients}")
+            f"sbatch $HOME/hsi-experiments-test-parallel-CV/scripts/start_parallel_cv_step.job {trainer.log_dir} {CV_step_name} {dataset_paths} {self.config.CONFIG_CV[CVK.NAME]}")
 
         output = stream.read()
         print('Prompt output:', output)
 
-    def save_configurations(self, CV_step_folder, CV_step_split):
+    def save_configurations(self, CV_step_folder , CV_step_split):
+        if not os.path.exists(CV_step_folder):
+            os.mkdir(CV_step_folder)
+        
         config_wrapper = ConfigWrapper(self.config)
         CV_config_filename = os.path.join(CV_step_folder, 'CV_config.pkl')
         with open(CV_config_filename, 'wb') as file:
