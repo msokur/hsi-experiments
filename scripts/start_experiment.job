@@ -18,5 +18,6 @@ module load Python
 source /home/sc.uni-leipzig.de/mi186veva/venv/tf/bin/activate
 
 module list
+conda list
 python check.py
 python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/run_experiment.py

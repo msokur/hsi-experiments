@@ -6,7 +6,7 @@
 #SBATCH --partition=clara
 #SBATCH --time=00:05:00
 
-#SBATCH --output=output/pytest/pytest_%j.log
+#SBATCH --output=outputs/pytest/pytest_%j.log
 
 ## remove all previously loaded modules
 module purge
@@ -25,9 +25,12 @@ CONDA_ENV="hsi_env"
 
 ## activate conda env
 conda activate $CONDA_ENV
+conda list
 
 ## load repository variables
 source repo_variables.sh
+
+module list
 
 ## run pytest
 pytest $REPOSITORY_ROOT/testspace

@@ -1,0 +1,60 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --job-name=name
+#SBATCH --partition=clara
+#SBATCH --time=40:00:00
+#SBATCH --mem=8G
+##SBATCH --gres=gpu:v100:2
+#SBATCH --gres=gpu:rtx2080ti:2
+#SBATCH --output=/dev/null
+#SBATCH --error=/dev/null
+
+
+#---------------------------NAMING------------------------
+
+# Assign variables from arguments
+JOB_NAME=$2
+OUTPUT_DIR=$4
+
+# Ensure output directory exists
+mkdir -p "$OUTPUT_DIR"
+
+# Update job name dynamically (SBATCH doesn't expand variables)
+scontrol update JobID=$SLURM_JOB_ID JobName=$JOB_NAME
+
+#Define output file dynamically
+LOG_FILE="${OUTPUT_DIR}/_${JOB_NAME}_${SLURM_JOB_ID}.log"
+
+
+# Redirect stdout and stderr to the log file
+exec >"$LOG_FILE" 2>&1
+
+
+echo "Running job: $JOB_NAME"
+echo "Output log: $LOG_FILE"
+
+
+#--------------------------MAIN SCRIPT------------------
+
+echo $1
+echo $2
+echo $3
+echo $4
+
+conda list
+
+## load repository variables before bash script (doesn't work inside it)
+source repo_variables.sh
+
+## load the check.py
+python $REPOSITORY_ROOT/scripts/check.py
+echo "Job is running on the following node(s): $SLURM_NODELIST"
+
+module list
+
+python  $REPOSITORY_ROOT/cross_validators/parallel_CV_step.py --CV_folder=$1 --CV_step_name=$2 --dataset_paths=$3
+
+conda deactivate
+
+

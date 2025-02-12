@@ -1,16 +1,14 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=16
-
+#SBATCH --ntasks-per-node=4
 #SBATCH --job-name=r_cv
-
 #SBATCH --partition=clara
 #SBATCH --time=2-00:00:00
-#SBATCH --mem-per-cpu=16G
+#SBATCH --mem-per-cpu=8G
 ##SBATCH --gres=gpu:v100:2
 #SBATCH --gres=gpu:rtx2080ti:2
 
-#SBATCH --output=output/CV_VISU_HNO_11x11%j.log
+#SBATCH --output=outputs/CV_VISU_HNO_11x11%j.log
 
 ## remove all previously loaded modules
 module purge
@@ -29,9 +27,12 @@ CONDA_ENV="hsi_env"
 
 ## activate conda env
 conda activate $CONDA_ENV
+conda list
 
 ## load repository variables
 source repo_variables.sh
+
+module list
 
 ## load the check.py
 python $REPOSITORY_ROOT/scripts/check.py

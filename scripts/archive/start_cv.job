@@ -6,9 +6,9 @@
 
 #SBATCH --partition=clara
 #SBATCH --time=2-00:00:00
-#SBATCH --mem=64G
+#SBATCH --mem=8G
 ##SBATCH --gres=gpu:v100:2
-#SBATCH --gres=gpu:rtx2080ti:2
+##SBATCH --gres=gpu:rtx2080ti:2
 
 #SBATCH --output=outputs/check_CV_on_cluster_%j.log
 
@@ -21,4 +21,4 @@ module load Python
 source /home/sc.uni-leipzig.de/mi186veva/venv/tf/bin/activate
 
 #python /home/sc.uni-leipzig.de/bn322dcei/hsi-experiments-BA/cross_validation.py
-python /home/sc.uni-leipzig.de/mi186veva/hsi-experiments/cross_validation.py
+python $HOME/hsi-experiments-test-parallel-CV/cross_validation.py

@@ -41,7 +41,7 @@ source ~/.bashrc
 
 ## activate conda env
 conda activate hsi_env
-
+conda list
 
 module list
 
