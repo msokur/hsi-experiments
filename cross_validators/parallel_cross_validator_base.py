@@ -25,7 +25,7 @@ class CrossValidatorBaseParallel(CrossValidatorBase):
         self.save_configurations(os.path.join(trainer.log_dir, CV_step_name), CV_step_split)
 
         stream = os.popen(
-            f"sbatch $HOME/hsi-experiments-test-parallel-CV/scripts/start_parallel_cv_step.job {trainer.log_dir} {CV_step_name} {dataset_paths} {self.config.CONFIG_CV[CVK.NAME]}")
+            f"sbatch {os.path.join(os.getcwd(), 'start_parallel_cv_step.job')} {trainer.log_dir} {CV_step_name} {dataset_paths} {self.config.CONFIG_CV[CVK.NAME]}")
 
         output = stream.read()
         print('Prompt output:', output)
