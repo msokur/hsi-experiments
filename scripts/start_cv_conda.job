@@ -19,8 +19,9 @@ source ~/.bashrc
 ## deactivate the conda base env
 conda deactivate
 
-## load the anaconda module 
-module load Anaconda3/2023.09-0
+## load the anaconda module
+module load Python/3.10.4-GCCcore-11.3.0
+#module load Anaconda3/2023.09-0
 
 ## enter the name from your env
 CONDA_ENV="hsi_env"
